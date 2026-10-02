@@ -22,6 +22,11 @@ export interface HeadlessTurnExecutorInput {
   body: HeadlessTurnBody;
   history: StoredMessage[];
   uiMessages: LocalMessage[];
+  /**
+   * Frozen tool declaration set. When present the executor must use it instead
+   * of the live `client_tools` in the body (prefix freeze; see prefix-freeze.ts).
+   */
+  clientTools?: unknown[];
 }
 
 export interface HeadlessTurnExecutor {

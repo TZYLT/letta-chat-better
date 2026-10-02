@@ -1,4 +1,7 @@
-export type { HeadlessBackendOptions } from "./fake-headless-backend";
+export type {
+  HeadlessBackendOptions,
+  ResolvedTurnPrefix,
+} from "./fake-headless-backend";
 export {
   HEADLESS_BACKEND_CAPABILITIES,
   HeadlessBackend,

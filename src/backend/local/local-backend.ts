@@ -17,6 +17,7 @@ import type {
 import {
   HEADLESS_BACKEND_CAPABILITIES,
   HeadlessBackend,
+  type ResolvedTurnPrefix,
 } from "@/backend/dev/headless-backend";
 import type { HeadlessTurnExecutor } from "@/backend/dev/headless-turn-executor";
 import { LocalPiModelsRuntime } from "@/backend/dev/pi-models-runtime";
@@ -64,11 +65,21 @@ import {
   getLocalBackendMemoryFilesystemRoot,
   isLocalBackendMemfsDisabledForProcess,
 } from "./paths";
-import { resolveFrozenPrefix } from "./prefix-freeze";
+import {
+  applyFrozenAgentOverrides,
+  assembleFrozenTurnPrefix,
+  buildContextPendingReport,
+  type ContextPendingReport,
+  collectMemoryPending,
+  isMemoryDirDirty,
+  resolveFrozenPrefix,
+  stampFreezeMetadata,
+} from "./prefix-freeze";
 import {
   appendAvailableSkillsBlock,
   compileLocalSystemPrompt,
   type LocalCompiledSystemPrompt,
+  type LocalFreezeReason,
 } from "./system-prompt-compilation";
 
 export interface LocalBackendOptions {
@@ -349,6 +360,7 @@ export class LocalBackend extends HeadlessBackend {
     }
     await this.compileAndMaybePersistSystemPrompt("default", agent.id, {
       dryRun: false,
+      reason: "conversation_created",
     });
     return agent;
   }
@@ -385,7 +397,7 @@ export class LocalBackend extends HeadlessBackend {
     await this.compileAndMaybePersistSystemPrompt(
       conversation.id,
       conversation.agent_id,
-      { dryRun: false },
+      { dryRun: false, reason: "conversation_created" },
     );
     return conversation;
   }
@@ -418,7 +430,10 @@ export class LocalBackend extends HeadlessBackend {
     const compiled = await this.compileAndMaybePersistSystemPrompt(
       conversationId,
       agentId,
-      { dryRun: bodyRecord.dry_run === true },
+      {
+        dryRun: bodyRecord.dry_run === true,
+        reason: "manual_recompile",
+      },
     );
     return compiled.content;
   }
@@ -445,6 +460,39 @@ export class LocalBackend extends HeadlessBackend {
     } as Awaited<ReturnType<Backend["compactConversationMessages"]>>;
   }
 
+  /**
+   * Local-only: describe the prefix changes that are registered but not yet
+   * applied, for the `/context-pending` command. Read-only — never rewrites the
+   * frozen prefix (requirement §6, `buildContextPendingReport`).
+   */
+  async getContextPending(
+    conversationId: string,
+    agentId: string,
+    options: { full?: boolean } = {},
+  ): Promise<ContextPendingReport> {
+    const snapshot = this.store.getCompiledSystemPrompt(
+      conversationId,
+      agentId,
+    );
+    const liveAgent = this.effectiveAgentForConversation(
+      conversationId,
+      agentId,
+    );
+    const memfsEnabled = this.isLocalMemfsEnabled();
+    const memoryDir = this.memoryDirForAgent(agentId);
+    const memory = memfsEnabled
+      ? collectMemoryPending(memoryDir, snapshot?.memfsRevision, {
+          full: options.full === true,
+        })
+      : { unappliedCommits: [], diffStat: "" };
+    return buildContextPendingReport({
+      snapshot,
+      liveAgent,
+      memory,
+      dirty: memfsEnabled && isMemoryDirDirty(memoryDir),
+    });
+  }
+
   protected override async resolveSystemPromptForTurn(input: {
     conversationId: string;
     agentId: string;
@@ -452,13 +500,14 @@ export class LocalBackend extends HeadlessBackend {
     body: ConversationMessageCreateBody | ConversationMessageStreamBody;
     history: StoredMessage[];
     uiMessages: LocalMessage[];
-  }): Promise<{ systemPrompt: string }> {
+  }): Promise<ResolvedTurnPrefix> {
+    const bodyRecord = input.body as Record<string, unknown>;
+    const clientSkills = Array.isArray(bodyRecord.client_skills)
+      ? (bodyRecord.client_skills as unknown[])
+      : [];
     if (this.store.isAgentFreeConversation(input.conversationId)) {
-      const clientSkills = Array.isArray(
-        (input.body as Record<string, unknown>).client_skills,
-      )
-        ? ((input.body as Record<string, unknown>).client_skills as unknown[])
-        : [];
+      // Agent-free conversations never project memory; they are out of the
+      // freeze scope (requirement §4.3) and keep recompiling skills per turn.
       return {
         systemPrompt: appendAvailableSkillsBlock(
           input.agent.system,
@@ -471,13 +520,26 @@ export class LocalBackend extends HeadlessBackend {
       input.agentId,
       input.history.length,
     );
-    const clientSkills = Array.isArray(
-      (input.body as Record<string, unknown>).client_skills,
-    )
-      ? ((input.body as Record<string, unknown>).client_skills as unknown[])
+    const clientTools = Array.isArray(bodyRecord.client_tools)
+      ? (bodyRecord.client_tools as unknown[])
       : [];
+    const resolved = assembleFrozenTurnPrefix({
+      snapshot: persisted,
+      liveAgent: input.agent,
+      clientSkills,
+      clientTools,
+    });
+    if (resolved.changed) {
+      this.store.setCompiledSystemPrompt(
+        input.conversationId,
+        input.agentId,
+        resolved.snapshot,
+      );
+    }
     return {
-      systemPrompt: appendAvailableSkillsBlock(persisted.content, clientSkills),
+      systemPrompt: resolved.systemPrompt,
+      agent: resolved.agent,
+      clientTools: resolved.clientTools,
     };
   }
 
@@ -717,7 +779,19 @@ export class LocalBackend extends HeadlessBackend {
     summary: string;
     stats: LocalCompactionStats;
   }> {
-    const agent = this.effectiveAgentForConversation(conversationId, agentId);
+    const liveAgent = this.effectiveAgentForConversation(
+      conversationId,
+      agentId,
+    );
+    // The summary runs on the frozen model: a pending `/model` switch only
+    // takes effect after compaction completes (requirement §6).
+    const frozenSnapshot = this.store.getCompiledSystemPrompt(
+      conversationId,
+      agentId,
+    );
+    const agent = frozenSnapshot
+      ? applyFrozenAgentOverrides(liveAgent, frozenSnapshot)
+      : liveAgent;
     const settings = this.resolveCompactionSettings(agent, body);
     let result: {
       numMessagesBefore: number;
@@ -744,6 +818,7 @@ export class LocalBackend extends HeadlessBackend {
             agentId,
             {
               dryRun: false,
+              reason: "compaction",
             },
           );
           return result;
@@ -765,6 +840,7 @@ export class LocalBackend extends HeadlessBackend {
     );
     await this.compileAndMaybePersistSystemPrompt(conversationId, agentId, {
       dryRun: false,
+      reason: "compaction",
     });
     return result;
   }
@@ -891,15 +967,20 @@ export class LocalBackend extends HeadlessBackend {
     return this.compileAndMaybePersistSystemPrompt(conversationId, agentId, {
       dryRun: false,
       previousMessageCount,
+      reason: "conversation_created",
     });
   }
 
   private async compileAndMaybePersistSystemPrompt(
     conversationId: string,
     agentId: string,
-    options: { dryRun: boolean; previousMessageCount?: number },
+    options: {
+      dryRun: boolean;
+      previousMessageCount?: number;
+      reason: LocalFreezeReason;
+    },
   ): Promise<LocalCompiledSystemPrompt> {
-    const agent = this.store.retrieveAgentRecord(agentId);
+    const agent = this.effectiveAgentForConversation(conversationId, agentId);
     const memfsEnabled = this.isLocalMemfsEnabled();
     if (memfsEnabled) {
       await this.ensureLocalMemoryRepo(agentId, [], agent.name);
@@ -910,13 +991,16 @@ export class LocalBackend extends HeadlessBackend {
         agent_id: agentId,
         order: "asc",
       } as ConversationMessageListBody).length;
-    const compiled = compileLocalSystemPrompt({
-      agent,
-      conversationId,
-      previousMessageCount,
-      memoryDir: memfsEnabled ? this.memoryDirForAgent(agentId) : undefined,
-      includeMemfs: memfsEnabled,
-    });
+    const compiled = stampFreezeMetadata(
+      compileLocalSystemPrompt({
+        agent,
+        conversationId,
+        previousMessageCount,
+        memoryDir: memfsEnabled ? this.memoryDirForAgent(agentId) : undefined,
+        includeMemfs: memfsEnabled,
+      }),
+      { reason: options.reason, agent },
+    );
     if (!options.dryRun) {
       this.store.setCompiledSystemPrompt(conversationId, agentId, compiled);
     }

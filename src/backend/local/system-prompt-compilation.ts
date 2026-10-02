@@ -20,12 +20,41 @@ interface LocalMemoryFile {
   description: string;
 }
 
+/**
+ * Why a prefix snapshot was (re)applied. Stamped by {@link compileLocalSystemPrompt}
+ * callers at an application point (see `prefix-freeze.ts`).
+ */
+export type LocalFreezeReason =
+  | "conversation_created"
+  | "compaction"
+  | "manual_recompile"
+  | "fork_inherited";
+
 export interface LocalCompiledSystemPrompt {
   content: string;
   coreMemory: string;
   compiledAt: string;
   rawSystemHash: string;
   memfsRevision?: string;
+
+  /** Prefix-freeze snapshot marker; absent means "not frozen yet". */
+  freezeSchema?: 1;
+  /** Frozen skills text; absent means "skills not frozen yet". */
+  frozenSkillsBlock?: string;
+  /** Frozen `client_tools` declaration set (canonical JSON, byte-stable). */
+  frozenTools?: string;
+  frozenToolsHash?: string;
+  frozenModel?: string;
+  /** Frozen `model_settings` (canonical JSON). */
+  frozenModelSettings?: string;
+  frozenAt?: string;
+  frozenReason?: LocalFreezeReason;
+  /**
+   * Last live values observed at a turn that differed from the frozen ones.
+   * Reporting-only (feeds `/context-pending`); never used to build a request.
+   */
+  observedSkillsBlock?: string;
+  observedTools?: string;
 }
 
 export interface CompileLocalSystemPromptOptions {
@@ -419,13 +448,27 @@ export function compileAvailableSkillsBlock(
   return lines.join("\n");
 }
 
+/**
+ * Append an already-compiled skills block. Under prefix freeze the block itself
+ * is frozen (see `prefix-freeze.ts`), so the turn path appends the stored text
+ * instead of recompiling it from the live `client_skills`.
+ */
+export function appendCompiledSkillsBlock(
+  systemPrompt: string,
+  skillsBlock: string | undefined,
+): string {
+  if (!skillsBlock) return systemPrompt;
+  return `${systemPrompt.trimEnd()}\n\n${skillsBlock.trimStart()}`;
+}
+
 export function appendAvailableSkillsBlock(
   systemPrompt: string,
   clientSkills: unknown[] = [],
 ): string {
-  const skillsBlock = compileAvailableSkillsBlock(clientSkills);
-  if (!skillsBlock) return systemPrompt;
-  return `${systemPrompt.trimEnd()}\n\n${skillsBlock.trimStart()}`;
+  return appendCompiledSkillsBlock(
+    systemPrompt,
+    compileAvailableSkillsBlock(clientSkills),
+  );
 }
 
 export function compileLocalSystemPrompt(

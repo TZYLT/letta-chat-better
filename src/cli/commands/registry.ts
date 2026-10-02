@@ -417,6 +417,15 @@ export const commands: Record<string, Command> = {
       return "Recompiling agent and conversation...";
     },
   },
+  "/context-pending": {
+    desc: "Show prefix changes registered but not yet applied (memory, system, skills, tools, model)",
+    args: "[full]",
+    order: 33.65,
+    handler: () => {
+      // Handled specially in the TUI submit handler (needs conversation scope)
+      return "Checking pending prefix changes...";
+    },
+  },
   "/feedback": {
     desc: "Send feedback to the Letta team",
     order: 34,

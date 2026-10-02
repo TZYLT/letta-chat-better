@@ -1492,6 +1492,35 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
           return diagnosticsCommandResult;
         }
 
+        // Special handling for /context-pending - list registered-but-unapplied
+        // prefix changes (memory diff, system/skills/tools/model drift)
+        if (
+          trimmed === "/context-pending" ||
+          trimmed === "/context-pending full"
+        ) {
+          const cmd = commandRunner.start(
+            trimmed,
+            "Checking pending prefix changes...",
+          );
+          setCommandRunning(true);
+          try {
+            const { runContextPendingCommand } = await import(
+              "@/cli/helpers/context-pending"
+            );
+            const output = await runContextPendingCommand({
+              conversationId: conversationIdRef.current,
+              agentId,
+              full: trimmed.endsWith(" full"),
+            });
+            cmd.finish(output, true);
+          } catch (error) {
+            cmd.fail(`Failed: ${formatErrorDetails(error, agentId)}`);
+          } finally {
+            setCommandRunning(false);
+          }
+          return { submitted: true };
+        }
+
         // Special handling for /recompile command - recompile agent + current conversation
         if (trimmed === "/recompile") {
           const cmd = commandRunner.start(

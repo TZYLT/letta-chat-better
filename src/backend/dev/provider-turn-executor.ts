@@ -136,7 +136,7 @@ export function buildProviderTurnInput(
     body: input.body,
     history: input.history,
     uiMessages: input.uiMessages,
-    clientTools: bodyListField(input.body, "client_tools"),
+    clientTools: input.clientTools ?? bodyListField(input.body, "client_tools"),
     clientSkills: bodyListField(input.body, "client_skills"),
   };
 }

@@ -919,6 +919,20 @@ export class LocalStore {
     this.persistConversationState(forked.id, targetAgentId, {
       transcript: "rewrite",
     });
+    // A fork inherits the parent's applied prefix snapshot verbatim: the child
+    // starts byte-identical and diverges only at its own application point
+    // (requirement §3.1 R3/R6, §3.3 invariant 4).
+    const sourcePrompt = this.getCompiledSystemPrompt(
+      source.id,
+      source.agent_id,
+    );
+    if (sourcePrompt) {
+      this.compiledSystemPromptByConversationKey.set(targetKey, {
+        ...sourcePrompt,
+        frozenReason: "fork_inherited",
+      });
+      this.persistCompiledSystemPrompt(forked.id, targetAgentId);
+    }
     // Fork transcript fully persisted: keep only the bounded tail resident.
     this.demoteConversationToResidentTail(targetKey);
     return { id: forked.id };

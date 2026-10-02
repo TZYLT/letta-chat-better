@@ -180,6 +180,18 @@ export interface HeadlessBackendOptions {
   runMetadataBackend?: string;
 }
 
+/**
+ * A turn prefix resolved by {@link HeadlessBackend.resolveSystemPromptForTurn}.
+ * Backends that freeze the conversation prefix (local backend) return the frozen
+ * agent (model/params), the frozen `client_tools`, and the frozen system prompt;
+ * plain backends just return the system prompt string.
+ */
+export interface ResolvedTurnPrefix {
+  systemPrompt: string;
+  agent?: LocalAgentRecord;
+  clientTools?: unknown[];
+}
+
 const FAKE_HEADLESS_MODEL = "dev/fake-headless";
 
 export const HEADLESS_BACKEND_CAPABILITIES: BackendCapabilities = {
@@ -523,7 +535,7 @@ export class HeadlessBackend implements Backend {
         turnInput.agentId,
       ),
     );
-    const resolvedPrompt = await this.resolveSystemPromptForTurn({
+    const resolvedPrefix = await this.resolveSystemPromptForTurn({
       conversationId: turnInput.conversationId,
       agentId: turnInput.agentId,
       agent,
@@ -531,20 +543,24 @@ export class HeadlessBackend implements Backend {
       history,
       uiMessages,
     });
-    const systemPrompt =
-      typeof resolvedPrompt === "string"
-        ? resolvedPrompt
-        : resolvedPrompt.systemPrompt;
+    const resolved =
+      typeof resolvedPrefix === "string"
+        ? { systemPrompt: resolvedPrefix }
+        : resolvedPrefix;
+    const systemPrompt = resolved.systemPrompt;
     let stream: Stream<LettaStreamingResponse>;
     try {
       stream = await this.executor.execute({
         conversationId: turnInput.conversationId,
         agentId: turnInput.agentId,
-        agent,
+        agent: resolved.agent ?? agent,
         systemPrompt,
         body,
         history,
         uiMessages,
+        ...(resolved.clientTools !== undefined
+          ? { clientTools: resolved.clientTools }
+          : {}),
       });
     } catch (error) {
       this.failRun(run.id, error);
@@ -566,7 +582,7 @@ export class HeadlessBackend implements Backend {
     body: ConversationMessageCreateBody | ConversationMessageStreamBody;
     history: ReturnType<LocalStore["listConversationMessages"]>;
     uiMessages: ReturnType<LocalStore["listLocalMessages"]>;
-  }): Promise<string | { systemPrompt: string }> {
+  }): Promise<string | ResolvedTurnPrefix> {
     return input.agent.system;
   }
 
