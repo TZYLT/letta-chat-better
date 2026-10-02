@@ -24,13 +24,6 @@ import { runTeleportSubcommand } from "./teleport";
 import { runTrajectoriesSubcommand } from "./trajectories";
 import { runUsageSubcommand } from "./usage";
 
-async function runUpdateSubcommand(): Promise<number> {
-  const { manualUpdate } = await import("@/updater/auto-update");
-  const result = await manualUpdate();
-  console.log(result.message);
-  return result.success ? 0 : 1;
-}
-
 async function runVersionSubcommand(): Promise<number> {
   const { getVersion } = await import("@/version");
   console.log(`${getVersion()} (Letta Code)`);
@@ -83,9 +76,6 @@ export async function runSubcommand(argv: string[]): Promise<number | null> {
   switch (command) {
     case "version":
       return runVersionSubcommand();
-    case "update":
-    case "upgrade":
-      return runUpdateSubcommand();
     case "memory":
     case "memfs": // legacy alias
       return runMemorySubcommand(rest);

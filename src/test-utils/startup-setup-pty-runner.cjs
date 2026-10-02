@@ -97,7 +97,6 @@ async function main() {
           PATH: process.env.PATH,
           HOME: homeDir,
           TERM: "xterm-256color",
-          DISABLE_AUTOUPDATER: "1",
           LETTA_DISABLE_SESSION_PERSIST: "1",
         },
         name: "xterm-256color",

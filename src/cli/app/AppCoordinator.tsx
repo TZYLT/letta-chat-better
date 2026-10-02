@@ -363,7 +363,6 @@ export function App({
   startupHasAvailableLocalModels = true,
   fileAutocompleteFdPath = null,
   releaseNotes = null,
-  updateNotification = null,
   systemInfoReminderEnabled = true,
   modsDisabled = false,
 }: AppProps) {
@@ -1354,31 +1353,6 @@ export function App({
   );
   // Static items (things that are done rendering and can be frozen)
   const [staticItems, setStaticItems] = useState<StaticItem[]>([]);
-
-  // Show in-transcript notification when auto-update applied a significant new version
-  const [footerUpdateText, setFooterUpdateText] = useState<string | null>(null);
-  useEffect(() => {
-    if (!updateNotification) return;
-    setStaticItems((prev) => {
-      if (prev.some((item) => item.id === "update-notification")) return prev;
-      return [
-        ...prev,
-        {
-          kind: "status" as const,
-          id: "update-notification",
-          lines: [
-            `A new version of Letta Code is available (**${updateNotification}**). Restart to update!`,
-          ],
-        },
-      ];
-    });
-    // Also show briefly in the footer placeholder area
-    setFooterUpdateText(
-      `New version available (${updateNotification}). Restart to update!`,
-    );
-    const timer = setTimeout(() => setFooterUpdateText(null), 8000);
-    return () => clearTimeout(timer);
-  }, [updateNotification]);
 
   // Track committed ids to avoid duplicates
   const emittedIdsRef = useRef<Set<string>>(new Set());
@@ -4987,7 +4961,6 @@ export function App({
         handleCtrlD={handleCtrlD}
         emittedIdsRef={emittedIdsRef}
         feedbackPrefill={feedbackPrefill}
-        footerUpdateText={footerUpdateText}
         showInspirationalPromptHints={showInspirationalPromptHints}
         onEscapeCommandCancel={onEscapeCommandCancel}
         handleAgentSelect={handleAgentSelect}

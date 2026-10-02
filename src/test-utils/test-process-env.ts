@@ -9,7 +9,6 @@ export function createIsolatedCliTestEnv(
 
   Object.assign(env, {
     LETTA_DISABLE_SESSION_PERSIST: "1",
-    DISABLE_AUTOUPDATER: "1",
   });
 
   applyEnvOverrides(env, extraEnv);

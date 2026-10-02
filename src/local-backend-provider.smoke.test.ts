@@ -14,7 +14,6 @@ async function runLocalProviderCli(
   const storageDir = await mkdtemp(join(tmpdir(), "lc-local-provider-"));
   const env = createIsolatedCliTestEnv({
     LETTA_DEBUG: "0",
-    DISABLE_AUTOUPDATER: "1",
     LETTA_LOCAL_BACKEND_EXPERIMENTAL: "true",
     LETTA_LOCAL_BACKEND_DIR: storageDir,
     ...extraEnv,

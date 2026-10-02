@@ -217,7 +217,7 @@ describe("shared CLI arg schema", () => {
   });
 
   test("accepts deprecated --no-memfs as a hidden no-op (version-skew compat)", () => {
-    // Older parents spawn subagents with --no-memfs; after auto-update the
+    // Older parents spawn subagents with --no-memfs; after an upgrade the
     // child binary is newer than the running parent (LET-9436). The flag must
     // parse without error, do nothing, and stay out of help output.
     const parsed = parseCliArgs(

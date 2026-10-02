@@ -87,7 +87,6 @@ const ciDirs = [
   "src/test-utils",
   "src/tools",
   "src/types",
-  "src/updater",
   "src/utils",
   "src/web",
   "src/websocket",

@@ -852,7 +852,6 @@ export function Input({
   modAdapter,
   statusLinePrompt,
   onCycleReasoningEffort,
-  footerNotification,
   showInspirationalPromptHints = false,
 }: {
   visible?: boolean;
@@ -902,7 +901,6 @@ export function Input({
   modAdapter: LocalModAdapter;
   statusLinePrompt?: string;
   onCycleReasoningEffort?: () => void;
-  footerNotification?: string | null;
   showInspirationalPromptHints?: boolean;
 }) {
   const [value, setValue] = useState("");
@@ -1844,21 +1842,6 @@ export function Input({
     deferModeSupported,
     showStatuslineTransientHint,
   ]);
-
-  const previousFooterNotificationRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (
-      footerNotification &&
-      footerNotification !== previousFooterNotificationRef.current
-    ) {
-      showStatuslineTransientHint({
-        type: "message",
-        message: footerNotification,
-        color: colors.status.processingShimmer,
-      });
-    }
-    previousFooterNotificationRef.current = footerNotification ?? null;
-  }, [footerNotification, showStatuslineTransientHint]);
 
   const {
     panelsWithDefaultProductStatus,

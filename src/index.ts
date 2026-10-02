@@ -84,7 +84,6 @@ import {
   settingsManager,
   shouldPersistSessionState,
 } from "./settings-manager";
-import { startStartupAutoUpdateCheck } from "./startup-auto-update";
 import {
   clearPersistedClientToolRules,
   loadStartupTools,
@@ -98,19 +97,6 @@ import { markMilestone } from "./utils/timing";
 // Stable fallbacks avoid creating new arrays that retrigger effects on every render.
 const EMPTY_APPROVAL_ARRAY: ApprovalRequest[] = [];
 const EMPTY_MESSAGE_ARRAY: Message[] = [];
-function normalizeUpdateCommandAliases(args: string[]): string[] {
-  const [command, ...rest] = args;
-
-  if (
-    command === "upgrade" ||
-    command === "--update" ||
-    command === "--upgrade"
-  ) {
-    return ["update", ...rest];
-  }
-
-  return args;
-}
 
 function trackCliBoundaryError(
   errorType: string,
@@ -177,7 +163,6 @@ USAGE
   letta -p "..."        One-off prompt in headless mode (no TTY UI)
 
   # maintenance
-  letta update          Check for updates and install (aliases: upgrade, --update, --upgrade)
   letta memory ...      Memory filesystem subcommands
   letta agents ...      Agents subcommands (JSON-only)
   letta model ...       Get, list, or set models and reasoning (JSON-only)
@@ -580,7 +565,7 @@ async function main(): Promise<void> {
   let explicitBackendMode: BackendMode | undefined;
   try {
     const backendSelection = extractBackendFlag(rawCliArgs);
-    subcommandArgs = normalizeUpdateCommandAliases(backendSelection.args);
+    subcommandArgs = backendSelection.args;
     if (backendSelection.backend) {
       explicitBackendMode = backendSelection.backend;
       configureBackendMode(backendSelection.backend);
@@ -645,10 +630,6 @@ async function main(): Promise<void> {
     }
   }
 
-  // Check for updates on startup (non-blocking)
-  const { checkAndAutoUpdate } = await import("@/updater/auto-update");
-  const autoUpdatePromise = startStartupAutoUpdateCheck(checkAndAutoUpdate);
-
   // Parse command-line arguments from a shared schema used by both TUI and headless flows.
   // Preprocess args to support legacy aliases before strict parsing.
   const processedArgs = preprocessCliArgs([
@@ -689,13 +670,6 @@ async function main(): Promise<void> {
   // Handle help flag first
   if (values.help) {
     printHelp();
-
-    // Test-only hook for the end-to-end startup update smoke. Normal startup
-    // keeps the update check non-blocking.
-    if (process.env.LETTA_TEST_WAIT_FOR_STARTUP_AUTO_UPDATE === "1") {
-      await autoUpdatePromise;
-    }
-
     process.exit(0);
   }
 
@@ -1402,20 +1376,6 @@ async function main(): Promise<void> {
 
     // Release notes to display (checked once on mount)
     const [releaseNotes, setReleaseNotes] = useState<string | null>(null);
-
-    // Update notification: set when auto-update applied a significant new version
-    const [updateNotification, setUpdateNotification] = useState<string | null>(
-      null,
-    );
-    useEffect(() => {
-      autoUpdatePromise
-        .then((result) => {
-          if (result?.latestVersion) {
-            setUpdateNotification(result.latestVersion);
-          }
-        })
-        .catch(() => {});
-    }, []);
 
     // Auto-install Shift+Enter keybinding for VS Code/Cursor/Windsurf (silent, no prompt)
     useEffect(() => {
@@ -2548,7 +2508,6 @@ async function main(): Promise<void> {
       startupHasCloudCredentials,
       startupHasAvailableLocalModels,
       releaseNotes,
-      updateNotification,
       systemInfoReminderEnabled: !noSystemInfoReminderFlag,
       modsDisabled,
       fileAutocompleteFdPath,

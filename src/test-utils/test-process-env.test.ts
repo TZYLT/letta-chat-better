@@ -43,7 +43,6 @@ describe("test process env helpers", () => {
     expect(env.LETTA_MEMORY_DIR).toBeUndefined();
     expect(env.MEMORY_DIR).toBeUndefined();
     expect(env.LETTA_DISABLE_SESSION_PERSIST).toBe("1");
-    expect(env.DISABLE_AUTOUPDATER).toBe("1");
   });
 
   test("extra env opts back into values deliberately", () => {

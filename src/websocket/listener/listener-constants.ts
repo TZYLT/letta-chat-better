@@ -17,7 +17,6 @@ export const SUPPORTED_REMOTE_COMMANDS: readonly string[] = [
   "reload",
   "context-limit",
   "channels",
-  "upgrade-letta-code",
   "toolset",
   // /secret opens the EditSecretsDialog and routes reads/writes through the
   // dedicated secret_list / secret_apply WS commands — not via

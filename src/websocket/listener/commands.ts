@@ -1,4 +1,3 @@
-import { spawn } from "node:child_process";
 import type WebSocket from "ws";
 import { actingUserRequestOptions } from "@/agent/acting-user";
 import { regenerateConversationDescription } from "@/agent/conversation-description";
@@ -47,7 +46,6 @@ import {
   emitCanonicalMessageDelta,
   emitDeviceStatusUpdate,
 } from "./protocol-outbound";
-import { flushRemoteSettingsWrites } from "./remote-settings";
 import {
   beginExternalToolNotificationReset,
   clearConversationRuntimeState,
@@ -204,10 +202,6 @@ export async function handleExecuteCommand(
           trimmedArgs,
           opts,
         );
-        break;
-
-      case "upgrade-letta-code":
-        output = await handleUpgradeLettaCodeCommand(opts);
         break;
 
       default: {
@@ -385,79 +379,6 @@ export async function handleReloadCommand(
   }
 
   return "Reloaded settings, local mods, and agent secrets";
-}
-
-async function handleUpgradeLettaCodeCommand(opts: {
-  onLog?: StartListenerOptions["onLog"];
-  connectionName?: string;
-}): Promise<string> {
-  const log = (message: string) => {
-    const line = `[upgrade-letta-code] ${message}`;
-    if (opts.onLog) {
-      opts.onLog(line);
-    } else {
-      debugLog("upgrade-letta-code", message);
-    }
-  };
-
-  log(
-    `command received (connectionName=${opts.connectionName ?? "unknown"}, execPath=${process.execPath}, entrypoint=${process.argv[1] ?? "unknown"})`,
-  );
-  const { manualUpdate } = await import("@/updater/auto-update");
-  log("starting manualUpdate()");
-  const result = await manualUpdate({ progressLog: log });
-  log(
-    `manualUpdate() completed: success=${result.success}; message=${result.message}`,
-  );
-
-  if (!result.success) {
-    log(`upgrade failed: ${result.message}`);
-    throw new Error(result.message);
-  }
-
-  if (!result.message.startsWith("Updated to ")) {
-    log("no restart scheduled because no update was installed");
-    return result.message;
-  }
-
-  scheduleRemoteRestart(opts.connectionName, log);
-  return `${result.message}\nRestarting remote listener...`;
-}
-
-function scheduleRemoteRestart(
-  connectionName: string | undefined,
-  log: (message: string) => void,
-): void {
-  const entrypoint = process.argv[1];
-  if (!entrypoint || !connectionName) {
-    log(
-      `restart skipped (entrypoint=${entrypoint ?? "missing"}, connectionName=${connectionName ?? "missing"})`,
-    );
-    return;
-  }
-
-  log(`scheduling remote listener restart for computer ${connectionName}`);
-  setTimeout(async () => {
-    await flushRemoteSettingsWrites();
-    log(
-      `spawning replacement listener: ${process.execPath} ${entrypoint} remote --computer-name ${connectionName}`,
-    );
-    const child = spawn(
-      process.execPath,
-      [entrypoint, "remote", "--computer-name", connectionName],
-      {
-        cwd: process.cwd(),
-        detached: true,
-        env: process.env,
-        stdio: "ignore",
-      },
-    );
-    log(
-      `spawned replacement listener pid=${child.pid ?? "unknown"}; exiting current listener`,
-    );
-    child.unref();
-    process.exit(0);
-  }, 1000).unref();
 }
 
 function emitSlashCommandEnd(

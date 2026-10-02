@@ -142,7 +142,6 @@ async function main() {
           LETTA_CODE_TELEM: "0",
           LETTA_DEBUG: "1",
           DO_NOT_TRACK: "1",
-          DISABLE_AUTOUPDATER: "1",
         },
       },
     );

@@ -169,7 +169,6 @@ type AppViewProps = {
   handleCtrlD: () => void;
 
   feedbackPrefill: string;
-  footerUpdateText: string | null;
   showInspirationalPromptHints: boolean;
   onEscapeCommandCancel?: () => boolean;
   handleAgentSelect: (
@@ -385,7 +384,6 @@ export function AppView(props: AppViewProps) {
     deferModeSupported,
     handleCtrlD,
     feedbackPrefill,
-    footerUpdateText,
     showInspirationalPromptHints,
     onEscapeCommandCancel,
     handleAgentSelect,
@@ -776,7 +774,6 @@ export function AppView(props: AppViewProps) {
                 modContext={modContext}
                 modAdapter={modAdapter}
                 statusLinePrompt={statusLinePrompt}
-                footerNotification={footerUpdateText}
                 showInspirationalPromptHints={showInspirationalPromptHints}
               />
             </Box>

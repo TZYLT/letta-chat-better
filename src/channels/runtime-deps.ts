@@ -6,7 +6,7 @@ import { pathToFileURL } from "node:url";
 import {
   detectPackageManager,
   type PackageManager,
-} from "@/updater/auto-update";
+} from "@/utils/package-manager-detect";
 import {
   getPackageManagerProcessFactory,
   type PackageManagerProcessFactory,

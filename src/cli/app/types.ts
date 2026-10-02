@@ -47,7 +47,6 @@ export type AppProps = {
   startupHasAvailableLocalModels?: boolean;
   fileAutocompleteFdPath?: string | null;
   releaseNotes?: string | null; // Markdown release notes to display above header
-  updateNotification?: string | null; // Latest version when a significant auto-update was applied
   systemInfoReminderEnabled?: boolean;
   modsDisabled?: boolean;
 };
