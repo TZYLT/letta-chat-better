@@ -36,8 +36,6 @@ function queuedLaunchOptions(
     triggerSource: "step-count",
     reflectionSettings: { trigger: "step-count", stepCount: 25 },
     description: "Reflect on recent conversations",
-    recompileByConversation: new Map(),
-    recompileQueuedByConversation: new Set(),
     ...overrides,
   };
 }

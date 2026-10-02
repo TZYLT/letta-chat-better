@@ -392,9 +392,6 @@ export type ListenerRuntime = {
   reminderStateByConversation: Map<string, SharedReminderState>;
   /** Per-conversation context tracker survives ConversationRuntime eviction. */
   contextTrackerByConversation: Map<string, ContextTracker>;
-  /** Shared recompile coalescing for memory-writing subagents. */
-  systemPromptRecompileByConversation: Map<string, Promise<void>>;
-  queuedSystemPromptRecompileByConversation: Set<string>;
   connectionId: string | null;
   connectionName: string | null;
   conversationRuntimes: Map<string, ConversationRuntime>;

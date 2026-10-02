@@ -273,8 +273,6 @@ export function createRuntime(): ListenerRuntime {
     skillSourcesByConversation: new Map(),
     reminderStateByConversation: new Map(),
     contextTrackerByConversation: new Map(),
-    systemPromptRecompileByConversation: new Map(),
-    queuedSystemPromptRecompileByConversation: new Set(),
     connectionId: null,
     connectionName: null,
     conversationRuntimes: new Map(),
@@ -316,8 +314,6 @@ export function stopRuntime(
   runtime.reminderStateByConversation.clear();
   runtime.skillSourcesByConversation.clear();
   runtime.contextTrackerByConversation.clear();
-  runtime.systemPromptRecompileByConversation.clear();
-  runtime.queuedSystemPromptRecompileByConversation.clear();
   stopAllWorktreeWatchers(runtime);
 }
 

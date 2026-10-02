@@ -672,14 +672,12 @@ describe("local backend pi transcript", () => {
     expect(reloaded.retrieveMessage(partialAssistantId ?? "")).toEqual([]);
   });
 
-  test("sends committed memory changes through a transcript update", async () => {
+  test("keeps the frozen system prompt when memory changes mid-conversation", async () => {
     const storageDir = await mkdtemp(join(tmpdir(), "local-backend-cache-"));
     const systemPrompts: string[] = [];
-    const midConversationPrompts: Array<string | undefined> = [];
     const executor: HeadlessTurnExecutor = {
       async execute(input) {
         systemPrompts.push(input.systemPrompt ?? "");
-        midConversationPrompts.push(input.midConversationSystemPrompt);
         return lettaStreamFromChunks([
           {
             message_type: "assistant_message",
@@ -703,6 +701,15 @@ describe("local backend pi transcript", () => {
     const conversation = await backend.createConversation({
       agent_id: agent.id,
     } as never);
+    await drain(
+      await backend.createConversationMessageStream(conversation.id, {
+        agent_id: agent.id,
+        messages: [{ role: "user", content: "first" }],
+      } as ConversationMessageCreateBody),
+    );
+
+    // Commit a memory change mid-conversation. The strict prefix freeze must
+    // not rewrite the applied snapshot or inject any trailing update.
     const memoryDir = join(storageDir, "memfs", agent.id, "memory");
     await writeFile(
       join(memoryDir, "persona.md"),
@@ -716,18 +723,16 @@ describe("local backend pi transcript", () => {
     await drain(
       await backend.createConversationMessageStream(conversation.id, {
         agent_id: agent.id,
-        messages: [{ role: "user", content: "first" }],
+        messages: [{ role: "user", content: "second" }],
       } as ConversationMessageCreateBody),
     );
 
-    expect(systemPrompts).toHaveLength(1);
+    expect(systemPrompts).toHaveLength(2);
     expect(systemPrompts[0]).not.toContain(
       "Changed but not explicitly recompiled.",
     );
-    expect(midConversationPrompts[0]).toContain(
-      "Changed but not explicitly recompiled.",
-    );
-  });
+    expect(systemPrompts[1]).toBe(systemPrompts[0]);
+  }, 60000);
 
   test("recompiles cached system prompt after local compaction", async () => {
     const storageDir = await mkdtemp(join(tmpdir(), "local-backend-compact-"));

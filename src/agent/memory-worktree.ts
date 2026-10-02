@@ -238,12 +238,6 @@ export function reflectionIntegrationConsumesTranscript(
   return result.status === "merged" || result.status === "no_changes";
 }
 
-export function reflectionIntegrationShouldRecompile(
-  result: ReflectionMemoryWorktreeFinalizeResult,
-): boolean {
-  return result.status === "merged";
-}
-
 async function getStatusPorcelain(cwd: string): Promise<string> {
   const { stdout } = await runGit(cwd, ["status", "--porcelain"]);
   return stdout.trim();

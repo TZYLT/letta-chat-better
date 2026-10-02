@@ -23,7 +23,6 @@ interface LocalMemoryFile {
 export interface LocalCompiledSystemPrompt {
   content: string;
   coreMemory: string;
-  midConversationSystemPrompt?: string;
   compiledAt: string;
   rawSystemHash: string;
   memfsRevision?: string;

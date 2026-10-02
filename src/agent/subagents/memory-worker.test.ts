@@ -90,14 +90,13 @@ test("a worker edits a private worktree; its commit is merged, synced and refres
     },
     {
       sync: localSync("skipped"),
-      recompile: async (conversationId, agentId) => {
+      onMemoryChanged: () => {
         expect(git("status", "--porcelain")).toBe("");
-        refreshed.push(`${agentId}:${conversationId}`);
-        return "compiled";
+        refreshed.push("memory-changed");
       },
     },
   );
-  expect(refreshed).toEqual(["agent-parent:conv-parent"]);
+  expect(refreshed).toEqual(["memory-changed"]);
   expect(readFileSync(join(root, "note.md"), "utf8")).toBe(
     "corrected preference\n",
   );
@@ -272,26 +271,6 @@ test("failed remote sync preserves the worker identity and report and releases t
   await release?.();
 });
 
-test("a failed prompt refresh does not fail a worker whose memory synced", async () => {
-  const result = await runMemoryWorker(
-    scope(),
-    async (dir) => {
-      writeFileSync(join(dir, "note.md"), "refreshed preference\n");
-      gitIn(dir, "commit", "-am", "remember preference");
-      return { agentId: "agent-worker", success: true, report: "saved" };
-    },
-    {
-      sync: localSync("skipped"),
-      recompile: async () => {
-        throw new Error("server unavailable");
-      },
-    },
-  );
-  expect(result).toMatchObject({ success: true, report: "saved" });
-  expect(result.error).toBeUndefined();
-  expect(git("status", "--porcelain")).toBe("");
-});
-
 test("a merged commit reports that memory changed even without a remote", async () => {
   let changed = 0;
   await runMemoryWorker(
@@ -375,20 +354,13 @@ test("repairs a real Git conflict in place and skips a duplicate repair", async 
 test("a repair that reports success without resolving is caught by the sync", async () => {
   conflict();
   const before = git("status", "--porcelain");
-  let refreshed = false;
-  const result = await runMemoryWorker(
-    scope("attempt"),
-    async () => ({ agentId: "agent-repair", success: true, report: "done" }),
-    {
-      recompile: async () => {
-        refreshed = true;
-        return "compiled";
-      },
-    },
-  );
+  const result = await runMemoryWorker(scope("attempt"), async () => ({
+    agentId: "agent-repair",
+    success: true,
+    report: "done",
+  }));
   expect(result.success).toBe(false);
   expect(git("status", "--porcelain")).toBe(before);
-  expect(refreshed).toBe(false);
 });
 
 test("an invalid committed tree runs its repair worker in place", async () => {

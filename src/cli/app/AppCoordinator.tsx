@@ -1204,13 +1204,6 @@ export function App({
       return state;
     })(),
   );
-  const _systemPromptRecompileByConversationRef = useRef(
-    new Map<string, Promise<void>>(),
-  );
-  const _queuedSystemPromptRecompileByConversationRef = useRef(
-    new Set<string>(),
-  );
-
   const shouldAutoGenerateConversationTitleRef = useRef(
     !resumedExistingConversation || startupConversationTitleEligible,
   );
@@ -3620,10 +3613,6 @@ export function App({
             reflectionSettings,
             description: AUTO_REFLECTION_DESCRIPTION,
             completionConversationId: () => conversationIdRef.current,
-            recompileByConversation:
-              _systemPromptRecompileByConversationRef.current,
-            recompileQueuedByConversation:
-              _queuedSystemPromptRecompileByConversationRef.current,
             onCompletionMessage: (completionMessage) => {
               appendTaskNotificationEvents([completionMessage]);
             },
@@ -4068,10 +4057,6 @@ export function App({
           onHfUploadComplete: (message) => {
             appendTaskNotificationEvents([message]);
           },
-          recompileByConversation:
-            _systemPromptRecompileByConversationRef.current,
-          recompileQueuedByConversation:
-            _queuedSystemPromptRecompileByConversationRef.current,
         });
         appendTaskNotificationEvents([message]);
       } catch (error) {
@@ -4150,8 +4135,6 @@ export function App({
     profileConfirmPending,
     projectDirectory,
     queuedApprovalResults,
-    queuedSystemPromptRecompileByConversationRef:
-      _queuedSystemPromptRecompileByConversationRef,
     reasoningTabCycleEnabled,
     recoverRestoredPendingApprovals,
     refreshDerived,
@@ -4196,8 +4179,6 @@ export function App({
     shouldAutoGenerateConversationTitleRef,
     streaming,
     systemInfoReminderEnabled,
-    systemPromptRecompileByConversationRef:
-      _systemPromptRecompileByConversationRef,
     tokenStreamingEnabled,
     trajectoryRunTokenStartRef,
     trajectoryTokenDisplayRef,

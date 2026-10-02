@@ -155,8 +155,6 @@ export interface FinalizeReflectionArenaChoiceOptions {
   choice: ReflectionArenaChoice;
   notes?: string;
   onHfUploadComplete?: (message: string) => void;
-  recompileByConversation: Map<string, Promise<void>>;
-  recompileQueuedByConversation: Set<string>;
   runId: string;
 }
 
@@ -874,9 +872,6 @@ export async function finalizeReflectionArenaChoice(
       telemetryContext: {
         triggerSource: run.triggerSource ?? "compaction-event",
       },
-      recompileByConversation: options.recompileByConversation,
-      recompileQueuedByConversation: options.recompileQueuedByConversation,
-      logRecompileFailure: (message) => debugWarn("memory", message),
     });
     integration = finalized.integration;
     completionSuccess = finalized.completionSuccess;

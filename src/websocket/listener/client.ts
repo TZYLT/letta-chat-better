@@ -116,8 +116,6 @@ function createLegacyTestRuntime(): ConversationRuntime & {
   skillSourcesByConversation: ListenerRuntime["skillSourcesByConversation"];
   reminderStateByConversation: ListenerRuntime["reminderStateByConversation"];
   contextTrackerByConversation: ListenerRuntime["contextTrackerByConversation"];
-  systemPromptRecompileByConversation: ListenerRuntime["systemPromptRecompileByConversation"];
-  queuedSystemPromptRecompileByConversation: ListenerRuntime["queuedSystemPromptRecompileByConversation"];
   bootWorkingDirectory: string;
   connectionId: string | null;
   connectionName: string | null;
@@ -170,8 +168,6 @@ function createLegacyTestRuntime(): ConversationRuntime & {
     skillSourcesByConversation: ListenerRuntime["skillSourcesByConversation"];
     reminderStateByConversation: ListenerRuntime["reminderStateByConversation"];
     contextTrackerByConversation: ListenerRuntime["contextTrackerByConversation"];
-    systemPromptRecompileByConversation: ListenerRuntime["systemPromptRecompileByConversation"];
-    queuedSystemPromptRecompileByConversation: ListenerRuntime["queuedSystemPromptRecompileByConversation"];
     bootWorkingDirectory: string;
     connectionId: string | null;
     connectionName: string | null;
@@ -248,20 +244,6 @@ function createLegacyTestRuntime(): ConversationRuntime & {
       get: () => listener.contextTrackerByConversation,
       set: (value: ListenerRuntime["contextTrackerByConversation"]) => {
         listener.contextTrackerByConversation = value;
-      },
-    },
-    systemPromptRecompileByConversation: {
-      get: () => listener.systemPromptRecompileByConversation,
-      set: (value: ListenerRuntime["systemPromptRecompileByConversation"]) => {
-        listener.systemPromptRecompileByConversation = value;
-      },
-    },
-    queuedSystemPromptRecompileByConversation: {
-      get: () => listener.queuedSystemPromptRecompileByConversation,
-      set: (
-        value: ListenerRuntime["queuedSystemPromptRecompileByConversation"],
-      ) => {
-        listener.queuedSystemPromptRecompileByConversation = value;
       },
     },
     bootWorkingDirectory: {

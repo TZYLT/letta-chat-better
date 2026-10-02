@@ -15,7 +15,6 @@ import {
   type ReflectionMemoryWorktree,
   type ReflectionMemoryWorktreeFinalizeResult,
   reflectionIntegrationConsumesTranscript,
-  reflectionIntegrationShouldRecompile,
   reflectionMemoryParentHasChanges,
 } from "@/agent/memory-worktree";
 import { getSubagents } from "@/agent/subagent-state";
@@ -258,8 +257,6 @@ export interface ReflectionLaunchOptions {
   /** Replace the reflection subagent's system prompt/persona (advanced). */
   reflectionSystemPromptOverride?: string;
   completionConversationId?: string | (() => string);
-  recompileByConversation: Map<string, Promise<void>>;
-  recompileQueuedByConversation: Set<string>;
   onCompletionMessage?: (
     message: string,
     result: {
@@ -585,9 +582,6 @@ export async function finalizeReflectionMemoryWorktreeLaunch(params: {
   telemetryContext?: {
     triggerSource: ReflectionLaunchTriggerSource;
   };
-  recompileByConversation: Map<string, Promise<void>>;
-  recompileQueuedByConversation: Set<string>;
-  logRecompileFailure?: (message: string) => void;
 }): Promise<{
   integration: ReflectionMemoryWorktreeFinalizeResult;
   completionSuccess: boolean;
@@ -691,27 +685,17 @@ export async function finalizeReflectionMemoryWorktreeLaunch(params: {
     drainReflectionTelemetry();
   }
 
-  const completionMessage = await handleMemorySubagentCompletion(
-    {
-      agentId: params.agentId,
-      conversationId: params.conversationId,
-      subagentType: params.subagentType ?? "reflection",
-      success: completionSuccess,
-      error: completionSuccess ? undefined : params.subagentError,
-      subagentAgentId: params.subagentAgentId,
-      skipRecompile: !reflectionIntegrationShouldRecompile(integration),
-      successMessageOverride: getReflectionCompletionMessage(
-        integration,
-        params.subagentError,
-        configurationFailure,
-      ),
-    },
-    {
-      recompileByConversation: params.recompileByConversation,
-      recompileQueuedByConversation: params.recompileQueuedByConversation,
-      logRecompileFailure: params.logRecompileFailure,
-    },
-  );
+  const completionMessage = await handleMemorySubagentCompletion({
+    subagentType: params.subagentType ?? "reflection",
+    success: completionSuccess,
+    error: completionSuccess ? undefined : params.subagentError,
+    subagentAgentId: params.subagentAgentId,
+    successMessageOverride: getReflectionCompletionMessage(
+      integration,
+      params.subagentError,
+      configurationFailure,
+    ),
+  });
 
   if (completionSuccess && integrationRun?.conversationId) {
     try {
@@ -779,8 +763,6 @@ export async function launchReflectionSubagent(
     memfsEnabled,
     triggerSource,
     description,
-    recompileByConversation,
-    recompileQueuedByConversation,
     onCompletionMessage,
   } = options;
   const reflectionSettings =
@@ -925,9 +907,6 @@ export async function launchReflectionSubagent(
             mergePolicy: reflectionSettings.merge,
             mergeInstructions: reflectionSettings.mergeInstructions,
             telemetryContext: { triggerSource },
-            recompileByConversation,
-            recompileQueuedByConversation,
-            logRecompileFailure: (message) => debugWarn("memory", message),
           });
 
           await finalizeAutoReflectionCompletion(

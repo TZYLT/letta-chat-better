@@ -762,7 +762,6 @@ async function handleReflectCommand(
   const agentId = conversationRuntime.agentId;
   if (!agentId) throw new Error("No agent ID available for reflection.");
   const conversationId = conversationRuntime.conversationId;
-  const listener = conversationRuntime.listener;
   const output = await requestCloudReflectionRun(
     { agentId, conversationId, actingUserId },
     args,
@@ -782,9 +781,6 @@ async function handleReflectCommand(
       memfsEnabled: settingsManager.isMemfsEnabled(agentId),
       triggerSource: "manual",
       description: "Reflecting on conversation",
-      recompileByConversation: listener.systemPromptRecompileByConversation,
-      recompileQueuedByConversation:
-        listener.queuedSystemPromptRecompileByConversation,
       onCompletionMessage: async (completionMessage, reflectionResult) => {
         const reflectionAgentIdTag = reflectionResult.reflectionAgentId
           ? `<reflection-agent-id>${escapeTaskNotificationSummary(reflectionResult.reflectionAgentId)}</reflection-agent-id>`

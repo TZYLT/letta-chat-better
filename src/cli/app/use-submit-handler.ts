@@ -266,7 +266,6 @@ type SubmitHandlerContext = {
   profileConfirmPending: ProfileConfirmPending | null;
   projectDirectory: string;
   queuedApprovalResults: ApprovalResult[] | null;
-  queuedSystemPromptRecompileByConversationRef: MutableRefObject<Set<string>>;
   reasoningTabCycleEnabled: boolean;
   recoverRestoredPendingApprovals: (
     approvals: ApprovalRequest[],
@@ -333,9 +332,6 @@ type SubmitHandlerContext = {
 
   streaming: boolean;
   systemInfoReminderEnabled: boolean;
-  systemPromptRecompileByConversationRef: MutableRefObject<
-    Map<string, Promise<void>>
-  >;
   tokenStreamingEnabled: boolean;
   trajectoryRunTokenStartRef: MutableRefObject<number>;
   trajectoryTokenDisplayRef: MutableRefObject<number>;
@@ -524,7 +520,6 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
     profileConfirmPending,
     projectDirectory,
     queuedApprovalResults,
-    queuedSystemPromptRecompileByConversationRef,
     reasoningTabCycleEnabled,
     recoverRestoredPendingApprovals,
     refreshDerived,
@@ -570,7 +565,6 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
 
     streaming,
     systemInfoReminderEnabled,
-    systemPromptRecompileByConversationRef,
     tokenStreamingEnabled,
     trajectoryRunTokenStartRef,
     trajectoryTokenDisplayRef,
@@ -2196,10 +2190,6 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
                     triggerSource: "compaction-event",
                     description: AUTO_REFLECTION_DESCRIPTION,
                     completionConversationId: () => conversationIdRef.current,
-                    recompileByConversation:
-                      systemPromptRecompileByConversationRef.current,
-                    recompileQueuedByConversation:
-                      queuedSystemPromptRecompileByConversationRef.current,
                     onCompletionMessage: (completionMessage) => {
                       appendTaskNotificationEvents([completionMessage]);
                     },
@@ -2801,10 +2791,6 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
                 onHfUploadComplete: (message) => {
                   appendTaskNotificationEvents([message]);
                 },
-                recompileByConversation:
-                  systemPromptRecompileByConversationRef.current,
-                recompileQueuedByConversation:
-                  queuedSystemPromptRecompileByConversationRef.current,
               });
               cmd.finish(message, true);
               return { submitted: true };
@@ -2955,10 +2941,6 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
                   description: AUTO_REFLECTION_DESCRIPTION,
                   instruction: reflectArgs.instruction,
                   completionConversationId: () => conversationIdRef.current,
-                  recompileByConversation:
-                    systemPromptRecompileByConversationRef.current,
-                  recompileQueuedByConversation:
-                    queuedSystemPromptRecompileByConversationRef.current,
                   onCompletionMessage: (completionMessage) => {
                     appendTaskNotificationEvents([completionMessage]);
                   },
@@ -3117,12 +3099,6 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
                                 model: reflectionModel,
                                 ...getReflectionMergeLaunchOptions(agentId),
                                 telemetryContext: { triggerSource: "manual" },
-                                recompileByConversation:
-                                  systemPromptRecompileByConversationRef.current,
-                                recompileQueuedByConversation:
-                                  queuedSystemPromptRecompileByConversationRef.current,
-                                logRecompileFailure: (message) =>
-                                  debugWarn("memory", message),
                               });
                             await finalizeMultiReflectionCompletion(
                               agentId,
@@ -3236,12 +3212,6 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
                       model: reflectionModel,
                       ...getReflectionMergeLaunchOptions(agentId),
                       telemetryContext: { triggerSource: "manual" },
-                      recompileByConversation:
-                        systemPromptRecompileByConversationRef.current,
-                      recompileQueuedByConversation:
-                        queuedSystemPromptRecompileByConversationRef.current,
-                      logRecompileFailure: (message) =>
-                        debugWarn("memory", message),
                     });
                   await finalizeMultiReflectionCompletion(
                     agentId,

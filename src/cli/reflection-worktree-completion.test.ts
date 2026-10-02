@@ -63,8 +63,6 @@ async function finalizeLaunch(
     subagentAgentId: "agent-reflection-test",
     model: "reflection-model",
     telemetryContext: { triggerSource: "manual" },
-    recompileByConversation: new Map(),
-    recompileQueuedByConversation: new Set(),
     updateIntegrationConversation: async () => {},
     ...overrides,
   });

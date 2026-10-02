@@ -104,8 +104,6 @@ async function fixture() {
     triggerSource: "step-count",
     reflectionSettings: { trigger: "step-count", stepCount: 1 },
     description: "Test reflection",
-    recompileByConversation: new Map(),
-    recompileQueuedByConversation: new Set(),
     onCompletionMessage: (message) => {
       notifications.push(message);
     },

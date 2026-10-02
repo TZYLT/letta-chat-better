@@ -535,10 +535,6 @@ export class HeadlessBackend implements Backend {
       typeof resolvedPrompt === "string"
         ? resolvedPrompt
         : resolvedPrompt.systemPrompt;
-    const midConversationSystemPrompt =
-      typeof resolvedPrompt === "string"
-        ? undefined
-        : resolvedPrompt.midConversationSystemPrompt;
     let stream: Stream<LettaStreamingResponse>;
     try {
       stream = await this.executor.execute({
@@ -546,7 +542,6 @@ export class HeadlessBackend implements Backend {
         agentId: turnInput.agentId,
         agent,
         systemPrompt,
-        midConversationSystemPrompt,
         body,
         history,
         uiMessages,
@@ -571,9 +566,7 @@ export class HeadlessBackend implements Backend {
     body: ConversationMessageCreateBody | ConversationMessageStreamBody;
     history: ReturnType<LocalStore["listConversationMessages"]>;
     uiMessages: ReturnType<LocalStore["listLocalMessages"]>;
-  }): Promise<
-    string | { systemPrompt: string; midConversationSystemPrompt?: string }
-  > {
+  }): Promise<string | { systemPrompt: string }> {
     return input.agent.system;
   }
 

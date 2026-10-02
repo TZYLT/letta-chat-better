@@ -158,10 +158,6 @@ export function buildMaybeLaunchReflectionSubagent(params: {
       triggerSource,
       reflectionSettings,
       description: AUTO_REFLECTION_DESCRIPTION,
-      recompileByConversation:
-        runtime.listener.systemPromptRecompileByConversation,
-      recompileQueuedByConversation:
-        runtime.listener.queuedSystemPromptRecompileByConversation,
       feedbackContext: {
         surface: getListenerTelemetrySurface(),
       },

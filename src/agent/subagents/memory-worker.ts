@@ -12,8 +12,6 @@ import {
   createReflectionMemoryWorktree,
   integrateMemoryWorkerWorktree,
 } from "@/agent/memory-worktree";
-import { recompileAgentSystemPrompt } from "@/agent/modify";
-import { getBackend } from "@/backend";
 import { debugWarn } from "@/utils/debug";
 import type { SubagentMemoryScope, SubagentResult } from ".";
 
@@ -43,7 +41,6 @@ type MemoryWorkerExecute = (
 
 interface MemoryWorkerDeps {
   sync?: typeof syncPendingMemoryCommitsAfterTurn;
-  recompile?: typeof recompileAgentSystemPrompt;
   /** Awaited so the repair task is registered before this worker completes. */
   repair?: (result: MemoryPostTurnSyncResult) => void | Promise<unknown>;
   /** Memory on disk changed (a merge, a push, or a pull); refresh readers. */
@@ -53,7 +50,6 @@ interface MemoryWorkerDeps {
 /** The worker's resolved dependencies, bound to its scope. */
 type Helpers = Pick<MemoryWorkerDeps, "repair" | "onMemoryChanged"> & {
   sync: () => Promise<MemoryPostTurnSyncResult>;
-  recompile: () => Promise<void>;
 };
 
 /** Mark a result failed, keeping an error the worker already reported. */
@@ -86,28 +82,8 @@ export async function runMemoryWorker(
     (deps.sync ?? syncPendingMemoryCommitsAfterTurn)(params.agentId, {
       memoryDir: params.memoryDir,
     });
-  const recompile = async () => {
-    // Memory is committed and synced at this point; a failed prompt refresh
-    // is worth a warning but must not report the worker as failed. Running
-    // it under the checkout lock is safe because the primary's tools never
-    // take this lock, so its active turn cannot be waiting on us.
-    try {
-      if (deps.recompile || getBackend().capabilities.promptRecompile) {
-        await (deps.recompile ?? recompileAgentSystemPrompt)(
-          params.conversationId,
-          params.agentId,
-        );
-      }
-    } catch (error) {
-      debugWarn(
-        "memory-worker",
-        `System prompt recompile failed after memory sync: ${String(error)}`,
-      );
-    }
-  };
   const helpers: Helpers = {
     sync,
-    recompile,
     repair: deps.repair,
     onMemoryChanged: deps.onMemoryChanged,
   };
@@ -140,13 +116,17 @@ function syncSummary(result: MemoryPostTurnSyncResult): string {
 
 /**
  * Sync the checkout after a worker changed it, tell readers when memory
- * changed, refresh the parent's prompt on success, and fold a sync problem
- * into the worker's result. Shared by update and repair workers.
+ * changed, and fold a sync problem into the worker's result. Shared by update
+ * and repair workers.
+ *
+ * The worker never recompiles the parent's system prompt: a committed memory
+ * change is only registered as pending under the strict prefix freeze, and is
+ * applied at an application point (new conversation, compaction, /recompile).
  */
 async function settle(
   result: SubagentResult,
   changed: boolean,
-  { sync, recompile, repair, onMemoryChanged }: Helpers,
+  { sync, repair, onMemoryChanged }: Helpers,
 ): Promise<SubagentResult> {
   let syncError: string | undefined;
   let pushed = false;
@@ -167,7 +147,6 @@ async function settle(
   // Local-only checkouts report a merge as "skipped"; readers still need to
   // know memory changed.
   if (pushed || changed) onMemoryChanged?.();
-  if (!syncError && changed && result.success) await recompile();
   return syncError ? failed(result, syncError) : result;
 }
 

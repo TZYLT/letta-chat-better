@@ -592,13 +592,6 @@ export class PiStreamAdapter implements ProviderStreamAdapter {
     );
     assertPromptFloorFitsContextWindow(input, resolved.model);
     const messages = toPiMessages(input.uiMessages);
-    if (input.midConversationSystemPrompt) {
-      messages.push({
-        role: "system",
-        content: input.midConversationSystemPrompt,
-        timestamp: Date.now(),
-      });
-    }
     const context: Context = {
       systemPrompt: input.systemPrompt ?? input.agent.system,
       messages,

@@ -3271,8 +3271,6 @@ async function runBidirectionalMode(
   const telemetryModelId =
     effectiveModel ?? agent.llm_config?.model ?? "unknown";
   const readline = await import("node:readline");
-  const systemPromptRecompileByConversation = new Map<string, Promise<void>>();
-  const queuedSystemPromptRecompileByConversation = new Set<string>();
   let headlessConversationClosed = false;
   const exitBidirectional = async (
     code: number,
@@ -3354,8 +3352,6 @@ async function runBidirectionalMode(
       triggerSource,
       reflectionSettings,
       description: AUTO_REFLECTION_DESCRIPTION,
-      recompileByConversation: systemPromptRecompileByConversation,
-      recompileQueuedByConversation: queuedSystemPromptRecompileByConversation,
     });
     return result.launched;
   };
