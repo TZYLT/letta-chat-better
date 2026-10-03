@@ -39,6 +39,7 @@ import {
   summarizeLocalMessagesSlidingWindow,
 } from "./compaction";
 import { initialMemoryFilesFromCreateBody } from "./initial-memory";
+import type { LocalTopicMarkerAppendResult } from "./local-context-rewrite";
 import {
   createLocalExecutor,
   type LocalBackendExecutionMode,
@@ -73,6 +74,7 @@ import {
   type LocalCompiledSystemPrompt,
   type LocalFreezeReason,
 } from "./system-prompt-compilation";
+import type { LocalTopicMarker } from "./topic-compaction";
 
 export interface LocalBackendOptions {
   storageDir: string;
@@ -480,6 +482,45 @@ export class LocalBackend extends HeadlessBackend {
       memory,
       dirty: memfsEnabled && isMemoryDirDirty(memoryDir),
     });
+  }
+
+  /**
+   * Local-only: append a topic marker to the conversation transcript.
+   *
+   * A marker is metadata — the context, the in-context id list, and the frozen
+   * prefix are all untouched, so `TopicMark` / `/topic` can never invalidate the
+   * provider cache. The anchor is the newest in-context message at write time;
+   * `contextMessageCount === 0` means there was nothing to anchor to and the
+   * caller must refuse the mark.
+   */
+  markTopic(input: {
+    conversationId: string;
+    agentId?: string;
+    title: string;
+    summary?: string;
+    createdBy: "agent" | "user";
+  }): LocalTopicMarkerAppendResult {
+    const agentId =
+      input.agentId ??
+      this.store.resolveAgentIdForConversation(input.conversationId);
+    return this.store.contextRewrites.appendTopicMarker({
+      conversationId: input.conversationId,
+      agentId,
+      title: input.title,
+      ...(input.summary === undefined ? {} : { summary: input.summary }),
+      createdBy: input.createdBy,
+    });
+  }
+
+  /** Local-only: every marker in the transcript, oldest first. */
+  listTopicMarkers(
+    conversationId: string,
+    agentId?: string,
+  ): LocalTopicMarker[] {
+    return this.store.contextRewrites.readTopicMarkers(
+      conversationId,
+      agentId ?? this.store.resolveAgentIdForConversation(conversationId),
+    );
   }
 
   protected override async resolveSystemPromptForTurn(input: {
