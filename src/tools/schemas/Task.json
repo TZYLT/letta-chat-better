@@ -15,7 +15,7 @@
     },
     "model": {
       "type": "string",
-      "description": "Optional model to use for this agent. If not specified, inherits from parent. Prefer lighter models for quick, straightforward tasks to minimize cost and latency."
+      "description": "The model for the external coding CLI, only valid with subagent_type \"claude-code\" or \"codex\" (passed to that CLI's own --model flag). Letta subagents always inherit the parent conversation's model and reject this argument."
     },
     "agent_id": {
       "type": "string",

@@ -2,7 +2,6 @@
 name: general-purpose
 description: Full-capability agent for research, planning, and implementation
 tools: Bash, TaskCreate, TaskGet, TaskList, TaskUpdate, Edit, TaskStop, Read, Write
-model: inherit
 ---
 
 You are a general-purpose coding agent that can research, plan, and implement.

@@ -2,7 +2,6 @@
 name: recall
 description: Recall past interactions and experience
 tools: Bash, Read
-model: inherit
 fork: true
 ---
 

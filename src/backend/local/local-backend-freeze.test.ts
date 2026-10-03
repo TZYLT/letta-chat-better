@@ -19,6 +19,8 @@ import { LocalBackend } from "@/backend/local/local-backend";
  *   V15 — application-point consolidation: an `agent.system` edit only
  *         registers a pending change; `/recompile` (the application point) is
  *         what applies it.
+ *   V16 — a fork inherits the parent's applied prefix and model verbatim; a
+ *         live model switch on the fork is registered, not applied (D-C).
  */
 
 async function drain(stream: AsyncIterable<unknown>): Promise<void> {
@@ -43,6 +45,30 @@ function recordingExecutor(sink: string[]): HeadlessTurnExecutor {
   return {
     async execute(input) {
       sink.push(input.systemPrompt ?? "");
+      return lettaStreamFromChunks([
+        {
+          message_type: "assistant_message",
+          content: [{ type: "text", text: "ok" }],
+        } as LettaStreamingResponse,
+        {
+          message_type: "stop_reason",
+          stop_reason: "end_turn",
+        } as LettaStreamingResponse,
+      ]);
+    },
+  };
+}
+
+/** Records the prompt AND the model each turn actually ran on. */
+function recordingModelExecutor(
+  sink: Array<{ prompt: string; model: string }>,
+): HeadlessTurnExecutor {
+  return {
+    async execute(input) {
+      sink.push({
+        prompt: input.systemPrompt ?? "",
+        model: input.agent.model,
+      });
       return lettaStreamFromChunks([
         {
           message_type: "assistant_message",
@@ -243,5 +269,51 @@ describe("V15 agent.system changes register instead of applying", () => {
     expect(systemPrompts).toHaveLength(3);
     expect(systemPrompts[2]).toContain("REPLACED SYSTEM");
     expect(systemPrompts[2]).not.toContain("ORIGINAL SYSTEM");
+  }, 60000);
+});
+
+describe("V16 fork inheritance", () => {
+  test("a fork inherits the parent's prefix and model; a fork model switch only registers", async () => {
+    const storageDir = await mkdtemp(join(tmpdir(), "freeze-fork-inherit-"));
+    const turns: Array<{ prompt: string; model: string }> = [];
+    const executor = recordingModelExecutor(turns);
+    const backend = new LocalBackend({
+      storageDir,
+      executor,
+      memfsEnabled: false,
+    });
+    const agent = await backend.createAgent({
+      name: "Local",
+      system: "base {CORE_MEMORY}",
+      model: "anthropic/parent-model",
+    } as never);
+    const conversation = await backend.createConversation({
+      agent_id: agent.id,
+    } as never);
+    await sendTurn(backend, conversation.id, agent.id, "first");
+
+    const forked = await backend.forkConversation(conversation.id, {});
+    await sendTurn(backend, forked.id, agent.id, "second");
+
+    // D-C: a fork is a pure copy — same prefix bytes, same model.
+    expect(turns).toHaveLength(2);
+    expect(turns[1]?.prompt).toBe(turns[0]?.prompt);
+    expect(turns[1]?.model).toBe(turns[0]?.model);
+    expect(turns[1]?.model).toBe("anthropic/parent-model");
+
+    // A live model switch on the fork is registered at the application point,
+    // never applied from a turn.
+    await backend.updateConversation(forked.id, {
+      model: "openai/other-model",
+    } as never);
+    const pending = await backend.getContextPending(forked.id, agent.id);
+    expect(pending.hasSnapshot).toBe(true);
+    expect(pending.model.changed).toBe(true);
+    expect(pending.hasPending).toBe(true);
+
+    await sendTurn(backend, forked.id, agent.id, "third");
+    expect(turns).toHaveLength(3);
+    expect(turns[2]?.prompt).toBe(turns[0]?.prompt);
+    expect(turns[2]?.model).toBe("anthropic/parent-model");
   }, 60000);
 });

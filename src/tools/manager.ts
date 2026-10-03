@@ -1339,19 +1339,19 @@ function injectSubagentsIntoTaskDescription(
   subagents: Array<{
     name: string;
     description: string;
-    recommendedModel: string;
   }>,
 ): string {
   if (subagents.length === 0) {
     return baseDescription;
   }
 
-  // Build subagents section
+  // Build subagents section. Deliberately no per-subagent model: subagents
+  // inherit the parent conversation's model, so advertising a "recommended
+  // model" would only invite the caller to try to pick one.
   const agentsSection = subagents
     .map((agent) => {
       return `### ${agent.name}
-- **Purpose**: ${agent.description}
-- **Recommended model**: ${agent.recommendedModel}`;
+- **Purpose**: ${agent.description}`;
     })
     .join("\n\n");
 

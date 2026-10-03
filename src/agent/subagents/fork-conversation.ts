@@ -1,12 +1,6 @@
-import { updateConversationLLMConfig } from "@/agent/modify";
 import type { Backend } from "@/backend";
 import { settingsManager } from "@/settings-manager";
 import type { SubagentConfig } from ".";
-import {
-  type ForkModelOverride,
-  getPrimaryAgentModelHandle,
-  resolveForkModelOverride,
-} from "./subagent-model";
 
 export async function inheritForkToolset(
   agentId: string,
@@ -32,43 +26,25 @@ interface ForkParentConversationParams {
   parentAgentId: string;
   parentConversationId: string;
   config: SubagentConfig;
-  model?: string;
   signal?: AbortSignal;
 }
 
 interface ForkParentConversationDependencies {
-  resolveModelOverride?: () => Promise<ForkModelOverride | null>;
-  updateConversationModel?: (
-    conversationId: string,
-    modelHandle: string,
-    updateArgs?: Record<string, unknown>,
-  ) => Promise<unknown>;
   inheritToolset?: typeof inheritForkToolset;
 }
 
-/** Fork the parent conversation, then apply fork-only runtime configuration. */
+/**
+ * Fork the parent conversation, then apply fork-only runtime configuration.
+ *
+ * A fork inherits everything: the conversation copy carries the parent's
+ * applied prefix snapshot and model, and nothing recompiles or re-pins it here.
+ * Only client-side preferences that are keyed by conversation ID (the toolset)
+ * are copied explicitly.
+ */
 export async function forkParentConversation(
   params: ForkParentConversationParams,
   dependencies: ForkParentConversationDependencies = {},
 ) {
-  // Resolve and validate before creating the hidden conversation. Invalid
-  // model IDs should not leave an orphan fork behind.
-  const modelOverride = await (
-    dependencies.resolveModelOverride ??
-    (async () => {
-      const parent = await getPrimaryAgentModelHandle({
-        agentId: params.parentAgentId,
-        conversationId: params.parentConversationId,
-      });
-      return resolveForkModelOverride({
-        userModel: params.model,
-        recommendedModel: params.config.recommendedModel,
-        recommendedModelSource: params.config.recommendedModelSource,
-        parentModelHandle: parent.handle,
-      });
-    })
-  )();
-
   const forkedConversation = await params.backend.forkConversation(
     params.parentConversationId,
     {
@@ -81,15 +57,6 @@ export async function forkParentConversation(
   );
 
   try {
-    if (modelOverride) {
-      const updateConversationModel =
-        dependencies.updateConversationModel ?? updateConversationLLMConfig;
-      await updateConversationModel(
-        forkedConversation.id,
-        modelOverride.modelHandle,
-        modelOverride.updateArgs,
-      );
-    }
     await (dependencies.inheritToolset ?? inheritForkToolset)(
       params.parentAgentId,
       params.parentConversationId,

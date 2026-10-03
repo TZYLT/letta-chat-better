@@ -24,7 +24,6 @@ const config: SubagentConfig = {
   description: "Routing fixture",
   systemPrompt: "Routing fixture",
   allowedTools: "all",
-  recommendedModel: "inherit",
   skills: [],
   fork: false,
   launchProfile: "default",
@@ -36,7 +35,11 @@ mock.module("@/agent/subagents", () => ({
     memory: { ...config, name: "memory" },
   }),
   clearSubagentConfigCache: () => {},
-  discoverSubagents: async () => ({ subagents: [], errors: [] }),
+  discoverSubagents: async () => ({
+    subagents: [],
+    errors: [],
+    warnings: [],
+  }),
 }));
 
 let receivedEnvironment: string | undefined;
@@ -45,7 +48,7 @@ const spawn = mock(
     ...[
       _type,
       _prompt,
-      _userModel,
+      _exactModelHandle,
       subagentId,
       _signal,
       _existingAgentId,

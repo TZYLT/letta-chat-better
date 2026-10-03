@@ -7,6 +7,12 @@ export interface SubagentLaunchArgs {
   description: string;
   /** Identity of the initial assignment input, not the launch command request_id. */
   client_message_id?: string;
+  /**
+   * The external coding CLI's own model selector for `claude-code` / `codex`
+   * (forwarded as `claude --model <value>`). Letta subagents have no model of
+   * their own: they inherit the parent conversation's model, and passing this
+   * for any other subagent_type is rejected at launch.
+   */
   model?: string;
   agent_id?: string;
   conversation_id?: string;

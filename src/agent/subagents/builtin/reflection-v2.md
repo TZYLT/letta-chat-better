@@ -2,7 +2,6 @@
 name: reflection
 description: Background agent that reflects on recent conversations to update memory and maintain skills
 tools: Bash, Edit
-model: inherit
 launchProfile: memory-subagent
 ---
 

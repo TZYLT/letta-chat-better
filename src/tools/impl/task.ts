@@ -17,8 +17,6 @@ import {
   updateSubagent,
 } from "@/agent/subagent-state.js";
 import {
-  clearSubagentConfigCache,
-  discoverSubagents,
   getAllSubagentConfigs,
   type SubagentConfig,
   type SubagentMemoryScope,
@@ -66,6 +64,7 @@ import {
   getNextTaskId,
   scheduleBackgroundTaskCleanup,
 } from "./process_manager.js";
+import { refreshSubagentConfigs } from "./task-refresh";
 import { LIMITS, truncateByChars } from "./truncation.js";
 import { validateRequiredParams } from "./validation";
 
@@ -93,7 +92,13 @@ export interface SpawnBackgroundSubagentTaskArgs {
   displayType?: string;
   prompt: string;
   description: string;
-  model?: string;
+  /**
+   * Exact model handle for a harness caller (reflection arena): used verbatim,
+   * with no resolution or fallback. Agent-facing launches never set it — a Letta
+   * subagent runs the parent conversation's model, and `launchSubagent` rejects
+   * the `model` argument for them.
+   */
+  exactModelHandle?: string;
   /** Replace the subagent's configured system prompt/persona (advanced). */
   systemPromptOverride?: string;
   toolCallId?: string;
@@ -280,7 +285,7 @@ export function spawnBackgroundSubagentTask(
     displayType,
     prompt,
     description,
-    model,
+    exactModelHandle,
     systemPromptOverride,
     toolCallId,
     existingAgentId,
@@ -384,7 +389,7 @@ export function spawnBackgroundSubagentTask(
     return spawnSubagentFn(
       subagentType,
       assignment,
-      model,
+      exactModelHandle,
       subagentId,
       abortController.signal,
       existingAgentId,
@@ -659,6 +664,16 @@ export async function launchSubagent(
       ? requestedType
       : null;
   const isExternalCodingAgent = externalCodingAgentType !== null;
+  // `model` selects the external CLI's own model. Letta subagents have no model
+  // of their own — they inherit the parent conversation's — so reject it rather
+  // than silently spawning a child on a different model.
+  if (model !== undefined && !isExternalCodingAgent) {
+    return {
+      success: false,
+      error:
+        "Letta subagents inherit the parent conversation model; the model argument is only supported for claude-code and codex.",
+    };
+  }
   if (isExternalCodingAgent && isDeployingExisting) {
     return {
       success: false,
@@ -709,7 +724,6 @@ export async function launchSubagent(
           description: "Prepared conversation",
           systemPrompt: "",
           allowedTools: "all",
-          recommendedModel: "inherit",
           skills: [],
           fork: false,
           launchProfile: "default",
@@ -733,14 +747,12 @@ export async function launchSubagent(
   }
   if (
     prepared &&
-    (!args.conversation_id ||
-      args.conversation_id === "default" ||
-      args.model !== undefined)
+    (!args.conversation_id || args.conversation_id === "default")
   ) {
     return {
       success: false,
       error:
-        "custom requires a prepared conversation_id; configure its model before launching.",
+        "custom requires a prepared conversation_id; configure it before launching.",
     };
   }
   if (
@@ -806,14 +818,13 @@ export async function launchSubagent(
       config,
       prompt: inputPrompt,
       description,
-      model,
       toolCallId,
       parentScope: resolvedParentScope,
       deps: {
         spawnSubagentImpl: async (
           _type,
           prompt,
-          model,
+          _exactModelHandle,
           _subagentId,
           childSignal,
         ) =>
@@ -895,7 +906,6 @@ export async function launchSubagent(
         parentAgentId,
         parentConversationId: parentConvId,
         config,
-        model,
         signal,
       });
       effectiveAgentId = parentAgentId;
@@ -918,7 +928,6 @@ export async function launchSubagent(
     config,
     prompt,
     description,
-    model,
     toolCallId,
     existingAgentId: effectiveAgentId,
     existingConversationId: effectiveConversationId,
@@ -976,14 +985,7 @@ export async function launchSubagent(
 /** Agent's text adapter; App Server callers consume launchSubagent directly. */
 export async function task(args: TaskArgs): Promise<string> {
   if (args.command === "refresh") {
-    clearSubagentConfigCache();
-    const { subagents, errors } = await discoverSubagents();
-    const allConfigs = await getAllSubagentConfigs();
-    for (const error of errors) {
-      console.warn(`Subagent discovery error: ${error.path}: ${error.message}`);
-    }
-    const errorSuffix = errors.length > 0 ? `, ${errors.length} error(s)` : "";
-    return `Refreshed subagents list: found ${Object.keys(allConfigs).length} total (${subagents.length} custom)${errorSuffix}`;
+    return refreshSubagentConfigs();
   }
   const result = await launchSubagent(args);
   if (!result.success) return `Error: ${result.error}`;

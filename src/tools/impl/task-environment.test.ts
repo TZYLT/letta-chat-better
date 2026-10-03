@@ -13,7 +13,7 @@ describe("spawnBackgroundSubagentTask environment threading", () => {
       subagentType: "general-purpose",
       prompt: "do the thing",
       description: "remote task",
-      model: undefined,
+      exactModelHandle: undefined,
       environment: "office-mac",
       silentCompletion: true,
       deps: {

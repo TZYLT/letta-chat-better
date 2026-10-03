@@ -700,7 +700,7 @@ export async function startReflectionArenaRun(
           subagentType: "reflection",
           prompt: candidate.reflectionPrompt,
           description: "Reflection arena candidate",
-          model,
+          exactModelHandle: model,
           silentCompletion: true,
           transcriptPath: options.payload.payloadPath,
           memoryScope: buildReflectionMemoryScope(candidate.worktree),

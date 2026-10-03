@@ -11,8 +11,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   clearSubagentConfigCache,
+  discoverSubagents,
   getAllSubagentConfigs,
   getBuiltinSubagentNames,
+  getModelFacingSubagentDescriptors,
   resolveSubagentConfigForMemoryFormat,
 } from "@/agent/subagents";
 import { __testSetBackend, type Backend } from "@/backend";
@@ -53,20 +55,30 @@ describe("built-in subagents", () => {
     const configs = await getAllSubagentConfigs();
     expect(configs.reflection).toBeDefined();
     expect(configs.reflection?.name).toBe("reflection");
-    expect(configs.reflection?.recommendedModel).toBe("inherit");
   });
 
-  test("general-purpose inherits the parent model by default", async () => {
+  test("no built-in declares a model — every subagent inherits the parent's", async () => {
     const configs = await getAllSubagentConfigs();
 
-    expect(configs["general-purpose"]?.recommendedModel).toBe("inherit");
+    for (const name of ["reflection", "general-purpose", "fork", "init"]) {
+      expect(configs[name]).toBeDefined();
+      expect(configs[name]).not.toHaveProperty("recommendedModel");
+    }
   });
 
-  test("fork inherits the parent model and full toolset", async () => {
+  test("fork inherits the full toolset", async () => {
     const configs = await getAllSubagentConfigs();
 
-    expect(configs.fork?.recommendedModel).toBe("inherit");
     expect(configs.fork?.allowedTools).toBe("all");
+  });
+
+  test("model-facing descriptors advertise no recommended model", async () => {
+    const descriptors = await getModelFacingSubagentDescriptors(process.cwd());
+
+    expect(descriptors.length).toBeGreaterThan(0);
+    for (const descriptor of descriptors) {
+      expect(descriptor).not.toHaveProperty("recommendedModel");
+    }
   });
 
   test("memory-related built-ins use the memory-subagent launch profile", async () => {
@@ -301,10 +313,40 @@ Custom prompt body`,
     const configs = await getAllSubagentConfigs(tempDir);
     expect(configs.reflection).toBeDefined();
     expect(configs.reflection?.description).toBe("Custom reflection override");
-    expect(configs.reflection?.recommendedModel).toBe("zaisigno/glm-5");
+    expect(configs.reflection).not.toHaveProperty("recommendedModel");
   });
 
-  test("bodyless reflection config overlays model without replacing the built-in", async () => {
+  test("a model: frontmatter field warns instead of changing the subagent", async () => {
+    tempDir = createTempProjectDir();
+    writeCustomSubagent(
+      tempDir,
+      "reflection.md",
+      [
+        "---",
+        "name: reflection",
+        "description: Custom reflection override",
+        "tools: Read",
+        "model: zaisigno/glm-5",
+        "---",
+        "Custom prompt body",
+      ].join("\r\n"),
+    );
+
+    const discovery = await discoverSubagents(tempDir);
+
+    const modelWarnings = discovery.warnings.filter((warning) =>
+      warning.path.endsWith("reflection.md"),
+    );
+    expect(modelWarnings).toHaveLength(1);
+    expect(modelWarnings[0]?.message).toContain(
+      "model: is no longer supported",
+    );
+    expect(
+      discovery.subagents.find((subagent) => subagent.name === "reflection"),
+    ).not.toHaveProperty("recommendedModel");
+  });
+
+  test("bodyless reflection config overlays metadata without replacing the built-in", async () => {
     tempDir = createTempProjectDir();
     const builtIn = (await getAllSubagentConfigs(tempDir)).reflection;
     clearSubagentConfigCache();
@@ -321,8 +363,7 @@ Custom prompt body`,
     expect(config?.skills).toEqual(builtIn?.skills);
     expect(config?.fork).toBe(builtIn?.fork);
     expect(config?.launchProfile).toBe(builtIn?.launchProfile);
-    expect(config?.recommendedModel).toBe("auto");
-    expect(config?.recommendedModelSource).toBe("user");
+    expect(config).not.toHaveProperty("recommendedModel");
   });
 
   test("bodyless config can override explicit metadata fields", async () => {
@@ -359,7 +400,7 @@ model: auto
     expect(configs["new-agent"]).toBeUndefined();
   });
 
-  test("blank model field falls back to inherit", async () => {
+  test("blank model field is still reported as unsupported", async () => {
     tempDir = createTempProjectDir();
     writeCustomSubagent(
       tempDir,
@@ -373,9 +414,17 @@ model:
 Custom prompt body`,
     );
 
-    const configs = await getAllSubagentConfigs(tempDir);
-    expect(configs.reflection).toBeDefined();
-    expect(configs.reflection?.recommendedModel).toBe("inherit");
+    const discovery = await discoverSubagents(tempDir);
+    expect(
+      discovery.warnings.filter((warning) =>
+        warning.path.endsWith("reflection.md"),
+      ),
+    ).toHaveLength(1);
+    const reflection = discovery.subagents.find(
+      (subagent) => subagent.name === "reflection",
+    );
+    expect(reflection).toBeDefined();
+    expect(reflection).not.toHaveProperty("recommendedModel");
   });
 
   test("frontmatter name remains override key (filename can differ)", async () => {

@@ -95,7 +95,6 @@ export function SubagentManager({ onClose }: SubagentManagerProps) {
           <Text bold color={colors.selector.itemHighlighted}>
             {item.name}
           </Text>
-          <Text dimColor>({item.config.recommendedModel})</Text>
         </Box>
         <Text> {item.config.description}</Text>
       </Box>

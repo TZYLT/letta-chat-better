@@ -2,7 +2,6 @@
 name: memory
 description: Background memory upkeep during another task; when memory is the user's main request, edit it directly instead. Runs silently with no notification or result, so continue immediately. Make the assignment self-contained and quote the user's corrections and exceptions verbatim.
 tools: Bash, Read, Edit, Write
-model: inherit
 fork: false
 launchProfile: memory-subagent
 ---

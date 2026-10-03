@@ -9,7 +9,6 @@ const config: SubagentConfig = {
   description: "test",
   systemPrompt: "test prompt",
   allowedTools: "all",
-  recommendedModel: "inherit",
   skills: [],
   fork: false,
   launchProfile: "default",

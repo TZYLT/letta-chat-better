@@ -77,7 +77,7 @@ describe("parentScope.agentId propagation to spawnSubagent", () => {
   });
 
   // Positional args of spawnSubagent:
-  //   0: type, 1: prompt, 2: userModel, 3: subagentId, 4: signal,
+  //   0: type, 1: prompt, 2: exactModelHandle, 3: subagentId, 4: signal,
   //   5: existingAgentId, 6: existingConversationId, 7: maxTurns,
   //   8: forkedContext, 9: parentAgentId, 10: transcriptPath,
   //   11: parentConversationId, 12: memoryScope
@@ -90,7 +90,7 @@ describe("parentScope.agentId propagation to spawnSubagent", () => {
   type SpawnArgs = [
     type: string,
     prompt: string,
-    userModel: string | undefined,
+    exactModelHandle: string | undefined,
     subagentId: string,
     signal?: AbortSignal,
     existingAgentId?: string,

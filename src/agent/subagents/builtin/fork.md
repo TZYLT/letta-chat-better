@@ -2,7 +2,6 @@
 name: fork
 description: Fork of the parent agent with full context and tools.
 tools: all
-model: inherit
 fork: true
 ---
 

@@ -64,8 +64,6 @@ describe("fork subagent toolset inheritance", () => {
         description: "Fork the parent conversation",
         systemPrompt: "",
         allowedTools: "all",
-        recommendedModel: "inherit",
-        recommendedModelSource: "builtin",
         skills: [],
         fork: true,
         launchProfile: "default",

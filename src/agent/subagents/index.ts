@@ -61,7 +61,6 @@ const MEMFS_V2_BUILTIN_SOURCES = [
  * Subagent configuration
  */
 export type SubagentLaunchProfile = "default" | "memory-subagent";
-export type SubagentRecommendedModelSource = "builtin" | "user";
 
 /** Exact memory scope handed to a harness-created memory worktree. */
 export interface SubagentMemoryScope {
@@ -96,10 +95,6 @@ export interface SubagentConfig {
   systemPrompt: string;
   /** Allowed tools - specific list or "all" (invalid names are ignored at runtime) */
   allowedTools: string[] | "all";
-  /** Recommended model - any runtime catalog ID or full handle */
-  recommendedModel: string;
-  /** Whether the recommended model came from bundled defaults or user config. */
-  recommendedModelSource?: SubagentRecommendedModelSource;
   /** Skills to auto-load */
   skills: string[];
   /** Whether this subagent should fork the parent conversation before launch. */
@@ -114,6 +109,11 @@ export interface SubagentConfig {
 export interface SubagentDiscoveryResult {
   subagents: SubagentConfig[];
   errors: Array<{ path: string; message: string }>;
+  /**
+   * Non-fatal problems: the subagent still loads, but something it declares no
+   * longer has any effect (for example a `model:` frontmatter field).
+   */
+  warnings: Array<{ path: string; message: string }>;
 }
 
 // ============================================================================
@@ -125,13 +125,11 @@ export const EXTERNAL_CODING_AGENT_DESCRIPTORS = [
     name: "claude-code",
     description:
       "Run the locally installed Claude Code CLI as a one-shot coding worker",
-    recommendedModel: "configured Claude Code default",
   },
   {
     name: "codex",
     description:
       "Start a locally installed Codex coding session with mid-turn steering",
-    recommendedModel: "configured Codex default",
   },
 ] as const;
 
@@ -242,16 +240,31 @@ function validateFrontmatter(
     }
   }
 
-  // Don't validate model or launchProfile here - they're handled at runtime:
-  // - model: resolveModel() returns null for invalid values, subagent-manager falls back
-  // - launchProfile: unknown values default to normal launch behavior
+  // Don't validate launchProfile here - it's handled at runtime: unknown values
+  // default to normal launch behavior.
 
   return { valid: errors.length === 0, errors };
 }
 
+/**
+ * Subagent frontmatter fields that still parse but no longer do anything. They
+ * are reported as discovery warnings instead of being silently dropped, because
+ * a user who wrote one believes it is in effect.
+ */
+const UNSUPPORTED_FRONTMATTER_FIELDS: Record<string, string> = {
+  model:
+    "model: is no longer supported — subagents inherit the parent conversation model; remove the field",
+};
+
+function collectUnsupportedFrontmatterWarnings(content: string): string[] {
+  const { frontmatter } = parseFrontmatter(content);
+  return Object.entries(UNSUPPORTED_FRONTMATTER_FIELDS)
+    .filter(([field]) => hasFrontmatterField(frontmatter, field))
+    .map(([, message]) => message);
+}
+
 interface ParseSubagentContentOptions {
   inheritedConfigs?: Record<string, SubagentConfig>;
-  modelSource?: SubagentRecommendedModelSource;
 }
 
 function hasFrontmatterField(
@@ -268,10 +281,7 @@ function cloneAllowedTools(allowedTools: string[] | "all"): string[] | "all" {
 function applySubagentOverlay(
   inherited: SubagentConfig,
   frontmatter: Record<string, string | string[]>,
-  modelSource: SubagentRecommendedModelSource | undefined,
 ): SubagentConfig {
-  const hasModel = hasFrontmatterField(frontmatter, "model");
-
   return {
     ...inherited,
     name: frontmatter.name as string,
@@ -282,12 +292,6 @@ function applySubagentOverlay(
     allowedTools: hasFrontmatterField(frontmatter, "tools")
       ? parseTools(getStringField(frontmatter, "tools"))
       : cloneAllowedTools(inherited.allowedTools),
-    recommendedModel: hasModel
-      ? getStringField(frontmatter, "model") || "inherit"
-      : inherited.recommendedModel,
-    recommendedModelSource: hasModel
-      ? modelSource
-      : inherited.recommendedModelSource,
     skills: hasFrontmatterField(frontmatter, "skills")
       ? parseSkills(getStringField(frontmatter, "skills"))
       : [...inherited.skills],
@@ -327,7 +331,7 @@ function parseSubagentContent(
       );
     }
 
-    return applySubagentOverlay(inherited, frontmatter, options.modelSource);
+    return applySubagentOverlay(inherited, frontmatter);
   }
 
   // Validate frontmatter for full-replacement custom subagents.
@@ -337,15 +341,12 @@ function parseSubagentContent(
   }
 
   const description = frontmatter.description as string;
-  const hasModel = hasFrontmatterField(frontmatter, "model");
 
   return {
     name,
     description,
     systemPrompt: body,
     allowedTools: parseTools(getStringField(frontmatter, "tools")),
-    recommendedModel: getStringField(frontmatter, "model") || "inherit",
-    recommendedModelSource: hasModel ? options.modelSource : undefined,
     skills: parseSkills(getStringField(frontmatter, "skills")),
     fork: getStringField(frontmatter, "fork")?.toLowerCase() === "true",
     launchProfile: parseLaunchProfile(
@@ -360,12 +361,13 @@ function parseSubagentContent(
 async function parseSubagentFile(
   filePath: string,
   inheritedConfigs: Record<string, SubagentConfig>,
+  warnings: Array<{ path: string; message: string }>,
 ): Promise<SubagentConfig | null> {
   const content = await readFile(filePath, "utf-8");
-  return parseSubagentContent(content, {
-    inheritedConfigs,
-    modelSource: "user",
-  });
+  for (const message of collectUnsupportedFrontmatterWarnings(content)) {
+    warnings.push({ path: filePath, message });
+  }
+  return parseSubagentContent(content, { inheritedConfigs });
 }
 
 /**
@@ -391,9 +393,7 @@ function getBuiltinSubagents(
 
   for (const source of sources) {
     try {
-      const config = parseSubagentContent(source, {
-        modelSource: "builtin",
-      });
+      const config = parseSubagentContent(source);
       builtins[config.name] = config;
     } catch (error) {
       // Built-in subagents should always be valid; log error but don't crash
@@ -413,7 +413,7 @@ function getLocalMemfsV2Builtins(): Record<string, SubagentConfig> {
   if (localMemfsV2Builtins) return localMemfsV2Builtins;
   const configs: Record<string, SubagentConfig> = {};
   for (const source of MEMFS_V2_BUILTIN_SOURCES) {
-    const config = parseSubagentContent(source, { modelSource: "builtin" });
+    const config = parseSubagentContent(source);
     configs[config.name] = config;
   }
   localMemfsV2Builtins = configs;
@@ -453,6 +453,7 @@ async function discoverSubagentsFromDir(
   configsByName: Record<string, SubagentConfig>,
   subagents: SubagentConfig[],
   errors: Array<{ path: string; message: string }>,
+  warnings: Array<{ path: string; message: string }>,
 ): Promise<void> {
   if (!existsSync(agentsDir)) {
     return;
@@ -469,7 +470,11 @@ async function discoverSubagentsFromDir(
       const filePath = join(agentsDir, entry.name);
 
       try {
-        const config = await parseSubagentFile(filePath, configsByName);
+        const config = await parseSubagentFile(
+          filePath,
+          configsByName,
+          warnings,
+        );
         if (config && !RESERVED_EXTERNAL_SUBAGENT_NAMES.has(config.name)) {
           // Check for duplicate names (later directories override earlier ones)
           const existingIndex = subagents.findIndex(
@@ -508,6 +513,7 @@ export async function discoverSubagents(
   },
 ): Promise<SubagentDiscoveryResult> {
   const errors: Array<{ path: string; message: string }> = [];
+  const warnings: Array<{ path: string; message: string }> = [];
   const subagents: SubagentConfig[] = [];
 
   // First, discover from global directory (~/.letta/agents)
@@ -516,6 +522,7 @@ export async function discoverSubagents(
     inheritedConfigs,
     subagents,
     errors,
+    warnings,
   );
 
   // Then, discover from project directory (.letta/agents)
@@ -526,9 +533,10 @@ export async function discoverSubagents(
     inheritedConfigs,
     subagents,
     errors,
+    warnings,
   );
 
-  return { subagents, errors };
+  return { subagents, errors, warnings };
 }
 
 /**
@@ -591,15 +599,12 @@ export async function getAllSubagentConfigs(
 
 export async function getModelFacingSubagentDescriptors(
   workingDirectory: string,
-): Promise<
-  Array<{ name: string; description: string; recommendedModel: string }>
-> {
+): Promise<Array<{ name: string; description: string }>> {
   const configs = await getAllSubagentConfigs(workingDirectory);
   return [
     ...Object.entries(configs).map(([name, config]) => ({
       name,
       description: config.description,
-      recommendedModel: config.recommendedModel,
     })),
     ...EXTERNAL_CODING_AGENT_DESCRIPTORS,
   ];

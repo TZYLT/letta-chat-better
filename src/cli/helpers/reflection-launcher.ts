@@ -860,7 +860,7 @@ export async function launchReflectionSubagent(
       subagentType: "reflection",
       prompt: reflectionPrompt,
       description,
-      model: options.model,
+      exactModelHandle: options.model,
       systemPromptOverride: options.reflectionSystemPromptOverride,
       silentCompletion: true,
       transcriptPath: autoPayload.payloadPath,

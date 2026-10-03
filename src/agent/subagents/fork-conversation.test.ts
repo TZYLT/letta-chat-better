@@ -8,8 +8,6 @@ const forkConfig: SubagentConfig = {
   description: "Fork the parent conversation",
   systemPrompt: "",
   allowedTools: "all",
-  recommendedModel: "inherit",
-  recommendedModelSource: "builtin",
   skills: [],
   fork: true,
   launchProfile: "default",
@@ -28,7 +26,7 @@ function backendFixture(events: string[]) {
 }
 
 describe("forkParentConversation", () => {
-  test("applies the model only to the forked conversation before launch", async () => {
+  test("forks the parent conversation and copies the client toolset", async () => {
     const events: string[] = [];
     const result = await forkParentConversation(
       {
@@ -36,87 +34,73 @@ describe("forkParentConversation", () => {
         parentAgentId: "agent-parent",
         parentConversationId: "conv-parent",
         config: forkConfig,
-        model: "gpt-5.6-sol",
       },
       {
-        resolveModelOverride: async () => {
-          events.push("resolve");
-          return {
-            modelHandle: "feather-openai/gpt-5.6-sol",
-            updateArgs: { reasoning_effort: "high" },
-          };
-        },
-        updateConversationModel: async (
-          conversationId,
-          modelHandle,
-          updateArgs,
-        ) => {
-          events.push(
-            `model:${conversationId}:${modelHandle}:${updateArgs?.reasoning_effort}`,
-          );
-        },
-        inheritToolset: async (_agentId, parentId, forkId) => {
-          events.push(`toolset:${parentId}:${forkId}`);
+        inheritToolset: async (agentId, parentId, forkId) => {
+          events.push(`toolset:${agentId}:${parentId}:${forkId}`);
         },
       },
     );
 
     expect(result.id).toBe("conv-fork");
     expect(events).toEqual([
-      "resolve",
       "fork:conv-parent",
-      "model:conv-fork:feather-openai/gpt-5.6-sol:high",
-      "toolset:conv-parent:conv-fork",
+      "toolset:agent-parent:conv-parent:conv-fork",
     ]);
-    expect(events.some((event) => event.includes("model:conv-parent"))).toBe(
-      false,
-    );
   });
 
-  test("preserves model inheritance when no override is configured", async () => {
-    const events: string[] = [];
+  test("passes the parent agent for an agent-scoped default conversation", async () => {
+    const forked = await forkParentConversation(
+      {
+        backend: {
+          forkConversation: async (
+            _conversationId: string,
+            body: Record<string, unknown>,
+          ) => {
+            expect(body).toMatchObject({
+              agentId: "agent-parent",
+              hidden: true,
+            });
+            return { id: "conv-fork" };
+          },
+        } as unknown as Backend,
+        parentAgentId: "agent-parent",
+        parentConversationId: "default",
+        config: forkConfig,
+      },
+      { inheritToolset: async () => undefined },
+    );
+
+    expect(forked.id).toBe("conv-fork");
+  });
+
+  test("forks without any model override in the fork body", async () => {
+    let body: Record<string, unknown> | undefined;
     await forkParentConversation(
       {
-        backend: backendFixture(events),
+        backend: {
+          forkConversation: async (
+            _conversationId: string,
+            forkBody: Record<string, unknown>,
+          ) => {
+            body = forkBody;
+            return { id: "conv-fork" };
+          },
+        } as unknown as Backend,
         parentAgentId: "agent-parent",
         parentConversationId: "conv-parent",
         config: forkConfig,
       },
-      {
-        resolveModelOverride: async () => null,
-        updateConversationModel: async () => {
-          events.push("unexpected-model-update");
-        },
-        inheritToolset: async () => undefined,
-      },
+      { inheritToolset: async () => undefined },
     );
 
-    expect(events).toEqual(["fork:conv-parent"]);
+    // A fork inherits the parent's model and applied prefix; it never re-pins
+    // either, so the fork body carries no model/llm-config keys (D-C).
+    expect(body?.hidden).toBe(true);
+    expect(Object.keys(body ?? {}).sort()).toEqual(["hidden", "signal"]);
   });
 
-  test("validates the model before creating a hidden conversation", async () => {
-    const events: string[] = [];
-    await expect(
-      forkParentConversation(
-        {
-          backend: backendFixture(events),
-          parentAgentId: "agent-parent",
-          parentConversationId: "conv-parent",
-          config: forkConfig,
-          model: "missing-model",
-        },
-        {
-          resolveModelOverride: async () => {
-            throw new Error("Unknown fork model: missing-model");
-          },
-        },
-      ),
-    ).rejects.toThrow("Unknown fork model: missing-model");
-
-    expect(events).toEqual([]);
-  });
-
-  test("deletes the hidden fork when its model update fails", async () => {
+  test("deletes the hidden fork when toolset inheritance fails", async () => {
     const events: string[] = [];
     await expect(
       forkParentConversation(
@@ -127,20 +111,17 @@ describe("forkParentConversation", () => {
           config: forkConfig,
         },
         {
-          resolveModelOverride: async () => ({
-            modelHandle: "openai/gpt-5.6-sol",
-          }),
-          updateConversationModel: async () => {
-            events.push("model-failed");
-            throw new Error("model update failed");
+          inheritToolset: async () => {
+            events.push("toolset-failed");
+            throw new Error("toolset inheritance failed");
           },
         },
       ),
-    ).rejects.toThrow("model update failed");
+    ).rejects.toThrow("toolset inheritance failed");
 
     expect(events).toEqual([
       "fork:conv-parent",
-      "model-failed",
+      "toolset-failed",
       "delete:conv-fork",
     ]);
   });

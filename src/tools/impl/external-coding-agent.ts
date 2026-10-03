@@ -33,6 +33,12 @@ export interface ExternalCodingAgentMcpEntry {
 export interface ExternalCodingAgentRunOptions {
   type: ExternalCodingAgentType;
   prompt: string;
+  /**
+   * The external CLI's own model selector (`claude --model <value>`), never a
+   * Letta model handle. Letta subagents have no model parameter of their own;
+   * this exists because the spawned program is a different product with its own
+   * model catalogue.
+   */
   model?: string;
   parentAgentId: string;
   parentConversationId?: string;
@@ -58,7 +64,6 @@ export function createExternalCodingAgentConfig(
     description: "External coding agent",
     systemPrompt: "",
     allowedTools: "all",
-    recommendedModel: "inherit",
     skills: [],
     fork: false,
     launchProfile: "default",

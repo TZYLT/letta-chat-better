@@ -59,11 +59,7 @@ import {
   resolveSubagentLauncher,
   resolveSubagentWorkingDirectory,
 } from "./subagent-launcher";
-import {
-  getCurrentBillingTier,
-  getPrimaryAgentModelHandle,
-  resolveSubagentModel,
-} from "./subagent-model";
+import { getPrimaryAgentModelHandle } from "./subagent-model";
 import { spawnSubagentProcess } from "./subagent-process";
 import {
   describeSubagentExit,
@@ -804,7 +800,10 @@ ${SYSTEM_REMINDER_CLOSE}
  *
  * @param type - Subagent type (e.g., "code-reviewer", "general-purpose")
  * @param prompt - The task prompt for the subagent
- * @param userModel - Optional model override from the parent agent
+ * @param exactModelHandle - Optional exact model handle from a harness caller
+ *   (reflection arena experiments). Used verbatim — there is no resolution,
+ *   catalogue lookup, tier default, or fallback. Omitted by every agent-facing
+ *   launch, which runs the child on the parent conversation's model.
  * @param subagentId - ID for tracking in the state store (registered by Task tool)
  * @param signal - Optional abort signal for interruption handling
  * @param existingAgentId - Optional ID of an existing agent to deploy
@@ -817,7 +816,7 @@ ${SYSTEM_REMINDER_CLOSE}
 async function spawnSubagentInContext(
   type: string,
   prompt: string,
-  userModel: string | undefined,
+  exactModelHandle: string | undefined,
   subagentId: string,
   signal?: AbortSignal,
   existingAgentId?: string,
@@ -893,20 +892,13 @@ async function spawnSubagentInContext(
       ? formatConfig.systemPrompt
       : undefined);
   config = formatConfig;
-  const billingTier = await getCurrentBillingTier();
 
-  // For existing agents, don't override model; for new agents, use provided or config default
+  // Subagents run the parent conversation's model. A harness caller (reflection
+  // arena) may pin an exact handle instead; nothing resolves or substitutes one.
+  // An existing agent always keeps its own model.
   const model = isDeployingExisting
     ? null
-    : await resolveSubagentModel({
-        userModel,
-        recommendedModel: config.recommendedModel,
-        recommendedModelSource: config.recommendedModelSource,
-        parentModelHandle,
-        billingTier,
-        subagentType: type,
-        backendMode,
-      });
+    : (exactModelHandle ?? parentModelHandle);
   // Build the prompt with system reminder for deployed agents
   let finalPrompt = prompt;
   if (
