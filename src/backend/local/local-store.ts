@@ -1453,7 +1453,7 @@ export class LocalStore {
         agentId,
         toolCall: match.content,
         content: this.toolResultContentFromUnknown(approval.tool_return),
-        isError: false,
+        isError: approval.status === "error",
       });
     }
   }
