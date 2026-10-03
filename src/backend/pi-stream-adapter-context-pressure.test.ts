@@ -2,13 +2,12 @@ import { describe, expect, test } from "bun:test";
 import type {
   AssistantMessage,
   AssistantMessageEvent,
-  Context,
   Model,
   SimpleStreamOptions,
   Usage,
 } from "@earendil-works/pi-ai";
+import { LocalContextOverflowError } from "@/backend/dev/context-window-overflow";
 import {
-  type LocalContextPressure,
   PiStreamAdapter,
   type PiStreamFunction,
 } from "@/backend/dev/pi-stream-adapter";
@@ -17,6 +16,8 @@ import type {
   ProviderTurnInput,
 } from "@/backend/dev/provider-turn-executor";
 import { emptyLocalUsage } from "@/backend/local/local-message";
+
+const CONTEXT_WINDOW = 100_000;
 
 function usage(totalTokens: number, output = 100): Usage {
   return {
@@ -66,6 +67,26 @@ function streamFromMessage(
   });
 }
 
+function streamFromError(errorMessage: string): ReturnType<PiStreamFunction> {
+  const error: AssistantMessage = {
+    ...assistantMessage(),
+    content: [],
+    stopReason: "error",
+    errorMessage,
+  };
+  const event: AssistantMessageEvent = {
+    type: "error",
+    reason: "error",
+    error,
+  };
+  async function* iterator() {
+    yield event;
+  }
+  return Object.assign(iterator(), {
+    result: async () => error,
+  });
+}
+
 function turnInput(
   input: { content?: string; contextWindow?: number; maxTokens?: number } = {},
 ): ProviderTurnInput {
@@ -81,7 +102,7 @@ function turnInput(
       model: "bedrock/us.anthropic.claude-sonnet-4-6",
       model_settings: {
         provider_type: "bedrock",
-        context_window_limit: input.contextWindow ?? 100_000,
+        context_window_limit: input.contextWindow ?? CONTEXT_WINDOW,
         ...(input.maxTokens !== undefined
           ? { max_tokens: input.maxTokens }
           : {}),
@@ -110,6 +131,18 @@ async function collectEvents(
   return events;
 }
 
+/** The adapter reports a refusal by throwing; the executor turns that into chunks. */
+async function collectError(
+  stream: AsyncIterable<ProviderStreamEvent>,
+): Promise<unknown> {
+  try {
+    await collectEvents(stream);
+    return undefined;
+  } catch (error) {
+    return error;
+  }
+}
+
 function compactionEvent(events: ProviderStreamEvent[]) {
   return events.find(
     (event) =>
@@ -119,121 +152,66 @@ function compactionEvent(events: ProviderStreamEvent[]) {
 }
 
 describe("PiStreamAdapter context pressure", () => {
-  test("compacts a 96k request before dispatching it into a 100k window", async () => {
+  test("refuses an over-threshold request instead of rewriting context", async () => {
     let providerCalls = 0;
-    let providerContext: Context | undefined;
-    const pressures: LocalContextPressure[] = [];
-    const stream: PiStreamFunction = (_model, context) => {
+    const stream: PiStreamFunction = () => {
       providerCalls += 1;
-      providerContext = context;
       return streamFromMessage(assistantMessage());
     };
-    const adapter = new PiStreamAdapter({
-      stream,
-      onContextPressure: async (_input, pressure) => {
-        pressures.push(pressure);
-        if (pressure.phase !== "preflight") return null;
-        return {
-          uiMessages: [
-            {
-              id: "ui-msg-compacted",
-              role: "user",
-              content: "compacted summary",
-              timestamp: Date.now(),
-            },
-          ],
-          summary: "compacted summary",
-        };
-      },
-    });
+    const adapter = new PiStreamAdapter({ stream });
 
-    const events = await collectEvents(
+    // ~96k tokens against a 100k window: past the reserve the harness keeps
+    // free, so the request is refused before it reaches the provider.
+    const error = await collectError(
       adapter.stream(turnInput({ content: "x".repeat(96_000 * 4) })),
     );
 
-    expect(providerCalls).toBe(1);
-    expect(providerContext?.messages).toEqual([
-      expect.objectContaining({ role: "user", content: "compacted summary" }),
-    ]);
-    expect(pressures).toEqual([
-      {
-        contextTokens: expect.any(Number),
-        contextWindow: 100_000,
-        phase: "preflight",
-        source: "estimate",
-      },
-    ]);
-    expect(pressures[0]?.contextTokens).toBeGreaterThan(83_616);
-    expect(compactionEvent(events)).toBeDefined();
+    expect(providerCalls).toBe(0);
+    expect(error).toBeInstanceOf(LocalContextOverflowError);
+    expect(String(error)).toContain("Run /compact to choose a cut point");
   });
 
-  test("compacts after exact usage enters the reserve", async () => {
-    const pressures: LocalContextPressure[] = [];
-    const stream: PiStreamFunction = () =>
-      streamFromMessage(assistantMessage({ usage: usage(86_045) }));
-    const adapter = new PiStreamAdapter({
-      stream,
-      onContextPressure: async (_input, pressure) => {
-        pressures.push(pressure);
-        return pressure.phase === "post_turn"
-          ? {
-              uiMessages: [],
-              summary: "post-turn summary",
-            }
-          : null;
-      },
-    });
+  test("sends a soft-pressure request unchanged", async () => {
+    let providerCalls = 0;
+    let providerMessages = 0;
+    const stream: PiStreamFunction = (_model, context) => {
+      providerCalls += 1;
+      providerMessages = context.messages.length;
+      return streamFromMessage(assistantMessage());
+    };
+    const adapter = new PiStreamAdapter({ stream });
 
-    const events = await collectEvents(adapter.stream(turnInput()));
-
-    expect(pressures).toEqual([
-      {
-        contextTokens: 86_045,
-        contextWindow: 100_000,
-        phase: "post_turn",
-        source: "usage",
-      },
-    ]);
-    expect(compactionEvent(events)).toBeDefined();
-    expect(events.some((event) => event.type === "local-message")).toBe(true);
-  });
-
-  test("includes the completed response in the post-turn fallback estimate", async () => {
-    const pressures: LocalContextPressure[] = [];
-    const stream: PiStreamFunction = () =>
-      streamFromMessage(
-        assistantMessage({ text: "y".repeat(600), usage: emptyLocalUsage() }),
-      );
-    const adapter = new PiStreamAdapter({
-      stream,
-      onContextPressure: async (_input, pressure) => {
-        pressures.push(pressure);
-        return null;
-      },
-    });
-
-    await collectEvents(
-      adapter.stream(
-        turnInput({ content: "x".repeat(700 * 4), contextWindow: 1_000 }),
-      ),
+    // ~78k of 100k is inside the advisory tier: worth offering a trim, never
+    // worth blocking or rewriting the request on its own.
+    const events = await collectEvents(
+      adapter.stream(turnInput({ content: "x".repeat(78_000 * 4) })),
     );
 
-    expect(pressures).toEqual([
-      {
-        contextTokens: expect.any(Number),
-        contextWindow: 1_000,
-        phase: "post_turn",
-        source: "estimate",
-      },
-    ]);
-    expect(pressures[0]?.contextTokens).toBeGreaterThan(800);
+    expect(providerCalls).toBe(1);
+    expect(providerMessages).toBe(1);
+    expect(compactionEvent(events)).toBeUndefined();
   });
 
-  test("does not treat an explicit one-token output limit as context pressure", async () => {
+  test("terminates on a provider-reported overflow without retrying", async () => {
+    let providerCalls = 0;
+    const stream: PiStreamFunction = () => {
+      providerCalls += 1;
+      return streamFromError(
+        "prompt is too long: 500000 tokens > 272000 maximum",
+      );
+    };
+    const adapter = new PiStreamAdapter({ stream });
+
+    const error = await collectError(adapter.stream(turnInput()));
+
+    expect(providerCalls).toBe(1);
+    expect(String(error)).toContain("prompt is too long");
+  });
+
+  test("keeps an explicit one-token output limit a normal length stop", async () => {
     let capturedOptions:
       | (SimpleStreamOptions & Record<string, unknown>)
       | undefined;
-    let pressureCalls = 0;
     const stream: PiStreamFunction = (
       _model: Model<string>,
       _context,
@@ -244,20 +222,13 @@ describe("PiStreamAdapter context pressure", () => {
         assistantMessage({ stopReason: "length", usage: usage(2, 1) }),
       );
     };
-    const adapter = new PiStreamAdapter({
-      stream,
-      onContextPressure: async () => {
-        pressureCalls += 1;
-        return null;
-      },
-    });
+    const adapter = new PiStreamAdapter({ stream });
 
     const events = await collectEvents(
       adapter.stream(turnInput({ maxTokens: 1 })),
     );
 
     expect(capturedOptions?.maxTokens).toBe(1);
-    expect(pressureCalls).toBe(0);
     expect(compactionEvent(events)).toBeUndefined();
     expect(events).toContainEqual(
       expect.objectContaining({

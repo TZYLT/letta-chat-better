@@ -5,18 +5,14 @@ import {
 } from "@/backend/dev/headless-turn-executor";
 import type { LocalPiModelsRuntime } from "@/backend/dev/pi-models-runtime";
 import {
-  type LocalContextPressure,
   PiStreamAdapter,
   type PiStreamFunction,
 } from "@/backend/dev/pi-stream-adapter";
 import type {
   LlmEndInfo,
   LlmStartInfo,
-  ProviderTurnInput,
 } from "@/backend/dev/provider-turn-executor";
 import { ProviderTurnExecutor } from "@/backend/dev/provider-turn-executor";
-import type { LocalCompactionStats } from "./compaction";
-import type { LocalMessage } from "./local-message";
 
 export type LocalBackendExecutionMode =
   | "pi"
@@ -30,26 +26,9 @@ export interface CreateLocalExecutorOptions {
   stream?: PiStreamFunction;
 }
 
-type LocalCompactionCallback = (
-  input: ProviderTurnInput,
-  trigger: unknown,
-) => Promise<{
-  uiMessages: LocalMessage[];
-  summary: string;
-  stats?: LocalCompactionStats;
-} | null>;
-
 export function createLocalExecutor(
   options: CreateLocalExecutorOptions,
   modelsRuntime: LocalPiModelsRuntime,
-  onContextWindowOverflow?: (
-    input: ProviderTurnInput,
-    error: unknown,
-  ) => ReturnType<LocalCompactionCallback>,
-  onContextPressure?: (
-    input: ProviderTurnInput,
-    pressure: LocalContextPressure,
-  ) => ReturnType<LocalCompactionCallback>,
   onLlmStart?: (info: LlmStartInfo) => void | Promise<void>,
   onLlmEnd?: (info: LlmEndInfo) => void | Promise<void>,
 ): HeadlessTurnExecutor {
@@ -65,8 +44,6 @@ export function createLocalExecutor(
       stream: options.stream,
       localProviderAuthStorageDir: options.storageDir,
       modelsRuntime,
-      onContextWindowOverflow,
-      onContextPressure,
       onLlmStart,
       onLlmEnd,
     }),

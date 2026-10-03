@@ -102,67 +102,27 @@ function emptyTextBlocks(messages: Context["messages"]) {
 }
 
 describe("PiStreamAdapter", () => {
-  test("routes clean provider overflow errors into compaction and retries", async () => {
+  test("terminates on a clean provider overflow error without rewriting context", async () => {
     let providerCalls = 0;
     const stream: PiStreamFunction = () => {
       providerCalls += 1;
-      if (providerCalls === 1) {
-        const error = assistantErrorMessage(
-          "prompt is too long: 500000 tokens > 272000 maximum",
-        );
-        return streamFromEvents(
-          [{ type: "error", reason: "error", error }],
-          error,
-        );
-      }
-      const finalMessage = assistantMessage();
+      const error = assistantErrorMessage(
+        "prompt is too long: 500000 tokens > 272000 maximum",
+      );
       return streamFromEvents(
-        [{ type: "done", reason: "stop", message: finalMessage }],
-        finalMessage,
+        [{ type: "error", reason: "error", error }],
+        error,
       );
     };
 
-    let overflowError: unknown;
-    const adapter = new PiStreamAdapter({
-      stream,
-      onContextWindowOverflow: async (_input, error) => {
-        overflowError = error;
-        return {
-          uiMessages: [
-            {
-              id: "ui-msg-compacted",
-              role: "user",
-              content: "small",
-              timestamp: Date.now(),
-            },
-          ],
-          summary: "compacted old context",
-        };
-      },
-    });
-    const events = await collectEvents(adapter.stream(input()));
+    const adapter = new PiStreamAdapter({ stream });
 
-    expect(providerCalls).toBe(2);
-    expect(String(overflowError)).toContain("prompt is too long");
-    expect(events).toContainEqual(
-      expect.objectContaining({
-        type: "letta-chunk",
-        chunk: expect.objectContaining({
-          message_type: "event_message",
-          event_type: "compaction",
-        }),
-      }),
+    // A retry would resend the same bytes into the same window, and the local
+    // backend no longer trims history to make room, so the error is terminal.
+    await expect(collectEvents(adapter.stream(input()))).rejects.toThrow(
+      "prompt is too long",
     );
-    expect(events).toContainEqual(
-      expect.objectContaining({
-        type: "letta-chunk",
-        chunk: expect.objectContaining({
-          message_type: "summary_message",
-          summary: "compacted old context",
-        }),
-      }),
-    );
-    expect(events.some((event) => event.type === "local-message")).toBe(true);
+    expect(providerCalls).toBe(1);
   });
 
   test("elides image payloads in-memory before retrying oversized transport failures", async () => {
@@ -187,20 +147,14 @@ describe("PiStreamAdapter", () => {
       );
     };
 
-    const adapter = new PiStreamAdapter({
-      stream,
-      onContextWindowOverflow: async () => {
-        throw new Error("Compaction should not run before image elision");
-      },
-    });
+    const adapter = new PiStreamAdapter({ stream });
     const baseInput = input();
     const events = await collectEvents(
       adapter.stream({
         ...baseInput,
         // Semantic image cost is tiny (1200 tokens), but the raw base64 body is
         // oversized. After a real transport failure, retry with provider-only
-        // image elision instead of persisting a compaction that may not shed the
-        // kept image bytes.
+        // image elision instead of replaying the same bytes.
         uiMessages: [
           {
             id: "ui-msg-large-image",
@@ -273,12 +227,7 @@ describe("PiStreamAdapter", () => {
         );
       };
 
-      const adapter = new PiStreamAdapter({
-        stream,
-        onContextWindowOverflow: async () => {
-          throw new Error("Compaction should not run before image elision");
-        },
-      });
+      const adapter = new PiStreamAdapter({ stream });
       const baseInput = input();
       const events = await collectEvents(
         adapter.stream({
@@ -397,136 +346,76 @@ describe("PiStreamAdapter", () => {
     expect(events.some((event) => event.type === "local-message")).toBe(true);
   });
 
-  test("classifies non-image oversized transport failures as overflow instead of retrying", async () => {
-    let providerCalls = 0;
-    const stream: PiStreamFunction = () => {
-      providerCalls += 1;
-      if (providerCalls === 1) {
-        const error = assistantErrorMessage(
-          "WebSocket closed 1006 Connection ended\nretry-after-ms: 0",
-        );
+  test("retries a non-image oversized transport failure without rewriting context", async () => {
+    const previousLimit = process.env.LETTA_LOCAL_REQUEST_BYTE_LIMIT;
+    // Lower the byte classifier so a payload that is oversized by bytes stays
+    // far below the model's token window: the two limits are independent, and
+    // only the byte one should lead to a retry.
+    process.env.LETTA_LOCAL_REQUEST_BYTE_LIMIT = "100000";
+    try {
+      let providerCalls = 0;
+      const stream: PiStreamFunction = () => {
+        providerCalls += 1;
+        if (providerCalls === 1) {
+          const error = assistantErrorMessage(
+            "WebSocket closed 1006 Connection ended\nretry-after-ms: 0",
+          );
+          return streamFromEvents(
+            [{ type: "error", reason: "error", error }],
+            error,
+          );
+        }
+        const finalMessage = assistantMessage();
         return streamFromEvents(
-          [{ type: "error", reason: "error", error }],
-          error,
+          [{ type: "done", reason: "stop", message: finalMessage }],
+          finalMessage,
         );
-      }
-      const finalMessage = assistantMessage();
-      return streamFromEvents(
-        [{ type: "done", reason: "stop", message: finalMessage }],
-        finalMessage,
-      );
-    };
+      };
 
-    let overflowError: unknown;
-    const adapter = new PiStreamAdapter({
-      stream,
-      onContextWindowOverflow: async (_input, error) => {
-        overflowError = error;
-        return {
+      const adapter = new PiStreamAdapter({ stream });
+      const baseInput = input();
+      const events = await collectEvents(
+        adapter.stream({
+          ...baseInput,
           uiMessages: [
             {
-              id: "ui-msg-compacted",
+              id: "ui-msg-large-text",
               role: "user",
-              content: "small",
+              content: "x".repeat(200_000),
               timestamp: Date.now(),
             },
           ],
-          summary: "compacted oversized text",
-        };
-      },
-    });
-    const baseInput = input();
-    const events = await collectEvents(
-      adapter.stream({
-        ...baseInput,
-        uiMessages: [
-          {
-            id: "ui-msg-large-text",
-            role: "user",
-            content: "x".repeat(8_000_001),
-            timestamp: Date.now(),
-          },
-        ],
-      }),
-    );
-
-    expect(providerCalls).toBe(2);
-    expect(String(overflowError)).toContain("WebSocket closed 1006");
-    const retryEvents = events.filter(
-      (event) =>
-        event.type === "letta-chunk" &&
-        (event.chunk as { event_type?: string }).event_type === "retry",
-    );
-    expect(retryEvents).toHaveLength(0);
-    expect(events).toContainEqual(
-      expect.objectContaining({
-        type: "letta-chunk",
-        chunk: expect.objectContaining({
-          message_type: "event_message",
-          event_type: "compaction",
         }),
-      }),
-    );
-    expect(events.some((event) => event.type === "local-message")).toBe(true);
-  });
-
-  test("falls back to transient retry when oversized-payload compaction fails", async () => {
-    let providerCalls = 0;
-    const stream: PiStreamFunction = () => {
-      providerCalls += 1;
-      if (providerCalls === 1) {
-        const error = assistantErrorMessage(
-          "WebSocket closed 1006 Connection ended\nretry-after-ms: 0",
-        );
-        return streamFromEvents(
-          [{ type: "error", reason: "error", error }],
-          error,
-        );
-      }
-      const finalMessage = assistantMessage();
-      return streamFromEvents(
-        [{ type: "done", reason: "stop", message: finalMessage }],
-        finalMessage,
       );
-    };
 
-    const adapter = new PiStreamAdapter({
-      stream,
-      onContextWindowOverflow: async () => {
-        // Simulates a summarizer failure (for example the summarization model
-        // call being rejected by the provider).
-        throw new Error("Local compaction failed");
-      },
-    });
-    const baseInput = input();
-    const events = await collectEvents(
-      adapter.stream({
-        ...baseInput,
-        uiMessages: [
-          {
-            id: "ui-msg-large-text",
-            role: "user",
-            content: "x".repeat(8_000_001),
-            timestamp: Date.now(),
-          },
-        ],
-      }),
-    );
-
-    // The retryable transport error must win over the compaction failure:
-    // the turn retries and completes instead of surfacing the summarizer
-    // error as a non-retryable run failure.
-    expect(providerCalls).toBe(2);
-    expect(events).toContainEqual(
-      expect.objectContaining({
-        type: "letta-chunk",
-        chunk: expect.objectContaining({
-          message_type: "event_message",
-          event_type: "retry",
-        }),
-      }),
-    );
-    expect(events.some((event) => event.type === "local-message")).toBe(true);
+      // Oversized text has no provider-only bytes to shed, so the turn retries
+      // transiently. It must NOT be reclassified as an overflow to recover
+      // from: the stored context is not the request body, and only the operator
+      // may rewrite it now (D-105 / I1).
+      expect(providerCalls).toBe(2);
+      expect(
+        events.filter(
+          (event) =>
+            event.type === "letta-chunk" &&
+            (event.chunk as { event_type?: string }).event_type === "retry",
+        ),
+      ).toHaveLength(1);
+      expect(
+        events.find(
+          (event) =>
+            event.type === "letta-chunk" &&
+            (event.chunk as { event_type?: string }).event_type ===
+              "compaction",
+        ),
+      ).toBeUndefined();
+      expect(events.some((event) => event.type === "local-message")).toBe(true);
+    } finally {
+      if (previousLimit === undefined) {
+        delete process.env.LETTA_LOCAL_REQUEST_BYTE_LIMIT;
+      } else {
+        process.env.LETTA_LOCAL_REQUEST_BYTE_LIMIT = previousLimit;
+      }
+    }
   });
 
   test("removes OpenAI Responses replay item IDs before provider submission", async () => {

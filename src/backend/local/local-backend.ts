@@ -21,14 +21,10 @@ import {
 } from "@/backend/dev/headless-backend";
 import type { HeadlessTurnExecutor } from "@/backend/dev/headless-turn-executor";
 import { LocalPiModelsRuntime } from "@/backend/dev/pi-models-runtime";
-import type {
-  LocalContextPressure,
-  PiStreamFunction,
-} from "@/backend/dev/pi-stream-adapter";
+import type { PiStreamFunction } from "@/backend/dev/pi-stream-adapter";
 import type {
   LlmEndInfo,
   LlmStartInfo,
-  ProviderTurnInput,
 } from "@/backend/dev/provider-turn-executor";
 import { isRecord } from "@/utils/type-guards";
 import {
@@ -211,12 +207,6 @@ export class LocalBackend extends HeadlessBackend {
       createLocalExecutor(
         options,
         runtime,
-        (input, error) =>
-          localBackendRef.current?.compactAfterContextOverflow(input, error) ??
-          Promise.resolve(null),
-        (input, pressure) =>
-          localBackendRef.current?.compactForContextPressure(input, pressure) ??
-          Promise.resolve(null),
         (info) =>
           localBackendRef.current?.emitLlmStart(info) ?? Promise.resolve(),
         (info) =>
@@ -566,52 +556,6 @@ export class LocalBackend extends HeadlessBackend {
       authorName,
       files,
     });
-  }
-
-  private async compactAfterContextOverflow(
-    input: ProviderTurnInput,
-    _error: unknown,
-  ): Promise<{
-    uiMessages: LocalMessage[];
-    summary: string;
-    stats?: LocalCompactionStats;
-  } | null> {
-    const result = await this.compactLocalConversation(
-      input.conversationId,
-      input.agentId,
-      "context_window_overflow",
-    );
-    return {
-      uiMessages: this.store.listLocalMessages(
-        input.conversationId,
-        input.agentId,
-      ),
-      summary: result.summary,
-      stats: result.stats,
-    };
-  }
-
-  private async compactForContextPressure(
-    input: ProviderTurnInput,
-    _pressure: LocalContextPressure,
-  ): Promise<{
-    uiMessages: LocalMessage[];
-    summary: string;
-    stats?: LocalCompactionStats;
-  } | null> {
-    const result = await this.compactLocalConversation(
-      input.conversationId,
-      input.agentId,
-      "context_window_limit",
-    );
-    return {
-      uiMessages: this.store.listLocalMessages(
-        input.conversationId,
-        input.agentId,
-      ),
-      summary: result.summary,
-      stats: result.stats,
-    };
   }
 
   private effectiveContextWindow(

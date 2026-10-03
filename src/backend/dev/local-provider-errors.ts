@@ -5,7 +5,11 @@ import {
   shouldRetryPreStreamTransientError,
 } from "@/agent/turn-recovery-policy";
 import { isRecord } from "@/utils/type-guards";
-import { isContextWindowOverflowError } from "./context-window-overflow";
+import {
+  CONTEXT_OVERFLOW_MESSAGE,
+  isContextWindowOverflowError,
+  LocalContextOverflowError,
+} from "./context-window-overflow";
 
 export interface LocalProviderErrorInfo {
   message: string;
@@ -194,7 +198,14 @@ export function normalizeLocalProviderError(
 ): LocalProviderErrorInfo {
   const retryable = isRetryableLocalProviderError(error);
   const detail = localProviderErrorDetail(error);
-  const message = fallbackErrorMessage(error);
+  // A preflight verdict already carries the numbers behind it. A
+  // provider-reported overflow only carries raw API text, which tells the
+  // operator nothing about what to do next, so it gets the actionable copy.
+  const message =
+    isContextWindowOverflowError(error) &&
+    !(error instanceof LocalContextOverflowError)
+      ? CONTEXT_OVERFLOW_MESSAGE
+      : fallbackErrorMessage(error);
   const isProviderError = isLikelyProviderError(error, retryable);
   return {
     message,

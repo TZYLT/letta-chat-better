@@ -300,13 +300,6 @@ export function contextPressureLevel(input: {
   return "ok";
 }
 
-export function shouldCompactForContextPressure(input: {
-  contextTokens: number | undefined;
-  contextWindow: number | undefined;
-}): boolean {
-  return contextPressureLevel(input) === "hard";
-}
-
 function serializedLength(value: unknown): number {
   if (value === undefined || value === null) return 0;
   try {

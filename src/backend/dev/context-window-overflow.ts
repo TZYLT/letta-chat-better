@@ -38,7 +38,29 @@ function contextOverflowHaystack(error: unknown): string {
   return pieces.join("\n").toLowerCase();
 }
 
+/**
+ * The local backend's own "this turn cannot be sent" verdict.
+ *
+ * Distinct from a provider-reported overflow: the request was never sent, so
+ * the numbers behind the decision are known. It is still an overflow for every
+ * classifier, which is what keeps it non-retryable and actionable.
+ */
+export class LocalContextOverflowError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "LocalContextOverflowError";
+  }
+}
+
+/** What the operator can do about an overflow. Appended to every overflow report. */
+export const CONTEXT_OVERFLOW_GUIDANCE =
+  "Run /compact to choose a cut point. This product no longer splits context automatically.";
+
+/** Report for an overflow the provider reported, where the numbers are unknown. */
+export const CONTEXT_OVERFLOW_MESSAGE = `Context has exceeded the model window. ${CONTEXT_OVERFLOW_GUIDANCE}`;
+
 export function isContextWindowOverflowError(error: unknown): boolean {
+  if (error instanceof LocalContextOverflowError) return true;
   const haystack = contextOverflowHaystack(error);
   return [
     "context_length_exceeded",

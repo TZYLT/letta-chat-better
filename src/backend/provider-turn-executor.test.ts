@@ -11,7 +11,6 @@ import {
   ProviderTurnExecutor,
   providerLocalMessage,
   providerStreamPart,
-  shouldCompactForContextPressure,
 } from "@/backend/dev/provider-turn-executor";
 import {
   emptyLocalUsage,
@@ -70,23 +69,8 @@ function assistantMessage(usage = emptyLocalUsage()): LocalAssistantMessage {
 }
 
 describe("ProviderTurnExecutor", () => {
-  test("reserves Pi's output headroom before the context window is full", () => {
-    expect(contextCompactionThreshold(100_000)).toBe(83_616);
-    expect(
-      shouldCompactForContextPressure({
-        contextTokens: 86_045,
-        contextWindow: 100_000,
-      }),
-    ).toBe(true);
-    expect(
-      shouldCompactForContextPressure({
-        contextTokens: 83_616,
-        contextWindow: 100_000,
-      }),
-    ).toBe(false);
-  });
-
   test("caps the reserve for small local context windows", () => {
+    expect(contextCompactionThreshold(100_000)).toBe(83_616);
     expect(contextCompactionThreshold(10_000)).toBe(8_000);
     expect(contextCompactionThreshold(1_000)).toBe(800);
     expect(contextCompactionThreshold(0)).toBeUndefined();

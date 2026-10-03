@@ -286,7 +286,6 @@ describe("PiStreamAdapter local endpoint payloads", () => {
         collectEvents(
           new PiStreamAdapter({
             localProviderAuthStorageDir: storageDir,
-            onContextPressure: async () => null,
           }).stream({
             ...baseInput,
             agent: {
