@@ -553,10 +553,6 @@ export class LocalStore {
       this.agents.get(agentId) ??
       this.createDefaultAgentRecord(agentId);
     const bodyRecord = body as Record<string, unknown>;
-    const nextSystem =
-      typeof bodyRecord.system === "string" ? bodyRecord.system : undefined;
-    const systemChanged =
-      nextSystem !== undefined && nextSystem !== existingRecord.system;
     const requestedModel = bodyRecord.model;
     const requestedModelSettings = supportedModelSettingsFromBody(bodyRecord);
     const nextModel =
@@ -595,9 +591,10 @@ export class LocalStore {
     };
     this.agents.set(agentId, updated);
     this.persistAgent(agentId);
-    if (systemChanged) {
-      this.clearCompiledSystemPromptsForAgent(agentId);
-    }
+    // An `agent.system` change (personality preset, prompt-version upgrade) is
+    // only REGISTERED here. The frozen prefix is never rewritten by an agent
+    // edit; `/context-pending` reports it and the next application point
+    // (new conversation, compaction, `/recompile`) applies it.
     return this.projectAgent(updated);
   }
 
@@ -1076,25 +1073,6 @@ export class LocalStore {
     const key = this.conversationKey(conversation.id, agentId);
     this.compiledSystemPromptByConversationKey.set(key, prompt);
     this.persistCompiledSystemPrompt(conversation.id, agentId);
-  }
-
-  clearCompiledSystemPromptsForAgent(agentId: string): void {
-    this.loadConversationRecordsFromStorage();
-    for (const [key, conversation] of this.conversations.entries()) {
-      if (conversation.agent_id !== agentId) continue;
-      this.compiledSystemPromptByConversationKey.delete(key);
-      if (this.storageDir) {
-        rmSync(
-          join(
-            this.storageDir,
-            "conversations",
-            encodePathSegment(key),
-            "system-prompt.json",
-          ),
-          { force: true },
-        );
-      }
-    }
   }
 
   listConversationMessages(

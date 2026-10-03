@@ -16,6 +16,9 @@ import { LocalBackend } from "@/backend/local/local-backend";
  *         applied snapshot for the same conversation.
  *   V11 — degradation: a missing snapshot compiles fresh, and an unavailable
  *         memory repo never rewrites the frozen prefix.
+ *   V15 — application-point consolidation: an `agent.system` edit only
+ *         registers a pending change; `/recompile` (the application point) is
+ *         what applies it.
  */
 
 async function drain(stream: AsyncIterable<unknown>): Promise<void> {
@@ -194,5 +197,51 @@ describe("V11 degradation", () => {
     const pending = await backend.getContextPending(conversation.id, agent.id);
     expect(pending.memory.unappliedCommits).toEqual([]);
     expect(pending.hasPending).toBe(false);
+  }, 60000);
+});
+
+describe("V15 agent.system changes register instead of applying", () => {
+  test("updateAgent({system}) keeps the frozen prefix until /recompile", async () => {
+    const storageDir = await mkdtemp(join(tmpdir(), "freeze-system-change-"));
+    const systemPrompts: string[] = [];
+    const executor = recordingExecutor(systemPrompts);
+    const backend = new LocalBackend({
+      storageDir,
+      executor,
+      memfsEnabled: false,
+    });
+    const agent = await backend.createAgent({
+      name: "Local",
+      system: "ORIGINAL SYSTEM {CORE_MEMORY}",
+    } as never);
+    const conversation = await backend.createConversation({
+      agent_id: agent.id,
+    } as never);
+    await sendTurn(backend, conversation.id, agent.id, "first");
+
+    await backend.updateAgent(agent.id, {
+      system: "REPLACED SYSTEM {CORE_MEMORY}",
+    } as never);
+
+    // Registered, not applied: the snapshot survives and the report says so.
+    // Deleting the snapshot here would silently rewrite the prefix (R-07).
+    const pending = await backend.getContextPending(conversation.id, agent.id);
+    expect(pending.hasSnapshot).toBe(true);
+    expect(pending.systemChanged).toBe(true);
+    expect(pending.hasPending).toBe(true);
+
+    await sendTurn(backend, conversation.id, agent.id, "second");
+    expect(systemPrompts).toHaveLength(2);
+    expect(systemPrompts[1]).toBe(systemPrompts[0]);
+    expect(systemPrompts[1]).toContain("ORIGINAL SYSTEM");
+
+    // The application point applies it.
+    await backend.recompileConversation(conversation.id, {
+      agent_id: agent.id,
+    } as never);
+    await sendTurn(backend, conversation.id, agent.id, "third");
+    expect(systemPrompts).toHaveLength(3);
+    expect(systemPrompts[2]).toContain("REPLACED SYSTEM");
+    expect(systemPrompts[2]).not.toContain("ORIGINAL SYSTEM");
   }, 60000);
 });
