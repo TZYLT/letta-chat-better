@@ -36,6 +36,37 @@ class RecordingProviderAdapter implements ProviderStreamAdapter {
   }
 }
 
+/** Throws on the first turn, succeeds afterwards. */
+class FlakyProviderAdapter implements ProviderStreamAdapter {
+  calls = 0;
+  lastInput: ProviderTurnInput | undefined;
+
+  async *stream(input: ProviderTurnInput) {
+    this.calls += 1;
+    this.lastInput = input;
+    if (this.calls === 1) throw new Error("provider exploded");
+    yield providerLettaChunk({
+      message_type: "stop_reason",
+      stop_reason: "end_turn",
+    } as never);
+  }
+}
+
+async function findConversationDir(
+  storageDir: string,
+  conversationId: string,
+): Promise<string> {
+  const conversationsDir = join(storageDir, "conversations");
+  for (const dir of await readdir(conversationsDir)) {
+    const candidateDir = join(conversationsDir, dir);
+    const candidate = JSON.parse(
+      await readFile(join(candidateDir, "conversation.json"), "utf8"),
+    ) as { id?: unknown };
+    if (candidate.id === conversationId) return candidateDir;
+  }
+  throw new Error("Expected the persisted test conversation directory");
+}
+
 describe("FakeHeadlessBackend", () => {
   test("streams deterministic assistant responses", async () => {
     const backend = new FakeHeadlessBackend("agent-fake-headless");
@@ -249,5 +280,69 @@ describe("FakeHeadlessBackend", () => {
     expect(
       (chunks.at(-1) as { stop_reason?: string } | undefined)?.stop_reason,
     ).toBe("requires_approval");
+  });
+
+  // Feature-③ pre-flight pin: the user message is appended to the transcript
+  // *before* the provider runs (`executeConversationTurn` calls
+  // `store.appendTurnInput` first). Any error path that aborts the turn — the
+  // coming hard-context-limit refusal, a provider overflow, a crash — therefore
+  // leaves this turn's user message in context. The error copy must say "resend
+  // after trimming" rather than auto-retrying, or the model would see it twice.
+  //
+  // A provider-level throw is *not* a rejection: `ProviderTurnExecutor` wraps
+  // the adapter stream and turns a throw into `error_message` + `stop_reason`
+  // chunks, so the turn visibly fails and ends. The coming refusal path inherits
+  // that shape rather than inventing a new one.
+  test("persists the user message before the provider runs, even when it throws", async () => {
+    const adapter = new FlakyProviderAdapter();
+    const storageDir = await mkdtemp(join(tmpdir(), "fake-headless-order-"));
+    const backend = new FakeHeadlessBackend(
+      "agent-fake-headless",
+      new ProviderTurnExecutor(adapter),
+      {
+        storageDir,
+        strictAgentAccess: false,
+        strictConversationAccess: false,
+      },
+    );
+    const conversation = await backend.createConversation({
+      agent_id: "agent-fake-headless",
+    });
+
+    const chunks = await collect(
+      await backend.createConversationMessageStream(conversation.id, {
+        agent_id: "agent-fake-headless",
+        messages: [{ role: "user", content: "survives the failure" }],
+      } as ConversationMessageCreateBody),
+    );
+    expect(
+      chunks.map((chunk) => (chunk as { message_type?: string }).message_type),
+    ).toEqual(["error_message", "stop_reason"]);
+    expect(
+      (chunks.at(-1) as { stop_reason?: string } | undefined)?.stop_reason,
+    ).toBe("error");
+
+    const conversationDir = await findConversationDir(
+      storageDir,
+      conversation.id,
+    );
+    const record = JSON.parse(
+      await readFile(join(conversationDir, "conversation.json"), "utf8"),
+    ) as { in_context_message_ids?: string[] };
+    expect(record.in_context_message_ids).toHaveLength(1);
+    expect(
+      await readFile(join(conversationDir, "messages.jsonl"), "utf8"),
+    ).toContain("survives the failure");
+
+    // The next turn sees it too: an automatic re-send would duplicate content.
+    await collect(
+      await backend.createConversationMessageStream(conversation.id, {
+        agent_id: "agent-fake-headless",
+        messages: [{ role: "user", content: "second" }],
+      } as ConversationMessageCreateBody),
+    );
+    expect(JSON.stringify(adapter.lastInput?.uiMessages)).toContain(
+      "survives the failure",
+    );
   });
 });
