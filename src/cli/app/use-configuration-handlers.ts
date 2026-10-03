@@ -20,6 +20,7 @@ import {
 } from "@/agent/personality-presets";
 import { getBackend } from "@/backend";
 import type { ModelSelectorSelection } from "@/cli/components/ModelSelector";
+import { assertCompactionModeForBackend } from "@/cli/helpers/compaction-mode";
 import {
   type ContextTracker,
   resetContextHistory,
@@ -1036,11 +1037,9 @@ export function useConfigurationHandlers(ctx: ConfigurationHandlersContext) {
           const nextCompactionSettings = {
             ...existing,
             model: existingModel || DEFAULT_SUMMARIZATION_MODEL,
-            mode: mode as
-              | "all"
-              | "sliding_window"
-              | "self_compact_all"
-              | "self_compact_sliding_window",
+            // Rejects modes this backend cannot run (a queued overlay action can
+            // carry one chosen before the backend changed).
+            mode: assertCompactionModeForBackend(mode),
           };
 
           await getBackend().updateAgent(agentId, {

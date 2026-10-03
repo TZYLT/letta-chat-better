@@ -858,7 +858,7 @@ export function AppView(props: AppViewProps) {
 
             {activeOverlay === "compaction" && (
               <CompactionSelector
-                initialMode={agentState?.compaction_settings?.mode}
+                settings={agentState?.compaction_settings}
                 onSave={handleCompactionModeSelect}
                 onCancel={closeOverlay}
               />
