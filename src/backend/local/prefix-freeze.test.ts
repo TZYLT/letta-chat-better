@@ -119,6 +119,72 @@ describe("establishFrozenCollections", () => {
     expect(result.snapshot.frozenTools).toBeUndefined();
     expect(result.snapshot.frozenSkillsBlock).toBeUndefined();
   });
+
+  test("clears an observation once the live value matches the frozen one again", () => {
+    const frozen = establishFrozenCollections({
+      snapshot: snapshot(),
+      skillsBlock: "A",
+      tools: [{ name: "A" }],
+    }).snapshot;
+    const drifted = establishFrozenCollections({
+      snapshot: frozen,
+      skillsBlock: "B",
+      tools: [{ name: "B" }],
+    }).snapshot;
+    expect(drifted.observedTools).toBe(canonicalJson([{ name: "B" }]));
+    expect(drifted.observedSkillsBlock).toBe("B");
+
+    const reverted = establishFrozenCollections({
+      snapshot: drifted,
+      skillsBlock: "A",
+      tools: [{ name: "A" }],
+    });
+
+    // The drift reverted, so it must stop being reported (otherwise
+    // /context-pending reports changes that no longer exist).
+    expect(reverted.changed).toBe(true);
+    expect(reverted.snapshot.observedTools).toBeUndefined();
+    expect(reverted.snapshot.observedSkillsBlock).toBeUndefined();
+    expect(reverted.snapshot.frozenTools).toBe(canonicalJson([{ name: "A" }]));
+
+    const report = computeContextPending({
+      hasSnapshot: true,
+      appliedTools: reverted.snapshot.frozenTools,
+      observedTools: reverted.snapshot.observedTools,
+      appliedSkillsBlock: reverted.snapshot.frozenSkillsBlock,
+      observedSkillsBlock: reverted.snapshot.observedSkillsBlock,
+      dirty: false,
+    });
+    expect(report.tools.changed).toBe(false);
+    expect(report.skillsChanged).toBe(false);
+    expect(report.hasPending).toBe(false);
+  });
+
+  test("observes a client that stops sending tools at all", () => {
+    const frozen = establishFrozenCollections({
+      snapshot: snapshot(),
+      skillsBlock: "A",
+      tools: [{ name: "A" }],
+    }).snapshot;
+
+    const cleared = establishFrozenCollections({
+      snapshot: frozen,
+      skillsBlock: "A",
+      tools: [],
+    });
+
+    // An empty live set is a real observation, not missing information.
+    expect(cleared.changed).toBe(true);
+    expect(cleared.snapshot.observedTools).toBe(canonicalJson([]));
+    const report = computeContextPending({
+      hasSnapshot: true,
+      appliedTools: cleared.snapshot.frozenTools,
+      observedTools: cleared.snapshot.observedTools,
+      dirty: false,
+    });
+    expect(report.tools.changed).toBe(true);
+    expect(report.tools.removed).toEqual(["A"]);
+  });
 });
 
 describe("frozenToolsArray", () => {

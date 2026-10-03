@@ -82,11 +82,15 @@ function labelFromPath(relativePath: string): string {
   return normalizePath(relativePath).replace(/\.md$/, "");
 }
 
+/** A memory repo `git show`/`log` can exceed execFileSync's 1 MiB default. */
+const GIT_MAX_BUFFER = 32 * 1024 * 1024;
+
 function gitOutput(memoryDir: string, args: string[]): string {
   return execFileSync("git", args, {
     cwd: memoryDir,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "ignore"],
+    maxBuffer: GIT_MAX_BUFFER,
   });
 }
 

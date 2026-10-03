@@ -219,9 +219,12 @@ describe("V11 degradation", () => {
     expect(systemPrompts).toHaveLength(2);
     expect(systemPrompts[1]).toBe(systemPrompts[0]);
 
-    // Pending computation stays best-effort: it reports no drift, never throws.
+    // Pending computation stays best-effort: it never throws and reports no
+    // drift — but it must say the repo is unreadable instead of claiming there
+    // is nothing pending (R-03).
     const pending = await backend.getContextPending(conversation.id, agent.id);
     expect(pending.memory.unappliedCommits).toEqual([]);
+    expect(pending.memory.reachable).toBe(false);
     expect(pending.hasPending).toBe(false);
   }, 60000);
 });

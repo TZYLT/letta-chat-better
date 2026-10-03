@@ -101,8 +101,13 @@ export function stampFreezeMetadata(
 /**
  * Establish (once, from the first non-empty live set) and observe the frozen
  * collections. `changed` reports whether the persisted snapshot must be
- * rewritten: either a collection was just frozen, or a live value differing
- * from the frozen one was observed (recorded for `/context-pending`).
+ * rewritten: a collection was just frozen, a live value differing from the
+ * frozen one was observed, or an earlier observation no longer differs.
+ *
+ * The live values are always computed, so "the client stopped sending tools"
+ * is an observation (an empty set) rather than an absence of information. An
+ * observation that matches the frozen value is CLEARED: otherwise `/context-pending`
+ * would keep reporting drift that has since reverted.
  */
 export function establishFrozenCollections(input: {
   snapshot: LocalCompiledSystemPrompt;
@@ -112,35 +117,36 @@ export function establishFrozenCollections(input: {
   const snapshot = { ...input.snapshot };
   let changed = false;
 
-  const toolsJson =
-    input.tools.length > 0 ? canonicalJson(input.tools) : undefined;
-  if (
-    snapshot.frozenSkillsBlock === undefined &&
-    input.skillsBlock.length > 0
-  ) {
-    snapshot.frozenSkillsBlock = input.skillsBlock;
-    changed = true;
-  }
-  if (snapshot.frozenTools === undefined && toolsJson !== undefined) {
-    snapshot.frozenTools = toolsJson;
-    snapshot.frozenToolsHash = hashFrozenText(toolsJson);
+  const liveTools = canonicalJson(input.tools);
+  if (snapshot.frozenTools === undefined) {
+    if (input.tools.length > 0) {
+      snapshot.frozenTools = liveTools;
+      snapshot.frozenToolsHash = hashFrozenText(liveTools);
+      changed = true;
+    }
+  } else if (liveTools === snapshot.frozenTools) {
+    if (snapshot.observedTools !== undefined) {
+      delete snapshot.observedTools;
+      changed = true;
+    }
+  } else if (snapshot.observedTools !== liveTools) {
+    snapshot.observedTools = liveTools;
     changed = true;
   }
 
-  if (
-    snapshot.frozenSkillsBlock !== undefined &&
-    input.skillsBlock !== snapshot.frozenSkillsBlock &&
-    snapshot.observedSkillsBlock !== input.skillsBlock
-  ) {
-    snapshot.observedSkillsBlock = input.skillsBlock;
-    changed = true;
-  }
-  if (
-    snapshot.frozenTools !== undefined &&
-    toolsJson !== snapshot.frozenTools &&
-    snapshot.observedTools !== toolsJson
-  ) {
-    snapshot.observedTools = toolsJson;
+  const liveSkillsBlock = input.skillsBlock;
+  if (snapshot.frozenSkillsBlock === undefined) {
+    if (liveSkillsBlock.length > 0) {
+      snapshot.frozenSkillsBlock = liveSkillsBlock;
+      changed = true;
+    }
+  } else if (liveSkillsBlock === snapshot.frozenSkillsBlock) {
+    if (snapshot.observedSkillsBlock !== undefined) {
+      delete snapshot.observedSkillsBlock;
+      changed = true;
+    }
+  } else if (snapshot.observedSkillsBlock !== liveSkillsBlock) {
+    snapshot.observedSkillsBlock = liveSkillsBlock;
     changed = true;
   }
 
@@ -235,6 +241,13 @@ export function applyFrozenAgentOverrides<
 export interface ContextPendingMemory {
   appliedRevision?: string;
   committedRevision?: string;
+  /**
+   * Whether the committed revision could actually be read. `false` means the
+   * memory repo is missing or unreadable, so the memory delta is UNKNOWN rather
+   * than empty — the caller must say so instead of reporting "no changes".
+   * `undefined` means memory is not in play at all (memfs disabled).
+   */
+  reachable?: boolean;
   /** `git log --oneline <applied>..<committed>` entries. */
   unappliedCommits: string[];
   diffStat: string;
@@ -265,6 +278,7 @@ export interface ComputeContextPendingInput {
   hasSnapshot: boolean;
   appliedRevision?: string;
   committedRevision?: string;
+  memoryReachable?: boolean;
   unappliedCommits?: string[];
   diffStat?: string;
   fullDiff?: string;
@@ -350,6 +364,9 @@ export function computeContextPending(
       ...(input.committedRevision !== undefined
         ? { committedRevision: input.committedRevision }
         : {}),
+      ...(input.memoryReachable !== undefined
+        ? { reachable: input.memoryReachable }
+        : {}),
       unappliedCommits: input.unappliedCommits ?? [],
       diffStat: input.diffStat ?? "",
       ...(input.fullDiff !== undefined ? { fullDiff: input.fullDiff } : {}),
@@ -401,6 +418,7 @@ export function buildContextPendingReport(input: {
     hasSnapshot: snapshot !== undefined,
     appliedRevision: snapshot?.memfsRevision,
     committedRevision: input.memory.committedRevision,
+    memoryReachable: input.memory.reachable,
     unappliedCommits: input.memory.unappliedCommits,
     diffStat: input.memory.diffStat,
     fullDiff: input.memory.fullDiff,
@@ -418,11 +436,15 @@ export function buildContextPendingReport(input: {
   });
 }
 
+/** A memory repo diff can exceed execFileSync's 1 MiB default on a busy repo. */
+const GIT_MAX_BUFFER = 32 * 1024 * 1024;
+
 function gitOutput(memoryDir: string, args: string[]): string {
   return execFileSync("git", args, {
     cwd: memoryDir,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "ignore"],
+    maxBuffer: GIT_MAX_BUFFER,
   });
 }
 
@@ -440,9 +462,11 @@ export function isMemoryDirDirty(memoryDir: string): boolean {
 }
 
 /**
- * Read the committed-vs-applied memory delta straight from git. Best effort:
- * a missing repo or unreachable revision yields an empty delta rather than
- * throwing, because the caller must never rewrite the prefix on error.
+ * Read the committed-vs-applied memory delta straight from git. Best effort: a
+ * missing repo or unreachable revision yields an empty delta rather than
+ * throwing, because the caller must never rewrite the prefix on error. The
+ * `reachable` flag records that the delta is UNKNOWN, so the report can say so
+ * instead of claiming there is nothing pending.
  */
 export function collectMemoryPending(
   memoryDir: string,
@@ -452,9 +476,11 @@ export function collectMemoryPending(
   const committedRevision = existsSync(memoryDir)
     ? getCommittedMemfsRevision(memoryDir)
     : undefined;
+  const reachable = committedRevision !== undefined;
   const base: ContextPendingMemory = {
     ...(appliedRevision !== undefined ? { appliedRevision } : {}),
     ...(committedRevision !== undefined ? { committedRevision } : {}),
+    reachable,
     unappliedCommits: [],
     diffStat: "",
   };
@@ -466,31 +492,40 @@ export function collectMemoryPending(
     return base;
   }
   const range = `${appliedRevision}..${committedRevision}`;
+  let unappliedCommits: string[] = [];
+  let diffStat = "";
   try {
-    const unappliedCommits = gitOutput(memoryDir, ["log", "--oneline", range])
+    unappliedCommits = gitOutput(memoryDir, ["log", "--oneline", range])
       .split("\n")
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
-    const diffStat = gitOutput(memoryDir, [
+    diffStat = gitOutput(memoryDir, [
       "diff",
       "--stat",
       appliedRevision,
       committedRevision,
     ]).trimEnd();
-    const fullDiff = options.full
-      ? gitOutput(memoryDir, [
-          "diff",
-          appliedRevision,
-          committedRevision,
-        ]).trimEnd()
-      : undefined;
-    return {
-      ...base,
-      unappliedCommits,
-      diffStat,
-      ...(fullDiff !== undefined ? { fullDiff } : {}),
-    };
   } catch {
     return base;
   }
+  // The full diff is requested separately and can be far larger than the commit
+  // list or the stat: a failure there must not discard the two we already have.
+  let fullDiff: string | undefined;
+  if (options.full) {
+    try {
+      fullDiff = gitOutput(memoryDir, [
+        "diff",
+        appliedRevision,
+        committedRevision,
+      ]).trimEnd();
+    } catch {
+      fullDiff = undefined;
+    }
+  }
+  return {
+    ...base,
+    unappliedCommits,
+    diffStat,
+    ...(fullDiff !== undefined ? { fullDiff } : {}),
+  };
 }

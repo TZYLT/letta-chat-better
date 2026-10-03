@@ -84,13 +84,20 @@ export function formatContextPendingReport(
   const dirtyNotice = report.dirty
     ? "Working tree has uncommitted memory changes (not applied until committed)."
     : undefined;
+  const unreachableNotice =
+    report.memory.reachable === false
+      ? "memory repo unreachable — pending memory changes are unknown (the frozen prefix is unchanged)."
+      : undefined;
+  const notices = [dirtyNotice, unreachableNotice].filter(
+    (notice): notice is string => notice !== undefined,
+  );
 
   if (!report.hasPending) {
     const body =
       sections.length === 0
         ? "No pending prefix changes."
         : sections.join("\n");
-    return dirtyNotice ? `${body}\n${dirtyNotice}` : body;
+    return [body, ...notices].join("\n");
   }
 
   const output = [
@@ -98,8 +105,8 @@ export function formatContextPendingReport(
     indentBlock(sections.join("\n")),
     "",
     "Run /recompile to apply now (evicts cache), or wait for compaction / a new conversation.",
+    ...notices,
   ];
-  if (dirtyNotice) output.push(dirtyNotice);
   return output.join("\n");
 }
 

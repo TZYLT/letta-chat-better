@@ -94,4 +94,33 @@ describe("formatContextPendingReport", () => {
     expect(output).toContain("No pending prefix changes.");
     expect(output).toContain("uncommitted memory changes");
   });
+
+  test("says so when the memory repo is unreachable instead of claiming no changes", () => {
+    const output = formatContextPendingReport(
+      report({
+        memory: { unappliedCommits: [], diffStat: "", reachable: false },
+      }),
+    );
+    expect(output).toContain("memory repo unreachable");
+    expect(output).toContain("unknown");
+    expect(output).toContain("unchanged");
+  });
+
+  test("reports unknown memory alongside real drift", () => {
+    const output = formatContextPendingReport(
+      report({
+        hasPending: true,
+        systemChanged: true,
+        memory: { unappliedCommits: [], diffStat: "", reachable: false },
+      }),
+    );
+    expect(output).toContain("Pending prefix changes");
+    expect(output).toContain("agent.system: changed");
+    expect(output).toContain("memory repo unreachable");
+  });
+
+  test("stays quiet when memory is not in play", () => {
+    const output = formatContextPendingReport(report());
+    expect(output).not.toContain("unreachable");
+  });
 });
