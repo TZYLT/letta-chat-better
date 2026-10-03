@@ -10,6 +10,7 @@ import { listWorkflowExecutions } from "@/tools/workflow/execution-registry";
 import { handleMemoryRepositoryCommand } from "./memory-repository";
 import { handleSecretCommand } from "./secret";
 import { handleSystemRemindersCommand } from "./system-reminders";
+import { handleTopicCommand } from "./topic";
 
 type CommandHandlerResult =
   | string
@@ -628,6 +629,11 @@ export const commands: Record<string, Command> = {
       // Handled specially in App.tsx to access client and agent ID
       return "Compacting conversation...";
     },
+  },
+  "/topic": {
+    desc: "Mark a topic boundary in this conversation",
+    args: "<title> [summary]",
+    handler: (args, scope) => handleTopicCommand(args, scope),
   },
   "/set-max-context": {
     desc: "Alias for /context-limit",
