@@ -31,6 +31,7 @@ import {
   persistReflectionSettingsForAgent,
   type ReflectionSettings,
 } from "@/cli/helpers/memory-reminder";
+import { formatPersonalitySwappedMessage } from "@/cli/helpers/personality-pending";
 import { DEFAULT_SUMMARIZATION_MODEL } from "@/constants";
 import { experimentManager } from "@/experiments/manager";
 import type { ExperimentId } from "@/experiments/types";
@@ -879,16 +880,10 @@ export function useConfigurationHandlers(ctx: ConfigurationHandlersContext) {
           setCurrentPersonalityId(personalityId);
 
           if (getBackend().capabilities.localMemfs) {
-            cmd.update({
-              output: "Recompiling local system prompt...",
-              phase: "running",
-            });
-            const currentConversationId = conversationIdRef.current;
-            await getBackend().recompileConversation(currentConversationId, {
-              agent_id: agentId,
-            });
+            // The memory commit is only registered here; the frozen prefix is
+            // applied at an application point, never from this handler (R-08).
             cmd.finish(
-              `Personality swapped to ${personality.label}. Run \`/clear\` or \`/new\` to reset your message history for the personality to take full effect.`,
+              formatPersonalitySwappedMessage(personality.label),
               true,
             );
             return;

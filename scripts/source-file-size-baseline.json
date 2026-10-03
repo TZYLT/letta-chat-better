@@ -8,7 +8,7 @@
   "src/cli/app/AppCoordinator.tsx": 5055,
   "src/cli/app/AppView.tsx": 1726,
   "src/cli/app/use-approval-flow.ts": 1071,
-  "src/cli/app/use-configuration-handlers.ts": 1417,
+  "src/cli/app/use-configuration-handlers.ts": 1412,
   "src/cli/app/use-conversation-loop.ts": 2860,
   "src/cli/app/use-submit-handler.ts": 3800,
   "src/cli/components/AgentSelector.tsx": 1104,
