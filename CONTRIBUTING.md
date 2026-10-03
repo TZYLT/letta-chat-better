@@ -15,9 +15,10 @@ bun install --frozen-lockfile    # 安装依赖（会执行 vendor 补丁 postin
 bun run dev                      # 从 TypeScript 源码直接运行（改完即生效）
 bun run dev -- -p "Hello"        # 带参数运行
 
-bun run check                    # 本地护栏（12 项）：循环依赖 / 分层边界 / 导出风格 /
-                                 # 文件命名 / 文件体积 / 模块归属 / 测试隔离 / 测试覆盖 /
-                                 # skill frontmatter / 内置 skill 脚本 / biome / tsc
+bun run check                    # 本地护栏（13 项）：循环依赖 / 分层边界 / 导出风格 /
+                                 # 文件命名 / 文件体积 / 模块归属 / 前缀冻结应用点 /
+                                 # 测试隔离 / 测试覆盖 / skill frontmatter / 内置 skill
+                                 # 脚本 / biome / tsc
 bun run build                    # 构建：根目录 letta.js（已 gitignore）+ dist/app-server-client.*
 
 bun test <file>                  # 单文件单测

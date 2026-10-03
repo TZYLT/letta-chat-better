@@ -248,12 +248,13 @@ also rejects staged parent-relative imports (`../`); use the `@/` alias.
 4. **filename-casing** — `scripts/check-filename-casing.js`; enforces source naming conventions
 5. **source-file-size** — `scripts/check-source-file-size.js`; enforces the 1,000-line ceiling and ratchet
 6. **module-ownership** — `scripts/check-module-ownership.js`; protects orchestration modules from barrel imports/exports
-7. **test-mock-isolation** — `scripts/check-test-mock-isolation.js`; flags unsafe `mock.module` patterns
-8. **test-coverage** — `scripts/check-test-coverage.cjs`; checks source/test coverage policy
-9. **skill-frontmatter** — checks every `SKILL.md` has a non-empty `name:` header
-10. **bundled-skill-scripts** — validates scripts shipped with bundled skills
-11. **biome** — format + lint across source files
-12. **typescript** — full `tsc --noEmit`
+7. **recompile-callsites** — `scripts/check-recompile-callsites.js`; enforces the prefix-freeze application-point contract (who may rewrite a conversation's frozen prefix, and which freeze reasons are valid)
+8. **test-mock-isolation** — `scripts/check-test-mock-isolation.js`; flags unsafe `mock.module` patterns
+9. **test-coverage** — `scripts/check-test-coverage.cjs`; checks source/test coverage policy
+10. **skill-frontmatter** — checks every `SKILL.md` has a non-empty `name:` header
+11. **bundled-skill-scripts** — validates scripts shipped with bundled skills
+12. **biome** — format + lint across source files
+13. **typescript** — full `tsc --noEmit`
 
 ### Environment Variables
 
