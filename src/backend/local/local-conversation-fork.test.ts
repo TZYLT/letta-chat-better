@@ -17,7 +17,6 @@ describe("LocalBackend conversation forks", () => {
       freezeSchema: 1,
       frozenSkillsBlock: "<available_skills>A</available_skills>",
       frozenTools: '[{"name":"A"}]',
-      frozenToolsHash: "tools-hash",
       frozenModel: "anthropic/x",
       frozenModelSettings: "{}",
       frozenReason: "conversation_created",
@@ -43,6 +42,29 @@ describe("LocalBackend conversation forks", () => {
     expect(store.getCompiledSystemPrompt(forked.id, agentId)?.content).toBe(
       "compiled system",
     );
+  });
+
+  test("does not inherit the source snapshot into a different agent (R-06)", () => {
+    const agentId = "agent-local-fork-owner";
+    const otherAgentId = "agent-local-fork-other";
+    const store = new LocalStore(agentId);
+    const source = store.createConversation({ agent_id: agentId } as never);
+    store.setCompiledSystemPrompt(source.id, agentId, {
+      content: "compiled system",
+      coreMemory: "core",
+      compiledAt: "2026-01-01T00:00:00.000Z",
+      rawSystemHash: "hash",
+      memfsRevision: "rev",
+      frozenReason: "conversation_created",
+    });
+
+    // The snapshot describes the source agent's system prompt, model, and memory
+    // revision — none of which apply to another agent.
+    const forked = store.forkConversation(source.id, { agentId: otherAgentId });
+
+    expect(
+      store.getCompiledSystemPrompt(forked.id, otherAgentId),
+    ).toBeUndefined();
   });
 
   test("forks through a projected message ID inclusively", () => {

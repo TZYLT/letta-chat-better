@@ -5,8 +5,6 @@ import {
   computeContextPending,
   establishFrozenCollections,
   frozenToolsArray,
-  hashFrozenText,
-  resolveFrozenPrefix,
   stampFreezeMetadata,
 } from "@/backend/local/prefix-freeze";
 import type { LocalCompiledSystemPrompt } from "@/backend/local/system-prompt-compilation";
@@ -23,34 +21,6 @@ function snapshot(
     ...overrides,
   };
 }
-
-describe("resolveFrozenPrefix", () => {
-  test("compiles when the conversation has no applied snapshot", () => {
-    expect(resolveFrozenPrefix(undefined)).toEqual({ kind: "compile" });
-  });
-
-  test("reuses the applied snapshot when one exists", () => {
-    const existing = snapshot();
-    expect(resolveFrozenPrefix(existing)).toEqual({
-      kind: "frozen",
-      snapshot: existing,
-    });
-  });
-
-  test("reuses the snapshot regardless of live state drift", () => {
-    // The decision is independent of any live memfs revision / raw system
-    // hash: a turn never rewrites the prefix, so drift stays pending.
-    const existing = snapshot({
-      memfsRevision: "rev-old",
-      rawSystemHash: "hash-old",
-    });
-    const resolution = resolveFrozenPrefix(existing);
-    expect(resolution.kind).toBe("frozen");
-    if (resolution.kind === "frozen") {
-      expect(resolution.snapshot).toBe(existing);
-    }
-  });
-});
 
 describe("canonicalJson", () => {
   test("sorts object keys recursively so equal sets serialize identically", () => {
@@ -89,9 +59,6 @@ describe("establishFrozenCollections", () => {
     });
     expect(first.changed).toBe(true);
     expect(first.snapshot.frozenTools).toBe(canonicalJson([{ name: "A" }]));
-    expect(first.snapshot.frozenToolsHash).toBe(
-      hashFrozenText(canonicalJson([{ name: "A" }])),
-    );
 
     const second = establishFrozenCollections({
       snapshot: first.snapshot,

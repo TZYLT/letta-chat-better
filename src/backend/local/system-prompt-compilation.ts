@@ -1,4 +1,3 @@
-import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { getScopedMemoryFilesystemRoot } from "@/agent/memory-filesystem";
@@ -9,6 +8,7 @@ import {
 } from "@/agent/memory-format";
 import { parseFrontmatter } from "@/utils/frontmatter";
 import type { LocalAgentRecord } from "./local-types";
+import { gitOutput } from "./memory-git";
 
 const CORE_MEMORY_VARIABLE = "{CORE_MEMORY}";
 const MEMORY_DIR_PLACEHOLDER = "$" + "{MEMORY_DIR}";
@@ -43,7 +43,6 @@ export interface LocalCompiledSystemPrompt {
   frozenSkillsBlock?: string;
   /** Frozen `client_tools` declaration set (canonical JSON, byte-stable). */
   frozenTools?: string;
-  frozenToolsHash?: string;
   frozenModel?: string;
   /** Frozen `model_settings` (canonical JSON). */
   frozenModelSettings?: string;
@@ -80,18 +79,6 @@ function normalizePath(value: string): string {
 
 function labelFromPath(relativePath: string): string {
   return normalizePath(relativePath).replace(/\.md$/, "");
-}
-
-/** A memory repo `git show`/`log` can exceed execFileSync's 1 MiB default. */
-const GIT_MAX_BUFFER = 32 * 1024 * 1024;
-
-function gitOutput(memoryDir: string, args: string[]): string {
-  return execFileSync("git", args, {
-    cwd: memoryDir,
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "ignore"],
-    maxBuffer: GIT_MAX_BUFFER,
-  });
 }
 
 export function getCommittedMemfsRevision(

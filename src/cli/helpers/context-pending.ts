@@ -155,11 +155,8 @@ export function formatContextPendingReport(
   );
 
   if (!report.hasPending) {
-    const body =
-      sections.length === 0
-        ? "No pending prefix changes."
-        : sections.join("\n");
-    return [body, ...notices].join("\n");
+    // No pending flag is set, so no section was pushed: this is the only text.
+    return ["No pending prefix changes.", ...notices].join("\n");
   }
 
   const output = [

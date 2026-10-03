@@ -1,7 +1,6 @@
-import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import type { LocalAgentRecord } from "./local-store";
+import { gitOutput } from "./memory-git";
 import {
   appendCompiledSkillsBlock,
   compileAvailableSkillsBlock,
@@ -31,22 +30,6 @@ import {
  * report so the orchestration in `local-backend.ts` stays readable and the
  * rules are unit-testable on their own.
  */
-export type FrozenPrefixResolution =
-  | { kind: "frozen"; snapshot: LocalCompiledSystemPrompt }
-  | { kind: "compile" };
-
-/**
- * Decide whether the turn must reuse the conversation's applied snapshot or
- * compile one. Pending state (live memfs revision / raw system hash) is
- * deliberately NOT consulted here: it never changes the prefix on a turn.
- */
-export function resolveFrozenPrefix(
-  existing: LocalCompiledSystemPrompt | undefined,
-): FrozenPrefixResolution {
-  return existing
-    ? { kind: "frozen", snapshot: existing }
-    : { kind: "compile" };
-}
 
 function sortForCanonical(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(sortForCanonical);
@@ -68,10 +51,6 @@ function sortForCanonical(value: unknown): unknown {
  */
 export function canonicalJson(value: unknown): string {
   return JSON.stringify(sortForCanonical(value)) ?? "null";
-}
-
-export function hashFrozenText(text: string): string {
-  return createHash("sha256").update(text).digest("hex");
 }
 
 /**
@@ -121,7 +100,6 @@ export function establishFrozenCollections(input: {
   if (snapshot.frozenTools === undefined) {
     if (input.tools.length > 0) {
       snapshot.frozenTools = liveTools;
-      snapshot.frozenToolsHash = hashFrozenText(liveTools);
       changed = true;
     }
   } else if (liveTools === snapshot.frozenTools) {
@@ -433,18 +411,6 @@ export function buildContextPendingReport(input: {
     appliedModelSettings: snapshot?.frozenModelSettings,
     liveModelSettings: canonicalJson(input.liveAgent.model_settings),
     dirty: input.dirty,
-  });
-}
-
-/** A memory repo diff can exceed execFileSync's 1 MiB default on a busy repo. */
-const GIT_MAX_BUFFER = 32 * 1024 * 1024;
-
-function gitOutput(memoryDir: string, args: string[]): string {
-  return execFileSync("git", args, {
-    cwd: memoryDir,
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "ignore"],
-    maxBuffer: GIT_MAX_BUFFER,
   });
 }
 

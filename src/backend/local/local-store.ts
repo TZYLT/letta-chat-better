@@ -916,13 +916,13 @@ export class LocalStore {
     this.persistConversationState(forked.id, targetAgentId, {
       transcript: "rewrite",
     });
-    // A fork inherits the parent's applied prefix snapshot verbatim: the child
-    // starts byte-identical and diverges only at its own application point
-    // (requirement §3.1 R3/R6, §3.3 invariant 4).
-    const sourcePrompt = this.getCompiledSystemPrompt(
-      source.id,
-      source.agent_id,
-    );
+    // A fork inherits the parent's applied prefix snapshot verbatim (requirement
+    // §3.1 R3/R6, §3.3 invariant 4) — but only within the same agent: the
+    // snapshot describes THIS agent's prompt, model, and memory revision (R-06).
+    const sourcePrompt =
+      targetAgentId === source.agent_id
+        ? this.getCompiledSystemPrompt(source.id, source.agent_id)
+        : undefined;
     if (sourcePrompt) {
       this.compiledSystemPromptByConversationKey.set(targetKey, {
         ...sourcePrompt,

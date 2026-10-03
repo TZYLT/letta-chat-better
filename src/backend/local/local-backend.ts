@@ -72,7 +72,6 @@ import {
   type ContextPendingReport,
   collectMemoryPending,
   isMemoryDirDirty,
-  resolveFrozenPrefix,
   stampFreezeMetadata,
 } from "./prefix-freeze";
 import {
@@ -956,13 +955,14 @@ export class LocalBackend extends HeadlessBackend {
     agentId: string,
     previousMessageCount = 0,
   ): Promise<LocalCompiledSystemPrompt> {
+    // Pending state (live memfs revision / raw system hash) is deliberately not
+    // consulted: a turn never rewrites the prefix, it only applies it.
     const existing = this.store.getCompiledSystemPrompt(
       conversationId,
       agentId,
     );
-    const resolution = resolveFrozenPrefix(existing);
-    if (resolution.kind === "frozen") {
-      return resolution.snapshot;
+    if (existing) {
+      return existing;
     }
     return this.compileAndMaybePersistSystemPrompt(conversationId, agentId, {
       dryRun: false,

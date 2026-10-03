@@ -681,8 +681,10 @@ export async function updateModelConfig(
 }
 
 /**
- * Recompile an agent's system prompt after memory writes so server-side prompt
- * state picks up the latest memory content.
+ * Recompile an agent's system prompt. This is the manual application point
+ * (`/recompile`, exposed as `recompileConversation` on the backend): on the
+ * local backend it is what applies a registered prefix change. Nothing calls it
+ * automatically after memory writes — a memory commit only registers.
  *
  * @param conversationId - The conversation whose prompt should be recompiled
  * @param agentId - Agent id for the parent conversation
