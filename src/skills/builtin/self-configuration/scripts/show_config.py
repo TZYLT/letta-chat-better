@@ -41,6 +41,7 @@ TOP_LEVEL_KEYS = [
     "autoConversationTitles",
     "autoSwapOnQuotaLimit",
     "includeWorktreeTool",
+    "topicMarkingEnabled",
     "preferredBackendMode",
     "channelCredentialsStore",
     "reflectionTrigger",

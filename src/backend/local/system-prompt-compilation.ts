@@ -6,6 +6,7 @@ import {
   isProjectedMemoryPath,
   type LocalMemoryFormat,
 } from "@/agent/memory-format";
+import { TOPIC_MARKING_PROMPT } from "@/agent/prompt-assets";
 import { parseFrontmatter } from "@/utils/frontmatter";
 import type { LocalAgentRecord } from "./local-types";
 import { gitOutput } from "./memory-git";
@@ -61,6 +62,12 @@ export interface CompileLocalSystemPromptOptions {
   conversationId: string;
   memoryDir?: string;
   includeMemfs?: boolean;
+  /**
+   * Append the topic-marking chapter. Defaults to on; the caller passes
+   * `topic_marking_enabled`, and the chapter lives in the frozen prefix so the
+   * switch takes effect at the next application point.
+   */
+  includeTopicMarking?: boolean;
   now?: Date;
   previousMessageCount?: number;
 }
@@ -484,8 +491,12 @@ export function compileLocalSystemPrompt(
   const coreMemory = [memfs.content, metadata]
     .filter((part) => part.trim().length > 0)
     .join("\n\n");
+  const content = injectCoreMemory(options.agent.system, coreMemory);
   return {
-    content: injectCoreMemory(options.agent.system, coreMemory),
+    content:
+      options.includeTopicMarking === false
+        ? content
+        : `${content}\n\n${TOPIC_MARKING_PROMPT.trim()}`,
     coreMemory,
     compiledAt: compiledAt.toISOString(),
     rawSystemHash: hashRawSystemPrompt(options.agent.system),

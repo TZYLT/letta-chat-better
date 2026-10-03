@@ -21,6 +21,7 @@ import {
   TOPIC_COMMAND_LOCAL_ONLY,
   TOPIC_COMMAND_USAGE,
 } from "@/cli/commands/topic";
+import { settingsManager } from "@/settings-manager";
 
 const temporaryDirectories: string[] = [];
 
@@ -248,5 +249,31 @@ describe("handleTopicCommand", () => {
     );
     expect(result).toContain("nothing in this conversation's context");
     expect(backend.listTopicMarkers("default", agent.id)).toEqual([]);
+  });
+
+  test("keeps working while agent topic marking is switched off", async () => {
+    const originalHome = process.env.HOME;
+    const home = await createStorageDirectory();
+    process.env.HOME = home;
+    await settingsManager.reset();
+    await settingsManager.initialize();
+    try {
+      // The switch constrains the agent-side channel only (V18): the user's own
+      // marker is not a rate-limited or gated operation.
+      settingsManager.updateSettings({ topicMarkingEnabled: false });
+      const { backend, agentId, scope } = await backendWithTurns(1);
+
+      const result = await handleTopicCommand(["User topic"], scope, {
+        backend,
+      });
+      expect(result).toContain("id:");
+      expect(backend.listTopicMarkers("default", agentId)).toMatchObject([
+        { title: "User topic", createdBy: "user" },
+      ]);
+    } finally {
+      await settingsManager.reset();
+      if (originalHome === undefined) delete process.env.HOME;
+      else process.env.HOME = originalHome;
+    }
   });
 });

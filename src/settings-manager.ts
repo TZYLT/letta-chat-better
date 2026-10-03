@@ -72,6 +72,7 @@ export interface Settings {
   autoConversationTitlesRollbackApplied?: boolean; // One-time rollback marker for the default-on title experiment
   autoSwapOnQuotaLimit: boolean; // Auto-switch to temporary Auto model override on quota-limit errors
   includeWorktreeTool: boolean; // Include EnterWorktree in toolsets when true
+  topicMarkingEnabled: boolean; // Let agents mark topic boundaries (local backend); default on
   preferredBackendMode?: "api" | "local"; // Startup backend preference when no explicit --backend is provided
   channelCredentialsStore?: "file" | "keyring" | "auto"; // Where channel/connection tokens are persisted
   recentModels: string[]; // Recently used model IDs (most recent first, max 10)
@@ -178,6 +179,7 @@ const DEFAULT_SETTINGS: Settings = {
   autoConversationTitlesRollbackApplied: true,
   autoSwapOnQuotaLimit: true,
   includeWorktreeTool: true,
+  topicMarkingEnabled: true,
   recentModels: [],
   memoryReminderInterval: 25, // DEPRECATED: use reflection* fields
   reflectionTrigger: "step-count",
@@ -610,10 +612,6 @@ class SettingsManager {
 
   shouldIncludeWorktreeTool(): boolean {
     return this.getSettings().includeWorktreeTool !== false;
-  }
-
-  setIncludeWorktreeTool(enabled: boolean): void {
-    this.updateSettings({ includeWorktreeTool: enabled });
   }
 
   getRecentModels(): string[] {

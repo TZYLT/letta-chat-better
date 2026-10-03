@@ -263,6 +263,7 @@ Selected global settings keys:
 | `autoConversationTitles` | Generate conversation titles |
 | `autoSwapOnQuotaLimit` | Auto-switch temporary model on quota errors |
 | `includeWorktreeTool` | Include worktree tool in toolsets |
+| `topicMarkingEnabled` | Let agents mark topic boundaries (local backend only, default on) |
 | `preferredBackendMode` | Startup backend preference, `api` or `local` |
 | `channelCredentialsStore` | Channel token storage, `file`, `keyring`, or `auto` |
 | `reflectionTrigger` / `reflectionStepCount` | Default reflection cadence |

@@ -49,7 +49,6 @@ import {
   type RuntimeContextSnapshot,
   runWithRuntimeContext,
 } from "@/runtime-context";
-import { settingsManager } from "@/settings-manager";
 import { telemetry } from "@/telemetry";
 import { messageChannelTelemetry } from "@/telemetry/channel";
 import { autoBackgroundExternalTool } from "@/tools/external-tool-background";
@@ -183,22 +182,6 @@ const ARTIFACT_TOOL_NAMES: ToolName[] = [
   "write_artifact_file",
 ];
 
-function shouldIncludeWorktreeTool(): boolean {
-  try {
-    return settingsManager.shouldIncludeWorktreeTool();
-  } catch {
-    return true;
-  }
-}
-
-function filterWorktreeTools(toolNames: ToolName[]): ToolName[] {
-  if (shouldIncludeWorktreeTool()) {
-    return toolNames;
-  }
-
-  return toolNames.filter((name) => !WORKTREE_TOOL_NAMES.has(name));
-}
-
 function resolveArtifactToolNames(toolNames: ToolName[]): ToolName[] {
   const artifactToolSet = new Set<ToolName>(ARTIFACT_TOOL_NAMES);
   const withoutArtifactTools = toolNames.filter(
@@ -302,6 +285,11 @@ function filterModToolsByClientAllowlist(
   );
 }
 
+import { shouldIncludeWorktreeTool } from "@/settings-tool-gates";
+import {
+  filterDeclaredTopicMarkingTools,
+  filterWorktreeTools,
+} from "./declaration-gates";
 import { TOOLSET_CATALOG, WORKTREE_TOOL_NAMES } from "./toolset-catalog";
 import type { ToolsetName } from "./toolset-types";
 
@@ -724,10 +712,13 @@ export async function executeExternalTool(
  * Get all loaded tools in the format expected by the Letta API's client_tools field.
  * Maps internal tool names to server-facing names for proper tool invocation.
  * Includes built-in, external, and mod tools.
+ *
+ * Declaration gates apply here too: this is the other place a `client_tools`
+ * payload is built, so it must agree with `captureToolExecutionContext`.
  */
 export function getClientToolsFromRegistry(): ClientTool[] {
   return buildClientToolsFromSnapshot(
-    toolRegistry,
+    filterDeclaredTopicMarkingTools(toolRegistry),
     selectModelFacingExternalTools(
       filterExternalToolsByRuntimeContext(getExternalToolsRegistry(), {}),
     ),
@@ -811,7 +802,7 @@ function capturePreparedToolExecutionContext(
   return {
     contextId,
     clientTools: buildClientToolsFromSnapshot(
-      executionSnapshot.toolRegistry,
+      filterDeclaredTopicMarkingTools(executionSnapshot.toolRegistry),
       executionSnapshot.externalTools,
       executionSnapshot.modTools,
     ),

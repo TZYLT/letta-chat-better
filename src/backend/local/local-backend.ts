@@ -26,6 +26,7 @@ import type {
   LlmEndInfo,
   LlmStartInfo,
 } from "@/backend/dev/provider-turn-executor";
+import { shouldIncludeTopicMarking } from "@/settings-tool-gates";
 import { isRecord } from "@/utils/type-guards";
 import {
   estimateLocalMessageTokens,
@@ -931,6 +932,7 @@ export class LocalBackend extends HeadlessBackend {
         previousMessageCount,
         memoryDir: memfsEnabled ? this.memoryDirForAgent(agentId) : undefined,
         includeMemfs: memfsEnabled,
+        includeTopicMarking: shouldIncludeTopicMarking(),
       }),
       { reason: options.reason, agent },
     );

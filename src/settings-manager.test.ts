@@ -211,15 +211,15 @@ describe("Settings Manager - Global Settings", () => {
     expect(tokenStreaming).toBe(true);
   });
 
-  test("Worktree tool defaults on and can be toggled", () => {
+  test("Worktree tool defaults on and follows the global setting", () => {
     expect(settingsManager.getSetting("includeWorktreeTool")).toBe(true);
     expect(settingsManager.shouldIncludeWorktreeTool()).toBe(true);
 
-    settingsManager.setIncludeWorktreeTool(false);
+    settingsManager.updateSettings({ includeWorktreeTool: false });
     expect(settingsManager.getSetting("includeWorktreeTool")).toBe(false);
     expect(settingsManager.shouldIncludeWorktreeTool()).toBe(false);
 
-    settingsManager.setIncludeWorktreeTool(true);
+    settingsManager.updateSettings({ includeWorktreeTool: true });
     expect(settingsManager.getSetting("includeWorktreeTool")).toBe(true);
     expect(settingsManager.shouldIncludeWorktreeTool()).toBe(true);
   });

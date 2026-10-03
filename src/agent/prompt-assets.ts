@@ -11,6 +11,7 @@ import lettaMemfsPrompt from "./prompts/letta.md";
 import lettaLocalMemfsPrompt from "./prompts/letta_local_memfs.md";
 import lettaNoMemfsPrompt from "./prompts/letta_no_memfs.md";
 import lettaRootMemfsPrompt from "./prompts/letta_root_memfs.md";
+import lettaTopicMarkingPrompt from "./prompts/letta_topic_marking.md";
 import memoryFilesystemPrompt from "./prompts/memory_filesystem.mdx";
 import onboardingPrompt from "./prompts/onboarding.mdx";
 import onboardingLocalPrompt from "./prompts/onboarding_local.mdx";
@@ -33,6 +34,12 @@ export const SYSTEM_PROMPT = lettaNoMemfsPrompt;
 export const SKILL_CREATOR_PROMPT = skillCreatorModePrompt;
 export const APPROVAL_RECOVERY_PROMPT = approvalRecoveryAlert;
 export const INTERRUPT_RECOVERY_ALERT = interruptRecoveryAlert;
+
+/**
+ * Appended by the local backend's compiler while agent topic marking is on, so
+ * the guidance disappears with the tool declaration when it is switched off.
+ */
+export const TOPIC_MARKING_PROMPT = lettaTopicMarkingPrompt;
 
 export const MEMORY_PROMPTS: Record<string, string> = {
   "persona.mdx": personaPrompt,

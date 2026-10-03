@@ -289,4 +289,29 @@ describe("local system prompt compilation", () => {
     );
     expect(prompt).not.toContain("git push");
   });
+
+  test("appends the topic-marking chapter by default", () => {
+    const compiled = compileLocalSystemPrompt({
+      agent: agent(),
+      conversationId: "local-conv-test",
+      memoryDir: join(tmpdir(), "missing-local-memory-dir"),
+    });
+
+    expect(compiled.content).toContain("# Topic boundaries");
+    expect(compiled.content).toContain("`TopicMark`");
+  });
+
+  test("drops the topic-marking chapter when the switch is off", () => {
+    const compiled = compileLocalSystemPrompt({
+      agent: agent(),
+      conversationId: "local-conv-test",
+      memoryDir: join(tmpdir(), "missing-local-memory-dir"),
+      includeTopicMarking: false,
+    });
+
+    // Zero tokens, not just an ignored tool: the frozen prefix must not carry
+    // the guidance either.
+    expect(compiled.content).not.toContain("# Topic boundaries");
+    expect(compiled.content).toContain("<memory_metadata>");
+  });
 });

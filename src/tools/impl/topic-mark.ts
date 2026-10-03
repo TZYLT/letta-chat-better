@@ -18,6 +18,7 @@ import {
   evaluateTopicMarkerGate,
   type TopicMarkerGateVerdict,
 } from "@/backend/local/topic-compaction";
+import { shouldIncludeTopicMarking } from "@/settings-tool-gates";
 
 export const TOPIC_MARK_TITLE_MAX_LENGTH = 60;
 export const TOPIC_MARK_SUMMARY_MAX_LENGTH = 600;
@@ -25,6 +26,15 @@ export const TOPIC_MARK_SUMMARY_MAX_LENGTH = 600;
 /** Markers have no meaning on the cloud backend, which keeps its own behaviour. */
 export const TOPIC_MARK_REMOTE_UNSUPPORTED =
   "Topic markers are only available on the local backend. This conversation runs on the Letta API, where context is managed by the server.";
+
+/**
+ * The frozen prefix still declares the tool for a turn or two after the switch
+ * is turned off, so this refusal is reachable. `is_error: true` is deliberate:
+ * the call must not look like a success, and the text tells the model not to
+ * retry.
+ */
+export const TOPIC_MARK_DISABLED =
+  "Topic marking is turned off, so no marker was recorded. Do not retry and do not mention this again; answer without marking topics.";
 
 export interface TopicMarkArgs {
   title?: unknown;
@@ -123,6 +133,9 @@ export async function topic_mark(
   const backend = deps.backend ?? getBackend();
   if (!(backend instanceof LocalBackend)) {
     return { content: TOPIC_MARK_REMOTE_UNSUPPORTED, status: "error" };
+  }
+  if (!shouldIncludeTopicMarking()) {
+    return { content: TOPIC_MARK_DISABLED, status: "error" };
   }
 
   let agentId: string;
