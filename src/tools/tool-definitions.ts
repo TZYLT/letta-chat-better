@@ -22,6 +22,7 @@ import TaskGetDescription from "./descriptions/TaskGet.md";
 import TaskListDescription from "./descriptions/TaskList.md";
 import TaskStopDescription from "./descriptions/TaskStop.md";
 import TaskUpdateDescription from "./descriptions/TaskUpdate.md";
+import TopicMarkDescription from "./descriptions/TopicMark.md";
 import UpdatePlanDescription from "./descriptions/UpdatePlan.md";
 import ViewImageDescription from "./descriptions/ViewImage.md";
 import WakeDescription from "./descriptions/Wake.md";
@@ -53,6 +54,7 @@ import { task_get } from "./impl/task-get";
 import { task_list } from "./impl/task-list";
 import { task_stop } from "./impl/task-stop";
 import { task_update } from "./impl/task-update";
+import { topic_mark } from "./impl/topic-mark";
 import { update_plan } from "./impl/update-plan";
 import { view_image } from "./impl/view-image";
 import { wake } from "./impl/wake";
@@ -83,6 +85,7 @@ import TaskGetSchema from "./schemas/TaskGet.json";
 import TaskListSchema from "./schemas/TaskList.json";
 import TaskStopSchema from "./schemas/TaskStop.json";
 import TaskUpdateSchema from "./schemas/TaskUpdate.json";
+import TopicMarkSchema from "./schemas/TopicMark.json";
 import UpdatePlanSchema from "./schemas/UpdatePlan.json";
 import ViewImageSchema from "./schemas/ViewImage.json";
 import WakeSchema from "./schemas/Wake.json";
@@ -276,6 +279,11 @@ const toolDefinitions = {
     schema: UpdatePlanSchema,
     description: UpdatePlanDescription.trim(),
     impl: update_plan,
+  }),
+  TopicMark: defineTool({
+    schema: TopicMarkSchema,
+    description: TopicMarkDescription.trim(),
+    impl: topic_mark,
   }),
 } as const satisfies Record<string, ToolAssets>;
 

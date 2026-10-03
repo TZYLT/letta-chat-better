@@ -75,6 +75,7 @@ import {
   type LocalFreezeReason,
 } from "./system-prompt-compilation";
 import type { LocalTopicMarker } from "./topic-compaction";
+import { userTurnsSinceLastTopicMarker } from "./topic-compaction";
 
 export interface LocalBackendOptions {
   storageDir: string;
@@ -521,6 +522,38 @@ export class LocalBackend extends HeadlessBackend {
       conversationId,
       agentId ?? this.store.resolveAgentIdForConversation(conversationId),
     );
+  }
+
+  /**
+   * Local-only: the facts the marker frequency gate reads *before* writing.
+   *
+   * `markTopic` reports `turnsSincePrevious` too, but only after the row exists
+   * — a gate that rejects has to decide first, so the same numbers must be
+   * derivable without mutating anything.
+   */
+  topicMarkerState(
+    conversationId: string,
+    agentId?: string,
+  ): {
+    markers: LocalTopicMarker[];
+    turnsSinceLastMarker: number;
+    contextMessageCount: number;
+  } {
+    const resolvedAgentId =
+      agentId ?? this.store.resolveAgentIdForConversation(conversationId);
+    const messages = this.store.listLocalMessages(
+      conversationId,
+      resolvedAgentId,
+    );
+    const markers = this.store.contextRewrites.readTopicMarkers(
+      conversationId,
+      resolvedAgentId,
+    );
+    return {
+      markers,
+      turnsSinceLastMarker: userTurnsSinceLastTopicMarker(messages, markers),
+      contextMessageCount: messages.length,
+    };
   }
 
   protected override async resolveSystemPromptForTurn(input: {

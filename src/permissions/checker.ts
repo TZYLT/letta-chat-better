@@ -779,6 +779,9 @@ function getDefaultDecision(
     "WatchPR",
     "AskUserQuestion",
     "AskUserQuestionAsync",
+    // Writes one metadata row to the local transcript and is rate limited by
+    // the topic-marker frequency gate; it never changes the context.
+    "TopicMark",
   ];
 
   if (autoAllowTools.includes(toolName)) {

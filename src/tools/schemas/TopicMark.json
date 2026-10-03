@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "maxLength": 60,
+      "description": "Short, searchable noun phrase naming the topic that just ended, e.g. `Deployment pipeline` or `Auth token refresh bug`. Max 60 characters."
+    },
+    "summary": {
+      "type": "string",
+      "maxLength": 600,
+      "description": "Optional one-paragraph record of what this topic covered and what it concluded. Max 600 characters."
+    }
+  },
+  "required": ["title"],
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

@@ -57,6 +57,15 @@ test("does not register removed background output pollers", () => {
   }
 });
 
+test("TopicMark ships in the Letta toolset only", () => {
+  expect(Object.hasOwn(TOOL_DEFINITIONS, "TopicMark")).toBe(true);
+  expect(TOOLSET_CATALOG.letta.tools).toContain("TopicMark");
+  // The model-specific presets are tuned for their providers and keep the
+  // marker channel out of their payloads; the Letta preset is the shared one.
+  expect(TOOLSET_CATALOG.default.tools).not.toContain("TopicMark");
+  expect(TOOLSET_CATALOG.codex.tools).not.toContain("TopicMark");
+});
+
 test("each nonempty preset exposes SendAgentMessage in the model's tool payload", async () => {
   for (const toolsetPreference of ["letta", "default", "codex"] as const) {
     const prepared = await prepareToolExecutionContextForResolvedTarget({

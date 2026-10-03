@@ -41,6 +41,7 @@ export const TOOLSET_CATALOG: Readonly<Record<ToolsetName, ToolsetDefinition>> =
         "Write",
         "ViewImage",
         "UpdatePlan",
+        "TopicMark",
       ],
     },
     none: {

@@ -531,6 +531,7 @@ test.each([
   ["read_artifact_file", { path: "notes/today.md" }],
   ["write_artifact_file", { path: "notes/today.md", content: "hello" }],
   ["Wake", { action: "create", prompt: "check back", after_seconds: 60 }],
+  ["TopicMark", { title: "Deployment pipeline" }],
 ])("standard and acceptEdits modes run %s without asking", (tool, args) => {
   for (const mode of ["standard", "acceptEdits"] as const) {
     permissionMode.setMode(mode);
@@ -580,7 +581,12 @@ test("standard mode - SetWorkingDirectory still asks", () => {
 
 test("strict mode - agent-owned-state tools still ask", () => {
   permissionMode.setMode("strict");
-  for (const tool of ["TaskCreate", "Wake", "write_artifact_file"]) {
+  for (const tool of [
+    "TaskCreate",
+    "Wake",
+    "write_artifact_file",
+    "TopicMark",
+  ]) {
     const result = checkPermission(tool, {}, NO_RULES, "/Users/test/project");
     expect(result.decision).toBe("ask");
   }
