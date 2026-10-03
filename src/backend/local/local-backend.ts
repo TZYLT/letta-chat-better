@@ -29,16 +29,13 @@ import type {
 import { isRecord } from "@/utils/type-guards";
 import {
   estimateLocalMessageTokens,
-  isLocalSlidingWindowCompactionPlanningError,
   LOCAL_DEFAULT_COMPACTION_MODE,
   LOCAL_DEFAULT_SLIDING_WINDOW_PERCENTAGE,
   type LocalCompactionMode,
   type LocalCompactionStats,
   type LocalCompleteFunction,
   packageLocalSummaryMessage,
-  planLocalAllCompaction,
   planLocalSlidingWindowCompaction,
-  summarizeLocalMessagesAll,
   summarizeLocalMessagesSlidingWindow,
 } from "./compaction";
 import { initialMemoryFilesFromCreateBody } from "./initial-memory";
@@ -135,8 +132,11 @@ function hasOwn(record: Record<string, unknown>, key: string): boolean {
 }
 
 function localCompactionMode(value: unknown): LocalCompactionMode | undefined {
-  if (value === "all" || value === "sliding_window") return value;
-  return undefined;
+  // The local backend converges on sliding-window compaction. `all` is gone
+  // (D-107): reading a stored `mode: "all"` now falls back to the default
+  // instead of resurrecting a mode the planner no longer implements, and
+  // writing one is rejected outright by validateLocalCompactionSettingsRecord.
+  return value === "sliding_window" ? value : undefined;
 }
 
 function validateLocalCompactionSettingsRecord(
@@ -145,7 +145,7 @@ function validateLocalCompactionSettingsRecord(
   if (settings.mode === undefined || settings.mode === null) return;
   if (!localCompactionMode(settings.mode)) {
     throw new Error(
-      `Local backend compaction currently supports only modes "all" and "sliding_window" (received "${String(
+      `Local backend compaction supports only the "sliding_window" mode (received "${String(
         settings.mode,
       )}").`,
     );
@@ -736,107 +736,22 @@ export class LocalBackend extends HeadlessBackend {
       ? applyFrozenAgentOverrides(liveAgent, frozenSnapshot)
       : liveAgent;
     const settings = this.resolveCompactionSettings(agent, body);
-    let result: {
-      numMessagesBefore: number;
-      numMessagesAfter: number;
-      summary: string;
-      stats: LocalCompactionStats;
-    };
-    if (settings.mode === "sliding_window") {
-      try {
-        result = await this.compactLocalConversationSlidingWindow(
-          conversationId,
-          agentId,
-          agent,
-          trigger,
-          settings,
-        );
-        if (
-          result.stats.context_window === undefined ||
-          result.stats.context_tokens_after === undefined ||
-          result.stats.context_tokens_after < result.stats.context_window
-        ) {
-          await this.compileAndMaybePersistSystemPrompt(
-            conversationId,
-            agentId,
-            {
-              dryRun: false,
-              reason: "compaction",
-            },
-          );
-          return result;
-        }
-      } catch (error) {
-        if (!isLocalSlidingWindowCompactionPlanningError(error)) throw error;
-      }
-    }
-    result = await this.compactLocalConversationAll(
+    const result = await this.compactLocalConversationSlidingWindow(
       conversationId,
       agentId,
       agent,
       trigger,
-      {
-        ...settings,
-        mode: "all",
-        prompt: settings.prompt, // not a user mode switch: keep it (#3955)
-      },
+      settings,
     );
+    // Whatever the mode produced is the answer, even when it left the context
+    // above the window: escalating to a harsher strategy (the deleted `all`
+    // fallback) would take the trim decision away from the operator (I1). A
+    // planning failure now surfaces instead of being swallowed.
     await this.compileAndMaybePersistSystemPrompt(conversationId, agentId, {
       dryRun: false,
       reason: "compaction",
     });
     return result;
-  }
-
-  private async compactLocalConversationAll(
-    conversationId: string,
-    agentId: string,
-    agent: LocalAgentRecord,
-    trigger: string,
-    settings: ResolvedLocalCompactionSettings,
-  ): Promise<{
-    numMessagesBefore: number;
-    numMessagesAfter: number;
-    summary: string;
-    stats: LocalCompactionStats;
-  }> {
-    const messages = this.store.listLocalMessages(conversationId, agentId);
-    const contextTokensBefore = estimateLocalMessageTokens(messages);
-    const plan = planLocalAllCompaction(messages);
-    const summary = await summarizeLocalMessagesAll({
-      conversationId,
-      agent,
-      messages: plan.messagesToSummarize,
-      complete: this.complete,
-      prompt: settings.prompt,
-      clipChars: settings.clipChars,
-      localProviderAuthStorageDir: this.storageDir,
-      modelsRuntime: this.piModelsRuntime,
-    });
-    const stats: LocalCompactionStats = {
-      trigger,
-      context_tokens_before: contextTokensBefore,
-      context_tokens_after:
-        Math.ceil(summary.length / 4) +
-        estimateLocalMessageTokens(plan.messagesToKeep),
-      context_window: this.effectiveContextWindow(conversationId, agentId),
-      messages_count_before: messages.length,
-      messages_count_after: 1 + plan.messagesToKeep.length,
-    };
-    const storeResult = this.store.contextRewrites.rewriteInContext({
-      conversationId,
-      agentId,
-      summary,
-      packedSummary: packageLocalSummaryMessage(summary, stats, settings.mode),
-      stats,
-      remainingMessages: plan.messagesToKeep,
-    });
-    return {
-      numMessagesBefore: storeResult.numMessagesBefore,
-      numMessagesAfter: storeResult.numMessagesAfter,
-      summary,
-      stats,
-    };
   }
 
   private async compactLocalConversationSlidingWindow(

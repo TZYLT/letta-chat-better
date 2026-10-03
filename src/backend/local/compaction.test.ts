@@ -7,7 +7,7 @@ import type {
   SimpleStreamOptions,
 } from "@earendil-works/pi-ai";
 import { createOrUpdateLocalProvider } from "@/backend/local/local-provider-auth-store";
-import { summarizeLocalMessagesAll } from "./compaction";
+import { summarizeLocalMessagesSlidingWindow } from "./compaction";
 import { emptyLocalUsage, type LocalMessage } from "./local-message";
 
 function summaryAssistantMessage(): AssistantMessage {
@@ -31,7 +31,7 @@ describe("local compaction summarizer options", () => {
       let capturedOptions:
         | (SimpleStreamOptions & Record<string, unknown>)
         | undefined;
-      await summarizeLocalMessagesAll({
+      await summarizeLocalMessagesSlidingWindow({
         conversationId: "conv-opencode-compaction",
         agent: {
           id: "agent-local-1",
@@ -89,7 +89,7 @@ describe("local compaction summarizer options", () => {
         | (SimpleStreamOptions & Record<string, unknown>)
         | undefined;
       let capturedModelId: string | undefined;
-      const summary = await summarizeLocalMessagesAll({
+      const summary = await summarizeLocalMessagesSlidingWindow({
         conversationId: "conv-fable-compaction",
         agent: {
           id: "agent-local-1",
@@ -142,7 +142,7 @@ describe("local compaction summarizer options", () => {
         | (SimpleStreamOptions & Record<string, unknown>)
         | undefined;
       let capturedModelId: string | undefined;
-      await summarizeLocalMessagesAll({
+      await summarizeLocalMessagesSlidingWindow({
         conversationId: "conv-anthropic-compaction",
         agent: {
           id: "agent-local-1",

@@ -2,7 +2,6 @@ export { isContextWindowOverflowError } from "@/backend/dev/context-window-overf
 export {
   formatLocalMessagesForSummary,
   isLocalSlidingWindowCompactionPlanningError,
-  LOCAL_ALL_COMPACTION_PROMPT,
   LOCAL_DEFAULT_COMPACTION_MODE,
   LOCAL_DEFAULT_SLIDING_WINDOW_PERCENTAGE,
   LOCAL_SLIDING_WINDOW_COMPACTION_PROMPT,

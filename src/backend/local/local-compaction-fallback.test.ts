@@ -63,112 +63,116 @@ function turnExecutor(): HeadlessTurnExecutor {
   };
 }
 
-describe("local compaction fallback keeps custom prompt", () => {
-  test("keeps custom compaction prompt when sliding-window planning falls back to full summarization", async () => {
+describe("local compaction without the all fallback", () => {
+  test("keeps the custom compaction prompt when sliding-window planning fails", async () => {
     const storageDir = await mkdtemp(
-      join(tmpdir(), "local-compaction-fallback-plan-"),
+      join(tmpdir(), "local-compaction-no-fallback-plan-"),
     );
-    const customPrompt = "CUSTOM-SUMMARY-PROMPT: summarize as haiku";
-    const systemPromptsSeen: Array<string | undefined> = [];
-    const complete = async (
-      _model: unknown,
-      context: Context,
-    ): Promise<AssistantMessage> => {
-      systemPromptsSeen.push(context.systemPrompt);
-      return assistantMessage({
-        responseId: `summary-${systemPromptsSeen.length}`,
-        stopReason: "stop",
-        content: [{ type: "text", text: "Compacted summary." }],
+    try {
+      const customPrompt = "CUSTOM-SUMMARY-PROMPT: summarize as haiku";
+      const systemPromptsSeen: Array<string | undefined> = [];
+      const complete = async (
+        _model: unknown,
+        context: Context,
+      ): Promise<AssistantMessage> => {
+        systemPromptsSeen.push(context.systemPrompt);
+        return assistantMessage({
+          responseId: `summary-${systemPromptsSeen.length}`,
+          stopReason: "stop",
+          content: [{ type: "text", text: "Compacted summary." }],
+        });
+      };
+      const backend = new LocalBackend({
+        storageDir,
+        executor: turnExecutor(),
+        complete,
+        memfsEnabled: false,
       });
-    };
-    const backend = new LocalBackend({
-      storageDir,
-      executor: turnExecutor(),
-      complete,
-      memfsEnabled: false,
-    });
-    const agent = await backend.createAgent({ name: "Local" } as never);
-    await backend.updateAgent(agent.id, {
-      compaction_settings: { mode: "sliding_window", prompt: customPrompt },
-    } as never);
-    const conversation = await backend.createConversation({
-      agent_id: agent.id,
-    } as never);
-    await drain(
-      await backend.createConversationMessageStream(conversation.id, {
+      const agent = await backend.createAgent({ name: "Local" } as never);
+      await backend.updateAgent(agent.id, {
+        compaction_settings: { mode: "sliding_window", prompt: customPrompt },
+      } as never);
+      const conversation = await backend.createConversation({
         agent_id: agent.id,
-        messages: [{ role: "user", content: "only message" }],
-      } as ConversationMessageCreateBody),
-    );
-
-    // Fewer than 4 messages: sliding-window planning fails and compaction
-    // falls back to full summarization. The user's custom prompt must
-    // survive the automatic mode fallback.
-    await backend.compactConversationMessages(conversation.id, {
-      agent_id: agent.id,
-    } as never);
-
-    expect(systemPromptsSeen).toHaveLength(1);
-    expect(systemPromptsSeen[0]).toBe(customPrompt);
-
-    await rm(storageDir, { recursive: true, force: true });
-  });
-
-  test("keeps custom compaction prompt when sliding window still exceeds the context window", async () => {
-    const storageDir = await mkdtemp(
-      join(tmpdir(), "local-compaction-fallback-overflow-"),
-    );
-    const customPrompt = "CUSTOM-SUMMARY-PROMPT: summarize as haiku";
-    const systemPromptsSeen: Array<string | undefined> = [];
-    const complete = async (
-      _model: unknown,
-      context: Context,
-    ): Promise<AssistantMessage> => {
-      systemPromptsSeen.push(context.systemPrompt);
-      // A long summary keeps the post-compaction estimate above the tiny
-      // configured context window, forcing the full-summarization fallback.
-      return assistantMessage({
-        responseId: `summary-${systemPromptsSeen.length}`,
-        stopReason: "stop",
-        content: [{ type: "text", text: "x".repeat(8000) }],
-      });
-    };
-    const backend = new LocalBackend({
-      storageDir,
-      executor: turnExecutor(),
-      complete,
-      memfsEnabled: false,
-    });
-    const agent = await backend.createAgent({
-      name: "Local",
-      model_settings: { context_window_limit: 1000 },
-    } as never);
-    await backend.updateAgent(agent.id, {
-      compaction_settings: { mode: "sliding_window", prompt: customPrompt },
-    } as never);
-    const conversation = await backend.createConversation({
-      agent_id: agent.id,
-    } as never);
-    for (const content of ["first", "second"]) {
+      } as never);
       await drain(
         await backend.createConversationMessageStream(conversation.id, {
           agent_id: agent.id,
-          messages: [{ role: "user", content }],
+          messages: [{ role: "user", content: "only message" }],
         } as ConversationMessageCreateBody),
       );
+
+      // Fewer than four messages, so sliding-window planning has no cutoff it
+      // is allowed to take. The planner's error is the answer now (D-107): there
+      // is no second strategy to silently escalate to.
+      await expect(
+        backend.compactConversationMessages(conversation.id, {
+          agent_id: agent.id,
+        } as never),
+      ).rejects.toThrow("Not enough messages for sliding window compaction.");
+      expect(systemPromptsSeen).toHaveLength(0);
+    } finally {
+      await rm(storageDir, { recursive: true, force: true });
     }
+  });
 
-    // Sliding-window compaction runs with the custom prompt, but the result
-    // still exceeds the context window, so compaction falls back to full
-    // summarization. That fallback must keep the user's custom prompt too.
-    await backend.compactConversationMessages(conversation.id, {
-      agent_id: agent.id,
-    } as never);
+  test("does not summarize the whole context when the trim left it over the window", async () => {
+    const storageDir = await mkdtemp(
+      join(tmpdir(), "local-compaction-no-fallback-overflow-"),
+    );
+    try {
+      const customPrompt = "CUSTOM-SUMMARY-PROMPT: summarize as haiku";
+      const systemPromptsSeen: Array<string | undefined> = [];
+      const complete = async (
+        _model: unknown,
+        context: Context,
+      ): Promise<AssistantMessage> => {
+        systemPromptsSeen.push(context.systemPrompt);
+        // A long summary keeps the post-compaction estimate above the tiny
+        // configured context window: the deleted `all` fallback used to answer
+        // that by summarizing everything.
+        return assistantMessage({
+          responseId: `summary-${systemPromptsSeen.length}`,
+          stopReason: "stop",
+          content: [{ type: "text", text: "x".repeat(8000) }],
+        });
+      };
+      const backend = new LocalBackend({
+        storageDir,
+        executor: turnExecutor(),
+        complete,
+        memfsEnabled: false,
+      });
+      const agent = await backend.createAgent({
+        name: "Local",
+        model_settings: { context_window_limit: 1000 },
+      } as never);
+      await backend.updateAgent(agent.id, {
+        compaction_settings: { mode: "sliding_window", prompt: customPrompt },
+      } as never);
+      const conversation = await backend.createConversation({
+        agent_id: agent.id,
+      } as never);
+      for (const content of ["first", "second"]) {
+        await drain(
+          await backend.createConversationMessageStream(conversation.id, {
+            agent_id: agent.id,
+            messages: [{ role: "user", content }],
+          } as ConversationMessageCreateBody),
+        );
+      }
 
-    expect(systemPromptsSeen).toHaveLength(2);
-    expect(systemPromptsSeen[0]).toBe(customPrompt);
-    expect(systemPromptsSeen[1]).toBe(customPrompt);
+      await backend.compactConversationMessages(conversation.id, {
+        agent_id: agent.id,
+      } as never);
 
-    await rm(storageDir, { recursive: true, force: true });
+      // Exactly one summarizer call, with the user's prompt: the sliding-window
+      // trim happened and its result stands even though the estimate is still
+      // above the window. Only the operator may escalate (I1).
+      expect(systemPromptsSeen).toHaveLength(1);
+      expect(systemPromptsSeen[0]).toBe(customPrompt);
+    } finally {
+      await rm(storageDir, { recursive: true, force: true });
+    }
   });
 });

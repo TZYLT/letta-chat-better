@@ -158,7 +158,7 @@ describe("local compaction API parity", () => {
     expect(transcript).not.toContain("prior messages have been hidden");
   });
 
-  test("packs all-mode summaries like API package_summarize_message_no_counts", () => {
+  test("packs mode-less summaries like API package_summarize_message_no_counts", () => {
     const stats: LocalCompactionStats = {
       trigger: "manual",
       messages_count_before: 12,
@@ -166,7 +166,7 @@ describe("local compaction API parity", () => {
     };
 
     const packed = JSON.parse(
-      packageLocalSummaryMessage("summary body", stats, "all"),
+      packageLocalSummaryMessage("summary body", stats),
     ) as Record<string, unknown>;
     expect(packed.type).toBe("system_alert");
     expect(packed.message).toBe(

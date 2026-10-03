@@ -95,6 +95,43 @@ async function collect(stream: AsyncIterable<unknown>): Promise<unknown[]> {
   return chunks;
 }
 
+/** A turn executor that answers every turn with a settled "ok" response. */
+function okTurnExecutor(): HeadlessTurnExecutor {
+  return {
+    async execute() {
+      return lettaStreamFromChunks([
+        {
+          message_type: "assistant_message",
+          content: [{ type: "text", text: "ok" }],
+        } as LettaStreamingResponse,
+        {
+          message_type: "stop_reason",
+          stop_reason: "end_turn",
+        } as LettaStreamingResponse,
+      ]);
+    },
+  };
+}
+
+/**
+ * Send one user turn and wait for it to settle. Sliding-window compaction needs
+ * at least four messages (two turns) before it can plan a cutoff, so
+ * compaction-focused tests send two.
+ */
+async function sendTurn(
+  backend: LocalBackend,
+  conversationId: string,
+  agentId: string,
+  content: string,
+): Promise<void> {
+  await drain(
+    await backend.createConversationMessageStream(conversationId, {
+      agent_id: agentId,
+      messages: [{ role: "user", content }],
+    } as ConversationMessageCreateBody),
+  );
+}
+
 function pageItems<T>(value: T[] | { getPaginatedItems(): T[] }): T[] {
   return Array.isArray(value) ? value : value.getPaginatedItems();
 }
@@ -823,12 +860,8 @@ describe("local backend pi transcript", () => {
     const conversation = await backend.createConversation({
       agent_id: agent.id,
     } as never);
-    await drain(
-      await backend.createConversationMessageStream(conversation.id, {
-        agent_id: agent.id,
-        messages: [{ role: "user", content: "first" }],
-      } as ConversationMessageCreateBody),
-    );
+    await sendTurn(backend, conversation.id, agent.id, "first");
+    await sendTurn(backend, conversation.id, agent.id, "second");
     expect(systemPrompts[0]).toContain("- 0 previous messages");
 
     await backend.compactConversationMessages(conversation.id, {
@@ -846,6 +879,8 @@ describe("local backend pi transcript", () => {
       "session",
       "message",
       "message",
+      "message",
+      "message",
       "compaction",
     ]);
     const messageEntries = entriesAfterCompaction.filter(
@@ -855,7 +890,7 @@ describe("local backend pi transcript", () => {
       messageEntries.map(
         (entry) => (entry.message as Record<string, unknown> | undefined)?.id,
       ),
-    ).toEqual(["ui-msg-1", "ui-msg-2"]);
+    ).toEqual(["ui-msg-1", "ui-msg-2", "ui-msg-3", "ui-msg-4"]);
     expect(
       messageEntries.every(
         (entry) => entry.id !== (entry.message as Record<string, unknown>).id,
@@ -872,7 +907,7 @@ describe("local backend pi transcript", () => {
     });
     expect(
       (compactionEntry.message as Record<string, unknown> | undefined)?.id,
-    ).toBe("ui-msg-3");
+    ).toBe("ui-msg-5");
 
     const reloadedAfterCompaction = new LocalBackend({
       storageDir,
@@ -886,8 +921,13 @@ describe("local backend pi transcript", () => {
         order: "asc",
       } as never),
     );
+    // Sliding-window planning cuts at the first assistant message it may evict,
+    // so the summary replaces the opening user turn and the rest stays.
     expect(activeAfterCompaction.map((message) => message.id)).toEqual([
+      "ui-msg-5",
+      "ui-msg-2",
       "ui-msg-3",
+      "ui-msg-4",
     ]);
 
     await drain(
@@ -897,28 +937,15 @@ describe("local backend pi transcript", () => {
       } as ConversationMessageCreateBody),
     );
 
-    expect(systemPrompts[1]).toContain("- 1 previous messages");
-    expect(systemPrompts[1]).not.toBe(systemPrompts[0]);
+    expect(systemPrompts.at(-1)).toContain("- 4 previous messages");
+    expect(systemPrompts.at(-1)).not.toBe(systemPrompts[0]);
   });
 
   test("emits compact mod-event hooks around local compaction", async () => {
     const storageDir = await mkdtemp(
       join(tmpdir(), "local-backend-compact-hooks-"),
     );
-    const executor: HeadlessTurnExecutor = {
-      async execute() {
-        return lettaStreamFromChunks([
-          {
-            message_type: "assistant_message",
-            content: [{ type: "text", text: "ok" }],
-          } as LettaStreamingResponse,
-          {
-            message_type: "stop_reason",
-            stop_reason: "end_turn",
-          } as LettaStreamingResponse,
-        ]);
-      },
-    };
+    const executor = okTurnExecutor();
     const complete = async (): Promise<AssistantMessage> =>
       assistantMessage({
         responseId: "summary-response",
@@ -964,12 +991,8 @@ describe("local backend pi transcript", () => {
     const conversation = await backend.createConversation({
       agent_id: agent.id,
     } as never);
-    await drain(
-      await backend.createConversationMessageStream(conversation.id, {
-        agent_id: agent.id,
-        messages: [{ role: "user", content: "first" }],
-      } as ConversationMessageCreateBody),
-    );
+    await sendTurn(backend, conversation.id, agent.id, "first");
+    await sendTurn(backend, conversation.id, agent.id, "second");
 
     await backend.compactConversationMessages(conversation.id, {
       agent_id: agent.id,
@@ -993,20 +1016,7 @@ describe("local backend pi transcript", () => {
     const storageDir = await mkdtemp(
       join(tmpdir(), "local-backend-compact-hook-throws-"),
     );
-    const executor: HeadlessTurnExecutor = {
-      async execute() {
-        return lettaStreamFromChunks([
-          {
-            message_type: "assistant_message",
-            content: [{ type: "text", text: "ok" }],
-          } as LettaStreamingResponse,
-          {
-            message_type: "stop_reason",
-            stop_reason: "end_turn",
-          } as LettaStreamingResponse,
-        ]);
-      },
-    };
+    const executor = okTurnExecutor();
     const complete = async (): Promise<AssistantMessage> =>
       assistantMessage({
         responseId: "summary-response",
@@ -1034,12 +1044,8 @@ describe("local backend pi transcript", () => {
     const conversation = await backend.createConversation({
       agent_id: agent.id,
     } as never);
-    await drain(
-      await backend.createConversationMessageStream(conversation.id, {
-        agent_id: agent.id,
-        messages: [{ role: "user", content: "first" }],
-      } as ConversationMessageCreateBody),
-    );
+    await sendTurn(backend, conversation.id, agent.id, "first");
+    await sendTurn(backend, conversation.id, agent.id, "second");
 
     const result = await backend.compactConversationMessages(conversation.id, {
       agent_id: agent.id,
@@ -1060,20 +1066,7 @@ describe("local backend pi transcript", () => {
         apiKey: "secret-key",
       });
 
-      const executor: HeadlessTurnExecutor = {
-        async execute() {
-          return lettaStreamFromChunks([
-            {
-              message_type: "assistant_message",
-              content: [{ type: "text", text: "ok" }],
-            } as LettaStreamingResponse,
-            {
-              message_type: "stop_reason",
-              stop_reason: "end_turn",
-            } as LettaStreamingResponse,
-          ]);
-        },
-      };
+      const executor = okTurnExecutor();
 
       let summarizerModelId: string | undefined;
       const complete = async (
@@ -1104,12 +1097,8 @@ describe("local backend pi transcript", () => {
         model_settings: { provider_type: "anthropic" },
       } as never);
 
-      await drain(
-        await backend.createConversationMessageStream(conversation.id, {
-          agent_id: agent.id,
-          messages: [{ role: "user", content: "first" }],
-        } as ConversationMessageCreateBody),
-      );
+      await sendTurn(backend, conversation.id, agent.id, "first");
+      await sendTurn(backend, conversation.id, agent.id, "second");
 
       await backend.compactConversationMessages(conversation.id, {
         agent_id: agent.id,

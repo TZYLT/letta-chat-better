@@ -19,7 +19,6 @@ import type { LocalMessage } from "./local-message";
 import { resolveAvailableLocalModelForTurn } from "./local-model-config";
 import type { LocalAgentRecord } from "./local-types";
 
-const ALL_WORD_LIMIT = 500;
 const SLIDING_WORD_LIMIT = 300;
 const SUMMARY_TRUNCATION_SUFFIX = "... [summary truncated to fit]";
 export const LOCAL_SUMMARY_TOOL_RETURN_TRUNCATION_CHARS = 2_000;
@@ -43,7 +42,7 @@ const TRANSCRIPT_FALLBACK_MAX_CHAR_STEPS = [
 export const LOCAL_DEFAULT_COMPACTION_MODE = "sliding_window";
 export const LOCAL_DEFAULT_SLIDING_WINDOW_PERCENTAGE = 0.3;
 
-export type LocalCompactionMode = "all" | "sliding_window";
+export type LocalCompactionMode = "sliding_window";
 
 export class LocalSlidingWindowCompactionPlanningError extends Error {
   constructor(message: string) {
@@ -57,30 +56,6 @@ export function isLocalSlidingWindowCompactionPlanningError(
 ): error is LocalSlidingWindowCompactionPlanningError {
   return error instanceof LocalSlidingWindowCompactionPlanningError;
 }
-
-export const LOCAL_ALL_COMPACTION_PROMPT = `Your task is to create a detailed summary of the conversation so far, paying close attention to the user's explicit requests and your previous actions.
-This summary should be thorough in capturing technical details, code patterns, and architectural decisions that would be essential for continuing development work without losing context. Your summary should include the following sections:
-
-1.**High level goals**: What is the high level goal and ongoing task? Capture the user's explicit requests and intent in detail. If there is an existing summary in the transcript, make sure to take it into consideration to continue tracking the higher level goals and long-term progress.
-
-2. **What happened**: The conversations, tasks, and exchanges that took place. What did the user ask for? What did you do? How did things progress? If there is a previous summary being evicted, please extract a concise version of the critical info from it.
-
-3. **Important details**: Enumerate specific files and code sections examined, modified, or created, as well as important plan files, GitHub issues/PR links, and Linear ticket IDs. For each item, include why it matters and any relevant names, data, configs, or facts discussed.
-   - **Preserve identifiers verbatim** (plan filename/path, exact URL, issue/PR number, ticket ID); do not paraphrase or truncate.
-   - **Preserve referenced identifiers unless explicitly resolved**: Keep exact URLs/IDs from the conversation unless there is clear evidence they are no longer relevant.
-   - Do not omit details likely to be referenced later.
-
-4. **Errors and fixes**: List all errors that you ran into, and how you fixed them. Pay special attention to specific user feedback that you received and record verbatim if useful.
-
-5. **Current state**:Describe in detail precisely what is currently being worked on, paying special attention to the most recent messages from both user and assistant. Include file names and code snippets where applicable.
-
-6.**Optional Next Step**: List the next step that you will take that is related to the most recent work you were doing. IMPORTANT: ensure that this step is DIRECTLY in line with the user's most recent explicit requests and the most current task. If your last task was concluded, then only list next steps if they are explicitly in line with the users request. If there is a next step, include direct quotes from the most recent conversation showing exactly what task you were working on and where you left off.
-
-7. **Lookup hints**: For any detailed content (long lists, extensive data, specific conversations) that couldn't fit in the summary, note the topic and key terms that could be used to find it in message history later.
-
-Write in first person as a factual record of what occurred. Be concise but thorough - the goal is to preserve enough context that the recent messages make sense and important information isn't lost to prevent duplicate work or repeated mistakes.
-
-Keep your summary under ${ALL_WORD_LIMIT} words. Only output the summary.`;
 
 export const LOCAL_SLIDING_WINDOW_COMPACTION_PROMPT = `The following messages are being evicted from the BEGINNING of your context window. Write a detailed summary that captures what happened in these messages to appear BEFORE the remaining recent messages in context, providing background for what comes after. Include the following sections:
 
@@ -116,7 +91,7 @@ export type LocalCompleteFunction = (
   options?: SimpleStreamOptions & Record<string, unknown>,
 ) => Promise<AssistantMessage>;
 
-export interface LocalAllCompactionInput {
+export interface LocalCompactionSummaryInput {
   conversationId: string;
   agent: LocalAgentRecord;
   messages: LocalMessage[];
@@ -132,11 +107,6 @@ export interface LocalSlidingWindowCompactionPlan {
   messagesToSummarize: LocalMessage[];
   messagesToKeep: LocalMessage[];
   cutoffIndex: number;
-}
-
-export interface LocalAllCompactionPlan {
-  messagesToSummarize: LocalMessage[];
-  messagesToKeep: LocalMessage[];
 }
 
 function stringifyUnknown(value: unknown): string {
@@ -403,7 +373,7 @@ function fableCompactionSummaryFallbackSettings(
 }
 
 async function runGenerateText(
-  input: LocalAllCompactionInput,
+  input: LocalCompactionSummaryInput,
   transcript: string,
   defaultPrompt: string,
 ): Promise<{ text: string }> {
@@ -501,7 +471,7 @@ async function runGenerateText(
 }
 
 async function summarizeLocalMessagesWithPrompt(
-  input: LocalAllCompactionInput,
+  input: LocalCompactionSummaryInput,
   defaultPrompt: string,
 ): Promise<string> {
   if (input.messages.length === 0) return "No prior conversation messages.";
@@ -548,19 +518,6 @@ async function summarizeLocalMessagesWithPrompt(
   return summary;
 }
 
-export async function summarizeLocalMessagesAll(
-  input: LocalAllCompactionInput,
-): Promise<string> {
-  return summarizeLocalMessagesWithPrompt(input, LOCAL_ALL_COMPACTION_PROMPT);
-}
-
-function hasPendingLocalToolCall(message: LocalMessage): boolean {
-  return (
-    message.role === "assistant" &&
-    message.content.some((part) => part.type === "toolCall")
-  );
-}
-
 function normalizedSlidingWindowPercentage(value: number | undefined): number {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return LOCAL_DEFAULT_SLIDING_WINDOW_PERCENTAGE;
@@ -578,6 +535,17 @@ function isValidSlidingWindowCutoff(
   const message = messages[index];
   return (
     message?.role === "assistant" && index > 0 && index < maximumCutoffIndex
+  );
+}
+
+/**
+ * A trailing assistant tool call must stay paired with its result, so it is
+ * never summarised away from the message that answers it (I5).
+ */
+function hasPendingLocalToolCall(message: LocalMessage): boolean {
+  return (
+    message.role === "assistant" &&
+    message.content.some((part) => part.type === "toolCall")
   );
 }
 
@@ -649,25 +617,8 @@ export function planLocalSlidingWindowCompaction(
   };
 }
 
-export function planLocalAllCompaction(
-  messages: LocalMessage[],
-): LocalAllCompactionPlan {
-  const lastMessage = messages.at(-1);
-  if (lastMessage && hasPendingLocalToolCall(lastMessage)) {
-    return {
-      messagesToSummarize: messages.slice(0, -1),
-      messagesToKeep: [lastMessage],
-    };
-  }
-
-  return {
-    messagesToSummarize: messages,
-    messagesToKeep: [],
-  };
-}
-
 export async function summarizeLocalMessagesSlidingWindow(
-  input: LocalAllCompactionInput,
+  input: LocalCompactionSummaryInput,
 ): Promise<string> {
   return summarizeLocalMessagesWithPrompt(
     input,
