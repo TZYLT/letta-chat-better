@@ -879,7 +879,7 @@ export class LocalBackend extends HeadlessBackend {
       messages_count_before: messages.length,
       messages_count_after: 1 + plan.messagesToKeep.length,
     };
-    const storeResult = this.store.compactConversationAll({
+    const storeResult = this.store.contextRewrites.rewriteInContext({
       conversationId,
       agentId,
       summary,
@@ -934,7 +934,7 @@ export class LocalBackend extends HeadlessBackend {
       messages_count_before: messages.length,
       messages_count_after: 1 + plan.messagesToKeep.length,
     };
-    const storeResult = this.store.compactConversationAll({
+    const storeResult = this.store.contextRewrites.rewriteInContext({
       conversationId,
       agentId,
       summary,

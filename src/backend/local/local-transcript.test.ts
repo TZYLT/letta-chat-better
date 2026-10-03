@@ -317,7 +317,7 @@ describe("in-context tail window and unread head validation", () => {
     }
     if (options.compactKeep !== undefined) {
       const messages = store.listLocalMessages("default", agentId);
-      store.compactConversationAll({
+      store.contextRewrites.rewriteInContext({
         conversationId: "default",
         agentId,
         summary: "summary",
@@ -429,7 +429,7 @@ describe("in-context tail window and unread head validation", () => {
     reopened.settleInterruptedToolCalls("default", { agentId });
     const current = reopened.listLocalMessages("default", agentId);
     expect(() =>
-      reopened.compactConversationAll({
+      reopened.contextRewrites.rewriteInContext({
         conversationId: "default",
         agentId,
         summary: "summary 2",
@@ -466,7 +466,7 @@ describe("in-context tail window and unread head validation", () => {
     const messages = store.listLocalMessages("default", agentId);
     store.settleInterruptedToolCalls("default", { agentId });
     expect(inspectResidency(store).persistedSnapshots).toBe(80);
-    store.compactConversationAll({
+    store.contextRewrites.rewriteInContext({
       conversationId: "default",
       agentId,
       summary: "summary",

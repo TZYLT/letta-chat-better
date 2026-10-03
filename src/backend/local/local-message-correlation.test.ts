@@ -483,7 +483,7 @@ describe("local transcript residency", () => {
     const messagesBefore = store.listLocalMessages("default", agentId);
     expect(messagesBefore.length).toBe(120);
 
-    const result = store.compactConversationAll({
+    const result = store.contextRewrites.rewriteInContext({
       conversationId: "default",
       agentId,
       summary: "summary text",
@@ -533,7 +533,7 @@ describe("local transcript residency", () => {
     // Compact to a small active set: the resident window then covers every
     // in-context id, while the bulky pre-compaction rows stay on disk.
     const before = store.listLocalMessages("default", agentId);
-    const compacted = store.compactConversationAll({
+    const compacted = store.contextRewrites.rewriteInContext({
       conversationId: "default",
       agentId,
       summary: "summary text",
@@ -641,7 +641,7 @@ describe("local transcript residency", () => {
       residentMessageTailLimit: 100,
     });
     const before = store2.listLocalMessages("default", agentId);
-    const result = store2.compactConversationAll({
+    const result = store2.contextRewrites.rewriteInContext({
       conversationId: "default",
       agentId,
       summary: "summary text",
@@ -874,7 +874,7 @@ describe("local transcript residency", () => {
     const beforeCompact = store.listLocalMessages("default", agentId);
     expect(beforeCompact.length).toBeGreaterThan(20);
     const remaining = beforeCompact.slice(-4);
-    store.compactConversationAll({
+    store.contextRewrites.rewriteInContext({
       conversationId: "default",
       agentId,
       summary: "compacted history",

@@ -46,7 +46,7 @@ describe("local conversation refresh", () => {
         .listLocalMessages("default", agentId)
         .slice(-4);
       const compact = () =>
-        writer.compactConversationAll({
+        writer.contextRewrites.rewriteInContext({
           conversationId: "default",
           agentId,
           summary: "summary text",

@@ -27,7 +27,6 @@ import type {
 } from "@/backend/backend";
 import { INTERRUPTED_BY_USER } from "@/constants";
 import { isRecord } from "@/utils/type-guards";
-import type { LocalCompactionStats } from "./compaction";
 import {
   createDefaultAgentRecord,
   createLocalAgentRecord,
@@ -37,6 +36,10 @@ import {
   shouldPersistSubagentHiddenBackfill,
   shouldUseDefaultLocalModel,
 } from "./local-agent-record";
+import {
+  LocalContextRewrites,
+  type LocalTranscriptPersistOptions,
+} from "./local-context-rewrite";
 import { selectLocalMessagesForFork } from "./local-conversation-fork";
 import { listLocalConversations } from "./local-conversation-list";
 import {
@@ -241,12 +244,6 @@ export interface StoredTurnInput {
   conversationId: string;
 }
 
-export interface LocalCompactionStoreResult {
-  numMessagesBefore: number;
-  numMessagesAfter: number;
-  summaryMessage: LocalMessage;
-}
-
 export interface LocalStoreOptions {
   storageDir?: string;
   seedDefaultAgent?: boolean;
@@ -299,18 +296,6 @@ interface LocalConversationTranscriptMetadata {
   requiresFullTimestampRepair: boolean;
 }
 
-interface LocalTranscriptPersistOptions {
-  transcript?: "append" | "append-compaction" | "rewrite" | "skip";
-  message?: LocalMessage;
-  compaction?: {
-    summaryMessage: LocalMessage;
-    summary: string;
-    firstKeptMessageId?: string;
-    previousMessages?: readonly LocalMessage[];
-    stats?: LocalCompactionStats;
-  };
-}
-
 function projectLocalMessageAtSourceIndex(
   localMessage: LocalMessage,
   agentId: string,
@@ -359,6 +344,7 @@ export class LocalStore {
   >();
   private readonly residentMessageTailLimit: number;
   private readonly loadRepairedConversationKeys = new Set<string>();
+  private localContextRewrites?: LocalContextRewrites;
   // Unparsed transcript head bytes from a tail load, validated pre-append.
   private readonly unreadTranscriptHeadBytesByKey = new Map<string, number>();
   private readonly transcriptMetadataByConversationKey = new Map<
@@ -1144,73 +1130,6 @@ export class LocalStore {
       throw new LocalBackendNotFoundError("Message", messageId);
     }
     return [...messages];
-  }
-
-  compactConversationAll(input: {
-    conversationId: string;
-    agentId: string;
-    summary: string;
-    packedSummary: string;
-    stats?: LocalCompactionStats;
-    remainingMessages?: LocalMessage[];
-  }): LocalCompactionStoreResult {
-    const conversation = this.ensureConversation(
-      input.conversationId,
-      input.agentId,
-    );
-    const key = this.conversationKey(conversation.id, input.agentId);
-    // Ensure the resident tail first; validate its unread head pre-rewrite.
-    this.residentLocalMessagesForConversation(conversation.id, input.agentId);
-    this.validateUnreadTranscriptHeadOnce(key);
-    const previousMessages = this.localMessagesForConversation(
-      conversation.id,
-      input.agentId,
-    );
-    const id = this.nextLocalMessageId();
-    const date = this.currentLocalMessageDate();
-    const summaryMessage: LocalMessage = {
-      id,
-      role: "user",
-      metadata: {
-        created_at: date,
-        updated_at: date,
-        agent_id: input.agentId,
-        conversation_id: conversation.id,
-        compaction: {
-          summary: input.summary,
-          ...(input.stats ? { stats: input.stats } : {}),
-        },
-      },
-      content: [{ type: "text", text: input.packedSummary }],
-      timestamp: timestampFromIso(date),
-    };
-    const compactedMessages = [
-      summaryMessage,
-      ...(input.remainingMessages ?? []).map(cloneLocalMessage),
-    ];
-    const inContextIds = compactedMessages.map((message) => message.id);
-    const numMessagesAfter = compactedMessages.length;
-    conversation.in_context_message_ids = inContextIds;
-    this.setResidentConversationMessages(key, compactedMessages);
-    conversation.last_message_at = date;
-    conversation.updated_at = date;
-    this.conversations.set(key, conversation);
-    this.persistConversationState(conversation.id, input.agentId, {
-      transcript: "append-compaction",
-      compaction: {
-        summaryMessage,
-        summary: input.summary,
-        firstKeptMessageId: input.remainingMessages?.[0]?.id,
-        previousMessages,
-        ...(input.stats ? { stats: input.stats } : {}),
-      },
-    });
-    this.rebuildMessageIndex();
-    return {
-      numMessagesBefore: previousMessages.length,
-      numMessagesAfter,
-      summaryMessage: cloneLocalMessage(summaryMessage),
-    };
   }
 
   private appendUserLocalMessage(
@@ -2565,6 +2484,55 @@ export class LocalStore {
       : undefined;
   }
 
+  private conversationMessagesPath(key: string): string | undefined {
+    const conversationDir = this.conversationDirForKey(key);
+    return conversationDir
+      ? transcriptMessagesPath(conversationDir)
+      : undefined;
+  }
+
+  /**
+   * The context-rewrite surface: topic markers plus the single "history became
+   * a summary" write path. Built lazily so the ports close over a fully
+   * constructed store.
+   */
+  get contextRewrites(): LocalContextRewrites {
+    this.localContextRewrites ??= new LocalContextRewrites({
+      ensureConversation: (id, agent) => this.ensureConversation(id, agent),
+      conversationKey: (id, agent) => this.conversationKey(id, agent),
+      conversationMessagesPath: (key) => this.conversationMessagesPath(key),
+      ensureResidentMessages: (id, agent) =>
+        void this.residentLocalMessagesForConversation(id, agent),
+      inContextMessages: (id, agent) =>
+        this.localMessagesForConversation(id, agent),
+      validateUnreadTranscriptHead: (key) =>
+        this.validateUnreadTranscriptHeadOnce(key),
+      nextLocalMessageId: () => this.nextLocalMessageId(),
+      currentLocalMessageDate: () => this.currentLocalMessageDate(),
+      setResidentMessages: (key, messages) =>
+        this.setResidentConversationMessages(key, messages),
+      saveConversation: (key, conversation) =>
+        void this.conversations.set(key, conversation),
+      persistConversation: (id, agent, options) =>
+        this.persistConversationState(id, agent, options),
+      rebuildMessageIndex: () => this.rebuildMessageIndex(),
+      now: () => currentIsoTimestamp(),
+      ensureTranscriptHeader: (conversation, messagesPath) =>
+        this.ensureConversationTranscriptHeader(conversation, messagesPath),
+      nextSessionEntryId: (key) => this.nextSessionEntryId(key),
+      lastSessionEntryId: (key) =>
+        this.lastSessionEntryIdByConversationKey.get(key) ?? null,
+      recordSessionEntryId: (key, entryId) =>
+        this.recordSessionEntryId(key, entryId),
+    });
+    return this.localContextRewrites;
+  }
+
+  private recordSessionEntryId(key: string, entryId: string): void {
+    this.sessionEntryIds(key).add(entryId);
+    this.lastSessionEntryIdByConversationKey.set(key, entryId);
+  }
+
   private updateConversationSequences(conversation: StoredConversation): void {
     this.conversationSeq = Math.max(
       this.conversationSeq,
@@ -2964,6 +2932,10 @@ export class LocalStore {
     this.resetPersistedSessionStateFromEntries(key, entries);
   }
 
+  /**
+   * Append a `message` row, skipping it when the same snapshot is already
+   * persisted under the same entry.
+   */
   private appendConversationSessionMessageEntry(
     key: string,
     conversation: StoredConversation,
