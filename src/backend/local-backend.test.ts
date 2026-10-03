@@ -734,6 +734,58 @@ describe("local backend pi transcript", () => {
     expect(systemPrompts[1]).toBe(systemPrompts[0]);
   }, 60000);
 
+  test("freezes the tool declaration set across turns (V12)", async () => {
+    const storageDir = await mkdtemp(join(tmpdir(), "local-backend-tools-"));
+    const toolSets: Array<unknown[] | undefined> = [];
+    const executor: HeadlessTurnExecutor = {
+      async execute(input) {
+        toolSets.push(input.clientTools);
+        return lettaStreamFromChunks([
+          {
+            message_type: "assistant_message",
+            content: [{ type: "text", text: "ok" }],
+          } as LettaStreamingResponse,
+          {
+            message_type: "stop_reason",
+            stop_reason: "end_turn",
+          } as LettaStreamingResponse,
+        ]);
+      },
+    };
+    const backend = new LocalBackend({
+      storageDir,
+      executor,
+      memfsEnabled: false,
+    });
+    const agent = await backend.createAgent({
+      name: "Local",
+      system: "base {CORE_MEMORY}",
+    } as never);
+    const conversation = await backend.createConversation({
+      agent_id: agent.id,
+    } as never);
+    const turn = async (clientTools: unknown[]): Promise<void> => {
+      await drain(
+        await backend.createConversationMessageStream(conversation.id, {
+          agent_id: agent.id,
+          messages: [{ role: "user", content: "hi" }],
+          client_tools: clientTools,
+        } as never),
+      );
+    };
+
+    // First turn establishes the frozen declaration set.
+    await turn([{ name: "A" }, { name: "B" }]);
+    // Later turns drop A and add C: the declaration set must stay frozen.
+    await turn([{ name: "B" }, { name: "C" }]);
+    await turn([{ name: "B" }, { name: "C" }]);
+
+    expect(toolSets).toHaveLength(3);
+    expect(toolSets[0]).toEqual([{ name: "A" }, { name: "B" }]);
+    expect(toolSets[1]).toEqual([{ name: "A" }, { name: "B" }]);
+    expect(toolSets[2]).toEqual([{ name: "A" }, { name: "B" }]);
+  }, 60000);
+
   test("recompiles cached system prompt after local compaction", async () => {
     const storageDir = await mkdtemp(join(tmpdir(), "local-backend-compact-"));
     const systemPrompts: string[] = [];

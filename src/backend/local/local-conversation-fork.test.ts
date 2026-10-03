@@ -1,8 +1,50 @@
 import { describe, expect, test } from "bun:test";
 import type { ConversationMessageCreateBody } from "@/backend";
 import { LocalStore } from "@/backend/local/local-store";
+import type { LocalCompiledSystemPrompt } from "@/backend/local/system-prompt-compilation";
 
 describe("LocalBackend conversation forks", () => {
+  test("copies the parent frozen snapshot to the fork (V13)", () => {
+    const agentId = "agent-local-fork-freeze";
+    const store = new LocalStore(agentId);
+    const source = store.createConversation({ agent_id: agentId } as never);
+    const snapshot: LocalCompiledSystemPrompt = {
+      content: "compiled system",
+      coreMemory: "core",
+      compiledAt: "2026-01-01T00:00:00.000Z",
+      rawSystemHash: "hash",
+      memfsRevision: "rev",
+      freezeSchema: 1,
+      frozenSkillsBlock: "<available_skills>A</available_skills>",
+      frozenTools: '[{"name":"A"}]',
+      frozenToolsHash: "tools-hash",
+      frozenModel: "anthropic/x",
+      frozenModelSettings: "{}",
+      frozenReason: "conversation_created",
+    };
+    store.setCompiledSystemPrompt(source.id, agentId, snapshot);
+
+    const forked = store.forkConversation(source.id);
+    const inherited = store.getCompiledSystemPrompt(forked.id, agentId);
+
+    // The child starts byte-identical and is marked as inherited, not freshly
+    // compiled.
+    expect(inherited?.content).toBe(snapshot.content);
+    expect(inherited?.frozenTools).toBe(snapshot.frozenTools);
+    expect(inherited?.frozenSkillsBlock).toBe(snapshot.frozenSkillsBlock);
+    expect(inherited?.frozenModel).toBe(snapshot.frozenModel);
+    expect(inherited?.frozenReason).toBe("fork_inherited");
+
+    // A parent change after the fork must not flow into the child.
+    store.setCompiledSystemPrompt(source.id, agentId, {
+      ...snapshot,
+      content: "parent changed",
+    });
+    expect(store.getCompiledSystemPrompt(forked.id, agentId)?.content).toBe(
+      "compiled system",
+    );
+  });
+
   test("forks through a projected message ID inclusively", () => {
     const agentId = "agent-local-fork-cutoff";
     const store = new LocalStore(agentId);
