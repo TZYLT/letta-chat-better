@@ -407,7 +407,20 @@ export function useReasoningCycle(ctx: ReasoningCycleContext) {
                 : desired.effort === "minimal"
                   ? "low"
                   : desired.effort;
-          cmd.finish(`Reasoning set to ${display}`, true);
+          const { formatModelRegistrationNotice, readContextPendingReport } =
+            await import("@/cli/helpers/context-pending");
+          const pendingNotice = formatModelRegistrationNotice(
+            await readContextPendingReport({
+              conversationId: conversationIdRef.current,
+              agentId,
+            }),
+          );
+          cmd.finish(
+            pendingNotice
+              ? `Reasoning set to ${display}\n${pendingNotice}`
+              : `Reasoning set to ${display}`,
+            true,
+          );
         } catch (error) {
           const errorDetails = formatErrorDetails(error, agentId);
           cmd.fail(`Failed to set reasoning: ${errorDetails}`);

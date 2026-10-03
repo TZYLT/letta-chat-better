@@ -529,6 +529,16 @@ async function runModelConfigAction(
       }
       agent = await backend.retrieveAgent(agentId);
     }
+    const { formatModelRegistrationNotice, readContextPendingReport } =
+      await import("@/cli/helpers/context-pending");
+    const pendingNotice = formatModelRegistrationNotice(
+      await readContextPendingReport({
+        conversationId: conversation?.id ?? null,
+        agentId,
+      }),
+    );
+    // stderr keeps stdout valid JSON for callers that parse it.
+    if (pendingNotice) console.error(pendingNotice);
     const report = buildAgentConfigReport(agent, conversation);
     const { model, context_window_limit, model_settings } = report.effective;
     await printJson(

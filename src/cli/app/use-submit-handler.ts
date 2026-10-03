@@ -1532,25 +1532,19 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
 
           try {
             const currentConversationId = conversationIdRef.current;
-            const { recompileAgentSystemPrompt } = await import(
-              "@/agent/modify"
-            );
-            const compiledSystemPrompt = await recompileAgentSystemPrompt(
-              currentConversationId,
-              agentId,
-            );
+            const { formatRecompileCommandOutput, recompileAndSummarize } =
+              await import("@/cli/helpers/recompile-command");
+            const { compiledSystemPrompt, appliedSummary } =
+              await recompileAndSummarize({
+                conversationId: currentConversationId,
+                agentId,
+              });
             setSystemPromptDoctorState(
               agentId,
               estimateSystemTokens(compiledSystemPrompt),
             );
 
-            cmd.finish(
-              [
-                "Recompiled current agent and conversation.",
-                "(warning: this will evict the cache and increase costs)",
-              ].join("\n"),
-              true,
-            );
+            cmd.finish(formatRecompileCommandOutput(appliedSummary), true);
           } catch (error) {
             const errorDetails = formatErrorDetails(error, agentId);
             cmd.fail(`Failed: ${errorDetails}`);

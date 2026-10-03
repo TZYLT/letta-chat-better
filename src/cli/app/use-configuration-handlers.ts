@@ -15,12 +15,10 @@ import {
 } from "@/agent/model";
 import { applyPersonalityToMemory } from "@/agent/personality";
 import {
-  getPersonalityBlockValues,
   getPersonalityOption,
   type PersonalityId,
 } from "@/agent/personality-presets";
 import { getBackend } from "@/backend";
-import { getClient } from "@/backend/api/client";
 import type { ModelSelectorSelection } from "@/cli/components/ModelSelector";
 import {
   type ContextTracker,
@@ -676,7 +674,15 @@ export function useConfigurationHandlers(ctx: ConfigurationHandlersContext) {
             model.label +
             (reasoningLevel ? ` (${reasoningLevel} reasoning)` : "");
 
-          cmd.finish(output, true);
+          const { formatModelRegistrationNotice, readContextPendingReport } =
+            await import("@/cli/helpers/context-pending");
+          const pendingNotice = formatModelRegistrationNotice(
+            await readContextPendingReport({ conversationId, agentId }),
+          );
+          cmd.finish(
+            pendingNotice ? `${output}\n${pendingNotice}` : output,
+            true,
+          );
         });
       } catch (error) {
         const errorDetails = formatErrorDetails(error, agentId);
@@ -889,95 +895,18 @@ export function useConfigurationHandlers(ctx: ConfigurationHandlersContext) {
             return;
           }
 
-          // Wait for the remote block to pick up the git push
-          cmd.update({
-            output: "Waiting for changes to propagate...",
-            phase: "running",
+          // Wait for the remote block to pick up the git push, then recompile.
+          const { applyPersonalityToRemoteAgent } = await import(
+            "@/cli/helpers/personality-remote"
+          );
+          const swap = await applyPersonalityToRemoteAgent({
+            agentId,
+            conversationId: conversationIdRef.current,
+            personalityId,
+            label: personality.label,
+            onProgress: (output) => cmd.update({ output, phase: "running" }),
           });
-
-          const expectedBlocks = new Map<string, string>([
-            [
-              "system/persona",
-              getPersonalityBlockValues(personalityId).persona.trim(),
-            ],
-            [
-              "system/human",
-              getPersonalityBlockValues(personalityId).human.trim(),
-            ],
-          ]);
-          const client = await getClient();
-          const maxWaitMs = 300_000;
-          const pollIntervalMs = 1_000;
-          const start = Date.now();
-          let propagated = false;
-
-          while (Date.now() - start < maxWaitMs) {
-            try {
-              const blockPage = await client.agents.blocks.list(agentId);
-              const missingLabels = Array.from(expectedBlocks.keys()).filter(
-                (label) =>
-                  !blockPage.items.some((block) => block.label === label),
-              );
-              if (missingLabels.length > 0) {
-                throw new Error(
-                  `${missingLabels.join(", ")} block not found on agent. Run \`/doctor\` to diagnose.`,
-                );
-              }
-
-              const allBlocksPropagated = Array.from(
-                expectedBlocks.entries(),
-              ).every(([label, expectedContent]) =>
-                blockPage.items.some(
-                  (block) =>
-                    block.label === label &&
-                    block.value.includes(expectedContent),
-                ),
-              );
-              if (allBlocksPropagated) {
-                propagated = true;
-                break;
-              }
-            } catch (pollErr) {
-              if (
-                pollErr instanceof Error &&
-                pollErr.message.includes("not found on agent")
-              ) {
-                throw pollErr;
-              }
-              // Transient API error — keep polling
-            }
-            await new Promise((r) => setTimeout(r, pollIntervalMs));
-          }
-
-          if (propagated) {
-            cmd.update({
-              output: "Recompiling agent...",
-              phase: "running",
-            });
-
-            const currentConversationId = conversationIdRef.current;
-            await client.agents.recompile(agentId, {
-              update_timestamp: true,
-            });
-            const conversationParams =
-              currentConversationId === "default"
-                ? { agent_id: agentId }
-                : undefined;
-            await client.conversations.recompile(
-              currentConversationId,
-              conversationParams,
-            );
-
-            cmd.finish(
-              `Personality swapped to ${personality.label}. Run \`/clear\` or \`/new\` to reset your message history for the personality to take full effect.`,
-              true,
-            );
-          } else {
-            cmd.finish(
-              `Personality swapped to ${personality.label}. Block propagation timed out — run \`/recompile\` manually`,
-              true,
-            );
-          }
+          cmd.finish(swap.message, true);
         });
       } catch (error) {
         const errorDetails = formatErrorDetails(error, agentId);

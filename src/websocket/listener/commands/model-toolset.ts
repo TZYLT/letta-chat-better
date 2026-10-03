@@ -546,8 +546,18 @@ export async function applyModelUpdateForRuntime(params: {
       modelHandle: model.handle,
     });
 
+  // On the local backend the model is only registered until the next
+  // application point; tell the client instead of letting it look applied.
+  const { formatModelRegistrationNotice, readContextPendingReport } =
+    await import("@/cli/helpers/context-pending");
+  const pendingNotice = formatModelRegistrationNotice(
+    await readContextPendingReport({ conversationId, agentId }),
+  );
+
   emitStatusDelta(socket, scopedRuntime, {
-    message: statusMessage,
+    message: pendingNotice
+      ? `${statusMessage} ${pendingNotice}`
+      : statusMessage,
     level: statusLevel,
     agentId,
     conversationId,

@@ -1,6 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import type { ContextPendingReport } from "@/backend/local/prefix-freeze";
-import { formatContextPendingReport } from "@/cli/helpers/context-pending";
+import {
+  formatAppliedPendingSummary,
+  formatContextPendingReport,
+  formatModelRegistrationNotice,
+} from "@/cli/helpers/context-pending";
 
 function report(
   overrides: Partial<ContextPendingReport> = {},
@@ -122,5 +126,71 @@ describe("formatContextPendingReport", () => {
   test("stays quiet when memory is not in play", () => {
     const output = formatContextPendingReport(report());
     expect(output).not.toContain("unreachable");
+  });
+});
+
+describe("formatAppliedPendingSummary", () => {
+  test("says nothing when the backend has no prefix freeze", () => {
+    expect(formatAppliedPendingSummary(undefined)).toBeUndefined();
+  });
+
+  test("reports nothing pending", () => {
+    expect(formatAppliedPendingSummary(report())).toBe("Nothing was pending.");
+  });
+
+  test("counts every applied category", () => {
+    const summary = formatAppliedPendingSummary(
+      report({
+        hasPending: true,
+        memory: {
+          unappliedCommits: ["abc add note", "def drop note"],
+          diffStat: "",
+        },
+        systemChanged: true,
+        skillsChanged: true,
+        tools: { added: ["NewTool"], removed: ["OldTool"], changed: true },
+        model: { applied: "anthropic/a", live: "anthropic/b", changed: true },
+        modelSettingsChanged: true,
+      }),
+    );
+    expect(summary).toBe(
+      "Applied: 2 memory commit(s), agent.system change, skills change, tool declarations (+1/-1), model change, model settings change.",
+    );
+  });
+
+  test("never counts uncommitted working-tree changes as applied", () => {
+    expect(formatAppliedPendingSummary(report({ dirty: true }))).toBe(
+      "Nothing was pending.",
+    );
+  });
+});
+
+describe("formatModelRegistrationNotice", () => {
+  test("stays quiet without a snapshot, since the next turn compiles fresh", () => {
+    expect(
+      formatModelRegistrationNotice(
+        report({ hasSnapshot: false, model: { changed: true } }),
+      ),
+    ).toBeUndefined();
+  });
+
+  test("stays quiet when the model did not change", () => {
+    expect(formatModelRegistrationNotice(report())).toBeUndefined();
+  });
+
+  test("points at the application points after a registered model change", () => {
+    const notice = formatModelRegistrationNotice(
+      report({
+        model: { applied: "anthropic/a", live: "anthropic/b", changed: true },
+      }),
+    );
+    expect(notice).toContain("/recompile");
+    expect(notice).toContain("compaction");
+  });
+
+  test("also fires for a model-settings-only change", () => {
+    expect(
+      formatModelRegistrationNotice(report({ modelSettingsChanged: true })),
+    ).toContain("/recompile");
   });
 });

@@ -25,6 +25,68 @@ function isContextPendingCapable(
   );
 }
 
+/**
+ * Read the pending report for a scope, best-effort. `undefined` means "this
+ * backend has no prefix freeze" (cloud) or the read failed — callers must stay
+ * silent rather than claim anything about the prefix.
+ */
+export async function readContextPendingReport(input: {
+  conversationId: string | null;
+  agentId: string | null | undefined;
+  full?: boolean;
+}): Promise<ContextPendingReport | undefined> {
+  if (!input.agentId) return undefined;
+  try {
+    const backend = getBackend();
+    if (!isContextPendingCapable(backend)) return undefined;
+    return await backend.getContextPending(
+      input.conversationId ?? "default",
+      input.agentId,
+      { full: input.full === true },
+    );
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * What `/recompile` just applied, counted from the report taken immediately
+ * before it. Uncommitted working-tree changes are not applied by a recompile,
+ * so they are never counted here.
+ */
+export function formatAppliedPendingSummary(
+  report: ContextPendingReport | undefined,
+): string | undefined {
+  if (!report) return undefined;
+  const parts: string[] = [];
+  const commits = report.memory.unappliedCommits.length;
+  if (commits > 0) parts.push(`${commits} memory commit(s)`);
+  if (report.systemChanged) parts.push("agent.system change");
+  if (report.skillsChanged) parts.push("skills change");
+  if (report.tools.changed) {
+    parts.push(
+      `tool declarations (+${report.tools.added.length}/-${report.tools.removed.length})`,
+    );
+  }
+  if (report.model.changed) parts.push("model change");
+  if (report.modelSettingsChanged) parts.push("model settings change");
+  if (parts.length === 0) return "Nothing was pending.";
+  return `Applied: ${parts.join(", ")}.`;
+}
+
+/**
+ * A model switch inside a frozen conversation is only REGISTERED: the prefix
+ * keeps the model it was compiled with until the next application point. Say so
+ * at the switch instead of leaving the user to discover it.
+ */
+export function formatModelRegistrationNotice(
+  report: ContextPendingReport | undefined,
+): string | undefined {
+  if (!report?.hasSnapshot) return undefined;
+  if (!report.model.changed && !report.modelSettingsChanged) return undefined;
+  return "Model change registered — run `/recompile` to apply it now (it also applies at the next compaction or new conversation).";
+}
+
 function indentBlock(text: string, prefix = "  "): string {
   return text
     .split("\n")
