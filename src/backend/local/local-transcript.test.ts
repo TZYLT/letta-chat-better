@@ -13,6 +13,7 @@ import {
   LOCAL_TRANSCRIPT_MESSAGE_FORMAT,
   LocalTranscriptRepairRequiredError,
   type LocalTranscriptRowsResult,
+  localTranscriptRowsResult,
   overlayResidentLocalMessageSuffix,
   readLocalTranscriptTailWindow,
   restrictLocalTranscriptToResidentMessages,
@@ -138,6 +139,118 @@ describe("restrictLocalTranscriptToResidentMessages", () => {
     expect(restricted.entryIds.has("e-old")).toBe(false);
     expect(restricted.entryIds.has("e-last")).toBe(true);
     expect(restricted.lastEntryId).toBe("e-last");
+  });
+});
+
+describe("local transcript topic markers", () => {
+  function topicRow(input: {
+    id: string;
+    parentId?: string | null;
+    title: string;
+    summary?: string;
+    createdBy?: "agent" | "user";
+    anchorMessageId?: string | null;
+    turnsSincePrevious?: number;
+  }): Record<string, unknown> {
+    return {
+      type: "topic",
+      id: input.id,
+      parentId: input.parentId ?? null,
+      timestamp: "2026-01-01T00:00:00.000Z",
+      title: input.title,
+      ...(input.summary === undefined ? {} : { summary: input.summary }),
+      createdBy: input.createdBy ?? "agent",
+      anchorMessageId: input.anchorMessageId ?? "msg-2",
+      turnsSincePrevious: input.turnsSincePrevious ?? 3,
+    };
+  }
+
+  function messageRow(id: string, parentId: string | null, text: string) {
+    return {
+      type: "message",
+      id: `entry-${id}`,
+      parentId,
+      timestamp: "2026-01-01T00:00:00.000Z",
+      message: {
+        id,
+        role: "user",
+        content: [{ type: "text", text }],
+        timestamp: 0,
+      },
+    };
+  }
+
+  test("rows keep markers out of the projection and out of the entry map", () => {
+    const rows = [
+      messageRow("msg-1", null, "one"),
+      topicRow({ id: "topic-1", parentId: "entry-msg-1", title: "first" }),
+      messageRow("msg-2", "topic-1", "two"),
+    ];
+
+    const result = localTranscriptRowsResult(
+      rows,
+      LOCAL_TRANSCRIPT_MESSAGE_FORMAT,
+    );
+
+    expect(result.messages.map((message) => message.id)).toEqual([
+      "msg-1",
+      "msg-2",
+    ]);
+    expect(result.entryIdByMessageId.size).toBe(2);
+    expect(result.entryIds.has("topic-1")).toBe(false);
+    expect(result.lastEntryId).toBe("entry-msg-2");
+  });
+
+  test("a trailing marker owns lastEntryId without entering context", () => {
+    const rows = [
+      messageRow("msg-1", null, "one"),
+      topicRow({ id: "topic-9", parentId: "entry-msg-1", title: "done" }),
+    ];
+    const result = localTranscriptRowsResult(
+      rows,
+      LOCAL_TRANSCRIPT_MESSAGE_FORMAT,
+    );
+
+    expect(result.lastEntryId).toBe("topic-9");
+    expect(result.messages).toHaveLength(1);
+    expect(result.messageById.has("topic-9")).toBe(false);
+  });
+
+  test("tail reads ignore a marker sitting inside the window", async () => {
+    const storageDir = await createStorageDirectory();
+    const messagesPath = join(storageDir, "messages.jsonl");
+    await writeFile(
+      messagesPath,
+      `${[
+        JSON.stringify({
+          type: "session",
+          version: 3,
+          id: "conversation-1",
+          timestamp: "2026-01-01T00:00:00.000Z",
+          cwd: storageDir,
+        }),
+        JSON.stringify(messageRow("msg-1", null, "one")),
+        JSON.stringify(
+          topicRow({ id: "topic-1", parentId: "entry-msg-1", title: "first" }),
+        ),
+        JSON.stringify(messageRow("msg-2", "topic-1", "two")),
+      ].join("\n")}\n`,
+    );
+
+    const tail = readLocalTranscriptTailWindow(
+      messagesPath,
+      LOCAL_TRANSCRIPT_MESSAGE_FORMAT,
+      [],
+      10,
+      storageDir,
+      storageDir,
+    );
+
+    expect(tail.messages.map((message) => message.id)).toEqual([
+      "msg-1",
+      "msg-2",
+    ]);
+    expect(tail.transcript.lastEntryId).toBe("entry-msg-2");
   });
 });
 

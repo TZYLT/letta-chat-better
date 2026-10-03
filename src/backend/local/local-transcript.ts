@@ -128,7 +128,7 @@ interface LocalTranscriptSessionHeader {
   cwd: string;
 }
 
-interface LocalTranscriptEntryBase {
+export interface LocalTranscriptEntryBase {
   id: string;
   parentId: string | null;
   timestamp: string;
@@ -152,11 +152,37 @@ export interface LocalTranscriptCompactionEntry
   };
 }
 
+/**
+ * A topic marker: the agent (or the user) declares that a topic ended here.
+ * Markers are metadata, never context — they record where a topic boundary is,
+ * not what the model sees. The effective boundary is derived at read time
+ * (rewound a few user turns; see `topic-compaction.ts`), so a marker keeps its
+ * original anchor and stays valid if that policy changes.
+ */
+export interface LocalTranscriptTopicEntry extends LocalTranscriptEntryBase {
+  type: "topic";
+  /** Short, searchable noun phrase (≤ 60 chars at the tool boundary). */
+  title: string;
+  /** Optional prose summary of the topic (≤ 600 chars at the tool boundary). */
+  summary?: string;
+  createdBy: "agent" | "user";
+  /** Last in-context message id when the marker was written. */
+  anchorMessageId: string | null;
+  /** User turns since the previous marker, for sparsity reporting. */
+  turnsSincePrevious: number;
+}
+
 export type LocalTranscriptSessionEntry =
   | LocalTranscriptSessionHeader
   | LocalTranscriptSessionMessageEntry
-  | LocalTranscriptCompactionEntry;
+  | LocalTranscriptCompactionEntry
+  | LocalTranscriptTopicEntry;
 
+/**
+ * Entries a transcript reader treats as conversation content. `topic` entries
+ * are deliberately excluded: a marker must never enter the in-context
+ * projection, the message index, or search results.
+ */
 export type LocalTranscriptAppendEntry =
   | LocalTranscriptSessionMessageEntry
   | LocalTranscriptCompactionEntry;
@@ -226,6 +252,24 @@ function isLocalTranscriptAppendEntry(
   return (
     isLocalTranscriptSessionMessageEntry(value) ||
     isLocalTranscriptCompactionEntry(value)
+  );
+}
+
+export function isLocalTranscriptTopicEntry(
+  value: unknown,
+): value is LocalTranscriptTopicEntry {
+  return (
+    isRecord(value) &&
+    value.type === "topic" &&
+    typeof value.id === "string" &&
+    (value.parentId === null || typeof value.parentId === "string") &&
+    typeof value.timestamp === "string" &&
+    typeof value.title === "string" &&
+    (value.summary === undefined || typeof value.summary === "string") &&
+    (value.createdBy === "agent" || value.createdBy === "user") &&
+    (value.anchorMessageId === null ||
+      typeof value.anchorMessageId === "string") &&
+    typeof value.turnsSincePrevious === "number"
   );
 }
 
@@ -304,12 +348,15 @@ export function localTranscriptRowsResult(
   let lastEntryId: string | null = null;
 
   for (const row of rows) {
-    if (!isLocalTranscriptAppendEntry(row)) continue;
-    entryIds.add(row.id);
-    lastEntryId = row.id;
-    entryIdByMessageId.set(row.message.id, row.id);
-    allMessages.push(row.message);
-    setLatestLocalMessage(messageById, row.message);
+    if (isLocalTranscriptAppendEntry(row)) {
+      entryIds.add(row.id);
+      entryIdByMessageId.set(row.message.id, row.id);
+      allMessages.push(row.message);
+      setLatestLocalMessage(messageById, row.message);
+    }
+    // The append chain must not skip a row it does not understand: a `topic`
+    // marker's parentId is what keeps the chain unbroken for the next append.
+    if (isRecord(row) && typeof row.id === "string") lastEntryId = row.id;
   }
 
   const activeMessages = activeMessageIds.length
