@@ -220,16 +220,16 @@ export function estimateProviderPromptFloorTokens(
 }
 
 /**
- * Context pressure must be handled before the provider request, not only after
- * an overflow. pi-ai first makes an oversized request valid by shrinking its
- * output allowance to `contextWindow - estimatedContext - 4096`, floored at
- * one token. A near-full request can therefore finish with `length` instead of
- * throwing the overflow that our retry path would catch.
+ * The boundary past which a provider request has no room for its completion.
  *
- * Keep the same 16,384-token reserve as Pi's coding-agent harness, capped at
- * 20% for small local windows. This is deliberately based on context usage,
- * not the configured output limit: an intentionally small `max_tokens` value
- * remains a normal provider length stop (the policy preserved by #3355).
+ * pi-ai first makes an oversized request valid by shrinking its output
+ * allowance to `contextWindow - estimatedContext - 4096`, floored at one
+ * token. A near-full request can therefore finish with `length` instead of
+ * throwing the overflow that would otherwise be reported. Keep the same
+ * 16,384-token reserve as Pi's coding-agent harness, capped at 20% for small
+ * local windows. This is deliberately based on context usage, not the
+ * configured output limit: an intentionally small `max_tokens` value remains a
+ * normal provider length stop (the policy preserved by #3355).
  *
  * Upstream references, pinned when #3508 was fixed:
  * - pi-ai clamp: https://github.com/earendil-works/pi/blob/cee5ff7520d8828bed9955ef00419e995d1f91e0/packages/ai/src/api/simple-options.ts#L12-L19
@@ -257,16 +257,54 @@ export function contextCompactionThreshold(
   return Math.max(0, contextWindow - reserveTokens);
 }
 
+/** Advisory share of the window above which a trim is worth offering. */
+export const DEFAULT_CONTEXT_SOFT_PRESSURE_RATIO = 0.7;
+
+export type ContextPressureLevel = "ok" | "soft" | "hard";
+
+/**
+ * Classify how much of the serving context window a request already occupies.
+ *
+ * `soft` is advisory only: the CLI uses it to offer a trim before submitting a
+ * turn. `hard` is the boundary the local backend refuses to cross without an
+ * explicit user trim, because past it the engine either truncates the prompt
+ * silently or clamps the completion to a useless one-token `length` stop.
+ *
+ * `hard` wins whenever both tiers match. A `softRatio` of 1 disables the soft
+ * tier, since `hard` is always the lower boundary.
+ */
+export function contextPressureLevel(input: {
+  contextTokens: number | undefined;
+  contextWindow: number | undefined;
+  softRatio?: number;
+  hardThreshold?: number;
+}): ContextPressureLevel {
+  const { contextTokens, contextWindow } = input;
+  if (contextTokens === undefined) return "ok";
+
+  const hardThreshold =
+    input.hardThreshold ?? contextCompactionThreshold(contextWindow);
+  if (hardThreshold !== undefined && contextTokens > hardThreshold) {
+    return "hard";
+  }
+
+  const softRatio = input.softRatio ?? DEFAULT_CONTEXT_SOFT_PRESSURE_RATIO;
+  if (
+    typeof contextWindow === "number" &&
+    Number.isFinite(contextWindow) &&
+    contextWindow > 0 &&
+    contextTokens > contextWindow * softRatio
+  ) {
+    return "soft";
+  }
+  return "ok";
+}
+
 export function shouldCompactForContextPressure(input: {
   contextTokens: number | undefined;
   contextWindow: number | undefined;
 }): boolean {
-  const threshold = contextCompactionThreshold(input.contextWindow);
-  return (
-    input.contextTokens !== undefined &&
-    threshold !== undefined &&
-    input.contextTokens > threshold
-  );
+  return contextPressureLevel(input) === "hard";
 }
 
 function serializedLength(value: unknown): number {

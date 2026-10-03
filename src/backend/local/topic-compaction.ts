@@ -27,7 +27,6 @@ export const MAX_TOPIC_BOUNDARY_REWIND_TURNS = 3;
 export const DEFAULT_TOPIC_MARKER_WARN_TURNS = 10;
 export const DEFAULT_TOPIC_MARKER_REJECT_TURNS = 5;
 export const DEFAULT_TOPIC_NUDGE_TURNS = 50;
-export const DEFAULT_TOPIC_SOFT_PRESSURE_RATIO = 0.7;
 
 /** A transcript `topic` entry, projected to what the planner needs. */
 export interface LocalTopicMarker {

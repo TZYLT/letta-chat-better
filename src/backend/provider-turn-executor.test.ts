@@ -6,6 +6,7 @@ import type { LettaStreamingResponse } from "@letta-ai/letta-client/resources/ag
 import type { HeadlessTurnExecutorInput } from "@/backend/dev/headless-turn-executor";
 import {
   contextCompactionThreshold,
+  contextPressureLevel,
   type ProviderStreamAdapter,
   ProviderTurnExecutor,
   providerLocalMessage,
@@ -90,6 +91,53 @@ describe("ProviderTurnExecutor", () => {
     expect(contextCompactionThreshold(1_000)).toBe(800);
     expect(contextCompactionThreshold(0)).toBeUndefined();
     expect(contextCompactionThreshold(Number.NaN)).toBeUndefined();
+  });
+
+  test("classifies context pressure into ok, soft, and hard tiers", () => {
+    expect(
+      contextPressureLevel({ contextTokens: 86_045, contextWindow: 100_000 }),
+    ).toBe("hard");
+    expect(
+      contextPressureLevel({ contextTokens: 83_616, contextWindow: 100_000 }),
+    ).toBe("soft");
+    expect(
+      contextPressureLevel({ contextTokens: 70_001, contextWindow: 100_000 }),
+    ).toBe("soft");
+    expect(
+      contextPressureLevel({ contextTokens: 70_000, contextWindow: 100_000 }),
+    ).toBe("ok");
+    // An explicit ratio of 1 disables the advisory tier without hiding `hard`.
+    expect(
+      contextPressureLevel({
+        contextTokens: 95_000,
+        contextWindow: 100_000,
+        softRatio: 1,
+      }),
+    ).toBe("hard");
+    expect(
+      contextPressureLevel({
+        contextTokens: 80_000,
+        contextWindow: 100_000,
+        softRatio: 1,
+      }),
+    ).toBe("ok");
+    // Without a usable window there is no boundary to compare against, so the
+    // turn proceeds instead of being blocked on an unusable measurement.
+    expect(
+      contextPressureLevel({ contextTokens: 86_045, contextWindow: undefined }),
+    ).toBe("ok");
+    expect(
+      contextPressureLevel({
+        contextTokens: 80_000,
+        contextWindow: Number.NaN,
+      }),
+    ).toBe("ok");
+    expect(
+      contextPressureLevel({
+        contextTokens: undefined,
+        contextWindow: 100_000,
+      }),
+    ).toBe("ok");
   });
 
   test("maps pi text, thinking, tool call, usage, and done events", async () => {
