@@ -40,6 +40,7 @@ import {
 import { LocalPiModelsRuntime } from "./pi-models-runtime";
 import { resolvePiRequestHeaders } from "./pi-request-headers";
 import { isPiModelOutputEvent } from "./pi-stream-output";
+import { withPrefixProbe } from "./prefix-probe";
 import type {
   LlmEndErrorInfo,
   LlmEndInfo,
@@ -659,6 +660,15 @@ export class PiStreamAdapter implements ProviderStreamAdapter {
         options.onPayload = withAnthropicOutputEffort(options.onPayload, "max");
       }
     }
+
+    // Prefix-freeze payload probe (D-008): wraps the provider-specific
+    // onPayload hooks above so the exact bytes sent are captured last. No-op
+    // unless LETTA_PREFIX_PROBE_DIR is set.
+    const probedOnPayload = withPrefixProbe(options.onPayload, {
+      conversationId: input.conversationId,
+      modelId: resolved.model.id,
+    });
+    if (probedOnPayload) options.onPayload = probedOnPayload;
 
     const restoreEnv = applyPiEnvOverrides(resolved.envOverrides);
     const llmStartedAt = Date.now();
