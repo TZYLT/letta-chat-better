@@ -1,0 +1,205 @@
+/**
+ * `/topics` wiring (D-110): the command must reach the local backend's list,
+ * honour `--all`, and refuse clearly on a backend that has no topic markers.
+ * The copy itself is covered by `topic-list.test.ts`.
+ */
+import { afterEach, describe, expect, test } from "bun:test";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import type { Stream } from "@letta-ai/letta-client/core/streaming";
+import type { LettaStreamingResponse } from "@letta-ai/letta-client/resources/agents/messages";
+import type { DreamCommandScope } from "@/agent/reflection-runs";
+import type { ConversationMessageCreateBody } from "@/backend";
+import { __testSetBackend } from "@/backend";
+import { FakeHeadlessBackend } from "@/backend/dev/fake-headless-backend";
+import type { HeadlessTurnExecutor } from "@/backend/dev/headless-turn-executor";
+import { LocalBackend } from "@/backend/local/local-backend";
+import { TOPIC_COMMAND_LOCAL_ONLY } from "@/cli/commands/topic";
+import { handleTopicsCommand } from "@/cli/commands/topics";
+import { settingsManager } from "@/settings-manager";
+
+const temporaryDirectories: string[] = [];
+
+async function createStorageDirectory(): Promise<string> {
+  const directory = await mkdtemp(join(tmpdir(), "topics-command-"));
+  temporaryDirectories.push(directory);
+  return directory;
+}
+
+afterEach(async () => {
+  __testSetBackend(null);
+  await Promise.all(
+    temporaryDirectories
+      .splice(0)
+      .map((directory) => rm(directory, { recursive: true, force: true })),
+  );
+});
+
+function lettaStreamFromChunks(
+  chunks: LettaStreamingResponse[],
+): Stream<LettaStreamingResponse> {
+  return {
+    controller: new AbortController(),
+    async *[Symbol.asyncIterator]() {
+      for (const chunk of chunks) yield chunk;
+    },
+  } as unknown as Stream<LettaStreamingResponse>;
+}
+
+const okExecutor: HeadlessTurnExecutor = {
+  async execute() {
+    return lettaStreamFromChunks([
+      {
+        message_type: "assistant_message",
+        content: [{ type: "text", text: "ok" }],
+      } as LettaStreamingResponse,
+      {
+        message_type: "stop_reason",
+        stop_reason: "end_turn",
+      } as LettaStreamingResponse,
+    ]);
+  },
+};
+
+/** A local conversation with `turns` user turns, so markers have anchors. */
+async function backendWithTurns(turns: number): Promise<{
+  backend: LocalBackend;
+  agentId: string;
+  scope: DreamCommandScope;
+}> {
+  const backend = new LocalBackend({
+    storageDir: await createStorageDirectory(),
+    executor: okExecutor,
+    memfsEnabled: false,
+  });
+  const agent = await backend.createAgent({
+    name: "Local",
+    system: "base {CORE_MEMORY}",
+  });
+  for (let turn = 0; turn < turns; turn += 1) {
+    const stream = await backend.createConversationMessageStream("default", {
+      agent_id: agent.id,
+      messages: [{ role: "user", content: `question ${turn}` }],
+    } as ConversationMessageCreateBody);
+    for await (const _chunk of stream) {
+      // drain
+    }
+  }
+  return {
+    backend,
+    agentId: agent.id,
+    scope: {
+      agentId: agent.id,
+      conversationId: "default",
+    } as DreamCommandScope,
+  };
+}
+
+async function withTemporaryHome(run: () => Promise<void>): Promise<void> {
+  const previousHome = process.env.HOME;
+  process.env.HOME = await createStorageDirectory();
+  await settingsManager.reset();
+  await settingsManager.initialize();
+  try {
+    await run();
+  } finally {
+    await settingsManager.reset();
+    if (previousHome === undefined) delete process.env.HOME;
+    else process.env.HOME = previousHome;
+  }
+}
+
+describe("handleTopicsCommand", () => {
+  test("help documents both forms and how a trim is picked", async () => {
+    const output = await handleTopicsCommand(["help"]);
+    expect(output).toContain("/topics --all");
+    expect(output).toContain("/compact <n>");
+  });
+
+  test("rejects an unknown option instead of silently ignoring it", async () => {
+    const output = await handleTopicsCommand(["--everything"]);
+    expect(output).toContain('Unknown option "--everything"');
+    expect(output).toContain("USAGE");
+  });
+
+  test("requires an active agent", async () => {
+    await expect(
+      handleTopicsCommand([], { conversationId: "c" } as DreamCommandScope),
+    ).rejects.toThrow("require an active agent");
+  });
+
+  test("reports the local-only rule on a non-local backend", async () => {
+    __testSetBackend(new FakeHeadlessBackend());
+    expect(await handleTopicsCommand([], { agentId: "agent-x" })).toBe(
+      TOPIC_COMMAND_LOCAL_ONLY,
+    );
+  });
+
+  test("lists the blocks a marker created", async () => {
+    const { backend, agentId, scope } = await backendWithTurns(4);
+    backend.markTopic({
+      conversationId: "default",
+      agentId,
+      title: "Auth token refresh",
+      createdBy: "user",
+    });
+
+    const output = await handleTopicsCommand([], scope, { backend });
+    expect(output).toContain("Topic blocks in the current context");
+    expect(output).toContain("Auth token refresh");
+    expect(output).toContain("Current topic (not marked finished)");
+    expect(output).toContain("/compact <n> keeps block n");
+  });
+
+  test("--all lists the markers themselves", async () => {
+    const { backend, agentId, scope } = await backendWithTurns(4);
+    backend.markTopic({
+      conversationId: "default",
+      agentId,
+      title: "Auth token refresh",
+      createdBy: "agent",
+    });
+
+    const output = await handleTopicsCommand(["--all"], scope, { backend });
+    expect(output).toContain("Every topic marker in this conversation (1,");
+    expect(output).toContain("Auth token refresh");
+    expect(output).toContain("agent");
+    expect(output).toContain("in the current context");
+  });
+
+  test("an unmarked context explains both marking channels", async () => {
+    const { scope, backend } = await backendWithTurns(2);
+    const output = await handleTopicsCommand([], scope, { backend });
+    expect(output).toContain("No topic markers in this conversation yet.");
+    expect(output).toContain("TopicMark");
+  });
+
+  test("an unmarked context says so when the agent channel is off", async () => {
+    await withTemporaryHome(async () => {
+      settingsManager.updateSettings({ topicMarkingEnabled: false });
+      const { scope, backend } = await backendWithTurns(2);
+      const output = await handleTopicsCommand([], scope, { backend });
+      expect(output).toContain("Topic marking is switched off");
+      expect(output).not.toContain("TopicMark");
+    });
+  });
+
+  test("an empty context is reported, not invented", async () => {
+    const backend = new LocalBackend({
+      storageDir: await createStorageDirectory(),
+      executor: okExecutor,
+      memfsEnabled: false,
+    });
+    const agent = await backend.createAgent({
+      name: "Local",
+      system: "base {CORE_MEMORY}",
+    });
+    const output = await handleTopicsCommand(
+      [],
+      { agentId: agent.id, conversationId: "default" } as DreamCommandScope,
+      { backend },
+    );
+    expect(output).toBe("There is nothing in this conversation's context yet.");
+  });
+});

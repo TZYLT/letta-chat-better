@@ -11,6 +11,7 @@ import { handleMemoryRepositoryCommand } from "./memory-repository";
 import { handleSecretCommand } from "./secret";
 import { handleSystemRemindersCommand } from "./system-reminders";
 import { handleTopicCommand } from "./topic";
+import { handleTopicsCommand } from "./topics";
 
 type CommandHandlerResult =
   | string
@@ -634,6 +635,11 @@ export const commands: Record<string, Command> = {
     desc: "Mark a topic boundary in this conversation",
     args: "<title> [summary]",
     handler: (args, scope) => handleTopicCommand(args, scope),
+  },
+  "/topics": {
+    desc: "List the topic blocks of the current context",
+    args: "[--all]",
+    handler: (args, scope) => handleTopicsCommand(args, scope),
   },
   "/set-max-context": {
     desc: "Alias for /context-limit",
