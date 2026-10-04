@@ -7,7 +7,7 @@
  * application point (transcript row + refreshed frozen prefix), and a pick that
  * cannot be honored changes nothing at all.
  */
-import { afterEach, describe, expect, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -20,6 +20,7 @@ import type {
 } from "@/backend/dev/headless-turn-executor";
 import { LocalBackend } from "@/backend/local/local-backend";
 import { emptyLocalUsage } from "@/backend/local/local-message";
+import { settingsManager } from "@/settings-manager";
 
 const temporaryDirectories: string[] = [];
 
@@ -455,5 +456,87 @@ describe("LocalBackend.trimConversationToTopic", () => {
     expect(outcome.retentionCapTokens).toBe(300);
     expect(outcome.retainedTokens).toBeLessThanOrEqual(300);
     expect(outcome.requestedRetentionTokens).toBeGreaterThan(300);
+  });
+});
+
+/**
+ * D-115: the rewind is a setting, and the backend is where its default is
+ * resolved — otherwise every channel would have to pass the same number.
+ */
+describe("the boundary rewind follows topicBoundaryRewindTurns (D-115)", () => {
+  const originalHome = process.env.HOME;
+  let testHomeDir: string;
+
+  beforeEach(async () => {
+    await settingsManager.reset();
+    testHomeDir = await mkdtemp(join(tmpdir(), "topic-rewind-settings-"));
+    process.env.HOME = testHomeDir;
+    await settingsManager.initialize();
+  });
+
+  afterEach(async () => {
+    await settingsManager.reset();
+    await rm(testHomeDir, { recursive: true, force: true });
+    process.env.HOME = originalHome;
+  });
+
+  /** Six turns with a marker at the end of the sixth, so a rewind can move. */
+  async function markedConversation(): Promise<Fixture> {
+    const f = await fixture({ storageDir: await createStorageDirectory() });
+    for (const turn of ["one", "two", "three", "four", "five", "six"]) {
+      await f.sendTurn(turn);
+    }
+    f.backend.markTopic({
+      conversationId: f.conversationId,
+      agentId: f.agentId,
+      title: "Alpha",
+      createdBy: "agent",
+    });
+    return f;
+  }
+
+  test("the effective boundary moves with the configured rewind", async () => {
+    const f = await markedConversation();
+
+    const byDefault = f.backend.listTopics(f.conversationId, f.agentId);
+    expect(byDefault.blocks[1]?.rewindTurns).toBe(2);
+
+    settingsManager.updateSettings({ topicBoundaryRewindTurns: 0 });
+    const noRewind = f.backend.listTopics(f.conversationId, f.agentId);
+    expect(noRewind.blocks[1]?.rewindTurns).toBe(0);
+    expect(noRewind.blocks[1]?.startIndex ?? -1).toBeGreaterThan(
+      byDefault.blocks[1]?.startIndex ?? -1,
+    );
+    expect(noRewind.blocks[1]?.messageCount ?? 0).toBeLessThan(
+      byDefault.blocks[1]?.messageCount ?? 0,
+    );
+
+    settingsManager.updateSettings({ topicBoundaryRewindTurns: 3 });
+    const rewound = f.backend.listTopics(f.conversationId, f.agentId);
+    expect(rewound.blocks[1]?.rewindTurns).toBe(3);
+    expect(rewound.blocks[1]?.startIndex ?? -1).toBeLessThan(
+      byDefault.blocks[1]?.startIndex ?? -1,
+    );
+  });
+
+  test("a trim keeps fewer messages when the rewind is off", async () => {
+    const trimmed = async (rewindTurns: number) => {
+      settingsManager.updateSettings({ topicBoundaryRewindTurns: rewindTurns });
+      const f = await markedConversation();
+      const outcome = await f.backend.trimConversationToTopic({
+        conversationId: f.conversationId,
+        agentId: f.agentId,
+        pick: { kind: "topic", index: 2 },
+      });
+      expect(outcome.executed).toBe(true);
+      expect(outcome.rewindTurns).toBe(rewindTurns);
+      return outcome;
+    };
+
+    const tight = await trimmed(0);
+    const loose = await trimmed(2);
+
+    expect(tight.numMessagesBefore).toBe(loose.numMessagesBefore);
+    expect(loose.numMessagesAfter).toBeGreaterThan(tight.numMessagesAfter);
   });
 });

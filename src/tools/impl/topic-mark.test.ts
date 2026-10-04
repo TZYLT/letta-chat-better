@@ -2,7 +2,7 @@
  * `TopicMark` coverage: argument validation, the receipt copy, and — the part
  * that matters — that a refused marker writes nothing at all.
  */
-import { afterEach, describe, expect, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -13,6 +13,7 @@ import { __testSetBackend } from "@/backend";
 import { FakeHeadlessBackend } from "@/backend/dev/fake-headless-backend";
 import type { HeadlessTurnExecutor } from "@/backend/dev/headless-turn-executor";
 import { LocalBackend } from "@/backend/local/local-backend";
+import { settingsManager } from "@/settings-manager";
 import {
   formatTopicMarkReceipt,
   TOPIC_MARK_REMOTE_UNSUPPORTED,
@@ -267,5 +268,67 @@ describe("topic_mark", () => {
     expect(result.status).toBe("error");
     expect(result.content).toContain("nothing in the context");
     expect(backend.listTopicMarkers("default", agent.id)).toEqual([]);
+  });
+});
+
+/**
+ * D-115: the gate's thresholds are settings, not constants. Five turns is the
+ * default reject boundary, so it is exactly where a configured threshold has to
+ * be observable.
+ */
+describe("topic_mark gate thresholds from settings", () => {
+  const originalHome = process.env.HOME;
+  let testHomeDir: string;
+
+  beforeEach(async () => {
+    await settingsManager.reset();
+    testHomeDir = await mkdtemp(join(tmpdir(), "topic-mark-settings-"));
+    process.env.HOME = testHomeDir;
+    await settingsManager.initialize();
+  });
+
+  afterEach(async () => {
+    await settingsManager.reset();
+    await rm(testHomeDir, { recursive: true, force: true });
+    process.env.HOME = originalHome;
+  });
+
+  test("a raised reject threshold refuses a mark the defaults would warn about", async () => {
+    settingsManager.updateSettings({
+      topicMarkerRejectTurns: 20,
+      topicMarkerWarnTurns: 30,
+    });
+    const { backend, agentId } = await backendWithTurns(
+      TURNS_PAST_REJECT_THRESHOLD,
+    );
+
+    const result = await topic_mark(
+      { title: "Too soon for this config" },
+      { backend, agentId, conversationId: "default" },
+    );
+
+    expect(result.status).toBe("error");
+    expect(result.content).toContain("Wait 15 more user turns");
+    expect(backend.listTopicMarkers("default", agentId)).toEqual([]);
+  });
+
+  test("0 turns the reject threshold off", async () => {
+    settingsManager.updateSettings({
+      topicMarkerRejectTurns: 0,
+      topicMarkerWarnTurns: 0,
+    });
+    // One turn: the defaults would refuse this outright.
+    const { backend, agentId } = await backendWithTurns(1);
+
+    const result = await topic_mark(
+      { title: "Immediate" },
+      { backend, agentId, conversationId: "default" },
+    );
+
+    expect(result.status).toBe("success");
+    expect(result.content).not.toContain("sooner after the previous marker");
+    expect(backend.listTopicMarkers("default", agentId)).toMatchObject([
+      { title: "Immediate" },
+    ]);
   });
 });

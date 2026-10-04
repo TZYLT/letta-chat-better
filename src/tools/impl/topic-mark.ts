@@ -19,6 +19,7 @@ import {
   type TopicMarkerGateVerdict,
 } from "@/backend/local/topic-compaction";
 import { shouldIncludeTopicMarking } from "@/settings-tool-gates";
+import { readTopicSettings } from "@/topic-settings";
 
 export const TOPIC_MARK_TITLE_MAX_LENGTH = 60;
 export const TOPIC_MARK_SUMMARY_MAX_LENGTH = 600;
@@ -162,8 +163,11 @@ export async function topic_mark(
 
   // A previous marker in the same turn leaves zero user turns between them, so
   // "one marker per turn" needs no separate counter: the gate rejects it.
+  const settings = readTopicSettings();
   const verdict = evaluateTopicMarkerGate({
     turnsSincePrevious: state.turnsSinceLastMarker,
+    warnTurns: settings.markerWarnTurns,
+    rejectTurns: settings.markerRejectTurns,
   });
   if (verdict.status === "rejected") {
     return {

@@ -56,6 +56,7 @@ import {
   type SharedReminderState,
 } from "@/reminders/state";
 import { shouldIncludeTopicMarking } from "@/settings-tool-gates";
+import { readTopicSettings } from "@/topic-settings";
 import { debugLog } from "@/utils/debug";
 
 export interface CompactCommandContext {
@@ -115,7 +116,11 @@ export async function offerTrimBeforeSend(
   const conversationId = ctx.conversationIdRef.current;
   const contextWindow = ctx.effectiveContextWindowSize;
   const contextTokens = ctx.contextTrackerRef.current.lastContextTokens;
-  const level = contextPressureLevel({ contextTokens, contextWindow });
+  const level = contextPressureLevel({
+    contextTokens,
+    contextWindow,
+    softRatio: readTopicSettings().softPressureRatio,
+  });
   const tracker = ctx.contextTrackerRef.current;
   if (level === "ok") {
     tracker.lastPressureNotice = undefined;

@@ -9,7 +9,7 @@
  * reminder state, description regeneration) is faked, because the point is the
  * ordering of the calls the command makes, not the terminal it renders into.
  */
-import { afterEach, describe, expect, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -41,6 +41,7 @@ import {
   createSharedReminderState,
   type SharedReminderState,
 } from "@/reminders/state";
+import { settingsManager } from "@/settings-manager";
 
 const temporaryDirectories: string[] = [];
 
@@ -582,5 +583,57 @@ describe("offerTrimBeforeSend (D-112)", () => {
     expect(await offerTrimBeforeSend(h.ctx, async () => {})).toBe(false);
     expect(h.commands).toEqual([]);
     expect(h.overlays).toEqual([]);
+  });
+});
+
+/**
+ * D-115: `topicSoftPressureRatio` decides where the advisory line starts, and
+ * `0` turns it off (the hard tier, which refuses nothing by itself, is not the
+ * user's to configure here).
+ */
+describe("the advisory tier follows topicSoftPressureRatio (D-115)", () => {
+  const originalHome = process.env.HOME;
+  let testHomeDir: string;
+
+  beforeEach(async () => {
+    await settingsManager.reset();
+    testHomeDir = await mkdtemp(join(tmpdir(), "compact-ratio-settings-"));
+    process.env.HOME = testHomeDir;
+    await settingsManager.initialize();
+  });
+
+  afterEach(async () => {
+    await settingsManager.reset();
+    await rm(testHomeDir, { recursive: true, force: true });
+    process.env.HOME = originalHome;
+  });
+
+  /** 75% of the window: above the default 0.7, below the 0.8 hard threshold. */
+  async function crowded(): Promise<Harness> {
+    const local = await localConversation(2);
+    return harness({
+      conversationId: local.conversationId,
+      agentId: local.agentId,
+      contextWindow: 1_000,
+      contextTokens: 750,
+    });
+  }
+
+  test("0 turns the advisory line off", async () => {
+    settingsManager.updateSettings({ topicSoftPressureRatio: 0 });
+    const h = await crowded();
+
+    expect(await offerTrimBeforeSend(h.ctx, async () => {})).toBe(false);
+    expect(h.commands).toEqual([]);
+    expect(h.overlays).toEqual([]);
+  });
+
+  test("a lower ratio starts advising sooner", async () => {
+    settingsManager.updateSettings({ topicSoftPressureRatio: 0.5 });
+    const h = await crowded();
+
+    expect(await offerTrimBeforeSend(h.ctx, async () => {})).toBe(false);
+    expect(h.commands).toHaveLength(1);
+    expect(h.commands[0]?.output).toContain("about 75%");
   });
 });

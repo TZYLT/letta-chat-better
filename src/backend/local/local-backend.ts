@@ -27,6 +27,7 @@ import type {
   LlmStartInfo,
 } from "@/backend/dev/provider-turn-executor";
 import { shouldIncludeTopicMarking } from "@/settings-tool-gates";
+import { readTopicSettings } from "@/topic-settings";
 import { isRecord } from "@/utils/type-guards";
 import {
   estimateLocalMessageTokens,
@@ -561,7 +562,8 @@ export class LocalBackend extends HeadlessBackend {
     return listLocalTopics(this.topicTrimPorts(), {
       conversationId,
       ...(agentId === undefined ? {} : { agentId }),
-      ...options,
+      rewindTurns:
+        options.rewindTurns ?? readTopicSettings().boundaryRewindTurns,
     });
   }
 
@@ -578,7 +580,12 @@ export class LocalBackend extends HeadlessBackend {
     rewindTurns?: number;
     trigger?: string;
   }): Promise<LocalTopicTrimOutcome> {
-    return trimLocalConversationToTopic(this.topicTrimPorts(), input);
+    // The rewind default comes from settings, so every channel (CLI, listener,
+    // tool) cuts at the same boundary unless it passes an explicit value.
+    return trimLocalConversationToTopic(this.topicTrimPorts(), {
+      ...input,
+      rewindTurns: input.rewindTurns ?? readTopicSettings().boundaryRewindTurns,
+    });
   }
 
   private topicTrimPorts(): LocalTopicTrimPorts {
