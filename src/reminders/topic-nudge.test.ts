@@ -18,7 +18,10 @@ import { __testSetBackend } from "@/backend";
 import { FakeHeadlessBackend } from "@/backend/dev/fake-headless-backend";
 import type { HeadlessTurnExecutor } from "@/backend/dev/headless-turn-executor";
 import { LocalBackend } from "@/backend/local/local-backend";
-import { sharedReminderProviders } from "@/reminders/engine";
+import {
+  buildSharedReminderParts,
+  sharedReminderProviders,
+} from "@/reminders/engine";
 import { createSharedReminderState } from "@/reminders/state";
 import { settingsManager } from "@/settings-manager";
 
@@ -164,6 +167,32 @@ describe("the topic-nudge reminder provider", () => {
     const second = createSharedReminderState();
     expect(await buildNudge({ ...local, state: second })).toBeNull();
     expect(second.pendingTopicNudge).toBeNull();
+  });
+
+  test("the engine hands it to the turn as a reminder part", async () => {
+    const local = await unmarkedConversation();
+    const state = createSharedReminderState();
+
+    const { parts, appliedReminderIds } = await buildSharedReminderParts({
+      mode: "interactive",
+      agent: {
+        id: local.agentId,
+        name: null,
+        conversationId: local.conversationId,
+      },
+      state,
+      systemInfoReminderEnabled: false,
+      skillSources: [],
+    });
+
+    expect(appliedReminderIds).toContain("topic-nudge");
+    expect(parts.map((part) => part.text).join("\n")).toContain(
+      `${NUDGE_TURNS} user turns without a topic marker`,
+    );
+    expect(state.pendingTopicNudge).toEqual({
+      turnsSinceLastMarker: NUDGE_TURNS,
+      nudgeTurns: NUDGE_TURNS,
+    });
   });
 
   test("follows the marking switch and leaves the stretch unconsumed", async () => {
