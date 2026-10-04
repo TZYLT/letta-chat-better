@@ -44,6 +44,34 @@ describe("removed AgentFile commands", () => {
   );
 });
 
+/**
+ * G8: trimming context is one-way. The behavioural half lives with the trim
+ * (`local-backend-topic-trim.test.ts`, "context trimming is one-way"); this is
+ * the surface guard — a command that offered to put evicted messages back would
+ * be a design decision, not a convenience, and has to fail a test first.
+ */
+describe("context management has no restore entry", () => {
+  test("no context command offers to undo a trim", () => {
+    const contextCommands = [
+      "/compact",
+      "/compaction",
+      "/topic",
+      "/topics",
+      "/context",
+      "/context-limit",
+      "/context-pending",
+      "/recompile",
+    ];
+    for (const name of contextCommands) {
+      const command = commands[name];
+      expect(command).toBeDefined();
+      expect(
+        `${name} ${command?.desc ?? ""} ${command?.args ?? ""}`,
+      ).not.toMatch(/undo|unt?rim|restore|bring back/i);
+    }
+  });
+});
+
 describe("command registry", () => {
   beforeEach(() => {
     listAgentSecretsMock.mockReset();

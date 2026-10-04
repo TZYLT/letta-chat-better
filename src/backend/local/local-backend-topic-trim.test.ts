@@ -20,6 +20,7 @@ import type {
 } from "@/backend/dev/headless-turn-executor";
 import { LocalBackend } from "@/backend/local/local-backend";
 import { emptyLocalUsage } from "@/backend/local/local-message";
+import { searchLocalTranscriptMessages } from "@/backend/local/transcript-search";
 import { settingsManager } from "@/settings-manager";
 
 const temporaryDirectories: string[] = [];
@@ -456,6 +457,59 @@ describe("LocalBackend.trimConversationToTopic", () => {
     expect(outcome.retentionCapTokens).toBe(300);
     expect(outcome.retainedTokens).toBeLessThanOrEqual(300);
     expect(outcome.requestedRetentionTokens).toBeGreaterThan(300);
+  });
+});
+
+/**
+ * G8: a trim is one-way by design. The evicted messages leave the context, stay
+ * on disk, and `/search` still finds them; nothing puts them back. The name
+ * scan at the end is a speed bump, not the guarantee — the guarantee is that no
+ * such code path exists — but it fails loudly if someone adds one.
+ */
+describe("context trimming is one-way (G8)", () => {
+  test("evicted messages leave the context but stay searchable", async () => {
+    const storageDir = await createStorageDirectory();
+    const f = await fixture({ storageDir });
+    for (const turn of ["alpha", "bravo", "charlie", "delta", "echo"]) {
+      await f.sendTurn(turn);
+    }
+    f.backend.markTopic({
+      conversationId: f.conversationId,
+      agentId: f.agentId,
+      title: "Alpha",
+      createdBy: "agent",
+    });
+    await f.sendTurn("foxtrot");
+    await f.sendTurn("golf");
+
+    const before = await inContext(f.backend, f);
+    const evictedId = before[0]?.id ?? "";
+    const outcome = await f.backend.trimConversationToTopic({
+      conversationId: f.conversationId,
+      agentId: f.agentId,
+      pick: { kind: "topic", index: 2 },
+    });
+    expect(outcome.executed).toBe(true);
+    const after = await inContext(f.backend, f);
+
+    expect(evictedId).not.toBe("");
+    expect(after.map((message) => message.id)).not.toContain(evictedId);
+
+    // The transcript keeps it, so /search still finds the original text.
+    const hits = searchLocalTranscriptMessages(storageDir, {
+      query: "alpha",
+      agent_id: f.agentId,
+      conversation_id: f.conversationId,
+      limit: 10,
+    });
+    expect(hits.map((hit) => hit.message_id)).toContain(evictedId);
+
+    // No restore surface on the backend.
+    expect(
+      Object.getOwnPropertyNames(LocalBackend.prototype).filter((name) =>
+        /restore|undo|untrim|revert/i.test(name),
+      ),
+    ).toEqual([]);
   });
 });
 
