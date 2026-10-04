@@ -24,12 +24,18 @@ import {
   type CompactCommandContext,
   handleCompactCommand,
   isCompactCommand,
+  offerTrimBeforeSend,
+  type SendPressureContext,
 } from "@/cli/app/submit-compact-commands";
 import type { ActiveOverlay, AppCommandRunner } from "@/cli/app/types";
 import {
   COMPACT_COMMAND_USAGE,
   COMPACT_MODE_LOCAL_UNSUPPORTED,
 } from "@/cli/helpers/compact-command";
+import {
+  type ContextTracker,
+  createContextTracker,
+} from "@/cli/helpers/context-tracker";
 import { takeTopicTrimRequest } from "@/cli/helpers/topic-trim-request";
 import {
   createSharedReminderState,
@@ -117,26 +123,36 @@ function recordingRunner(commands: RecordedCommand[]): AppCommandRunner {
 }
 
 interface Harness {
-  ctx: CompactCommandContext;
+  ctx: CompactCommandContext & SendPressureContext;
   commands: RecordedCommand[];
   overlays: ActiveOverlay[];
   reminderState: SharedReminderState;
+  tracker: ContextTracker;
   descriptions: () => number;
 }
 
-function harness(input: { conversationId: string; agentId: string }): Harness {
+function harness(input: {
+  conversationId: string;
+  agentId: string;
+  contextWindow?: number;
+  contextTokens?: number;
+}): Harness {
   const commands: RecordedCommand[] = [];
   const overlays: ActiveOverlay[] = [];
   const state = { descriptions: 0 };
   const reminderState = createSharedReminderState();
-  const ctx: CompactCommandContext = {
+  const tracker = createContextTracker();
+  tracker.lastContextTokens = input.contextTokens ?? 0;
+  const ctx: CompactCommandContext & SendPressureContext = {
     agentDescription: null,
     agentId: input.agentId,
     agentName: "Local",
     agentStateRef: { current: null },
     appendTaskNotificationEvents: () => true,
     commandRunner: recordingRunner(commands),
+    contextTrackerRef: { current: tracker },
     conversationIdRef: { current: input.conversationId },
+    effectiveContextWindowSize: input.contextWindow,
     generateConversationDescription: async () => {
       state.descriptions += 1;
     },
@@ -152,6 +168,7 @@ function harness(input: { conversationId: string; agentId: string }): Harness {
     commands,
     overlays,
     reminderState,
+    tracker,
     descriptions: () => state.descriptions,
   };
 }
@@ -397,5 +414,138 @@ describe("handleCompactCommand", () => {
     await handleCompactCommand("/compact 3", h.ctx);
     expect(h.commands[0]?.failed).toBe(true);
     expect(h.commands[0]?.output).toContain("requires the local backend");
+  });
+});
+
+describe("offerTrimBeforeSend (D-112)", () => {
+  test("an uncrowded context says nothing and sends", async () => {
+    const local = await localConversation(2);
+    const h = harness({
+      conversationId: local.conversationId,
+      agentId: local.agentId,
+      contextWindow: 1_000,
+      contextTokens: 100,
+    });
+    let sent = 0;
+
+    const deferred = await offerTrimBeforeSend(h.ctx, async () => {
+      sent += 1;
+    });
+
+    expect(deferred).toBe(false);
+    expect(h.commands).toEqual([]);
+    await Promise.resolve();
+    expect(sent).toBe(0);
+  });
+
+  test("a soft crossing prints one line and does not repeat it", async () => {
+    const local = await localConversation(2);
+    const h = harness({
+      conversationId: local.conversationId,
+      agentId: local.agentId,
+      contextWindow: 1_000,
+      contextTokens: 750,
+    });
+
+    expect(await offerTrimBeforeSend(h.ctx, async () => {})).toBe(false);
+    expect(h.commands).toHaveLength(1);
+    expect(h.commands[0]?.output).toContain("about 75%");
+    expect(h.commands[0]?.output).toContain("/compact moves older topics");
+
+    // Same tier again: no second line.
+    expect(await offerTrimBeforeSend(h.ctx, async () => {})).toBe(false);
+    expect(h.commands).toHaveLength(1);
+
+    // Dropping back under the threshold re-arms the notice.
+    h.tracker.lastContextTokens = 100;
+    await offerTrimBeforeSend(h.ctx, async () => {});
+    h.tracker.lastContextTokens = 750;
+    await offerTrimBeforeSend(h.ctx, async () => {});
+    expect(h.commands).toHaveLength(2);
+  });
+
+  test("a hard crossing with blocks parks the picker, then sends after the trim", async () => {
+    const local = await localConversation(8, { afterTurn: 4, title: "Alpha" });
+    const h = harness({
+      conversationId: local.conversationId,
+      agentId: local.agentId,
+      contextWindow: 1_000,
+      contextTokens: 900,
+    });
+    const sent: number[] = [];
+
+    const deferred = await offerTrimBeforeSend(h.ctx, async () => {
+      sent.push(1);
+    });
+
+    expect(deferred).toBe(true);
+    expect(sent).toEqual([]);
+    expect(h.overlays).toEqual(["compaction"]);
+    // The hint for "pick something" is not printed: the picker is the message.
+    expect(h.commands).toEqual([]);
+
+    const request = takeTopicTrimRequest();
+    expect(request?.suggestionIndex).toBe(2);
+    request?.onPick(2);
+    await Bun.sleep(0);
+    // The trim reports itself, and the message the user typed is sent afterwards.
+    expect(h.commands[0]?.output).toContain("Context trimmed.");
+    expect(sent).toEqual([1]);
+    expect(h.overlays.at(-1)).toBeNull();
+  });
+
+  test("skipping the picker still sends the message", async () => {
+    const local = await localConversation(8, { afterTurn: 4, title: "Alpha" });
+    const h = harness({
+      conversationId: local.conversationId,
+      agentId: local.agentId,
+      contextWindow: 1_000,
+      contextTokens: 900,
+    });
+    const sent: number[] = [];
+
+    await offerTrimBeforeSend(h.ctx, async () => {
+      sent.push(1);
+    });
+    takeTopicTrimRequest()?.onCancel?.();
+    await Bun.sleep(0);
+
+    expect(sent).toEqual([1]);
+    // Nothing was trimmed: skip means "send as it is".
+    expect(h.commands).toEqual([]);
+  });
+
+  test("a hard crossing with no markers warns instead of trimming", async () => {
+    const local = await localConversation(8);
+    const h = harness({
+      conversationId: local.conversationId,
+      agentId: local.agentId,
+      contextWindow: 1_000,
+      contextTokens: 900,
+    });
+
+    const deferred = await offerTrimBeforeSend(h.ctx, async () => {});
+
+    expect(deferred).toBe(false);
+    expect(h.overlays).toEqual([]);
+    expect(h.commands).toHaveLength(1);
+    expect(h.commands[0]?.output).toContain(
+      "past the point where a turn this large can be sent",
+    );
+    expect(h.commands[0]?.output).toContain("/topic <title>");
+  });
+
+  test("a cloud backend is left alone", async () => {
+    __testSetBackend(new FakeHeadlessBackend());
+    const h = harness({
+      conversationId: "default",
+      agentId: "agent-x",
+      contextWindow: 1_000,
+      contextTokens: 900,
+    });
+
+    expect(await offerTrimBeforeSend(h.ctx, async () => {})).toBe(false);
+    expect(h.commands).toEqual([]);
+    expect(h.overlays).toEqual([]);
   });
 });

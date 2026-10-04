@@ -12,6 +12,7 @@ import {
   COMPACT_MODE_ARGUMENTS,
   COMPACT_MODE_LOCAL_UNSUPPORTED,
   formatCompactPlanningFailure,
+  formatContextPressureHint,
   formatNoMarkerCompactHint,
   formatTopicTrimReceipt,
   parseCompactCommandArgs,
@@ -173,6 +174,46 @@ describe("formatNoMarkerCompactHint", () => {
     const hint = formatNoMarkerCompactHint(false);
     expect(hint).toContain("switched off");
     expect(hint).not.toContain("TopicMark");
+  });
+});
+
+describe("formatContextPressureHint", () => {
+  test("a soft tier only advises", () => {
+    const hint = formatContextPressureHint({
+      level: "soft",
+      contextTokens: 750,
+      contextWindow: 1_000,
+      hasBlocks: false,
+    });
+    expect(hint).toContain("about 75%");
+    expect(hint).toContain("750 of 1000 tokens");
+    expect(hint).toContain("/compact moves older topics");
+    expect(hint).not.toContain("past the point");
+  });
+
+  test("a hard tier with blocks points at the picker", () => {
+    const hint = formatContextPressureHint({
+      level: "hard",
+      contextTokens: 900,
+      contextWindow: 1_000,
+      hasBlocks: true,
+    });
+    expect(hint).toContain("Pick a topic block to keep before sending");
+    expect(hint).toContain("Esc to send anyway");
+  });
+
+  test("a hard tier with nothing marked says how to mark one", () => {
+    const hint = formatContextPressureHint({
+      level: "hard",
+      contextTokens: 950,
+      contextWindow: 1_000,
+      hasBlocks: false,
+    });
+    expect(hint).toContain(
+      "past the point where a turn this large can be sent",
+    );
+    expect(hint).toContain("/compact to trim by the retention ratio");
+    expect(hint).toContain("/topic <title>");
   });
 });
 

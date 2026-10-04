@@ -111,6 +111,28 @@ export function formatNoMarkerCompactHint(
 }
 
 /**
+ * Advisory line for the pre-send pressure check (D-112). `soft` only informs;
+ * `hard` is the tier the local backend refuses to cross, so with no blocks to
+ * choose between the line has to say what to do about it.
+ */
+export function formatContextPressureHint(input: {
+  level: "soft" | "hard";
+  contextTokens: number;
+  contextWindow: number;
+  hasBlocks: boolean;
+}): string {
+  const percent = Math.round((input.contextTokens / input.contextWindow) * 100);
+  const usage = `The context is at about ${percent}% of this model's window (${input.contextTokens} of ${input.contextWindow} tokens).`;
+  if (input.level === "soft") {
+    return `${usage} /compact moves older topics into a summary when you want more room.`;
+  }
+  if (input.hasBlocks) {
+    return `${usage} Pick a topic block to keep before sending, or press Esc to send anyway.`;
+  }
+  return `${usage} This is past the point where a turn this large can be sent, and nothing has marked a topic boundary yet. Run /compact to trim by the retention ratio, or /topic <title> to mark a boundary for a cleaner cut.`;
+}
+
+/**
  * Turn a planning failure into something actionable. Local compaction refuses
  * to plan when there is too little context to summarize, which used to surface
  * as the planner's own error text.

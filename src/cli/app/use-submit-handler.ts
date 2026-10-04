@@ -149,6 +149,7 @@ import { prepareSessionExit } from "./session";
 import {
   handleCompactCommand,
   isCompactCommand,
+  offerTrimBeforeSend,
 } from "./submit-compact-commands";
 import { handleConnectionCommand } from "./submit-connection-commands";
 import { handleDiagnosticsCommand } from "./submit-diagnostics-commands";
@@ -474,7 +475,6 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
     agentLastRunAt,
     agentName,
     agentState,
-    agentStateRef,
     appendTaskNotificationEvents,
     bashCommandCacheRef,
     buffersRef,
@@ -495,7 +495,6 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
     modAdapter,
     firstUserQueryRef,
     flushPendingReasoningEffort,
-    generateConversationDescription,
     generateConversationTitle,
     handleAgentSelect,
     handleBtwCommand,
@@ -527,7 +526,6 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
     sessionStartFeedbackRef,
     sessionStatsRef,
     openOverlay,
-    setActiveOverlay,
     setAgentDescription,
     setAgentState,
     setCommandRunning,
@@ -2054,22 +2052,10 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
 
         // Special handling for /compact - local conversations pick a topic
         // boundary to keep (see submit-compact-commands.ts); the cloud backend
-        // keeps its mode-based behaviour.
+        // keeps its mode-based behaviour. The whole handler context is passed
+        // because a compaction needs the same environment the submit path owns.
         if (isCompactCommand(msg)) {
-          return await handleCompactCommand(msg, {
-            agentDescription,
-            agentId,
-            agentName,
-            agentStateRef,
-            appendTaskNotificationEvents,
-            commandRunner,
-            conversationIdRef,
-            generateConversationDescription,
-            setActiveOverlay,
-            setCommandRunning,
-            setReflectionArenaChoicePending,
-            sharedReminderStateRef,
-          });
+          return await handleCompactCommand(msg, ctx);
         }
 
         // Special handling for /rename command - rename agent or conversation
@@ -3541,11 +3527,19 @@ ${SYSTEM_REMINDER_CLOSE}
         otid: userOtid,
       });
 
-      await processConversation(initialInput, {
-        clientPreferences,
-        submissionGeneration,
-        transcriptStartLineIndex,
-      });
+      const sendTurn = async () => {
+        await processConversation(initialInput, {
+          clientPreferences,
+          submissionGeneration,
+          transcriptStartLineIndex,
+        });
+      };
+      // A context at the window's hard threshold offers a trim before the turn
+      // goes out; Esc skips it. The turn is sent either way (D-112).
+      if (await offerTrimBeforeSend(ctx, sendTurn)) {
+        return { submitted: true };
+      }
+      await sendTurn();
 
       await runPostTurnMemorySync({
         conversationId,

@@ -7,7 +7,7 @@
  * "Cancel", and the first block is shown disabled because keeping everything
  * means there is nothing to trim.
  */
-import { memo, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import type { TopicBlock } from "@/backend/local/topic-compaction";
 import type { TopicTrimRequest } from "@/cli/helpers/topic-trim-request";
 import { OverlayShell } from "./OverlayShell";
@@ -97,6 +97,12 @@ export const TopicSelector = memo(function TopicSelector({
     () => initialTopicPickIndex(items, request.suggestionIndex),
     [items, request.suggestionIndex],
   );
+  // Dismissing means different things to the two flows that open this picker:
+  // nothing for `/compact`, "send the message anyway" for the pre-send offer.
+  const dismiss = useCallback(() => {
+    request.onCancel?.();
+    onCancel();
+  }, [request, onCancel]);
 
   return (
     <OverlayShell command="/compact" title="Choose the topic block to keep">
@@ -105,12 +111,12 @@ export const TopicSelector = memo(function TopicSelector({
         initialCursorIndex={initialCursorIndex}
         onSelect={(key) => {
           if (key === TOPIC_TRIM_CANCEL_KEY) {
-            onCancel();
+            dismiss();
             return;
           }
           request.onPick(Number(key));
         }}
-        onCancel={onCancel}
+        onCancel={dismiss}
         footer=" Enter trim · ↑↓/jk navigate · Esc cancel"
       />
     </OverlayShell>

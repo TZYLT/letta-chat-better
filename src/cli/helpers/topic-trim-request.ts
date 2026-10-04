@@ -27,6 +27,12 @@ export interface TopicTrimRequest {
    * bookkeeping, because only the submit handler has that environment.
    */
   onPick: (blockIndex: number) => void;
+  /**
+   * Runs when the picker is dismissed instead of answered. `/compact` has
+   * nothing to do here, but the pre-send interception must still send the
+   * message the user typed (D-112).
+   */
+  onCancel?: () => void;
 }
 
 let pending: TopicTrimRequest | null = null;

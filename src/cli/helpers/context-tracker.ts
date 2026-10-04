@@ -20,6 +20,12 @@ export type ContextTracker = {
   pendingReflectionTrigger: boolean;
   /** Set when compaction completes; consumed to refresh conversation search metadata */
   pendingConversationDescriptionRegeneration: boolean;
+  /**
+   * The last context-pressure tier the user was told about, so a full context
+   * does not repeat the same advisory line on every message. Cleared when the
+   * context drops back under the soft threshold.
+   */
+  lastPressureNotice?: "soft" | "hard";
 };
 
 export function createContextTracker(): ContextTracker {
@@ -30,6 +36,7 @@ export function createContextTracker(): ContextTracker {
     pendingCompaction: false,
     pendingReflectionTrigger: false,
     pendingConversationDescriptionRegeneration: false,
+    lastPressureNotice: undefined,
   };
 }
 
@@ -40,4 +47,5 @@ export function resetContextHistory(ct: ContextTracker): void {
   ct.pendingCompaction = false;
   ct.pendingReflectionTrigger = false;
   ct.pendingConversationDescriptionRegeneration = false;
+  ct.lastPressureNotice = undefined;
 }

@@ -1,9 +1,9 @@
 /**
- * `/compact` (feature ③ D-110 + D-119): the one interactive entry point that may
+ * `/compact` (feature ③, D-110 + D-119): the one interactive entry point that may
  * rewrite a conversation's context.
  *
  * Local compaction asks the user where to cut: `/compact <n>` keeps block `n`,
- * and a bare `/compact` opens the topic picker —except when nothing has been
+ * and a bare `/compact` opens the topic picker — except when nothing has been
  * marked, in which case the retention ratio decides and the command runs
  * straight away (D-119). The cloud backend keeps its mode-based behaviour, so
  * the mode words still work there and are rejected here by name.
@@ -17,6 +17,7 @@ import type { AgentState } from "@letta-ai/letta-client/resources/agents/agents"
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { isActiveMemfsEnabled } from "@/agent/memory-runtime";
 import { getBackend } from "@/backend";
+import { contextPressureLevel } from "@/backend/dev/provider-turn-executor";
 import { LocalBackend } from "@/backend/local/local-backend";
 import type { LocalTopicTrimPick } from "@/backend/local/local-topic-trim";
 import type { ActiveOverlay, AppCommandRunner } from "@/cli/app/types";
@@ -25,10 +26,12 @@ import {
   COMPACT_COMMAND_USAGE,
   COMPACT_MODE_LOCAL_UNSUPPORTED,
   formatCompactPlanningFailure,
+  formatContextPressureHint,
   formatNoMarkerCompactHint,
   formatTopicTrimReceipt,
   parseCompactCommandArgs,
 } from "@/cli/helpers/compact-command";
+import type { ContextTracker } from "@/cli/helpers/context-tracker";
 import { getReflectionSettings } from "@/cli/helpers/memory-reminder";
 import {
   buildReflectionArenaChoiceQuestions,
@@ -75,6 +78,105 @@ export interface CompactCommandContext {
     } | null>
   >;
   sharedReminderStateRef: MutableRefObject<SharedReminderState>;
+}
+
+/**
+ * What the pre-send pressure check additionally needs: the turn's own usage
+ * estimate and the window it is measured against (D-112).
+ */
+export interface SendPressureContext extends CompactCommandContext {
+  contextTrackerRef: MutableRefObject<ContextTracker>;
+  effectiveContextWindowSize: number | undefined;
+}
+
+/**
+ * D-112: before a turn is sent, decide whether the context is close enough to the
+ * window to say something about it.
+ *
+ * - `soft` (advisory) prints one line and lets the turn proceed.
+ * - `hard` (the tier the local backend refuses to cross) opens the topic picker
+ *   when there are blocks to choose between, and sends the turn afterwards —
+ *   whether the user trims, presses Esc, or the trim refuses. A message the user
+ *   typed must never be silently dropped.
+ * - With nothing marked there is nothing to pick, so it only warns: trimming
+ *   without the user choosing would be the automatic rewrite this feature exists
+ *   to remove (I1).
+ *
+ * Returns `true` when the send was deferred to the picker (the caller must not
+ * send); `false` means the caller sends as usual.
+ */
+export async function offerTrimBeforeSend(
+  ctx: SendPressureContext,
+  send: () => Promise<void>,
+): Promise<boolean> {
+  const backend = getBackend();
+  // The cloud backend owns its own context management: no picker, no hints.
+  if (!(backend instanceof LocalBackend)) return false;
+  const conversationId = ctx.conversationIdRef.current;
+  const contextWindow = ctx.effectiveContextWindowSize;
+  const contextTokens = ctx.contextTrackerRef.current.lastContextTokens;
+  const level = contextPressureLevel({ contextTokens, contextWindow });
+  const tracker = ctx.contextTrackerRef.current;
+  if (level === "ok") {
+    tracker.lastPressureNotice = undefined;
+    return false;
+  }
+
+  const list = backend.listTopics(conversationId, ctx.agentId);
+  const hasBlocks = list.markers.length > 0 && list.blocks.length > 1;
+  const hint = formatContextPressureHint({
+    level,
+    contextTokens,
+    contextWindow: contextWindow ?? 0,
+    hasBlocks,
+  });
+  if (level === "soft") {
+    // One line per crossing, not one per message.
+    if (tracker.lastPressureNotice === "soft") return false;
+    tracker.lastPressureNotice = "soft";
+    reportHint(ctx, hint);
+    return false;
+  }
+  if (!hasBlocks) {
+    if (tracker.lastPressureNotice === "hard") return false;
+    tracker.lastPressureNotice = "hard";
+    reportHint(ctx, hint);
+    return false;
+  }
+
+  tracker.lastPressureNotice = "hard";
+  setTopicTrimRequest({
+    blocks: list.blocks,
+    suggestionIndex: list.suggestedBlockIndex ?? 1,
+    onPick: (blockIndex) => {
+      ctx.setActiveOverlay(null);
+      void (async () => {
+        try {
+          await runTrim(
+            ctx,
+            `/compact ${blockIndex}`,
+            { kind: "topic", index: blockIndex },
+            backend,
+          );
+        } finally {
+          await send();
+        }
+      })();
+    },
+    // Esc skips the trim and sends the message as it is; if it overflows, the
+    // provider reports that with its own actionable copy.
+    onCancel: () => {
+      void send();
+    },
+  });
+  ctx.setActiveOverlay("compaction");
+  return true;
+}
+
+/** A hint is app output, not conversation content: it shows and is never sent. */
+function reportHint(ctx: CompactCommandContext, hint: string): void {
+  const cmd = ctx.commandRunner.start("/compact", hint);
+  cmd.finish(hint, true);
 }
 
 /**
