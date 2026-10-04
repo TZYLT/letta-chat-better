@@ -264,6 +264,11 @@ Selected global settings keys:
 | `autoSwapOnQuotaLimit` | Auto-switch temporary model on quota errors |
 | `includeWorktreeTool` | Include worktree tool in toolsets |
 | `topicMarkingEnabled` | Let agents mark topic boundaries (local backend only, default on) |
+| `topicMarkerWarnTurns` | User turns below which an agent marker is only warned about (default 10, `0` = off) |
+| `topicMarkerRejectTurns` | User turns below which an agent marker is refused (default 5, `0` = off) |
+| `topicNudgeTurns` | Unmarked user turns before the one-shot topic reminder (default 50, `0` = off) |
+| `topicSoftPressureRatio` | Advisory context-pressure share of the window; `0` disables the advisory tier (default 0.7) |
+| `topicBoundaryRewindTurns` | User turns a topic boundary rewinds from its marker anchor (default 2, range 0–3) |
 | `preferredBackendMode` | Startup backend preference, `api` or `local` |
 | `channelCredentialsStore` | Channel token storage, `file`, `keyring`, or `auto` |
 | `reflectionTrigger` / `reflectionStepCount` | Default reflection cadence |
