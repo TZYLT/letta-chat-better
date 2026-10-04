@@ -39,28 +39,46 @@ describe("interactive reflection transcript wiring", () => {
   });
 
   test("manual /compact restores context before launching reflection", () => {
-    const submitHandlerPath = fileURLToPath(
-      new URL("./use-submit-handler.ts", import.meta.url),
+    const compactPath = fileURLToPath(
+      new URL("./submit-compact-commands.ts", import.meta.url),
     );
-    const source = readFileSync(submitHandlerPath, "utf-8");
-    const compactIndex = source.indexOf(
-      "const result = await getBackend().compactConversationMessages(",
+    const source = readFileSync(compactPath, "utf-8");
+    // Both paths (the local trim and the cloud compaction) must finish the
+    // context rewrite before the reminder is marked and reflection launches.
+    const localTrimIndex = source.indexOf(
+      "await backend.trimConversationToTopic({",
     );
+    const cloudCompactIndex = source.indexOf(
+      "await getBackend().compactConversationMessages(",
+    );
+    const afterIndex = source.lastIndexOf(
+      "await afterCompaction(ctx, conversationId)",
+    );
+    // The reminder and the reflection launch belong to `afterCompaction`, so the
+    // ordering is: context rewritten -> afterCompaction() -> mark -> reflect.
     const reminderIndex = source.indexOf(
       "markPostCompactionContextRemindersPending(",
-      compactIndex,
     );
-    const reflectionIndex = source.indexOf(
-      "// Manual /compact bypasses stream compaction events",
-      compactIndex,
-    );
+    const reflectionIndex = source.indexOf("launchReflectionArena({");
 
-    expect(compactIndex).toBeGreaterThanOrEqual(0);
-    expect(reminderIndex).toBeGreaterThan(compactIndex);
+    expect(localTrimIndex).toBeGreaterThanOrEqual(0);
+    expect(cloudCompactIndex).toBeGreaterThanOrEqual(0);
+    expect(afterIndex).toBeGreaterThan(localTrimIndex);
+    expect(afterIndex).toBeGreaterThan(cloudCompactIndex);
+    expect(reminderIndex).toBeGreaterThanOrEqual(0);
     expect(reflectionIndex).toBeGreaterThan(reminderIndex);
     expect(source).toContain('triggerSource: "compaction-event"');
-    expect(source).not.toContain("queuePendingReflectionWorktreeReminders");
-    expect(source).not.toContain("pendingReflectionTrigger = true");
+
+    const submitHandlerSource = readFileSync(
+      fileURLToPath(new URL("./use-submit-handler.ts", import.meta.url)),
+      "utf-8",
+    );
+    expect(submitHandlerSource).not.toContain(
+      "queuePendingReflectionWorktreeReminders",
+    );
+    expect(submitHandlerSource).not.toContain(
+      "pendingReflectionTrigger = true",
+    );
   });
 
   test("successful TUI turns append user and assistant rows to the reflection transcript", () => {

@@ -44,6 +44,7 @@ function list(overrides: Partial<LocalTopicList> = {}): LocalTopicList {
     contextMessageCount: 2,
     contextTokens: 2,
     retentionCapTokens: 300,
+    suggestedBlockIndex: 1,
     ...overrides,
   };
 }

@@ -31,7 +31,7 @@ function parseMode(raw: string | null | undefined): CompactionMode {
   return isCompactionMode(raw) ? raw : "sliding_window";
 }
 
-interface CompactionSelectorProps {
+export interface CompactionSelectorProps {
   settings: AgentState["compaction_settings"];
   onSave: (mode: CompactionMode) => void;
   onCancel: () => void;

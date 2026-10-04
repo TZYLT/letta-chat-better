@@ -62,7 +62,6 @@ import {
   gatherInitGitContext,
 } from "@/cli/helpers/init-command";
 import { buildLogoutSuccessMessage } from "@/cli/helpers/logout-message";
-import { getReflectionSettings } from "@/cli/helpers/memory-reminder";
 import {
   buildMessageContentFromDisplay,
   clearPlaceholdersInText,
@@ -117,17 +116,9 @@ import type {
   ModConversationCloseReason,
 } from "@/cli/mods/types";
 import type { LocalModAdapter } from "@/cli/mods/use-local-mod-adapter";
-import {
-  DEFAULT_SUMMARIZATION_MODEL,
-  SYSTEM_REMINDER_CLOSE,
-  SYSTEM_REMINDER_OPEN,
-} from "@/constants";
+import { SYSTEM_REMINDER_CLOSE, SYSTEM_REMINDER_OPEN } from "@/constants";
 import { experimentManager } from "@/experiments/manager";
-import {
-  runPreCompactHooks,
-  runSessionStartHooks,
-  runUserPromptSubmitHooks,
-} from "@/hooks";
+import { runSessionStartHooks, runUserPromptSubmitHooks } from "@/hooks";
 import { createModConversationHandle } from "@/mods/conversation-handle";
 import type { QueueRuntime } from "@/queue/queue-runtime";
 import {
@@ -137,14 +128,13 @@ import {
 import { runPostTurnMemorySync } from "@/reminders/memory-git-sync";
 import {
   enqueueMemoryGitSyncReminder,
-  markPostCompactionContextRemindersPending,
   markSecretsInfoReminderPending,
   type SharedReminderState,
 } from "@/reminders/state";
 import { getCurrentWorkingDirectory } from "@/runtime-context";
 import { settingsManager } from "@/settings-manager";
 import { telemetry } from "@/telemetry";
-import { debugLog, debugWarn } from "@/utils/debug";
+import { debugWarn } from "@/utils/debug";
 import { detectShellContext } from "@/utils/shell-context";
 import { extractTaskNotificationsForDisplay } from "@/utils/task-notifications";
 import { switchCurrentRuntimeWorkingDirectory } from "@/websocket/listener/cwd-change";
@@ -156,6 +146,10 @@ import {
 import { buildTextParts } from "./content-parts";
 import { appendOptimisticUserLine, createClientOtid, uid } from "./ids";
 import { prepareSessionExit } from "./session";
+import {
+  handleCompactCommand,
+  isCompactCommand,
+} from "./submit-compact-commands";
 import { handleConnectionCommand } from "./submit-connection-commands";
 import { handleDiagnosticsCommand } from "./submit-diagnostics-commands";
 import { handleNavigationCommand } from "./submit-navigation-commands";
@@ -287,6 +281,7 @@ type SubmitHandlerContext = {
     dismissOutput: string,
   ) => CommandHandle;
   setAgentDescription: Dispatch<SetStateAction<string | null>>;
+  setActiveOverlay: Dispatch<SetStateAction<ActiveOverlay>>;
   setAgentState: Dispatch<SetStateAction<AgentState | null | undefined>>;
   setCommandRunning: (value: boolean) => void;
   setConversationAutoTitleEligibility: (enabled: boolean) => void;
@@ -532,6 +527,7 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
     sessionStartFeedbackRef,
     sessionStatsRef,
     openOverlay,
+    setActiveOverlay,
     setAgentDescription,
     setAgentState,
     setCommandRunning,
@@ -2056,209 +2052,24 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
           return { submitted: true };
         }
 
-        // Special handling for /compact command - summarize conversation history
-        // Supports: /compact, /compact all, /compact sliding_window, /compact self_compact_all, /compact self_compact_sliding_window
-        if (msg.trim().startsWith("/compact")) {
-          const parts = msg.trim().split(/\s+/);
-          const rawModeArg = parts[1];
-          const validModes = [
-            "all",
-            "sliding_window",
-            "self_compact_all",
-            "self_compact_sliding_window",
-          ];
-
-          if (rawModeArg === "help") {
-            const cmd = commandRunner.start(
-              msg.trim(),
-              "Showing compact help...",
-            );
-            const output = [
-              "/compact help",
-              "",
-              "Summarize conversation history (compaction).",
-              "",
-              "USAGE",
-              "  /compact                   — compact with default mode",
-              "  /compact all               — compact all messages",
-              "  /compact sliding_window    — compact with sliding window",
-              "  /compact self_compact_all  — compact with self compact all",
-              "  /compact self_compact_sliding_window  — compact with self compact sliding window",
-              "  /compact help              — show this help",
-            ].join("\n");
-            cmd.finish(output, true);
-            return { submitted: true };
-          }
-
-          const modeArg = rawModeArg as
-            | "all"
-            | "sliding_window"
-            | "self_compact_all"
-            | "self_compact_sliding_window"
-            | undefined;
-
-          // Validate mode if provided
-          if (modeArg && !validModes.includes(modeArg)) {
-            const cmd = commandRunner.start(
-              msg.trim(),
-              `Invalid mode "${modeArg}".`,
-            );
-            cmd.fail(`Invalid mode "${modeArg}". Run /compact help for usage.`);
-            return { submitted: true };
-          }
-
-          const modeDisplay = modeArg ? ` (mode: ${modeArg})` : "";
-          const cmd = commandRunner.start(
-            msg.trim(),
-            `Compacting conversation history${modeDisplay}...`,
-          );
-
-          setCommandRunning(true);
-
-          try {
-            // Run PreCompact hooks - can block the compact operation
-            const preCompactResult = await runPreCompactHooks(
-              undefined, // context_length - not available here
-              undefined, // max_context_length - not available here
-              agentId,
-              conversationIdRef.current,
-            );
-            if (preCompactResult.blocked) {
-              const feedback =
-                preCompactResult.feedback.join("\n") || "Blocked by hook";
-              cmd.fail(`Compact blocked: ${feedback}`);
-              setCommandRunning(false);
-              return { submitted: true };
-            }
-
-            // If mode changed, server compaction uses that mode's default prompt.
-            const compactParams = modeArg
-              ? {
-                  compaction_settings: {
-                    mode: modeArg,
-                    model:
-                      agentStateRef.current?.compaction_settings?.model?.trim() ||
-                      DEFAULT_SUMMARIZATION_MODEL,
-                  },
-                }
-              : undefined;
-
-            const compactConversationId = conversationIdRef.current;
-            const compactBody =
-              compactConversationId === "default"
-                ? {
-                    agent_id: agentId,
-                    ...(compactParams ?? {}),
-                  }
-                : compactParams;
-            const result = await getBackend().compactConversationMessages(
-              compactConversationId,
-              compactBody,
-            );
-            markPostCompactionContextRemindersPending(
-              sharedReminderStateRef.current,
-            );
-            const outputLines = [
-              `Compaction completed${modeDisplay}. Message buffer length reduced from ${result.num_messages_before} to ${result.num_messages_after}.`,
-              "",
-              `Summary: ${result.summary}`,
-            ];
-            cmd.finish(outputLines.join("\n"), true);
-
-            // Manual /compact bypasses stream compaction events, so launch
-            // reflection directly instead of waiting for post-turn evaluation.
-            // Best-effort — never fail the /compact itself.
-            try {
-              if (
-                getReflectionSettings(agentId).trigger === "compaction-event" &&
-                isActiveMemfsEnabled(agentId)
-              ) {
-                if (experimentManager.isEnabled("reflection_arena")) {
-                  void launchReflectionArena({
-                    agentId,
-                    conversationId: compactConversationId,
-                    triggerSource: "compaction-event",
-                    models: [
-                      REFLECTION_ARENA_MODEL_A_DEFAULT,
-                      sampleReflectionArenaComparisonModel(),
-                    ],
-                    feedbackContext: {
-                      parentAgentName: agentName,
-                      parentAgentDescription: agentDescription,
-                      surface: "letta_code_tui",
-                    },
-                    onReady: (message, readyRun) => {
-                      appendTaskNotificationEvents([message]);
-                      setReflectionArenaChoicePending({
-                        runId: readyRun.runId,
-                        questions: buildReflectionArenaChoiceQuestions(
-                          readyRun.runId,
-                        ),
-                      });
-                    },
-                  }).catch((reflectionError) => {
-                    debugLog(
-                      "memory",
-                      "Skipping post-compaction reflection arena:",
-                      reflectionError instanceof Error
-                        ? reflectionError.message
-                        : String(reflectionError),
-                    );
-                  });
-                } else {
-                  void launchReflectionSubagent({
-                    agentId,
-                    conversationId: compactConversationId,
-                    memfsEnabled: isActiveMemfsEnabled(agentId),
-                    triggerSource: "compaction-event",
-                    description: AUTO_REFLECTION_DESCRIPTION,
-                    completionConversationId: () => conversationIdRef.current,
-                    onCompletionMessage: (completionMessage) => {
-                      appendTaskNotificationEvents([completionMessage]);
-                    },
-                    feedbackContext: {
-                      parentAgentName: agentName,
-                      parentAgentDescription: agentDescription,
-                      surface: "letta_code_tui",
-                    },
-                  });
-                }
-              }
-            } catch (reflectionError) {
-              debugLog(
-                "memory",
-                "Skipping post-compaction reflection:",
-                reflectionError instanceof Error
-                  ? reflectionError.message
-                  : String(reflectionError),
-              );
-            }
-            void generateConversationDescription({ force: true });
-          } catch (error) {
-            const apiError = error as {
-              status?: number;
-              error?: { detail?: string };
-            };
-            const detail = apiError?.error?.detail;
-            if (
-              apiError?.status === 400 &&
-              detail?.includes(
-                "Summarization failed to reduce the number of messages",
-              )
-            ) {
-              cmd.finish(
-                "Compaction run, but the number of messages is the same",
-                true,
-              );
-              return { submitted: true };
-            }
-
-            const errorOutput = formatErrorDetails(error, agentId);
-            cmd.fail(`Failed: ${errorOutput}`);
-          } finally {
-            setCommandRunning(false);
-          }
-          return { submitted: true };
+        // Special handling for /compact - local conversations pick a topic
+        // boundary to keep (see submit-compact-commands.ts); the cloud backend
+        // keeps its mode-based behaviour.
+        if (isCompactCommand(msg)) {
+          return await handleCompactCommand(msg, {
+            agentDescription,
+            agentId,
+            agentName,
+            agentStateRef,
+            appendTaskNotificationEvents,
+            commandRunner,
+            conversationIdRef,
+            generateConversationDescription,
+            setActiveOverlay,
+            setCommandRunning,
+            setReflectionArenaChoicePending,
+            sharedReminderStateRef,
+          });
         }
 
         // Special handling for /rename command - rename agent or conversation

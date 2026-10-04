@@ -107,6 +107,12 @@ export interface LocalTopicList {
    * retention target, so the cap cannot override anything.
    */
   retentionCapTokens: number;
+  /**
+   * Block the retention ratio would keep, computed by the same planner that
+   * executes the trim so the picker's default and the actual cut agree. `1` (or
+   * `null` for an empty context) means the ratio keeps everything.
+   */
+  suggestedBlockIndex: number | null;
 }
 
 export interface LocalTopicTrimOutcome {
@@ -167,11 +173,17 @@ export function listLocalTopics(
   const messages = ports.listMessages(input.conversationId, agentId);
   const markers = ports.readMarkers(input.conversationId, agentId);
   const contextWindow = ports.contextWindow(input.conversationId, agentId);
+  const blocks = listTopicBlocks(messages, markers, {
+    rewindTurns: input.rewindTurns ?? DEFAULT_TOPIC_BOUNDARY_REWIND_TURNS,
+  });
+  const retentionCapTokens = retentionCapTokensFor(
+    contextWindow,
+    ports.compactionSettings(input.conversationId, agentId)
+      .slidingWindowPercentage,
+  );
   const inContext = new Set(messages.map((message) => message.id));
   return {
-    blocks: listTopicBlocks(messages, markers, {
-      rewindTurns: input.rewindTurns ?? DEFAULT_TOPIC_BOUNDARY_REWIND_TURNS,
-    }),
+    blocks,
     markers: markers.map((marker) => ({
       marker,
       anchorInContext:
@@ -181,12 +193,33 @@ export function listLocalTopics(
     contextMessageCount: messages.length,
     contextTokens: estimateLocalMessagesTokens(messages),
     ...(contextWindow === undefined ? {} : { contextWindow }),
-    retentionCapTokens: retentionCapTokensFor(
-      contextWindow,
-      ports.compactionSettings(input.conversationId, agentId)
-        .slidingWindowPercentage,
+    retentionCapTokens,
+    suggestedBlockIndex: suggestionBlockIndex(
+      messages,
+      blocks,
+      retentionCapTokens,
     ),
   };
+}
+
+/** The block the ratio suggestion lands in, or `1` when nothing would move. */
+function suggestionBlockIndex(
+  messages: readonly LocalMessage[],
+  blocks: readonly TopicBlock[],
+  retentionCapTokens: number,
+): number | null {
+  if (messages.length === 0) return null;
+  const plan = resolveTrimPlan({
+    messages,
+    blocks,
+    pick: { kind: "ratio_suggestion" },
+    retentionCapTokens,
+  });
+  const containing = blocks.find(
+    (block) =>
+      block.startIndex <= plan.startIndex && plan.startIndex < block.endIndex,
+  );
+  return containing?.index ?? blocks[0]?.index ?? 1;
 }
 
 /**

@@ -624,10 +624,10 @@ export const commands: Record<string, Command> = {
     },
   },
   "/compact": {
-    desc: "Summarize conversation history (compaction) with optional mode",
-    args: "[all|sliding_window|self_compact_all|self_compact_sliding_window]",
+    desc: "Trim older context at a topic boundary you pick",
+    args: "[n|help]",
     handler: () => {
-      // Handled specially in App.tsx to access client and agent ID
+      // Handled in the TUI submit handler (selector) and by the listener.
       return "Compacting conversation...";
     },
   },

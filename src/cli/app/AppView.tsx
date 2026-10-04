@@ -21,7 +21,7 @@ import { AssistantMessage } from "@/cli/components/AssistantMessageRich";
 import { BashCommandMessage } from "@/cli/components/BashCommandMessage";
 import { BtwPane, type BtwState } from "@/cli/components/BtwPane";
 import { CommandMessage } from "@/cli/components/CommandMessage";
-import { CompactionSelector } from "@/cli/components/CompactionSelector";
+import { CompactionOverlay } from "@/cli/components/CompactionOverlay";
 import { ConversationSelector } from "@/cli/components/ConversationSelector";
 import { ErrorMessage } from "@/cli/components/ErrorMessageRich";
 import { EventMessage } from "@/cli/components/EventMessage";
@@ -857,7 +857,7 @@ export function AppView(props: AppViewProps) {
             )}
 
             {activeOverlay === "compaction" && (
-              <CompactionSelector
+              <CompactionOverlay
                 settings={agentState?.compaction_settings}
                 onSave={handleCompactionModeSelect}
                 onCancel={closeOverlay}

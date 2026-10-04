@@ -9,7 +9,7 @@ describe("normalizeConversationDescription", () => {
   test("returns null for empty and slash-command-shaped values", () => {
     expect(normalizeConversationDescription("")).toBeNull();
     expect(normalizeConversationDescription("   ")).toBeNull();
-    expect(normalizeConversationDescription("/compact all")).toBeNull();
+    expect(normalizeConversationDescription("/compact 2")).toBeNull();
   });
 
   test("collapses whitespace and strips surrounding quotes", () => {

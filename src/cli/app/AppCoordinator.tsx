@@ -4147,6 +4147,7 @@ export function App({
     sessionStartFeedbackRef,
     sessionStatsRef,
     openOverlay,
+    setActiveOverlay,
     setAgentDescription,
     setAgentState,
     setCommandRunning,
@@ -4341,9 +4342,8 @@ export function App({
     withCommandLock,
   });
 
-  // Process queued overlay actions when streaming ends
-  // These are actions from interactive commands (like /agents, /model) that were
-  // used while the agent was busy. The change is applied after end_turn.
+  // Interactive commands (like /agents, /model) used while the agent was busy
+  // are applied once streaming ends.
   useEffect(() => {
     if (
       !streaming &&
