@@ -11,8 +11,8 @@
 import type { DreamCommandScope } from "@/agent/reflection-runs";
 import { type Backend, getBackend } from "@/backend";
 import { LocalBackend } from "@/backend/local/local-backend";
-import { DEFAULT_TOPIC_MARKER_REJECT_TURNS } from "@/backend/local/topic-compaction";
 import { validateTopicMarkArgs } from "@/tools/impl/topic-mark";
+import { readTopicSettings } from "@/topic-settings";
 
 export const TOPIC_COMMAND_USAGE = [
   "/topic <title> [summary]",
@@ -144,6 +144,8 @@ export async function handleTopicCommand(
     contextMessageCount: written.contextMessageCount,
     turnsSincePrevious:
       state.markers.length === 0 ? null : written.turnsSincePrevious,
-    spacingTurns: DEFAULT_TOPIC_MARKER_REJECT_TURNS,
+    // The note quotes the same threshold the agent-side gate uses, so the two
+    // cannot disagree after `topic_marker_reject_turns` changes.
+    spacingTurns: readTopicSettings().markerRejectTurns,
   });
 }

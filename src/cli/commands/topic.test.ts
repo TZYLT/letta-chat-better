@@ -232,6 +232,31 @@ describe("handleTopicCommand", () => {
     ]);
   });
 
+  test("quotes the configured agent-side spacing (D-115)", async () => {
+    const originalHome = process.env.HOME;
+    const home = await createStorageDirectory();
+    process.env.HOME = home;
+    await settingsManager.reset();
+    await settingsManager.initialize();
+    try {
+      settingsManager.updateSettings({ topicMarkerRejectTurns: 20 });
+      const { backend, scope } = await backendWithTurns(1);
+      await handleTopicCommand(["First topic"], scope, { backend });
+      const result = await handleTopicCommand(["Second topic"], scope, {
+        backend,
+      });
+
+      // Still written — the user is never blocked — but the note now names the
+      // threshold the agent gate is actually using.
+      expect(result).toContain("id:");
+      expect(result).toContain("sooner than the 20-user-turn spacing");
+    } finally {
+      await settingsManager.reset();
+      if (originalHome === undefined) delete process.env.HOME;
+      else process.env.HOME = originalHome;
+    }
+  });
+
   test("refuses to anchor on an empty context", async () => {
     const backend = new LocalBackend({
       storageDir: await createStorageDirectory(),
