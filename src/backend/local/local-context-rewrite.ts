@@ -398,12 +398,21 @@ export class LocalContextRewrites {
   }
 }
 
-/** Keep only the fields this build understands; anything else is dropped. */
+/**
+ * Keep the fields this build understands and preserve the ones it does not: a
+ * newer build may have written a sibling key, and this one must not delete state it
+ * cannot read (L-14). Only `nudge_sent_for_streak` is normalized — unknown values
+ * are carried through as they are.
+ */
 function normalizeContextManagement(
   value: LocalConversationContextManagement | undefined,
 ): LocalConversationContextManagement {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
-  return value.nudge_sent_for_streak === true
-    ? { nudge_sent_for_streak: true }
-    : {};
+  const normalized = { ...value };
+  if (normalized.nudge_sent_for_streak === true) {
+    normalized.nudge_sent_for_streak = true;
+  } else {
+    delete normalized.nudge_sent_for_streak;
+  }
+  return normalized;
 }

@@ -5,37 +5,22 @@
  * Rows are built by a pure function so the copy, the ordering, and the cursor
  * default are testable without rendering Ink. The trailing row is always
  * "Cancel", and the first block is shown disabled because keeping everything
- * means there is nothing to trim.
+ * means there is nothing to trim. The row copy itself comes from
+ * `helpers/topic-list.ts` so the picker and `/topics` describe a boundary the
+ * same way.
  */
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo, useRef } from "react";
 import type { TopicBlock } from "@/backend/local/topic-compaction";
+import {
+  CURRENT_TOPIC_LABEL,
+  shortTimestamp,
+  topicBlockBoundaryNote,
+} from "@/cli/helpers/topic-list";
 import type { TopicTrimRequest } from "@/cli/helpers/topic-trim-request";
 import { OverlayShell } from "./OverlayShell";
 import { type SelectableItem, SingleSelectPicker } from "./SingleSelectPicker";
 
 export const TOPIC_TRIM_CANCEL_KEY = "cancel";
-
-const CURRENT_TOPIC_LABEL = "Current topic (not marked finished)";
-
-function shortTimestamp(iso: string): string {
-  const parsed = new Date(iso);
-  if (Number.isNaN(parsed.getTime())) return iso;
-  return parsed.toISOString().slice(0, 16).replace("T", " ");
-}
-
-/** How a block's first message was chosen, in the picker's words. */
-export function topicBlockBoundaryNote(
-  block: TopicBlock,
-  previous: TopicBlock | undefined,
-): string {
-  if (block.index === 1) return "the start of the context";
-  const previousTitle = previous?.title ?? CURRENT_TOPIC_LABEL;
-  const rewound =
-    block.rewindTurns === 0
-      ? "no rewind"
-      : `rewound ${block.rewindTurns} user turn${block.rewindTurns === 1 ? "" : "s"}`;
-  return `marker "${previousTitle}" ${rewound}`;
-}
 
 /**
  * The picker rows, oldest block first. Block 1 is visible but not selectable:
@@ -97,12 +82,23 @@ export const TopicSelector = memo(function TopicSelector({
     () => initialTopicPickIndex(items, request.suggestionIndex),
     [items, request.suggestionIndex],
   );
+  // One shot: the overlay unmounts on the first outcome, but a burst of Enter
+  // keys inside one tick could otherwise run the handler twice — two trims, or a
+  // trim after a cancel. A ref keeps it out of the render path.
+  const settledRef = useRef(false);
+  const settle = useCallback((action: () => void) => {
+    if (settledRef.current) return;
+    settledRef.current = true;
+    action();
+  }, []);
   // Dismissing means different things to the two flows that open this picker:
   // nothing for `/compact`, "send the message anyway" for the pre-send offer.
   const dismiss = useCallback(() => {
-    request.onCancel?.();
-    onCancel();
-  }, [request, onCancel]);
+    settle(() => {
+      request.onCancel?.();
+      onCancel();
+    });
+  }, [settle, request, onCancel]);
 
   return (
     <OverlayShell command="/compact" title="Choose the topic block to keep">
@@ -114,7 +110,7 @@ export const TopicSelector = memo(function TopicSelector({
             dismiss();
             return;
           }
-          request.onPick(Number(key));
+          settle(() => request.onPick(Number(key)));
         }}
         onCancel={dismiss}
         footer=" Enter trim · ↑↓/jk navigate · Esc cancel"

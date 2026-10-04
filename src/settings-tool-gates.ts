@@ -35,3 +35,26 @@ export function shouldIncludeTopicMarking(): boolean {
     return true;
   }
 }
+
+/**
+ * Whether the topic channel may be *advertised* to the model — the prompt chapter
+ * and the one-shot nudge that name `TopicMark`.
+ *
+ * The switch alone is not enough: the tool has to be in the payload as well, or
+ * the model is told to call a tool it cannot see. Every preset except `none`
+ * declares it, and `auto` resolves to one of those, so the toolset preference is
+ * the only extra fact needed here.
+ */
+export function shouldAdvertiseTopicMarking(
+  agentId: string,
+  conversationId: string,
+): boolean {
+  if (!shouldIncludeTopicMarking()) return false;
+  try {
+    return (
+      settingsManager.getToolsetPreference(agentId, conversationId) !== "none"
+    );
+  } catch {
+    return true;
+  }
+}

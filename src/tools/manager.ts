@@ -49,6 +49,7 @@ import {
   type RuntimeContextSnapshot,
   runWithRuntimeContext,
 } from "@/runtime-context";
+import { shouldIncludeWorktreeTool } from "@/settings-tool-gates";
 import { telemetry } from "@/telemetry";
 import { messageChannelTelemetry } from "@/telemetry/channel";
 import { autoBackgroundExternalTool } from "@/tools/external-tool-background";
@@ -73,6 +74,10 @@ import {
   selectModelFacingExternalTools,
   serializeClientTools,
 } from "./client-tool-serialization";
+import {
+  filterDeclaredTopicMarkingTools,
+  filterWorktreeTools,
+} from "./declaration-gates";
 import { normalizeExternalToolResultContent } from "./external-tool-content";
 import { toolFilter } from "./filter";
 import {
@@ -104,6 +109,8 @@ import {
 import { resolveBackendSpecificToolAssets } from "./task-tool-assets";
 import { TOOL_DEFINITIONS, type ToolName } from "./tool-definitions";
 import { getInternalToolName, getServerToolName } from "./tool-name-mapping";
+import { TOOLSET_CATALOG, WORKTREE_TOOL_NAMES } from "./toolset-catalog";
+import type { ToolsetName } from "./toolset-types";
 
 export { getInternalToolName, getServerToolName };
 
@@ -284,14 +291,6 @@ function filterModToolsByClientAllowlist(
     ),
   );
 }
-
-import { shouldIncludeWorktreeTool } from "@/settings-tool-gates";
-import {
-  filterDeclaredTopicMarkingTools,
-  filterWorktreeTools,
-} from "./declaration-gates";
-import { TOOLSET_CATALOG, WORKTREE_TOOL_NAMES } from "./toolset-catalog";
-import type { ToolsetName } from "./toolset-types";
 
 type ToolArgs = Record<string, unknown>;
 

@@ -14,7 +14,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { settingsManager } from "@/settings-manager";
 import {
-  readTopicSetting,
   readTopicSettings,
   resolveTopicSettings,
   TOPIC_SETTING_DEFAULTS,
@@ -126,7 +125,7 @@ describe("resolveTopicSettings", () => {
 describe("readTopicSettings", () => {
   test("returns the defaults when settings are not loaded yet", () => {
     expect(readTopicSettings()).toEqual(TOPIC_SETTING_DEFAULTS);
-    expect(readTopicSetting("nudgeTurns")).toBe(
+    expect(readTopicSettings().nudgeTurns).toBe(
       TOPIC_SETTING_DEFAULTS.nudgeTurns,
     );
   });
@@ -148,12 +147,12 @@ describe("readTopicSettings", () => {
       softPressureRatio: 0.9,
       boundaryRewindTurns: 0,
     });
-    expect(readTopicSetting("markerRejectTurns")).toBe(3);
+    expect(readTopicSettings().markerRejectTurns).toBe(3);
   });
 
   test("a knob written through updateSettings is read back", async () => {
     await settingsManager.initialize();
     settingsManager.updateSettings({ topicNudgeTurns: 7 });
-    expect(readTopicSetting("nudgeTurns")).toBe(7);
+    expect(readTopicSettings().nudgeTurns).toBe(7);
   });
 });

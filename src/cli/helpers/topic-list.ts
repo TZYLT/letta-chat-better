@@ -21,10 +21,12 @@ export const TOPICS_COMMAND_USAGE = [
   "  /topics --all   — every marker in the conversation, including trimmed ones",
   "  /topics help    — show this help",
   "",
-  "/compact <n> keeps block n and summarizes everything before it.",
+  "/compact <n> keeps block n and summarizes everything before it. The numbers in",
+  "--all are marker positions, not block numbers.",
 ].join("\n");
 
-const CURRENT_TOPIC_LABEL = "Current topic (not marked finished)";
+/** The trailing block's label: a topic nobody has marked finished yet. */
+export const CURRENT_TOPIC_LABEL = "Current topic (not marked finished)";
 
 /** What the user can do when a list has no markers at all. */
 export function topicMarkerHint(topicMarkingEnabled: boolean): string {
@@ -38,7 +40,8 @@ export function topicMarkerHint(topicMarkingEnabled: boolean): string {
   ].join("\n");
 }
 
-function shortTimestamp(iso: string): string {
+/** `2026-10-03T09:31:00.000Z` → `2026-10-03 09:31`; invalid input is kept as is. */
+export function shortTimestamp(iso: string): string {
   const parsed = new Date(iso);
   if (Number.isNaN(parsed.getTime())) return iso;
   return parsed.toISOString().slice(0, 16).replace("T", " ");
@@ -71,7 +74,11 @@ function pad(value: string, width: number): string {
   return value.length >= width ? value : value.padEnd(width);
 }
 
-function boundaryNote(
+/**
+ * How a block's first message was chosen, in one wording for both readers (the
+ * `/topics` table and the picker's row description).
+ */
+export function topicBlockBoundaryNote(
   block: TopicBlock,
   previous: TopicBlock | undefined,
 ): string {
@@ -93,7 +100,7 @@ export function buildTopicBlockRows(list: LocalTopicList): TopicBlockRow[] {
     messageCount: block.messageCount,
     tokens: block.tokens,
     startsAt: shortTimestamp(block.startsAt),
-    boundary: boundaryNote(block, list.blocks[position - 1]),
+    boundary: topicBlockBoundaryNote(block, list.blocks[position - 1]),
   }));
 }
 
@@ -160,9 +167,14 @@ export function buildTopicMarkerRows(list: LocalTopicList): TopicMarkerRow[] {
 }
 
 /** `/topics --all`: every marker, including the ones a trim pushed out. */
-export function formatTopicMarkerHistory(list: LocalTopicList): string {
+export function formatTopicMarkerHistory(
+  list: LocalTopicList,
+  options: { topicMarkingEnabled?: boolean } = {},
+): string {
   if (list.markers.length === 0) {
-    return `No topic markers in this conversation.\n\n${topicMarkerHint(true)}`;
+    return `No topic markers in this conversation.\n\n${topicMarkerHint(
+      options.topicMarkingEnabled ?? true,
+    )}`;
   }
 
   const rows = buildTopicMarkerRows(list);
@@ -174,13 +186,19 @@ export function formatTopicMarkerHistory(list: LocalTopicList): string {
   ];
   for (const row of rows) {
     lines.push(
-      `  ${row.index}  ${pad(row.title.slice(0, titleWidth), titleWidth)}  ` +
+      `  #${row.index}  ${pad(row.title.slice(0, titleWidth), titleWidth)}  ` +
         `${pad(row.createdBy, authorWidth)}  ${row.createdAt}  ${row.status}`,
     );
   }
   lines.push("");
   lines.push(
     "A trimmed marker stays on disk and keeps its title; it simply no longer defines a block. Removed context is still searchable with /search.",
+  );
+  lines.push(
+    "A marker whose boundary lands on the start of the context defines no block of its own, so it shows up under block 1 in /topics.",
+  );
+  lines.push(
+    "The numbers here are marker positions (marker #1 is the oldest marker), not the block numbers /compact takes.",
   );
   return lines.join("\n");
 }

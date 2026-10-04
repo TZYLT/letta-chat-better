@@ -57,13 +57,16 @@ test("does not register removed background output pollers", () => {
   }
 });
 
-test("TopicMark ships in the Letta toolset only", () => {
+test("TopicMark ships in every non-empty preset", () => {
   expect(Object.hasOwn(TOOL_DEFINITIONS, "TopicMark")).toBe(true);
+  // The prompt chapter and the nudge both name the tool, so every preset that
+  // carries built-in tools has to declare it; the declaration gate is what keeps
+  // it out of cloud payloads and off when the switch says so.
   expect(TOOLSET_CATALOG.letta.tools).toContain("TopicMark");
-  // The model-specific presets are tuned for their providers and keep the
-  // marker channel out of their payloads; the Letta preset is the shared one.
-  expect(TOOLSET_CATALOG.default.tools).not.toContain("TopicMark");
-  expect(TOOLSET_CATALOG.codex.tools).not.toContain("TopicMark");
+  expect(TOOLSET_CATALOG.default.tools).toContain("TopicMark");
+  expect(TOOLSET_CATALOG.codex.tools).toContain("TopicMark");
+  // `none` is the explicit "no built-in tools" preset.
+  expect(TOOLSET_CATALOG.none.tools).not.toContain("TopicMark");
 });
 
 test("each nonempty preset exposes SendAgentMessage in the model's tool payload", async () => {

@@ -14,6 +14,7 @@ import {
   formatCompactPlanningFailure,
   formatContextPressureHint,
   formatNoMarkerCompactHint,
+  formatSingleBlockCompactHint,
   formatTopicTrimReceipt,
   parseCompactCommandArgs,
 } from "@/cli/helpers/compact-command";
@@ -32,6 +33,7 @@ function outcome(
     numMessagesBefore: 12,
     numMessagesAfter: 7,
     summarizedMessageCount: 6,
+    summarizedTokens: 600,
     requestedRetentionTokens: 600,
     retainedTokens: 600,
     retentionCapTokens: 30_000,
@@ -99,6 +101,17 @@ describe("formatTopicTrimReceipt", () => {
     expect(receipt).not.toContain("cap:");
   });
 
+  test("the summarized figure is the evicted region, not the requested retention (M-6)", () => {
+    // The two numbers are different tokens: 900 were asked to be kept, 250 were
+    // actually summarized away.
+    const receipt = formatTopicTrimReceipt(
+      outcome({ requestedRetentionTokens: 900, summarizedTokens: 250 }),
+    );
+
+    expect(receipt).toContain("summarized: 6 messages (~250 tokens)");
+    expect(receipt).not.toContain("summarized: 6 messages (~900 tokens)");
+  });
+
   test("a single rewound turn is not pluralised", () => {
     const receipt = formatTopicTrimReceipt(outcome({ rewindTurns: 1 }));
     expect(receipt).toContain("rewound 1 user turn from the marker");
@@ -130,7 +143,7 @@ describe("formatTopicTrimReceipt", () => {
       outcome({ source: "ratio_suggestion", summarizedTitles: [] }),
     );
     expect(receipt).toContain(
-      "cut point:  the retention ratio (nothing was marked)",
+      "cut point:  the retention ratio (no marker defines a boundary here",
     );
     expect(receipt).not.toContain("topics:");
   });
@@ -167,6 +180,23 @@ describe("formatTopicTrimReceipt", () => {
     );
     expect(nothingToTrim).toContain("Nothing to trim");
     expect(nothingToTrim).not.toContain("kept:");
+    // A topic pick that lands on the start of the context is not "the context
+    // already fits": the ratio never ran (H-2).
+    expect(nothingToTrim).not.toContain(
+      "already fits inside the retention ratio",
+    );
+    expect(nothingToTrim).toContain("Run /topics");
+
+    // The ratio path *is* the "already fits" case.
+    expect(
+      formatTopicTrimReceipt(
+        outcome({
+          executed: false,
+          source: "ratio_suggestion",
+          noopReason: "nothing_before_boundary",
+        }),
+      ),
+    ).toContain("already fits inside the retention ratio");
 
     expect(
       formatTopicTrimReceipt(
@@ -195,6 +225,38 @@ describe("formatNoMarkerCompactHint", () => {
   });
 });
 
+describe("formatSingleBlockCompactHint", () => {
+  test("a marker pinned to the start is explained, and /topic is the way out", () => {
+    const hint = formatSingleBlockCompactHint({
+      topicMarkingEnabled: true,
+      liveMarkerAnchor: true,
+    });
+    expect(hint).toContain("sits at the very start of the current context");
+    expect(hint).toContain("retention ratio decided the cut point");
+    expect(hint).toContain("/topic <title>");
+    expect(hint).toContain("TopicMark");
+    // Never claims there are no markers: that is the case this note exists for.
+    expect(hint).not.toContain("No topic markers yet");
+  });
+
+  test("trimmed-away anchors get their own wording", () => {
+    const hint = formatSingleBlockCompactHint({
+      topicMarkingEnabled: true,
+      liveMarkerAnchor: false,
+    });
+    expect(hint).toContain("anchor has left the current context");
+  });
+
+  test("stays silent about TopicMark when the agent cannot mark", () => {
+    const hint = formatSingleBlockCompactHint({
+      topicMarkingEnabled: false,
+      liveMarkerAnchor: true,
+    });
+    expect(hint).toContain("switched off");
+    expect(hint).not.toContain("TopicMark");
+  });
+});
+
 describe("formatContextPressureHint", () => {
   test("a soft tier only advises", () => {
     const hint = formatContextPressureHint({
@@ -202,6 +264,7 @@ describe("formatContextPressureHint", () => {
       contextTokens: 750,
       contextWindow: 1_000,
       hasBlocks: false,
+      hasMarkers: false,
     });
     expect(hint).toContain("about 75%");
     expect(hint).toContain("750 of 1000 tokens");
@@ -215,6 +278,7 @@ describe("formatContextPressureHint", () => {
       contextTokens: 900,
       contextWindow: 1_000,
       hasBlocks: true,
+      hasMarkers: true,
     });
     expect(hint).toContain("Pick a topic block to keep before sending");
     expect(hint).toContain("Esc to send anyway");
@@ -226,11 +290,25 @@ describe("formatContextPressureHint", () => {
       contextTokens: 950,
       contextWindow: 1_000,
       hasBlocks: false,
+      hasMarkers: false,
     });
     expect(hint).toContain(
       "past the point where a turn this large can be sent",
     );
     expect(hint).toContain("/compact to trim by the retention ratio");
+    expect(hint).toContain("/topic <title>");
+  });
+
+  test("a hard tier whose markers define no boundary does not claim nothing is marked (H-2)", () => {
+    const hint = formatContextPressureHint({
+      level: "hard",
+      contextTokens: 950,
+      contextWindow: 1_000,
+      hasBlocks: false,
+      hasMarkers: true,
+    });
+    expect(hint).toContain("markers in this conversation define no boundary");
+    expect(hint).not.toContain("nothing has marked a topic boundary yet");
     expect(hint).toContain("/topic <title>");
   });
 });

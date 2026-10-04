@@ -9,9 +9,11 @@
  *
  * The flag is written when the nudge goes out and cleared on every other
  * outcome: a new marker (or a trim) starts a new streak, so a flag left over
- * from the previous one must not suppress the next nudge. Losing one delivery is
- * acceptable; repeating one is not, which is why the write happens here rather
- * than after a reminder has been rendered.
+ * from the previous one must not suppress the next nudge. A *disabled* nudge
+ * (`nudge_turns = 0`) is not an outcome that ends a streak, so it leaves the flag
+ * exactly as it found it. Losing one delivery is acceptable; repeating one is not,
+ * which is why the write happens here rather than after a reminder has been
+ * rendered.
  *
  * It runs against a port object rather than the backend so the "one write, and
  * only when it is due" ordering can be tested without a provider — the same
@@ -103,9 +105,13 @@ export function consumeLocalTopicNudge(
   });
   // The flag is set while the nudge is due or already recorded for this stretch
   // and cleared as soon as the stretch it belonged to ended. An "already_sent"
-  // outcome must keep it, or the next turn would nudge again.
+  // outcome must keep it, or the next turn would nudge again; a disabled nudge
+  // keeps it too, so switching the nudge off and on again inside one stretch
+  // cannot produce a second reminder.
   const recordSent =
-    decision.reason === "due" || decision.reason === "already_sent";
+    decision.reason === "due" ||
+    decision.reason === "already_sent" ||
+    (decision.reason === "disabled" && alreadySentForStreak);
   ports.setTopicNudgeSent(conversationId, agentId, recordSent);
   return decision;
 }

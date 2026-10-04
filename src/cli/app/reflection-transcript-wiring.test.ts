@@ -54,20 +54,40 @@ describe("interactive reflection transcript wiring", () => {
     const afterIndex = source.lastIndexOf(
       "await afterCompaction(ctx, conversationId)",
     );
-    // The reminder and the reflection launch belong to `afterCompaction`, so the
-    // ordering is: context rewritten -> afterCompaction() -> mark -> reflect.
-    const reminderIndex = source.indexOf(
-      "markPostCompactionContextRemindersPending(",
+    const afterDefinitionIndex = source.indexOf(
+      "async function afterCompaction(",
     );
-    const reflectionIndex = source.indexOf("launchReflectionArena({");
+    // The reminder, the reflection launch and the description refresh live in the
+    // shared tail (L-18): `afterCompaction` is defined before it is called after
+    // each rewrite, and it delegates to the tail, which owns the order.
+    const tailCallIndex = source.indexOf("runPostCompactionTail({");
+    const reflectIndex = source.indexOf("reflect: () =>");
 
     expect(localTrimIndex).toBeGreaterThanOrEqual(0);
     expect(cloudCompactIndex).toBeGreaterThanOrEqual(0);
     expect(afterIndex).toBeGreaterThan(localTrimIndex);
     expect(afterIndex).toBeGreaterThan(cloudCompactIndex);
-    expect(reminderIndex).toBeGreaterThanOrEqual(0);
-    expect(reflectionIndex).toBeGreaterThan(reminderIndex);
+    expect(afterDefinitionIndex).toBeGreaterThanOrEqual(0);
+    expect(afterDefinitionIndex).toBeLessThan(afterIndex);
+    expect(tailCallIndex).toBeGreaterThan(afterDefinitionIndex);
+    expect(reflectIndex).toBeGreaterThan(tailCallIndex);
     expect(source).toContain('triggerSource: "compaction-event"');
+
+    const tailSource = readFileSync(
+      fileURLToPath(new URL("../helpers/post-compaction.ts", import.meta.url)),
+      "utf-8",
+    );
+    const reminderIndex = tailSource.indexOf(
+      "markPostCompactionContextRemindersPending(",
+    );
+    const tailReflectIndex = tailSource.indexOf("input.reflect();");
+    const descriptionIndex = tailSource.indexOf(
+      "input.regenerateDescription();",
+    );
+    // Ordering inside the tail: mark -> reflect -> regenerate.
+    expect(reminderIndex).toBeGreaterThanOrEqual(0);
+    expect(tailReflectIndex).toBeGreaterThan(reminderIndex);
+    expect(descriptionIndex).toBeGreaterThan(tailReflectIndex);
 
     const submitHandlerSource = readFileSync(
       fileURLToPath(new URL("./use-submit-handler.ts", import.meta.url)),

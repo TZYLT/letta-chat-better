@@ -73,7 +73,7 @@ describe("buildTopicPickRows", () => {
     );
     expect(rows[1]?.description).toContain("6 messages · ~480 tokens");
     expect(rows[1]?.description).toContain(
-      'marker "Auth token refresh" rewound 2 user turns',
+      'marker "Auth token refresh" at message-local-anchor, rewound 2 user turns',
     );
   });
 

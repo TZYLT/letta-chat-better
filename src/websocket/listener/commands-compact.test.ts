@@ -71,8 +71,16 @@ const okExecutor: HeadlessTurnExecutor = {
   },
 };
 
-/** A local agent whose conversation has `turns` turns and one marker. */
-async function localFixture(turns: number): Promise<{
+/**
+ * A local agent whose conversation has `turns` turns and, by default, one marker
+ * anchored at the newest message. `markAfterTurn` moves that anchor earlier (so
+ * its effective boundary can clamp onto the start of the context) and `mark:
+ * false` leaves the conversation unmarked.
+ */
+async function localFixture(
+  turns: number,
+  options: { markAfterTurn?: number; mark?: boolean } = {},
+): Promise<{
   backend: LocalBackend;
   agentId: string;
   runtime: ReturnType<
@@ -80,6 +88,8 @@ async function localFixture(turns: number): Promise<{
   >;
   socket: CompactTestSocket;
 }> {
+  const shouldMark = options.mark ?? true;
+  const markAfterTurn = options.markAfterTurn ?? turns;
   const backend = new LocalBackend({
     storageDir: await createStorageDirectory(),
     executor: okExecutor,
@@ -119,13 +129,15 @@ async function localFixture(turns: number): Promise<{
     for await (const _chunk of stream) {
       // drain
     }
+    if (shouldMark && turn + 1 === markAfterTurn) {
+      backend.markTopic({
+        conversationId: "default",
+        agentId: agent.id,
+        title: "Alpha",
+        createdBy: "agent",
+      });
+    }
   }
-  backend.markTopic({
-    conversationId: "default",
-    agentId: agent.id,
-    title: "Alpha",
-    createdBy: "agent",
-  });
   const listener = __listenClientTestUtils.createListenerRuntime();
   const runtime = __listenClientTestUtils.getOrCreateConversationRuntime(
     listener,
@@ -184,8 +196,9 @@ describe("listener compact command", () => {
     const output = await runCompact(fixture);
 
     expect(output).toContain(
-      "Choosing a cut point needs a terminal. Run /compact <n>",
+      "Choosing a cut point needs a terminal. Run /topics to list the blocks",
     );
+    expect(output).toContain("/compact <n>");
   });
 
   test("help is the shared usage", async () => {
@@ -212,5 +225,40 @@ describe("listener compact command", () => {
     const output = await runCompact(fixture, "9");
 
     expect(output).toContain("There is no topic block 9");
+    expect(output).toContain("trim by the retention ratio");
+  });
+
+  test("with nothing to choose between, the ratio decides instead of refusing (H-2)", async () => {
+    // The marker sits right after the first turn, so its effective boundary
+    // clamps onto the start of the context and no block is selectable: the same
+    // state bare `/compact` finds on the TUI.
+    const fixture = await localFixture(8, { markAfterTurn: 1 });
+
+    const output = await runCompact(fixture);
+
+    expect(output).toContain("Context trimmed.");
+    expect(output).toContain("no marker defines a boundary here");
+    expect(output).not.toContain("needs a terminal");
+  });
+
+  test("an unmarked conversation trims by the ratio without a picker (D-119)", async () => {
+    const fixture = await localFixture(8, { mark: false });
+
+    const output = await runCompact(fixture);
+
+    expect(output).toContain("Context trimmed.");
+    expect(output).toContain("no marker defines a boundary here");
+  });
+
+  test("invalid arguments carry the usage here too (L-2)", async () => {
+    const fixture = await localFixture(2);
+
+    const output = await runCompact(fixture, "nope");
+
+    // The payload is JSON, so quotes arrive escaped; assert on the usage block
+    // that `/compact nope` never used to include.
+    expect(output).toContain("Unknown argument");
+    expect(output).toContain("/compact [n]");
+    expect(output).toContain("USAGE");
   });
 });

@@ -18,6 +18,7 @@ import { isRecord } from "@/utils/type-guards";
 import type { LocalMessage } from "./local-message";
 import { resolveAvailableLocalModelForTurn } from "./local-model-config";
 import type { LocalAgentRecord } from "./local-types";
+import type { TrimStartSource } from "./topic-compaction";
 
 const SLIDING_WORD_LIMIT = 300;
 const SUMMARY_TRUNCATION_SUFFIX = "... [summary truncated to fit]";
@@ -93,7 +94,7 @@ export interface LocalCompactionStats {
 }
 
 export interface LocalTrimStats {
-  source: "topic_pick" | "ratio_suggestion" | "ratio_cap";
+  source: TrimStartSource;
   topic_title: string | null;
   summarized_titles: string[];
   /** User turns rewound from the marker anchor to the effective boundary. */
@@ -538,7 +539,17 @@ async function summarizeLocalMessagesWithPrompt(
   return summary;
 }
 
-function normalizedSlidingWindowPercentage(value: number | undefined): number {
+/**
+ * The one place a raw `sliding_window_percentage` becomes a usable ratio.
+ *
+ * `undefined`/`NaN` fall back to the default, anything at or below zero means the
+ * smallest eviction step (0.1), and anything above 1 is clamped to the whole
+ * window. Both the summarizer planner and the topic trim's retention cap read the
+ * ratio through here, so the two can never disagree about what a setting means.
+ */
+export function normalizedSlidingWindowPercentage(
+  value: number | undefined,
+): number {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return LOCAL_DEFAULT_SLIDING_WINDOW_PERCENTAGE;
   }

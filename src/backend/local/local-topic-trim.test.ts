@@ -102,6 +102,8 @@ interface Harness {
   rewrites: LocalConversationRewriteInput[];
   refreshes: number;
   events: string[];
+  /** Conversations whose one-shot nudge streak the trim ended. */
+  streakClearedFor: string[];
 }
 
 function harness(input: {
@@ -112,6 +114,7 @@ function harness(input: {
 }): Harness {
   const rewrites: LocalConversationRewriteInput[] = [];
   const events: string[] = [];
+  const streakClearedFor: string[] = [];
   const state = { refreshes: 0 };
   const ports: LocalTopicTrimPorts = {
     resolveAgentId: () => "agent-1",
@@ -129,6 +132,9 @@ function harness(input: {
         numMessagesAfter: 1 + (rewriteInput.remainingMessages?.length ?? 0),
         summaryMessage: { id: "summary" } as LocalMessage,
       };
+    },
+    clearTopicNudgeStreak: (conversationId) => {
+      streakClearedFor.push(conversationId);
     },
     refreshFrozenPrefix: async () => {
       state.refreshes += 1;
@@ -149,6 +155,7 @@ function harness(input: {
       return state.refreshes;
     },
     events,
+    streakClearedFor,
   };
 }
 
@@ -166,7 +173,17 @@ describe("retentionCapTokensFor", () => {
     expect(retentionCapTokensFor(Number.NaN, 0.3)).toBe(
       Number.POSITIVE_INFINITY,
     );
-    expect(retentionCapTokensFor(1_000, Number.NaN)).toBe(0);
+  });
+
+  test("an unusable ratio is normalized the way the planner normalizes it (M-3)", () => {
+    // The sliding-window planner reads the same setting: `NaN`/missing is the
+    // default 0.3, `<= 0` is its smallest step (0.1), and anything above 1 is the
+    // whole window. The cap must not disagree with it — a cap of 0 would let any
+    // pick be overridden down to the newest message.
+    expect(retentionCapTokensFor(1_000, Number.NaN)).toBe(300);
+    expect(retentionCapTokensFor(1_000, 0)).toBe(100);
+    expect(retentionCapTokensFor(1_000, -2)).toBe(100);
+    expect(retentionCapTokensFor(1_000, 1.5)).toBe(1_000);
   });
 });
 
@@ -179,6 +196,18 @@ describe("topicSectionPrompt", () => {
     const prompt = topicSectionPrompt("base", ["Auth", "Deploy"]);
     expect(prompt.startsWith("base\n")).toBe(true);
     expect(prompt).toContain("- Auth\n- Deploy");
+  });
+
+  test("the section requirement comes before the base prompt's output rule (L-15)", () => {
+    const prompt = topicSectionPrompt(
+      "Context.\n\nKeep your summary under 300 words. Only output the summary.",
+      ["Auth"],
+    );
+
+    expect(prompt.indexOf("one section per topic")).toBeLessThan(
+      prompt.indexOf("Only output the summary."),
+    );
+    expect(prompt).toContain("- Auth");
   });
 });
 
@@ -362,6 +391,35 @@ describe("trimLocalConversationToTopic", () => {
     expect(outcome.noopReason).toBe("empty_context");
     expect(outcome.retainedTokens).toBe(0);
     expect(testHarness.rewrites).toEqual([]);
+  });
+
+  test("a successful trim ends the unmarked nudge streak (M-4)", async () => {
+    const testHarness = harness({
+      messages: conversation(6),
+      contextWindow: 1_000,
+    });
+    const outcome = await trimLocalConversationToTopic(testHarness.ports, {
+      conversationId: "conv-9",
+      pick: { kind: "ratio_suggestion" },
+    });
+
+    expect(outcome.executed).toBe(true);
+    expect(testHarness.streakClearedFor).toEqual(["conv-9"]);
+  });
+
+  test("a refused trim leaves the nudge streak alone (M-4)", async () => {
+    const testHarness = harness({
+      messages: conversation(6),
+      markers: [marker("t1", "Topic A", "a6")],
+      contextWindow: 100_000,
+    });
+    const outcome = await trimLocalConversationToTopic(testHarness.ports, {
+      conversationId: "conv-9",
+      pick: { kind: "topic", index: 1 },
+    });
+
+    expect(outcome.executed).toBe(false);
+    expect(testHarness.streakClearedFor).toEqual([]);
   });
 
   test("a window-less context reports no cap instead of a fake one", async () => {

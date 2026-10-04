@@ -254,6 +254,11 @@ python3 <SKILL_DIR>/scripts/show_config.py --cwd "$PWD" --section runtime --json
 
 Selected global settings keys:
 
+The topic keys below (and `topicMarkingEnabled`) are **global only**: writing them
+into `./.letta/settings.json` or `settings.local.json` has no effect, because the
+tool gate and the compiled prompt read them without a project scope in their call
+path.
+
 | Key | Meaning |
 | --- | --- |
 | `tokenStreaming` | Stream tokens in UI |
@@ -262,13 +267,13 @@ Selected global settings keys:
 | `sessionContextEnabled` | Send device/agent context at session start |
 | `autoConversationTitles` | Generate conversation titles |
 | `autoSwapOnQuotaLimit` | Auto-switch temporary model on quota errors |
-| `includeWorktreeTool` | Include worktree tool in toolsets |
-| `topicMarkingEnabled` | Let agents mark topic boundaries (local backend only, default on) |
-| `topicMarkerWarnTurns` | User turns below which an agent marker is only warned about (default 10, `0` = off) |
-| `topicMarkerRejectTurns` | User turns below which an agent marker is refused (default 5, `0` = off) |
-| `topicNudgeTurns` | Unmarked user turns before the one-shot topic reminder (default 50, `0` = off) |
-| `topicSoftPressureRatio` | Advisory context-pressure share of the window; `0` disables the advisory tier (default 0.7) |
-| `topicBoundaryRewindTurns` | User turns a topic boundary rewinds from its marker anchor (default 2, range 0–3) |
+| `includeWorktreeTool` | Include worktree tool in toolsets (global only) |
+| `topicMarkingEnabled` | Let agents mark topic boundaries (global only; local backend only, default on) |
+| `topicMarkerWarnTurns` | User turns below which an agent marker is only warned about (global only; default 10, `0` = off) |
+| `topicMarkerRejectTurns` | User turns below which an agent marker is refused (global only; default 5, `0` = off; a duplicate marker is always refused) |
+| `topicNudgeTurns` | Unmarked user turns before the one-shot topic reminder (global only; default 50, `0` = off) |
+| `topicSoftPressureRatio` | Advisory context-pressure share of the window; `0` disables the advisory tier (global only; default 0.7) |
+| `topicBoundaryRewindTurns` | User turns a topic boundary rewinds from its marker anchor (global only; default 2, range 0–3) |
 | `preferredBackendMode` | Startup backend preference, `api` or `local` |
 | `channelCredentialsStore` | Channel token storage, `file`, `keyring`, or `auto` |
 | `reflectionTrigger` / `reflectionStepCount` | Default reflection cadence |

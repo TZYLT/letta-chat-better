@@ -23,7 +23,7 @@ import {
   DEFAULT_TOPIC_MARKER_REJECT_TURNS,
   DEFAULT_TOPIC_MARKER_WARN_TURNS,
   DEFAULT_TOPIC_NUDGE_TURNS,
-  MAX_TOPIC_BOUNDARY_REWIND_TURNS,
+  normalizeTopicBoundaryRewindTurns,
 } from "@/backend/local/topic-compaction";
 import { settingsManager } from "@/settings-manager";
 
@@ -42,16 +42,19 @@ declare module "@/settings-manager" {
   }
 }
 
-/** The settings keys this module owns, for callers that write them. */
-export const TOPIC_SETTING_KEYS = [
-  "topicMarkerWarnTurns",
-  "topicMarkerRejectTurns",
-  "topicNudgeTurns",
-  "topicSoftPressureRatio",
-  "topicBoundaryRewindTurns",
-] as const;
-
-export type TopicSettingKey = (typeof TOPIC_SETTING_KEYS)[number];
+/**
+ * The settings keys this module owns.
+ *
+ * A union rather than an enumerating array: the only reader is
+ * `resolveTopicSettings`, and the key list already exists once, as the fields of
+ * the `Settings` augmentation above.
+ */
+export type TopicSettingKey =
+  | "topicMarkerWarnTurns"
+  | "topicMarkerRejectTurns"
+  | "topicNudgeTurns"
+  | "topicSoftPressureRatio"
+  | "topicBoundaryRewindTurns";
 
 /** Every knob resolved; the shape the rest of the app consumes. */
 export interface ResolvedTopicSettings {
@@ -116,10 +119,12 @@ export function resolveTopicSettings(
       TOPIC_SETTING_DEFAULTS.nudgeTurns,
     ),
     softPressureRatio: resolveSoftPressureRatio(record.topicSoftPressureRatio),
-    boundaryRewindTurns:
-      typeof rewind === "number" && Number.isFinite(rewind) && rewind >= 0
-        ? Math.min(MAX_TOPIC_BOUNDARY_REWIND_TURNS, Math.trunc(rewind))
-        : TOPIC_SETTING_DEFAULTS.boundaryRewindTurns,
+    // One clamp for this knob, shared with the planner that consumes it, so a
+    // negative value cannot mean "no rewind" to one reader and "default" to the
+    // other (L-10).
+    boundaryRewindTurns: normalizeTopicBoundaryRewindTurns(
+      typeof rewind === "number" ? rewind : undefined,
+    ),
   };
 }
 
@@ -134,11 +139,4 @@ export function readTopicSettings(): ResolvedTopicSettings {
   } catch {
     return { ...TOPIC_SETTING_DEFAULTS };
   }
-}
-
-/** One knob's resolved value, for a reader that needs only that one. */
-export function readTopicSetting<K extends keyof ResolvedTopicSettings>(
-  key: K,
-): ResolvedTopicSettings[K] {
-  return readTopicSettings()[key];
 }

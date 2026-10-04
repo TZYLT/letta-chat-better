@@ -594,3 +594,59 @@ describe("the boundary rewind follows topicBoundaryRewindTurns (D-115)", () => {
     expect(loose.numMessagesAfter).toBeGreaterThan(tight.numMessagesAfter);
   });
 });
+
+/**
+ * M-4: a trim ends the unmarked stretch. The default threshold is 50 turns, so
+ * the knob is driven through settings — the same wiring a user has — and the
+ * kept region is deliberately left longer than the threshold.
+ */
+describe("a trim ends the nudge stretch (M-4)", () => {
+  const originalHome = process.env.HOME;
+  let testHomeDir: string;
+
+  beforeEach(async () => {
+    await settingsManager.reset();
+    testHomeDir = await mkdtemp(join(tmpdir(), "topic-nudge-trim-settings-"));
+    process.env.HOME = testHomeDir;
+    await settingsManager.initialize();
+    settingsManager.updateSettings({ topicNudgeTurns: 3 });
+  });
+
+  afterEach(async () => {
+    await settingsManager.reset();
+    await rm(testHomeDir, { recursive: true, force: true });
+    process.env.HOME = originalHome;
+  });
+
+  test("the next nudge is due even though the kept region is still long", async () => {
+    const f = await fixture({ storageDir: await createStorageDirectory() });
+    for (const turn of ["one", "two", "three"]) await f.sendTurn(turn);
+    f.backend.markTopic({
+      conversationId: f.conversationId,
+      agentId: f.agentId,
+      title: "Alpha",
+      createdBy: "agent",
+    });
+    for (const turn of ["four", "five", "six"]) await f.sendTurn(turn);
+
+    // Three user turns past the marker, so the one-shot reminder has gone out.
+    expect(
+      f.backend.consumeTopicNudge(f.conversationId, f.agentId),
+    ).toMatchObject({ due: true, reason: "due" });
+
+    const outcome = await f.backend.trimConversationToTopic({
+      conversationId: f.conversationId,
+      agentId: f.agentId,
+      pick: { kind: "topic", index: 2 },
+      rewindTurns: 0,
+    });
+    expect(outcome.executed).toBe(true);
+
+    // The kept region still holds the marker's anchor and the three later user
+    // turns, so only the trim itself can have ended the stretch: without an
+    // explicit reset this stays `already_sent` for the rest of the conversation.
+    expect(
+      f.backend.consumeTopicNudge(f.conversationId, f.agentId),
+    ).toMatchObject({ due: true, reason: "due", turnsSinceLastMarker: 3 });
+  });
+});

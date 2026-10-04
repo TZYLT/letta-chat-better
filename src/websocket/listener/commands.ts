@@ -11,27 +11,28 @@ import { requestCloudReflectionRun } from "@/agent/reflection-runs";
 import type { ConversationMessageCompactBody } from "@/backend";
 import { getBackend } from "@/backend";
 import { LocalBackend } from "@/backend/local/local-backend";
+import { hasSelectableTopicBlocks } from "@/backend/local/local-topic-trim";
 import { refreshCustomCommands } from "@/cli/commands/custom";
 import {
   COMPACT_COMMAND_USAGE,
   COMPACT_MODE_LOCAL_UNSUPPORTED,
-  formatCompactPlanningFailure,
   formatTopicTrimReceipt,
   parseCompactCommandArgs,
 } from "@/cli/helpers/compact-command";
 import { buildDoctorMessage } from "@/cli/helpers/doctor-command";
+import { formatErrorDetails } from "@/cli/helpers/error-formatter";
 import {
   buildInitMessage,
   gatherInitGitContext,
 } from "@/cli/helpers/init-command";
 import { getReflectionSettings } from "@/cli/helpers/memory-reminder";
+import { runPostCompactionTail } from "@/cli/helpers/post-compaction";
 import { parseReflectCommandArgs } from "@/cli/helpers/reflect-command";
 import { launchReflectionSubagent } from "@/cli/helpers/reflection-launcher";
 import { buildModCommandPrompt } from "@/cli/mods/command-runtime";
 import { DEFAULT_SUMMARIZATION_MODEL } from "@/constants";
 import { runPreCompactHooks } from "@/hooks";
 import type { ModCommand } from "@/mods/types";
-import { markPostCompactionContextRemindersPending } from "@/reminders/state";
 import { settingsManager } from "@/settings-manager";
 import { trackBoundaryError } from "@/telemetry/error-reporting";
 import type {
@@ -431,57 +432,61 @@ async function compactLocalFromListener(
   request: { kind: "auto" } | { kind: "block"; index: number },
 ): Promise<string> {
   const conversationId = conversationRuntime.conversationId;
-  if (request.kind === "auto") {
+  const list = backend.listTopics(conversationId, agentId);
+  if (request.kind === "block" && request.index > list.blocks.length) {
+    const count = `${list.blocks.length} block${list.blocks.length === 1 ? "" : "s"}`;
     throw new Error(
-      "Choosing a cut point needs a terminal. Run /compact <n> with a block number from /topics.",
+      `There is no topic block ${request.index}: this context has ${count}. Run /topics to list them, or /compact with no number to trim by the retention ratio.`,
     );
   }
-  const list = backend.listTopics(conversationId, agentId);
-  if (request.index > list.blocks.length) {
+  // There is no interactive channel here, so a *choice* needs a number from
+  // /topics. When there is no choice to make — fewer than two blocks, exactly the
+  // state bare `/compact` finds on the TUI — the retention ratio decides, which is
+  // the same decision the TUI would have made without asking (H-2).
+  if (request.kind === "auto" && hasSelectableTopicBlocks(list)) {
     throw new Error(
-      `There is no topic block ${request.index}. Run /topics to list the blocks.`,
+      "Choosing a cut point needs a terminal. Run /topics to list the blocks, then /compact <n> with the block to keep.",
     );
   }
 
   const outcome = await backend.trimConversationToTopic({
     conversationId,
     agentId,
-    pick: { kind: "topic", index: request.index },
+    pick:
+      request.kind === "block"
+        ? { kind: "topic", index: request.index }
+        : { kind: "ratio_suggestion" },
   });
   if (!outcome.executed) return formatTopicTrimReceipt(outcome);
 
-  markPostCompactionContextRemindersPending(conversationRuntime.reminderState);
-  // Launching reflection is best-effort — never fail the trim itself.
-  try {
-    const reflectionSettings = getReflectionSettings(
-      agentId,
-      getConversationWorkingDirectory(
-        conversationRuntime.listener,
+  runPostCompactionTail({
+    reminderState: conversationRuntime.reminderState,
+    reflect: () => {
+      const reflectionSettings = getReflectionSettings(
         agentId,
-        conversationId,
-      ),
-    );
-    if (
-      reflectionSettings.trigger === "compaction-event" &&
-      settingsManager.isMemfsEnabled(agentId)
-    ) {
+        getConversationWorkingDirectory(
+          conversationRuntime.listener,
+          agentId,
+          conversationId,
+        ),
+      );
+      if (
+        reflectionSettings.trigger !== "compaction-event" ||
+        !settingsManager.isMemfsEnabled(agentId)
+      ) {
+        return;
+      }
       void buildMaybeLaunchReflectionSubagent({
         runtime: conversationRuntime,
         socket,
         agentId,
         conversationId,
       })("compaction-event");
-    }
-  } catch (reflectionError) {
-    debugLog(
-      "memory",
-      "Skipping post-compaction reflection:",
-      reflectionError instanceof Error
-        ? reflectionError.message
-        : String(reflectionError),
-    );
-  }
-  void regenerateConversationDescription(conversationId);
+    },
+    regenerateDescription: () => {
+      void regenerateConversationDescription(conversationId);
+    },
+  });
   return formatTopicTrimReceipt(outcome);
 }
 
@@ -500,7 +505,9 @@ async function handleCompactCommand(
     args?.trim() ? args.trim().split(/\s+/) : [],
   );
   if (parsed.kind === "help") return COMPACT_COMMAND_USAGE;
-  if (parsed.kind === "invalid") throw new Error(parsed.message);
+  if (parsed.kind === "invalid") {
+    throw new Error(`${parsed.message}\n\n${COMPACT_COMMAND_USAGE}`);
+  }
 
   const backend = getBackend();
   const local = backend instanceof LocalBackend;
@@ -562,41 +569,38 @@ async function handleCompactCommand(
       conversationRuntime.conversationId,
       compactBody,
     );
-    markPostCompactionContextRemindersPending(
-      conversationRuntime.reminderState,
-    );
-
-    // Launching reflection is best-effort — never fail the /compact itself.
-    try {
-      const reflectionSettings = getReflectionSettings(
-        agentId,
-        getConversationWorkingDirectory(
-          conversationRuntime.listener,
+    // The same tail the TUI runs: reminders first, reflection best-effort, then a
+    // fresh description. A cloud failure keeps its classified message (M-2).
+    runPostCompactionTail({
+      reminderState: conversationRuntime.reminderState,
+      reflect: () => {
+        const reflectionSettings = getReflectionSettings(
           agentId,
-          conversationRuntime.conversationId,
-        ),
-      );
-      if (
-        reflectionSettings.trigger === "compaction-event" &&
-        settingsManager.isMemfsEnabled(agentId)
-      ) {
+          getConversationWorkingDirectory(
+            conversationRuntime.listener,
+            agentId,
+            conversationRuntime.conversationId,
+          ),
+        );
+        if (
+          reflectionSettings.trigger !== "compaction-event" ||
+          !settingsManager.isMemfsEnabled(agentId)
+        ) {
+          return;
+        }
         void buildMaybeLaunchReflectionSubagent({
           runtime: conversationRuntime,
           socket,
           agentId,
           conversationId: conversationRuntime.conversationId,
         })("compaction-event");
-      }
-    } catch (reflectionError) {
-      debugLog(
-        "memory",
-        "Skipping post-compaction reflection:",
-        reflectionError instanceof Error
-          ? reflectionError.message
-          : String(reflectionError),
-      );
-    }
-    void regenerateConversationDescription(conversationRuntime.conversationId);
+      },
+      regenerateDescription: () => {
+        void regenerateConversationDescription(
+          conversationRuntime.conversationId,
+        );
+      },
+    });
 
     return [
       `Compaction completed${modeDisplay}. Message buffer length reduced from ${result.num_messages_before} to ${result.num_messages_after}.`,
@@ -616,7 +620,10 @@ async function handleCompactCommand(
       return "Compaction run, but the number of messages is the same";
     }
 
-    throw new Error(formatCompactPlanningFailure(error));
+    // This catch only ever sees cloud failures (the local branch returned above),
+    // so it keeps the cloud taxonomy — quota, rate limit, Cloudflare, run links —
+    // instead of the local planner's two-case translation (M-2).
+    throw new Error(formatErrorDetails(error, agentId));
   }
 }
 

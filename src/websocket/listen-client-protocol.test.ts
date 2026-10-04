@@ -1746,7 +1746,7 @@ describe("listen-client parseServerMessage", () => {
     });
   });
 
-  test("runs remote compact execute_command against backend", async () => {
+  test("a local backend refuses the mode word and never uses the cloud-shaped compact", async () => {
     const storageDir = await mkdtemp(join(os.tmpdir(), "ws-compact-"));
     try {
       class CompactRecordingBackend extends LocalBackend {
@@ -1796,29 +1796,25 @@ describe("listen-client parseServerMessage", () => {
         {},
       );
 
-      expect(backend.compactCalls).toHaveLength(1);
-      expect(backend.compactCalls[0]?.[0]).toBe("default");
-      expect(backend.compactCalls[0]?.[1]).toMatchObject({
-        agent_id: agent.id,
-        compaction_settings: {
-          mode: "sliding_window",
-        },
-      });
-      // Manual /compact now launches reflection directly (when memfs and the
+      // Local compaction is always sliding_window, so the mode word is refused by
+      // name instead of reaching the legacy cloud-shaped method.
+      expect(backend.compactCalls).toHaveLength(0);
+      // Manual /compact launches reflection directly (when memfs and the
       // compaction-event trigger are enabled) instead of setting the pending
       // flag for the next turn.
       expect(runtime.contextTracker.pendingReflectionTrigger).toBe(false);
       expect(socket.sentPayloads.join("\n")).toContain(
-        "Compaction completed (mode: sliding_window). Message buffer length reduced from 7 to 2.",
+        "takes no mode argument",
       );
     } finally {
       await rm(storageDir, { recursive: true, force: true });
     }
   });
 
-  test("remote compact does not trigger reflection when compaction changes nothing", async () => {
+  test("a local /compact that cannot trim does not trigger reflection", async () => {
     const storageDir = await mkdtemp(join(os.tmpdir(), "ws-compact-same-"));
     try {
+      // Throwing documents the route: the legacy method must not be reached.
       class NoopCompactBackend extends LocalBackend {
         override async compactConversationMessages(
           ..._args: Parameters<LocalBackend["compactConversationMessages"]>
@@ -1861,9 +1857,11 @@ describe("listen-client parseServerMessage", () => {
         {},
       );
 
+      // Nothing in the context: the trim refuses and reports it, and no
+      // reflection work is queued for a compaction that changed nothing.
       expect(runtime.contextTracker.pendingReflectionTrigger).toBe(false);
       expect(socket.sentPayloads.join("\n")).toContain(
-        "Compaction run, but the number of messages is the same",
+        "nothing in this conversation's context to trim",
       );
     } finally {
       await rm(storageDir, { recursive: true, force: true });

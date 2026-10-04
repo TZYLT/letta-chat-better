@@ -41,7 +41,9 @@ export const COMPACT_COMMAND_USAGE = [
   "",
   "Local compaction never splits context by itself. `/topics` lists the blocks,",
   "and n counts from the oldest: block 1 keeps everything, so there is nothing",
-  "to trim there.",
+  "to trim there. When no marker defines a boundary (nothing marked yet, or every",
+  "marker anchored at or before the start of the context), `/compact` trims by the",
+  "retention ratio instead of asking.",
 ].join("\n");
 
 /**
@@ -64,13 +66,14 @@ export function formatTopicTrimReceipt(
       : "ratio_suggestion (the block the retention ratio points at, confirmed as it was)"
     : {
         topic_pick: "the topic block you picked",
-        ratio_suggestion: "the retention ratio (nothing was marked)",
+        ratio_suggestion:
+          "the retention ratio (no marker defines a boundary here, so it decided)",
         ratio_cap: "the retention ratio (the picked block kept too much)",
       }[outcome.source];
   const lines = [
     "Context trimmed.",
     `  kept:       ${outcome.numMessagesAfter} messages (~${outcome.retainedTokens} tokens), starting at ${outcome.firstKeptMessageId ?? "the summary"}`,
-    `  summarized: ${outcome.summarizedMessageCount} messages (~${outcome.requestedRetentionTokens} tokens)`,
+    `  summarized: ${outcome.summarizedMessageCount} messages (~${outcome.summarizedTokens} tokens)`,
     `  cut point:  ${source}`,
   ];
   if (outcome.summarizedTitles.length > 0) {
@@ -108,7 +111,11 @@ function formatTopicTrimRefusal(outcome: LocalTopicTrimOutcome): string {
     case "unknown_block":
       return "That topic block does not exist. Run /topics to list the current blocks.";
     default:
-      return "Nothing to trim: the context already fits inside the retention ratio. Nothing was written.";
+      // The cut point resolved to the start of the context. Which *reason* it did
+      // decides the advice: only the ratio path means "the context already fits".
+      return outcome.source === "ratio_suggestion"
+        ? "Nothing to trim: the context already fits inside the retention ratio. Nothing was written."
+        : "Nothing to trim: that cut point is the start of the context, so everything in it is already kept. Run /topics to see the blocks you can cut at. Nothing was written.";
   }
 }
 
@@ -125,15 +132,41 @@ export function formatNoMarkerCompactHint(
 }
 
 /**
+ * `/compact` on a conversation whose markers define no block of their own (H-2):
+ * a `/topic` placed in the first turns, or every marker anchor trimmed away. The
+ * picker would have one disabled row, so the ratio decides — and the note has to
+ * say *why*, because "no markers yet" would be false.
+ */
+export function formatSingleBlockCompactHint(input: {
+  topicMarkingEnabled: boolean;
+  liveMarkerAnchor: boolean;
+}): string {
+  const why = input.liveMarkerAnchor
+    ? "The marker in this conversation sits at the very start of the current context, so there is no earlier block to summarize."
+    : "Every marker's anchor has left the current context, so no marker defines a boundary here.";
+  const wayOut =
+    "Run /topic <title> to mark a fresh boundary; /compact can cut at it.";
+  return input.topicMarkingEnabled
+    ? `${why} The retention ratio decided the cut point instead. ${wayOut} The agent can also mark one with TopicMark when a topic ends.`
+    : `${why} The retention ratio decided the cut point instead. ${wayOut} Topic marking is switched off, so only your own /topic markers define blocks.`;
+}
+
+/**
  * Advisory line for the pre-send pressure check (D-112). `soft` only informs;
  * `hard` is the tier the local backend refuses to cross, so with no blocks to
  * choose between the line has to say what to do about it.
+ *
+ * `hasBlocks` and `hasMarkers` are separate on purpose: markers that define no
+ * boundary in the current context (a `/topic` in the first turns, or anchors
+ * trimmed away) leave one block — and must not be described as "nothing has
+ * marked a boundary yet" (H-2).
  */
 export function formatContextPressureHint(input: {
   level: "soft" | "hard";
   contextTokens: number;
   contextWindow: number;
   hasBlocks: boolean;
+  hasMarkers: boolean;
 }): string {
   const percent = Math.round((input.contextTokens / input.contextWindow) * 100);
   const usage = `The context is at about ${percent}% of this model's window (${input.contextTokens} of ${input.contextWindow} tokens).`;
@@ -143,7 +176,10 @@ export function formatContextPressureHint(input: {
   if (input.hasBlocks) {
     return `${usage} Pick a topic block to keep before sending, or press Esc to send anyway.`;
   }
-  return `${usage} This is past the point where a turn this large can be sent, and nothing has marked a topic boundary yet. Run /compact to trim by the retention ratio, or /topic <title> to mark a boundary for a cleaner cut.`;
+  if (!input.hasMarkers) {
+    return `${usage} This is past the point where a turn this large can be sent, and nothing has marked a topic boundary yet. Run /compact to trim by the retention ratio, or /topic <title> to mark a boundary for a cleaner cut.`;
+  }
+  return `${usage} This is past the point where a turn this large can be sent, and the markers in this conversation define no boundary inside the current context. Run /compact to trim by the retention ratio, or /topic <title> to mark a fresh boundary.`;
 }
 
 /**

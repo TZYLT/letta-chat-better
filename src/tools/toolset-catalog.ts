@@ -14,7 +14,16 @@ export const WORKTREE_TOOL_NAMES = new Set<ToolName>([
   "ExitWorktree",
 ]);
 
-/** Presets in picker order. Availability filters and explicit allowlists apply afterward. */
+/**
+ * Presets in picker order. Availability filters and explicit allowlists apply afterward.
+ *
+ * `TopicMark` is an optional family that ships in every non-empty preset. The
+ * frozen prompt chapter and the one-shot nudge both tell the model to call it, so
+ * a preset that omits it would advertise a tool the payload cannot carry;
+ * `declaration-gates.ts` removes it again on the cloud backend and when the switch
+ * is off. The `none` preset declares no built-in tools at all, which is why
+ * `shouldAdvertiseTopicMarking` also consults the toolset.
+ */
 export const TOOLSET_CATALOG: Readonly<Record<ToolsetName, ToolsetDefinition>> =
   {
     letta: {
@@ -77,6 +86,7 @@ export const TOOLSET_CATALOG: Readonly<Record<ToolsetName, ToolsetDefinition>> =
         "TaskList",
         "TaskUpdate",
         "Write",
+        "TopicMark",
       ],
     },
     codex: {
@@ -101,6 +111,7 @@ export const TOOLSET_CATALOG: Readonly<Record<ToolsetName, ToolsetDefinition>> =
         "ViewImage",
         "ApplyPatch",
         "UpdatePlan",
+        "TopicMark",
       ],
     },
   };

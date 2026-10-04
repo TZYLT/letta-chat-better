@@ -126,16 +126,20 @@ export function isLocalUserTurnMessage(message: LocalMessage): boolean {
   return message.role === "user" && message.metadata?.compaction === undefined;
 }
 
+/**
+ * Clamp a configured boundary rewind to the supported range.
+ *
+ * `undefined`, a non-finite value, or a negative one is *unusable* and falls back
+ * to the default — the same rule the other four knobs use, so an out-of-range
+ * setting can never silently mean "no rewind at all".
+ */
 export function normalizeTopicBoundaryRewindTurns(
   value: number | undefined,
 ): number {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
     return DEFAULT_TOPIC_BOUNDARY_REWIND_TURNS;
   }
-  return Math.min(
-    MAX_TOPIC_BOUNDARY_REWIND_TURNS,
-    Math.max(0, Math.trunc(value)),
-  );
+  return Math.min(MAX_TOPIC_BOUNDARY_REWIND_TURNS, Math.trunc(value));
 }
 
 function userTurnStartIndexes(
@@ -242,17 +246,6 @@ function effectiveBoundaries(
   return boundaries;
 }
 
-/** Effective boundary message ids, one per marker, in transcript order. */
-export function effectiveBoundaryMessageIds(
-  messages: readonly LocalMessage[],
-  markers: readonly LocalTopicMarker[],
-  rewindTurns: number,
-): (string | null)[] {
-  return effectiveBoundaries(messages, markers, rewindTurns).map(
-    (boundary) => messages[boundary.index]?.id ?? null,
-  );
-}
-
 /**
  * Split the in-context list into topic blocks, oldest first. The trailing block
  * is the current, not-yet-marked topic (`title: null`) and always exists when
@@ -277,6 +270,13 @@ export function listTopicBlocks(
   let start = 0;
   let startRewindTurns = 0;
   let startMarkerAnchorMessageId: string | null = null;
+  /**
+   * Titles of markers whose boundary clamped onto the start of the context. They
+   * end a topic that the context no longer holds separately, so they belong to
+   * the first block — which does not exist yet while the loop is still on them.
+   * Held here and handed to that first block so a title is never silently lost.
+   */
+  const leadingTitles: string[] = [];
 
   const addBlock = (
     blockStart: number,
@@ -292,7 +292,7 @@ export function listTopicBlocks(
       markerId: endingMarker ? endingMarker.id : null,
       createdBy: endingMarker ? endingMarker.createdBy : null,
       anchorMessageId: endingMarker ? endingMarker.anchorMessageId : null,
-      absorbedTitles: [],
+      absorbedTitles: leadingTitles.splice(0),
       boundaryMessageId: first.id,
       startIndex: blockStart,
       endIndex: end,
@@ -310,10 +310,12 @@ export function listTopicBlocks(
     const boundary = boundaries[position];
     if (!marker || !boundary) continue;
     if (boundary.index <= start) {
-      // Clamped onto the previous boundary: absorb this title into the block
-      // that already ends there instead of emitting an empty block.
+      // Clamped onto the previous boundary (or onto the start of the context):
+      // absorb this title into the block that already ends there instead of
+      // emitting an empty block.
       const previousBlock = blocks.at(-1);
       if (previousBlock) previousBlock.absorbedTitles.push(marker.title);
+      else leadingTitles.push(marker.title);
       continue;
     }
     addBlock(start, boundary.index, marker);
@@ -513,19 +515,6 @@ export function evaluateTopicMarkerGate(input: {
   return { status: "accepted", turnsUntilAllowed: 0 };
 }
 
-/**
- * One-shot nudge after `nudgeTurns` user turns without a marker. The caller
- * persists `alreadySentForStreak`, so a long unmarked stretch nudges once and a
- * new marker resets the streak.
- */
-export function shouldNudgeTopicMarker(input: {
-  turnsSinceLastMarker: number;
-  nudgeTurns?: number;
-  alreadySentForStreak: boolean;
-}): boolean {
-  return decideTopicNudge(input).due;
-}
-
 export type TopicNudgeReason =
   | "due"
   | "disabled"
@@ -541,13 +530,15 @@ export interface TopicNudgeDecision {
 }
 
 /**
- * The same decision as `shouldNudgeTopicMarker`, with the reason kept.
+ * One-shot nudge after `nudgeTurns` user turns without a marker. The caller
+ * persists `alreadySentForStreak`, so a long unmarked stretch nudges once and a
+ * new marker (or a trim) starts the next streak.
  *
- * `nudgeTurns = 0` disables the nudge (D-115). The threshold is compared
- * *before* the flag so a stale flag stays distinguishable: a flag that is set
- * while the stretch is below the threshold means the stretch it belonged to
- * ended (a new marker, or a trim), and the caller clears it. Reporting that as
- * "already_sent" would hide the reset.
+ * `nudgeTurns = 0` disables the nudge (D-115) and leaves the flag alone. The
+ * threshold is compared *before* the flag so a stale flag stays distinguishable:
+ * a flag that is set while the stretch is below the threshold means the stretch
+ * it belonged to ended (a new marker, or a trim), and the caller clears it.
+ * Reporting that as "already_sent" would hide the reset.
  */
 export function decideTopicNudge(input: {
   turnsSinceLastMarker: number;

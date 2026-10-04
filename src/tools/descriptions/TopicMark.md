@@ -13,7 +13,7 @@ What a marker is not:
 
 Frequency:
 - Marking is rate limited per user turn. Marking a topic every turn is noise, so a mark too soon after the previous one is refused with the number of user turns left to wait. Five or more user turns apart is comfortable.
-- One marker per topic. If two markers land in the same turn the second is absorbed into the first and adds nothing.
+- One marker per topic. A second marker written before any new message arrives is refused — it would point at the same place as the previous one and add nothing. Write nothing further about it and mark the next topic when the conversation has moved on.
 
 Titles:
 - Name the topic, not the action: `Auth token refresh bug`, not `Fixed the bug`.

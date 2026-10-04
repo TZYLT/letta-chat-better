@@ -26,7 +26,7 @@ import type {
   LlmEndInfo,
   LlmStartInfo,
 } from "@/backend/dev/provider-turn-executor";
-import { shouldIncludeTopicMarking } from "@/settings-tool-gates";
+import { shouldAdvertiseTopicMarking } from "@/settings-tool-gates";
 import { readTopicSettings } from "@/topic-settings";
 import { isRecord } from "@/utils/type-guards";
 import {
@@ -538,6 +538,8 @@ export class LocalBackend extends HeadlessBackend {
     markers: LocalTopicMarker[];
     turnsSinceLastMarker: number;
     contextMessageCount: number;
+    /** Anchor a fresh marker would get; `null` for an empty context (L-6). */
+    latestMessageId: string | null;
   } {
     const resolvedAgentId =
       agentId ?? this.store.resolveAgentIdForConversation(conversationId);
@@ -553,6 +555,7 @@ export class LocalBackend extends HeadlessBackend {
       markers,
       turnsSinceLastMarker: userTurnsSinceLastTopicMarker(messages, markers),
       contextMessageCount: messages.length,
+      latestMessageId: messages.at(-1)?.id ?? null,
     };
   }
 
@@ -628,6 +631,8 @@ export class LocalBackend extends HeadlessBackend {
           this.frozenAgentForConversation(conversationId, agentId),
         ),
       rewrite: (input) => this.store.contextRewrites.rewriteInContext(input),
+      clearTopicNudgeStreak: (id, agent) =>
+        this.store.contextRewrites.setTopicNudgeSent(id, agent, false),
       refreshFrozenPrefix: async (conversationId, agentId) => {
         await this.compileAndMaybePersistSystemPrompt(conversationId, agentId, {
           dryRun: false,
@@ -974,7 +979,10 @@ export class LocalBackend extends HeadlessBackend {
         previousMessageCount,
         memoryDir: memfsEnabled ? this.memoryDirForAgent(agentId) : undefined,
         includeMemfs: memfsEnabled,
-        includeTopicMarking: shouldIncludeTopicMarking(),
+        includeTopicMarking: shouldAdvertiseTopicMarking(
+          agentId,
+          conversationId,
+        ),
       }),
       { reason: options.reason, agent },
     );

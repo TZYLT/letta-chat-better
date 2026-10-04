@@ -11,7 +11,7 @@ import { SYSTEM_REMINDER_CLOSE, SYSTEM_REMINDER_OPEN } from "@/constants";
 import { experimentManager } from "@/experiments/manager";
 import { permissionMode } from "@/permissions/mode";
 import { settingsManager } from "@/settings-manager";
-import { shouldIncludeTopicMarking } from "@/settings-tool-gates";
+import { shouldAdvertiseTopicMarking } from "@/settings-tool-gates";
 import { debugLog } from "@/utils/debug";
 import type { ShellContext } from "@/utils/shell-context";
 import {
@@ -523,7 +523,12 @@ async function buildTopicNudgeReminder(
   context: SharedReminderContext,
 ): Promise<string | null> {
   const conversationId = context.agent.conversationId;
-  if (!conversationId || !shouldIncludeTopicMarking()) return null;
+  if (
+    !conversationId ||
+    !shouldAdvertiseTopicMarking(context.agent.id, conversationId)
+  ) {
+    return null;
+  }
   try {
     const [{ getBackend }, { LocalBackend }] = await Promise.all([
       import("@/backend"),

@@ -18,6 +18,7 @@ import {
   type LocalCompactionStats,
   type LocalCompleteFunction,
   type LocalTrimStats,
+  normalizedSlidingWindowPercentage,
   packageLocalSummaryMessage,
   summarizeLocalMessagesSlidingWindow,
 } from "./compaction";
@@ -72,6 +73,12 @@ export interface LocalTopicTrimPorts {
   rewrite(input: LocalConversationRewriteInput): LocalCompactionStoreResult;
   /** Re-apply the frozen prefix after the context changed. */
   refreshFrozenPrefix(conversationId: string, agentId: string): Promise<void>;
+  /**
+   * The rewrite ended the unmarked stretch, so the next nudge starts a new streak
+   * (D-114 + M-4). Called only after a successful write: a refusal wrote nothing
+   * and must leave the one-shot flag alone.
+   */
+  clearTopicNudgeStreak?(conversationId: string, agentId: string): void;
   onCompactionStart?(
     conversationId: string,
     agentId: string,
@@ -130,6 +137,9 @@ export interface LocalTopicTrimOutcome {
   numMessagesBefore: number;
   numMessagesAfter: number;
   summarizedMessageCount: number;
+  /** Tokens in the region that was summarized away. */
+  summarizedTokens: number;
+  /** Retention the request asked for, before the ratio cap. */
   requestedRetentionTokens: number;
   retainedTokens: number;
   /** `null` when the window — and therefore the cap — is unknown. */
@@ -141,6 +151,15 @@ export interface LocalTopicTrimOutcome {
   stats: LocalCompactionStats;
 }
 
+/**
+ * The retention cap: `percentage x contextWindow`, in tokens.
+ *
+ * The ratio is normalized by the same helper the sliding-window planner uses, so
+ * a `0`, negative, or `NaN` percentage cannot mean "keep almost nothing" here
+ * while it means "keep the smallest slice" (or the default) there. A window that
+ * is unknown or unusable has no cap: without a window there is no retention
+ * target to enforce, and the cap must not override a topic pick.
+ */
 export function retentionCapTokensFor(
   contextWindow: number | undefined,
   percentage: number,
@@ -152,13 +171,23 @@ export function retentionCapTokensFor(
   ) {
     return Number.POSITIVE_INFINITY;
   }
-  const ratio =
-    typeof percentage === "number" &&
-    Number.isFinite(percentage) &&
-    percentage > 0
-      ? Math.min(percentage, 1)
-      : 0;
-  return Math.floor(contextWindow * ratio);
+  return Math.floor(
+    contextWindow * normalizedSlidingWindowPercentage(percentage),
+  );
+}
+
+/**
+ * Whether the picker has anything to choose between.
+ *
+ * Block 1 always keeps the whole context, so it is never selectable: a list with a
+ * single block has no choice to offer and the retention ratio decides instead
+ * (D-119). Markers alone are not the test — a marker whose effective boundary
+ * clamps onto the start of the context produces no block of its own (a `/topic`
+ * in the first turns, or every anchor trimmed away), and opening the picker then
+ * would leave the user with one disabled row and no way to cut.
+ */
+export function hasSelectableTopicBlocks(list: LocalTopicList): boolean {
+  return list.blocks.length > 1;
 }
 
 export function listLocalTopics(
@@ -228,6 +257,12 @@ function suggestionBlockIndex(
  * The titles are the ones being evicted, oldest first. With no titles the prompt
  * is passed through untouched, so an unmarked region summarizes exactly as it did
  * before this feature.
+ *
+ * The section requirement is inserted *before* the base prompt's final paragraph —
+ * which is where the built-in prompt states its word limit and output rule — so
+ * "every topic must have a section" is not competing with an instruction that
+ * arrives after it. A single-paragraph custom prompt has no such trailing rule,
+ * and gets the requirement appended.
  */
 export function topicSectionPrompt(
   basePrompt: string,
@@ -235,13 +270,14 @@ export function topicSectionPrompt(
 ): string {
   if (titles.length === 0) return basePrompt;
   const list = titles.map((title) => `- ${title}`).join("\n");
-  return `${basePrompt}
-
-Additionally, structure the summary as one section per topic listed below, in
-this order, using each title as the section heading. Every topic in the list is
-being evicted, so none of them may be dropped even if it looks minor.
-
-${list}`;
+  const section = [
+    "Additionally, structure the summary as one section per topic listed below, in this order, using each title as the section heading. Every topic in the list is being evicted, so none of them may be dropped even if it looks minor. Keep every section heading; if the headings push against the length limit, shorten the prose inside them instead.",
+    "",
+    list,
+  ].join("\n");
+  const lastParagraph = basePrompt.lastIndexOf("\n\n");
+  if (lastParagraph < 0) return `${basePrompt}\n\n${section}`;
+  return `${basePrompt.slice(0, lastParagraph)}\n\n${section}\n\n${basePrompt.slice(lastParagraph + 2)}`;
 }
 
 function emptyStats(contextWindow: number | undefined): LocalCompactionStats {
@@ -268,6 +304,7 @@ function noopOutcome(
     numMessagesBefore: input.numMessagesBefore,
     numMessagesAfter: input.numMessagesBefore,
     summarizedMessageCount: 0,
+    summarizedTokens: 0,
     requestedRetentionTokens: 0,
     retainedTokens: estimateLocalMessagesTokens(plan.keep),
     retentionCapTokens: Number.isFinite(input.retentionCapTokens)
@@ -335,6 +372,7 @@ export async function trimLocalConversationToTopic(
       : undefined;
   const summarize = [...plan.summarize];
   const keep = [...plan.keep];
+  const summarizedTokens = estimateLocalMessagesTokens(summarize);
   const requestedRetentionTokens = estimateLocalMessagesTokens(
     messages.slice(plan.requestedStartIndex),
   );
@@ -382,6 +420,9 @@ export async function trimLocalConversationToTopic(
     stats,
     remainingMessages: keep,
   });
+  // The context changed, so the unmarked stretch this conversation was in is over
+  // even when the kept region is still longer than `topic_nudge_turns` (M-4).
+  ports.clearTopicNudgeStreak?.(conversationId, agentId);
   await ports.refreshFrozenPrefix(conversationId, agentId);
   await ports.onCompactionEnd?.(conversationId, agentId, trigger, stats);
 
@@ -396,6 +437,7 @@ export async function trimLocalConversationToTopic(
     numMessagesBefore: written.numMessagesBefore,
     numMessagesAfter: written.numMessagesAfter,
     summarizedMessageCount: summarize.length,
+    summarizedTokens,
     requestedRetentionTokens,
     retainedTokens,
     retentionCapTokens: trim.retention_cap_tokens,

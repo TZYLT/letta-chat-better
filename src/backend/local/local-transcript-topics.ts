@@ -15,7 +15,8 @@ import {
   type LocalTranscriptTopicEntry,
 } from "./local-transcript";
 
-export const TOPIC_SCAN_CHUNK_BYTES = 256 * 1024;
+/** Read granularity for the scan below; not a knob, so it stays module-private. */
+const TOPIC_SCAN_CHUNK_BYTES = 256 * 1024;
 
 /**
  * Yield the raw lines of a JSONL file in bounded chunks. `StringDecoder` holds

@@ -3527,33 +3527,33 @@ ${SYSTEM_REMINDER_CLOSE}
         otid: userOtid,
       });
 
-      const sendTurn = async () => {
+      const finishTurn = async () => {
         await processConversation(initialInput, {
           clientPreferences,
           submissionGeneration,
           transcriptStartLineIndex,
         });
+
+        await runPostTurnMemorySync({
+          conversationId,
+          agentId,
+          isEnabled: isActiveMemfsEnabled,
+          enqueueReminder: (text) => {
+            enqueueMemoryGitSyncReminder(sharedReminderStateRef.current, {
+              text,
+            });
+          },
+        });
+
+        clearPlaceholdersInText(msg);
       };
       // A context at the window's hard threshold offers a trim before the turn
-      // goes out; Esc skips it. The turn is sent either way (D-112).
-      if (await offerTrimBeforeSend(ctx, sendTurn)) {
+      // goes out; Esc skips it. The turn is sent either way, and its tail (memory
+      // sync, placeholder cleanup) travels with it (D-112, M-1).
+      if (await offerTrimBeforeSend(ctx, finishTurn)) {
         return { submitted: true };
       }
-      await sendTurn();
-
-      await runPostTurnMemorySync({
-        conversationId,
-        agentId,
-        isEnabled: isActiveMemfsEnabled,
-        enqueueReminder: (text) => {
-          enqueueMemoryGitSyncReminder(sharedReminderStateRef.current, {
-            text,
-          });
-        },
-      });
-
-      // Clean up placeholders after submission
-      clearPlaceholdersInText(msg);
+      await finishTurn();
 
       return { submitted: true };
     },

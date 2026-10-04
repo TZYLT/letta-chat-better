@@ -59,6 +59,20 @@ TOP_LEVEL_KEYS = [
 VERSION_TIMEOUT_SECONDS = 2
 MAX_VERSION_TEXT = 200
 
+# Keys the app reads from the global settings file only. Writing one of these into
+# a project or project-local file has no effect (the tool gate and the compiled
+# prompt read them without a project scope), so the report says so instead of
+# presenting the value as effective.
+GLOBAL_ONLY_KEYS = {
+    "includeWorktreeTool",
+    "topicMarkingEnabled",
+    "topicMarkerWarnTurns",
+    "topicMarkerRejectTurns",
+    "topicNudgeTurns",
+    "topicSoftPressureRatio",
+    "topicBoundaryRewindTurns",
+}
+
 
 def get_settings_paths(working_directory: str) -> list[tuple[str, Path]]:
     """Return (scope, path) in precedence order (lowest to highest)."""
@@ -228,7 +242,14 @@ def format_settings(
     for scope, settings in all_settings:
         for key in TOP_LEVEL_KEYS:
             if key in settings:
-                rows.append({"scope": scope, "key": key, "value": settings[key]})
+                row: dict[str, Any] = {
+                    "scope": scope,
+                    "key": key,
+                    "value": settings[key],
+                }
+                if key in GLOBAL_ONLY_KEYS and scope != "user":
+                    row["note"] = "ignored: this key is read from the global file only"
+                rows.append(row)
         env = settings.get("env")
         if isinstance(env, dict) and env:
             rows.append({"scope": scope, "key": "env_keys", "value": sorted(env.keys())})
@@ -255,8 +276,9 @@ def format_settings(
         print("  (none)")
     else:
         for row in rows:
+            note = f"  ({row['note']})" if "note" in row else ""
             print(
-                f"  [{row['scope']:7}] {row['key']}: {render_safe_value(row['value'])}"
+                f"  [{row['scope']:7}] {row['key']}: {render_safe_value(row['value'])}{note}"
             )
     print()
     return None

@@ -744,6 +744,18 @@ export function getBackend(): Backend {
 }
 
 /**
+ * The backend if one already exists, otherwise `null`; never creates one.
+ *
+ * A caller that only has to *classify* the environment — the tool-declaration
+ * gate, for instance — must not force the process-level backend into existence
+ * merely to ask whether it is local. `resolveBackendMode()` answers the
+ * configured mode without a backend at all.
+ */
+export function peekBackend(): Backend | null {
+  return backend;
+}
+
+/**
  * Get a backend instance for a specific mode without switching the global backend.
  * Useful for cross-backend operations like retrieving pinned agents from the other backend.
  */

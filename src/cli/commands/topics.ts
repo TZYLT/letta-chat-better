@@ -14,7 +14,7 @@ import {
   formatTopicMarkerHistory,
   TOPICS_COMMAND_USAGE,
 } from "@/cli/helpers/topic-list";
-import { shouldIncludeTopicMarking } from "@/settings-tool-gates";
+import { shouldAdvertiseTopicMarking } from "@/settings-tool-gates";
 
 export interface TopicsCommandDeps {
   backend?: Backend;
@@ -39,13 +39,13 @@ export async function handleTopicsCommand(
     return TOPIC_COMMAND_LOCAL_ONLY;
   }
 
-  const list = backend.listTopics(
-    scope.conversationId ?? "default",
+  const conversationId = scope.conversationId ?? "default";
+  const list = backend.listTopics(conversationId, scope.agentId);
+  const topicMarkingEnabled = shouldAdvertiseTopicMarking(
     scope.agentId,
+    conversationId,
   );
   return args.includes("--all")
-    ? formatTopicMarkerHistory(list)
-    : formatTopicBlockList(list, {
-        topicMarkingEnabled: shouldIncludeTopicMarking(),
-      });
+    ? formatTopicMarkerHistory(list, { topicMarkingEnabled })
+    : formatTopicBlockList(list, { topicMarkingEnabled });
 }

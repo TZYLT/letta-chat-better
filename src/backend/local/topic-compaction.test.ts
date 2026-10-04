@@ -3,14 +3,12 @@ import type { LocalMessage } from "@/backend/local/local-message";
 import {
   alignTrimBoundary,
   decideTopicNudge,
-  effectiveBoundaryMessageIds,
   evaluateTopicMarkerGate,
   isLocalUserTurnMessage,
   listTopicBlocks,
   normalizeTopicBoundaryRewindTurns,
   ratioSuggestionMessageId,
   resolveTrimPlan,
-  shouldNudgeTopicMarker,
   type TopicBlock,
   userTurnsSinceLastTopicMarker,
 } from "@/backend/local/topic-compaction";
@@ -85,7 +83,9 @@ describe("normalizeTopicBoundaryRewindTurns", () => {
     expect(normalizeTopicBoundaryRewindTurns(0)).toBe(0);
     expect(normalizeTopicBoundaryRewindTurns(1.7)).toBe(1);
     expect(normalizeTopicBoundaryRewindTurns(9)).toBe(3);
-    expect(normalizeTopicBoundaryRewindTurns(-4)).toBe(0);
+    // Unusable, not "no rewind": the same rule the other topic knobs use, so a
+    // negative setting cannot silently mean a different cut (L-10).
+    expect(normalizeTopicBoundaryRewindTurns(-4)).toBe(2);
   });
 });
 
@@ -103,66 +103,96 @@ describe("isLocalUserTurnMessage", () => {
   });
 });
 
-describe("effectiveBoundaryMessageIds", () => {
+/**
+ * Boundaries are observed through the public block list: block `n` starts at the
+ * boundary marker `n-1` derived. Testing the planner's *output* rather than a
+ * boundary-only helper keeps the assertions on copy a receipt actually renders.
+ */
+function blockStartIds(
+  messages: readonly LocalMessage[],
+  markers: Parameters<typeof listTopicBlocks>[1],
+  rewindTurns: number,
+): string[] {
+  return listTopicBlocks(messages, markers, { rewindTurns }).map(
+    (block) => block.boundaryMessageId,
+  );
+}
+
+describe("effective boundaries", () => {
   test("rewinds the default two user turns to the older turn's first message", () => {
     // The topic ended after turn 3; the agent only marked it at the end of
     // turn 6. Two turns of rewind put the boundary on turn 4's first message,
     // so a later trim cannot bury turn 4 (the new topic's opening).
     const messages = conversation(6);
-    const boundaries = effectiveBoundaryMessageIds(
-      messages,
-      [marker("t1", "topic A", "a6")],
-      2,
+    expect(blockStartIds(messages, [marker("t1", "topic A", "a6")], 2)).toEqual(
+      ["u1", "u4"],
     );
-
-    expect(boundaries).toEqual(["u4"]);
   });
 
   test("rewind 0 still aligns to the first message of the anchor's turn", () => {
     const messages = conversation(6);
     // The anchor is `a6`; keeping from `a6` would leave an answer whose
     // question was summarized, so the boundary is turn-aligned either way.
-    expect(
-      effectiveBoundaryMessageIds(messages, [marker("t1", "topic A", "a6")], 0),
-    ).toEqual(["u6"]);
-    expect(
-      effectiveBoundaryMessageIds(messages, [marker("t1", "topic A", "u6")], 0),
-    ).toEqual(["u6"]);
+    expect(blockStartIds(messages, [marker("t1", "topic A", "a6")], 0)).toEqual(
+      ["u1", "u6"],
+    );
+    expect(blockStartIds(messages, [marker("t1", "topic A", "u6")], 0)).toEqual(
+      ["u1", "u6"],
+    );
   });
 
-  test("rewind 3 and a turn-1 anchor clamp to the start of the context", () => {
+  test("rewind 3 from a late anchor lands on turn 3", () => {
     const messages = conversation(6);
-    expect(
-      effectiveBoundaryMessageIds(messages, [marker("t1", "topic A", "a6")], 3),
-    ).toEqual(["u3"]);
-    expect(
-      effectiveBoundaryMessageIds(messages, [marker("t1", "topic A", "a1")], 3),
-    ).toEqual(["u1"]);
+    expect(blockStartIds(messages, [marker("t1", "topic A", "a6")], 3)).toEqual(
+      ["u1", "u3"],
+    );
+  });
+
+  test("a turn-1 anchor clamps to the start and keeps its title", () => {
+    const messages = conversation(6);
+    const blocks = listTopicBlocks(messages, [marker("t1", "topic A", "a1")], {
+      rewindTurns: 3,
+    });
+
+    // Nothing precedes the boundary, so the marker defines no block of its own —
+    // but its title is still reported instead of being dropped (L-4).
+    expect(blocks).toHaveLength(1);
+    expect(blocks[0]?.title).toBeNull();
+    expect(blocks[0]?.absorbedTitles).toEqual(["topic A"]);
   });
 
   test("an anchor that left the context resolves to the previous boundary", () => {
     const messages = conversation(6);
-    const boundaries = effectiveBoundaryMessageIds(
+    const blocks = listTopicBlocks(
       messages,
       [
         marker("t1", "older topic", "gone-from-context"),
         marker("t2", "topic A", "a6"),
       ],
-      2,
+      { rewindTurns: 2 },
     );
 
-    expect(boundaries).toEqual(["u1", "u4"]);
+    expect(blocks.map((block) => block.boundaryMessageId)).toEqual([
+      "u1",
+      "u4",
+    ]);
+    expect(blocks[0]?.title).toBe("topic A");
+    expect(blocks[0]?.absorbedTitles).toEqual(["older topic"]);
   });
 
   test("two markers in one turn cannot pull the boundary backwards", () => {
     const messages = conversation(6);
-    const boundaries = effectiveBoundaryMessageIds(
+    const blocks = listTopicBlocks(
       messages,
       [marker("t1", "topic A", "a6"), marker("t2", "topic A again", "a6")],
-      2,
+      { rewindTurns: 2 },
     );
 
-    expect(boundaries).toEqual(["u4", "u4"]);
+    expect(blocks.map((block) => block.boundaryMessageId)).toEqual([
+      "u1",
+      "u4",
+    ]);
+    expect(blocks[0]?.absorbedTitles).toEqual(["topic A again"]);
   });
 });
 
@@ -594,43 +624,22 @@ describe("evaluateTopicMarkerGate", () => {
   });
 });
 
-describe("shouldNudgeTopicMarker", () => {
+describe("decideTopicNudge", () => {
   test("fires once the unmarked streak reaches the threshold", () => {
     expect(
-      shouldNudgeTopicMarker({
+      decideTopicNudge({
         turnsSinceLastMarker: 49,
         alreadySentForStreak: false,
       }),
-    ).toBe(false);
+    ).toMatchObject({ due: false, reason: "below_threshold" });
     expect(
-      shouldNudgeTopicMarker({
+      decideTopicNudge({
         turnsSinceLastMarker: 50,
         alreadySentForStreak: false,
       }),
-    ).toBe(true);
+    ).toMatchObject({ due: true, reason: "due" });
   });
 
-  test("never repeats within the same streak", () => {
-    expect(
-      shouldNudgeTopicMarker({
-        turnsSinceLastMarker: 500,
-        alreadySentForStreak: true,
-      }),
-    ).toBe(false);
-  });
-
-  test("zero disables the nudge", () => {
-    expect(
-      shouldNudgeTopicMarker({
-        turnsSinceLastMarker: 500,
-        nudgeTurns: 0,
-        alreadySentForStreak: false,
-      }),
-    ).toBe(false);
-  });
-});
-
-describe("decideTopicNudge", () => {
   test("reports why, so a stale flag stays distinguishable", () => {
     expect(
       decideTopicNudge({

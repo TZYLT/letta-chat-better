@@ -118,5 +118,37 @@ describe("consumeLocalTopicNudge", () => {
     expect(decision.due).toBe(false);
     expect(decision.reason).toBe("disabled");
     expect(fake.writes).toEqual([false]);
+    expect(fake.stored()).toEqual({});
+  });
+
+  test("disabling the nudge mid-streak keeps the one-shot flag (L-5)", () => {
+    // The stretch did not end just because the knob was turned off, so turning it
+    // back on inside the same stretch must not produce a second reminder.
+    const fake = fakePorts({ turns: 80, nudgeTurns: 0, sent: true });
+
+    const decision = consumeLocalTopicNudge(fake.ports, {
+      conversationId: "conv-1",
+      agentId: "agent-1",
+      nudgeTurns: 0,
+    });
+
+    expect(decision.reason).toBe("disabled");
+    expect(fake.writes).toEqual([true]);
+    expect(fake.stored()).toEqual({ nudge_sent_for_streak: true });
+  });
+
+  test("a trim that leaves the stretch long still re-arms the nudge (M-4)", () => {
+    // The trim cleared the flag through the store; the next turn is over the
+    // threshold again, so a fresh reminder is due rather than `already_sent`.
+    const fake = fakePorts({ turns: 80, nudgeTurns: 50 });
+
+    const decision = consumeLocalTopicNudge(fake.ports, {
+      conversationId: "conv-1",
+      agentId: "agent-1",
+      nudgeTurns: 50,
+    });
+
+    expect(decision.reason).toBe("due");
+    expect(fake.writes).toEqual([true]);
   });
 });

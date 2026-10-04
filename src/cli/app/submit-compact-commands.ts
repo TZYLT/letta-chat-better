@@ -19,7 +19,11 @@ import { isActiveMemfsEnabled } from "@/agent/memory-runtime";
 import { getBackend } from "@/backend";
 import { contextPressureLevel } from "@/backend/dev/provider-turn-executor";
 import { LocalBackend } from "@/backend/local/local-backend";
-import type { LocalTopicTrimPick } from "@/backend/local/local-topic-trim";
+import type {
+  LocalTopicTrimOutcome,
+  LocalTopicTrimPick,
+} from "@/backend/local/local-topic-trim";
+import { hasSelectableTopicBlocks } from "@/backend/local/local-topic-trim";
 import type { ActiveOverlay, AppCommandRunner } from "@/cli/app/types";
 import type { CompactModeArgument } from "@/cli/helpers/compact-command";
 import {
@@ -28,11 +32,14 @@ import {
   formatCompactPlanningFailure,
   formatContextPressureHint,
   formatNoMarkerCompactHint,
+  formatSingleBlockCompactHint,
   formatTopicTrimReceipt,
   parseCompactCommandArgs,
 } from "@/cli/helpers/compact-command";
 import type { ContextTracker } from "@/cli/helpers/context-tracker";
+import { formatErrorDetails } from "@/cli/helpers/error-formatter";
 import { getReflectionSettings } from "@/cli/helpers/memory-reminder";
+import { runPostCompactionTail } from "@/cli/helpers/post-compaction";
 import {
   buildReflectionArenaChoiceQuestions,
   REFLECTION_ARENA_MODEL_A_DEFAULT,
@@ -52,11 +59,8 @@ import {
 import { DEFAULT_SUMMARIZATION_MODEL } from "@/constants";
 import { experimentManager } from "@/experiments/manager";
 import { runPreCompactHooks } from "@/hooks";
-import {
-  markPostCompactionContextRemindersPending,
-  type SharedReminderState,
-} from "@/reminders/state";
-import { shouldIncludeTopicMarking } from "@/settings-tool-gates";
+import type { SharedReminderState } from "@/reminders/state";
+import { shouldAdvertiseTopicMarking } from "@/settings-tool-gates";
 import { readTopicSettings } from "@/topic-settings";
 import { debugLog } from "@/utils/debug";
 
@@ -68,6 +72,12 @@ export interface CompactCommandContext {
   appendTaskNotificationEvents: (summaries: string[]) => boolean;
   commandRunner: AppCommandRunner;
   conversationIdRef: MutableRefObject<string>;
+  /**
+   * The context-pressure baseline. A trim changes the context without a provider
+   * round trip, so the tracker has to be re-based here or the next send would be
+   * judged on the tokens that were just removed (D-112).
+   */
+  contextTrackerRef: MutableRefObject<ContextTracker>;
   generateConversationDescription: (options?: {
     force?: boolean;
   }) => Promise<void>;
@@ -83,11 +93,10 @@ export interface CompactCommandContext {
 }
 
 /**
- * What the pre-send pressure check additionally needs: the turn's own usage
- * estimate and the window it is measured against (D-112).
+ * What the pre-send pressure check additionally needs: the window the turn's own
+ * usage estimate is measured against (D-112).
  */
 export interface SendPressureContext extends CompactCommandContext {
-  contextTrackerRef: MutableRefObject<ContextTracker>;
   effectiveContextWindowSize: number | undefined;
 }
 
@@ -100,9 +109,11 @@ export interface SendPressureContext extends CompactCommandContext {
  *   when there are blocks to choose between, and sends the turn afterwards —
  *   whether the user trims, presses Esc, or the trim refuses. A message the user
  *   typed must never be silently dropped.
- * - With nothing marked there is nothing to pick, so it only warns: trimming
- *   without the user choosing would be the automatic rewrite this feature exists
- *   to remove (I1).
+ * - With no block to choose between — nothing marked yet, or every marker
+ *   anchored at or before the start of the context — there is nothing to pick, so
+ *   it only warns: trimming without the user choosing would be the automatic
+ *   rewrite this feature exists to remove (I1). Bare `/compact` still trims by the
+ *   ratio, because that is the user asking for it.
  *
  * Returns `true` when the send was deferred to the picker (the caller must not
  * send); `false` means the caller sends as usual.
@@ -130,12 +141,16 @@ export async function offerTrimBeforeSend(
   }
 
   const list = backend.listTopics(conversationId, ctx.agentId);
-  const hasBlocks = list.markers.length > 0 && list.blocks.length > 1;
+  // Block 1 keeps everything, so "markers exist" is not the question: markers
+  // whose boundary clamps onto the start of the context leave one block and the
+  // picker would have nothing selectable in it (H-2).
+  const hasBlocks = hasSelectableTopicBlocks(list);
   const hint = formatContextPressureHint({
     level,
     contextTokens,
     contextWindow: contextWindow ?? 0,
     hasBlocks,
+    hasMarkers: list.markers.length > 0,
   });
   if (level === "soft") {
     // One line per crossing, not one per message.
@@ -294,7 +309,7 @@ async function compactByMode(
       );
       return { submitted: true };
     }
-    cmd.fail(`Failed: ${formatCompactPlanningFailure(error)}`);
+    cmd.fail(`Failed: ${formatErrorDetails(error, ctx.agentId)}`);
   } finally {
     ctx.setCommandRunning(false);
   }
@@ -305,17 +320,23 @@ async function compactByMode(
  * Everything a succeeded compaction owes the rest of the runtime: the reminder
  * that the context changed, the reflection trigger, and a fresh conversation
  * description. All best-effort —a failure here must not undo the trim.
+ *
+ * The ordering and the failure policy live in `runPostCompactionTail` because the
+ * listener runs the same tail (L-18).
  */
 async function afterCompaction(
   ctx: CompactCommandContext,
   conversationId: string,
 ): Promise<void> {
-  markPostCompactionContextRemindersPending(ctx.sharedReminderStateRef.current);
-  try {
-    if (
-      getReflectionSettings(ctx.agentId).trigger === "compaction-event" &&
-      isActiveMemfsEnabled(ctx.agentId)
-    ) {
+  runPostCompactionTail({
+    reminderState: ctx.sharedReminderStateRef.current,
+    reflect: () => {
+      if (
+        getReflectionSettings(ctx.agentId).trigger !== "compaction-event" ||
+        !isActiveMemfsEnabled(ctx.agentId)
+      ) {
+        return;
+      }
       const feedbackContext = {
         parentAgentName: ctx.agentName,
         parentAgentDescription: ctx.agentDescription,
@@ -347,31 +368,44 @@ async function afterCompaction(
               : String(reflectionError),
           );
         });
-      } else {
-        void launchReflectionSubagent({
-          agentId: ctx.agentId,
-          conversationId,
-          memfsEnabled: isActiveMemfsEnabled(ctx.agentId),
-          triggerSource: "compaction-event",
-          description: AUTO_REFLECTION_DESCRIPTION,
-          completionConversationId: () => ctx.conversationIdRef.current,
-          onCompletionMessage: (completionMessage) => {
-            ctx.appendTaskNotificationEvents([completionMessage]);
-          },
-          feedbackContext,
-        });
+        return;
       }
-    }
-  } catch (reflectionError) {
-    debugLog(
-      "memory",
-      "Skipping post-compaction reflection:",
-      reflectionError instanceof Error
-        ? reflectionError.message
-        : String(reflectionError),
-    );
-  }
-  void ctx.generateConversationDescription({ force: true });
+      void launchReflectionSubagent({
+        agentId: ctx.agentId,
+        conversationId,
+        memfsEnabled: isActiveMemfsEnabled(ctx.agentId),
+        triggerSource: "compaction-event",
+        description: AUTO_REFLECTION_DESCRIPTION,
+        completionConversationId: () => ctx.conversationIdRef.current,
+        onCompletionMessage: (completionMessage) => {
+          ctx.appendTaskNotificationEvents([completionMessage]);
+        },
+        feedbackContext,
+      });
+    },
+    regenerateDescription: () => {
+      void ctx.generateConversationDescription({ force: true });
+    },
+  });
+}
+
+/**
+ * D-112: a trim changes the context without a provider round trip, so the
+ * pressure baseline is re-based on what was actually kept. Otherwise the very
+ * next send is judged on the tokens that were just removed and can open the
+ * picker again, or print a hard hint, for a context that no longer needs one.
+ */
+function syncContextTrackerAfterTrim(
+  ctx: CompactCommandContext,
+  outcome: LocalTopicTrimOutcome,
+): void {
+  const after = outcome.stats.context_tokens_after;
+  if (typeof after !== "number") return;
+  const tracker = ctx.contextTrackerRef.current;
+  tracker.lastContextTokens = after;
+  // A fresh baseline deserves a fresh notice: if the kept region is still over
+  // the threshold, that is a new crossing the user has not been told about.
+  tracker.lastPressureNotice = undefined;
 }
 
 /**
@@ -413,6 +447,7 @@ async function runTrim(
       cmd.finish(receipt, true);
       return { submitted: true };
     }
+    syncContextTrackerAfterTrim(ctx, outcome);
     cmd.finish(
       options.extraNote ? `${receipt}\n\n${options.extraNote}` : receipt,
       true,
@@ -448,10 +483,11 @@ async function compactLocal(
 
   if (request.kind === "block") {
     if (request.index > list.blocks.length) {
+      const count = `${list.blocks.length} block${list.blocks.length === 1 ? "" : "s"}`;
       return fail(
         ctx,
         input,
-        `There is no topic block ${request.index}. Run /topics to list the blocks.`,
+        `There is no topic block ${request.index}: this context has ${count}. Run /topics to list them, or /compact with no number to trim by the retention ratio.`,
       );
     }
     return runTrim(
@@ -462,17 +498,34 @@ async function compactLocal(
     );
   }
 
-  if (list.markers.length > 0) {
+  const topicMarkingEnabled = shouldAdvertiseTopicMarking(
+    ctx.agentId,
+    conversationId,
+  );
+  if (hasSelectableTopicBlocks(list)) {
     // Hand the picker its rows and keep the trim in this environment: only the
     // submit handler knows how to finish the compaction bookkeeping. Confirming
     // the row the cursor starts on is the "empty enter" case: the cut is still
     // topic-aligned, but the ratio chose it, and the receipt says so (V9).
+    //
+    // The command line opens before the rows do, so cancelling leaves a trace
+    // (L-1): without it the transcript showed nothing at all for the invocation.
     const suggestion = list.suggestedBlockIndex ?? 1;
+    const cmd = ctx.commandRunner.start(
+      input,
+      "Choose the topic block to keep...",
+    );
     setTopicTrimRequest({
       blocks: list.blocks,
       suggestionIndex: suggestion,
       onPick: (blockIndex) => {
         ctx.setActiveOverlay(null);
+        cmd.finish(
+          blockIndex === suggestion
+            ? `Keeping block ${blockIndex} (the ratio's suggestion).`
+            : `Keeping block ${blockIndex}.`,
+          true,
+        );
         void runTrim(
           ctx,
           `/compact ${blockIndex}`,
@@ -481,15 +534,28 @@ async function compactLocal(
           { confirmedSuggestion: blockIndex === suggestion },
         );
       },
+      onCancel: () => {
+        cmd.finish("Cancelled: the context is unchanged.", true);
+      },
     });
     ctx.setActiveOverlay("compaction");
     return { submitted: true };
   }
 
-  // D-119: no markers means one block, so the ratio decides instead of asking.
+  // D-119 + H-2: fewer than two blocks means there is nothing to choose between —
+  // either nothing is marked yet, or every marker's boundary clamps onto the start
+  // of the context (`/topic` in the first turns, or every anchor trimmed away).
+  // The ratio decides, and the note says which of the two it was.
   clearTopicTrimRequest();
+  const extraNote =
+    list.markers.length === 0
+      ? formatNoMarkerCompactHint(topicMarkingEnabled)
+      : formatSingleBlockCompactHint({
+          topicMarkingEnabled,
+          liveMarkerAnchor: list.markers.some((view) => view.anchorInContext),
+        });
   return runTrim(ctx, input, { kind: "ratio_suggestion" }, backend, {
-    extraNote: formatNoMarkerCompactHint(shouldIncludeTopicMarking()),
+    extraNote,
   });
 }
 

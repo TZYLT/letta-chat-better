@@ -2,10 +2,10 @@
  * `TopicMark` — the agent-side half of the topic-marker channel.
  *
  * The tool is deliberately thin: it validates the arguments, resolves the
- * conversation, applies the frequency gate, and hands the write to
- * `LocalBackend.markTopic`. The two decisions worth testing (what counts as a
- * valid marker, and how the receipt reads) are pure functions at the bottom of
- * this file.
+ * conversation, refuses a marker that would duplicate the previous anchor, applies
+ * the frequency gate, and hands the write to `LocalBackend.markTopic`. The two
+ * decisions worth testing (what counts as a valid marker, and how the receipt
+ * reads) are pure functions at the bottom of this file.
  *
  * Markers are metadata. Nothing here touches the context or the frozen prefix,
  * and a refused mark writes nothing at all — the gate reads
@@ -145,12 +145,20 @@ export async function topic_mark(
   } catch {
     return {
       content:
-        "A topic marker needs the calling agent and conversation; neither is available in this execution context.",
+        "A topic marker needs the calling agent, which is not available in this execution context. Nothing was written.",
       status: "error",
     };
   }
-  const conversationId =
-    deps.conversationId ?? getConversationId() ?? "default";
+  // Falling back to "default" would record the marker in a conversation that is
+  // not the one being served, so an unknown conversation refuses instead (L-17).
+  const conversationId = deps.conversationId ?? getConversationId();
+  if (!conversationId) {
+    return {
+      content:
+        "A topic marker needs the conversation it belongs to, and this execution context has none. Nothing was written.",
+      status: "error",
+    };
+  }
 
   const state = backend.topicMarkerState(conversationId, agentId);
   if (state.contextMessageCount === 0) {
@@ -161,8 +169,22 @@ export async function topic_mark(
     };
   }
 
-  // A previous marker in the same turn leaves zero user turns between them, so
-  // "one marker per turn" needs no separate counter: the gate rejects it.
+  // A marker anchored to the same message as the previous one describes the same
+  // point in the conversation and would add nothing, so it is refused whatever
+  // the spacing knobs say: `topic_marker_reject_turns = 0` disables the *timing*
+  // gate, never this rule (L-6).
+  const lastMarker = state.markers.at(-1);
+  if (
+    lastMarker?.anchorMessageId &&
+    lastMarker.anchorMessageId === state.latestMessageId
+  ) {
+    return {
+      content:
+        "Topic marker rejected: the previous marker is already anchored to this exact point in the conversation, with no new message in between. Nothing was written; mark the next topic once the conversation has moved on.",
+      status: "error",
+    };
+  }
+
   const settings = readTopicSettings();
   const verdict = evaluateTopicMarkerGate({
     turnsSincePrevious: state.turnsSinceLastMarker,
