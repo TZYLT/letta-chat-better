@@ -202,6 +202,69 @@ export class LocalContextRewrites {
   }
 
   /**
+   * Copy a parent's topic markers into a fork.
+   *
+   * Messages are cloned with fresh ids, so an inherited marker's anchor has to be
+   * remapped onto the child's copy of that message; a marker whose anchor fell
+   * outside the forked prefix (a cutoff fork) is dropped rather than left
+   * dangling. The child's rows get their own entry chain, so later marking in
+   * either conversation stays independent (requirement §6, "会话 fork").
+   *
+   * Returns how many markers were copied, for tests and telemetry.
+   */
+  copyTopicMarkersForFork(input: {
+    sourceConversationId: string;
+    sourceAgentId: string;
+    targetConversationId: string;
+    targetAgentId: string;
+    /** Parent message id -> the child message id holding the same message. */
+    anchorIds: ReadonlyMap<string, string>;
+  }): number {
+    const source = this.ports.ensureConversation(
+      input.sourceConversationId,
+      input.sourceAgentId,
+    );
+    const sourcePath = this.ports.conversationMessagesPath(
+      this.ports.conversationKey(source.id, input.sourceAgentId),
+    );
+    if (!sourcePath) return 0;
+    const entries = readLocalTranscriptTopicEntries(sourcePath);
+    if (entries.length === 0) return 0;
+
+    const target = this.ports.ensureConversation(
+      input.targetConversationId,
+      input.targetAgentId,
+    );
+    const key = this.ports.conversationKey(target.id, input.targetAgentId);
+    const messagesPath = this.ports.conversationMessagesPath(key);
+    if (!messagesPath) return 0;
+
+    let copied = 0;
+    for (const entry of entries) {
+      const anchor =
+        entry.anchorMessageId === null
+          ? null
+          : (input.anchorIds.get(entry.anchorMessageId) ?? null);
+      // The anchor's message is not part of the fork, so the marker describes
+      // history the child does not have.
+      if (entry.anchorMessageId !== null && anchor === null) continue;
+      this.appendTopicEntry(target, key, messagesPath, {
+        type: "topic",
+        id: this.ports.nextSessionEntryId(key),
+        parentId: this.ports.lastSessionEntryId(key),
+        timestamp: entry.timestamp,
+        title: entry.title,
+        ...(entry.summary === undefined ? {} : { summary: entry.summary }),
+        createdBy: entry.createdBy,
+        anchorMessageId: anchor,
+        turnsSincePrevious: entry.turnsSincePrevious,
+      });
+      copied += 1;
+    }
+    return copied;
+  }
+
+  /**
    * Replace a conversation's in-context list with `[summary, ...remaining]` and
    * append the matching `compaction` entry to the transcript.
    *

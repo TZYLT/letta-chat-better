@@ -314,6 +314,41 @@ export class LocalBackend extends HeadlessBackend {
     return agent;
   }
 
+  /**
+   * Fork a conversation, carrying its topic markers across.
+   *
+   * The store clones messages with fresh ids, so a marker's anchor has to be
+   * remapped onto the child's copy. Both sides' in-context lists are read before
+   * and after the fork: the child is a prefix of the parent (a cutoff fork keeps
+   * fewer messages), which is exactly the positional mapping the anchors need.
+   */
+  override async forkConversation(
+    ...args: Parameters<HeadlessBackend["forkConversation"]>
+  ): ReturnType<HeadlessBackend["forkConversation"]> {
+    const sourceMessages = this.store.listLocalMessages(
+      args[0],
+      args[1]?.agentId,
+    );
+    const forked = await super.forkConversation(...args);
+    const forkedMessages = this.store.listLocalMessages(forked.id);
+    const anchorIds = new Map(
+      forkedMessages.map((message, index) => [
+        sourceMessages[index]?.id ?? "",
+        message.id,
+      ]),
+    );
+    this.store.contextRewrites.copyTopicMarkersForFork({
+      sourceConversationId: args[0],
+      sourceAgentId:
+        args[1]?.agentId ?? this.store.resolveAgentIdForConversation(args[0]),
+      targetConversationId: forked.id,
+      targetAgentId:
+        args[1]?.agentId ?? this.store.resolveAgentIdForConversation(forked.id),
+      anchorIds,
+    });
+    return forked;
+  }
+
   override async updateAgent(
     ...args: Parameters<HeadlessBackend["updateAgent"]>
   ) {

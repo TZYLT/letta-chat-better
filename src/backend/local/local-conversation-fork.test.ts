@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type { ConversationMessageCreateBody } from "@/backend";
+import { LocalBackend } from "@/backend/local/local-backend";
 import { LocalStore } from "@/backend/local/local-store";
 import type { LocalCompiledSystemPrompt } from "@/backend/local/system-prompt-compilation";
 
@@ -42,6 +46,70 @@ describe("LocalBackend conversation forks", () => {
     expect(store.getCompiledSystemPrompt(forked.id, agentId)?.content).toBe(
       "compiled system",
     );
+  });
+
+  test("inherits the parent's topic markers and keeps writing its own (G12)", async () => {
+    // Markers are transcript rows, so this needs a real storage directory and the
+    // backend seam that remaps their anchors onto the fork's cloned messages.
+    const storageDir = await mkdtemp(join(tmpdir(), "local-fork-topics-"));
+    try {
+      const agentId = "agent-local-fork-topics";
+      const store = new LocalStore(agentId, { storageDir });
+      const source = store.createConversation({ agent_id: agentId } as never);
+      store.appendTurnInput(source.id, {
+        agent_id: agentId,
+        messages: [
+          { role: "user", content: "first topic" },
+          { role: "user", content: "second topic" },
+        ],
+      } as unknown as ConversationMessageCreateBody);
+      const sourceMessages = store.listLocalMessages(source.id, agentId);
+      const firstAnchor = sourceMessages[0]?.id;
+      if (!firstAnchor) throw new Error("Expected a source message id");
+      store.contextRewrites.appendTopicMarker({
+        conversationId: source.id,
+        agentId,
+        title: "Parent topic",
+        summary: "what the parent discussed",
+        createdBy: "agent",
+      });
+
+      // Fork through the backend, which is the only seam that remaps anchors.
+      const backend = new LocalBackend({
+        storageDir,
+        memfsEnabled: false,
+      });
+      const forked = await backend.forkConversation(source.id, {});
+
+      const inherited = backend.listTopicMarkers(forked.id, agentId);
+      expect(inherited.map((marker) => marker.title)).toEqual(["Parent topic"]);
+      // The anchor points at the fork's own copy, not the parent's message.
+      const forkedMessages = (
+        backend as unknown as { store: LocalStore }
+      ).store.listLocalMessages(forked.id, agentId);
+      expect(forkedMessages.map((message) => message.id)).not.toContain(
+        firstAnchor,
+      );
+      expect(inherited[0]?.anchorMessageId).toBe(forkedMessages.at(-1)?.id);
+      expect(inherited[0]?.anchorMessageId).not.toBe(sourceMessages.at(-1)?.id);
+
+      // Later marking is independent in each conversation.
+      backend.markTopic({
+        conversationId: forked.id,
+        agentId,
+        title: "Child topic",
+        createdBy: "user",
+      });
+
+      expect(
+        backend.listTopicMarkers(forked.id, agentId).map((m) => m.title),
+      ).toEqual(["Parent topic", "Child topic"]);
+      expect(
+        backend.listTopicMarkers(source.id, agentId).map((m) => m.title),
+      ).toEqual(["Parent topic"]);
+    } finally {
+      await rm(storageDir, { recursive: true, force: true });
+    }
   });
 
   test("does not inherit the source snapshot into a different agent (R-06)", () => {
