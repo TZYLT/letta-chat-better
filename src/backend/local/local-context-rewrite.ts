@@ -18,7 +18,10 @@ import { cloneLocalMessage } from "./local-message-projection";
 import type { LocalTranscriptTopicEntry } from "./local-transcript";
 import { timestampFromIso } from "./local-transcript";
 import { readLocalTranscriptTopicEntries } from "./local-transcript-topics";
-import type { StoredConversation } from "./local-types";
+import type {
+  LocalConversationContextManagement,
+  StoredConversation,
+} from "./local-types";
 import {
   type LocalTopicMarker,
   userTurnsSinceLastTopicMarker,
@@ -114,6 +117,48 @@ export interface LocalContextRewritePorts {
 
 export class LocalContextRewrites {
   constructor(private readonly ports: LocalContextRewritePorts) {}
+
+  /**
+   * The conversation's small context-management state (§2.2). A damaged or
+   * unknown shape reads as "nothing recorded": the flag only ever gates a
+   * reminder, so refusing to guess is enough.
+   */
+  readContextManagement(
+    conversationId: string,
+    agentId: string,
+  ): LocalConversationContextManagement {
+    const conversation = this.ports.ensureConversation(conversationId, agentId);
+    return normalizeContextManagement(conversation.context_management);
+  }
+
+  /**
+   * Record whether the no-marker nudge has gone out for the current streak.
+   *
+   * This is the only conversation-level write in this module: it touches
+   * neither the context nor the transcript (`transcript: "skip"`), because the
+   * flag is bookkeeping, not conversation content. Writing the same value again
+   * is a no-op, so a reader can call it on every turn.
+   */
+  setTopicNudgeSent(
+    conversationId: string,
+    agentId: string,
+    sent: boolean,
+  ): void {
+    const conversation = this.ports.ensureConversation(conversationId, agentId);
+    const current = normalizeContextManagement(conversation.context_management);
+    if ((current.nudge_sent_for_streak === true) === sent) return;
+
+    if (sent) {
+      conversation.context_management = { nudge_sent_for_streak: true };
+    } else {
+      delete conversation.context_management;
+    }
+    const key = this.ports.conversationKey(conversation.id, agentId);
+    this.ports.saveConversation(key, conversation);
+    this.ports.persistConversation(conversation.id, agentId, {
+      transcript: "skip",
+    });
+  }
 
   /**
    * Every topic marker in the conversation transcript, oldest first.
@@ -351,4 +396,14 @@ export class LocalContextRewrites {
     appendFileSync(messagesPath, `${JSON.stringify(entry)}\n`);
     this.ports.recordSessionEntryId(key, entry.id);
   }
+}
+
+/** Keep only the fields this build understands; anything else is dropped. */
+function normalizeContextManagement(
+  value: LocalConversationContextManagement | undefined,
+): LocalConversationContextManagement {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return value.nudge_sent_for_streak === true
+    ? { nudge_sent_for_streak: true }
+    : {};
 }

@@ -1,4 +1,5 @@
 import type { ContextTracker } from "@/cli/helpers/context-tracker";
+import type { TopicNudgeNotice } from "@/cli/helpers/topic-nudge";
 import type { PermissionMode } from "@/permissions/mode";
 
 const MAX_PENDING_INTERACTION_REMINDERS = 25;
@@ -50,6 +51,12 @@ export interface SharedReminderState {
   hasNotifiedLowDiskSpace: boolean;
   /** When set, the next session-context reminder uses this reason for its intro text. */
   pendingSessionContextReason?: SessionContextReason;
+  /**
+   * A topic nudge delivered with this turn (feature ③, D-114). The engine sets
+   * it while building the agent-facing reminder; the TUI is the only channel
+   * that can show the user their half, and it clears the field once printed.
+   */
+  pendingTopicNudge: TopicNudgeNotice | null;
 }
 
 export function createSharedReminderState(): SharedReminderState {
@@ -71,6 +78,7 @@ export function createSharedReminderState(): SharedReminderState {
     pendingCommandIoReminders: [],
     pendingToolsetChangeReminders: [],
     hasNotifiedLowDiskSpace: false,
+    pendingTopicNudge: null,
   };
 }
 

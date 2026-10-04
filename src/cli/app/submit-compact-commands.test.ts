@@ -637,3 +637,54 @@ describe("the advisory tier follows topicSoftPressureRatio (D-115)", () => {
     expect(h.commands[0]?.output).toContain("about 75%");
   });
 });
+
+/**
+ * D-114: the user's half of the no-marker nudge. The reminder engine decides it
+ * while building this turn's message and parks the numbers on the shared
+ * reminder state; the send path prints the line once and clears it.
+ */
+describe("the topic nudge line (D-114)", () => {
+  test("prints the parked notice once and clears it", async () => {
+    const local = await localConversation(2);
+    const h = harness({
+      conversationId: local.conversationId,
+      agentId: local.agentId,
+      contextWindow: 10_000,
+      contextTokens: 100,
+    });
+    h.reminderState.pendingTopicNudge = {
+      turnsSinceLastMarker: 52,
+      nudgeTurns: 50,
+    };
+
+    expect(await offerTrimBeforeSend(h.ctx, async () => {})).toBe(false);
+    expect(h.commands).toHaveLength(1);
+    expect(h.commands[0]?.output).toContain(
+      "52 user turns without a topic marker",
+    );
+    expect(h.commands[0]?.output).toContain("/topic <title>");
+    expect(h.reminderState.pendingTopicNudge).toBeNull();
+
+    // Nothing parked: the next send says nothing at all.
+    await offerTrimBeforeSend(h.ctx, async () => {});
+    expect(h.commands).toHaveLength(1);
+  });
+
+  test("a cloud backend never prints it", async () => {
+    __testSetBackend(new FakeHeadlessBackend());
+    const h = harness({
+      conversationId: "default",
+      agentId: "agent-x",
+      contextWindow: 10_000,
+      contextTokens: 100,
+    });
+    h.reminderState.pendingTopicNudge = {
+      turnsSinceLastMarker: 52,
+      nudgeTurns: 50,
+    };
+
+    expect(await offerTrimBeforeSend(h.ctx, async () => {})).toBe(false);
+    expect(h.commands).toEqual([]);
+    expect(h.reminderState.pendingTopicNudge).not.toBeNull();
+  });
+});

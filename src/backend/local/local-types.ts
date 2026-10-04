@@ -40,4 +40,16 @@ export type StoredConversation = Conversation & {
   name?: string;
   /** Internal marker; public projections expose this ownership as null. */
   agent_free?: boolean;
+  /**
+   * Conversation-level small state for feature ③ (§2.2). Only the one-shot
+   * nudge flag lives here: everything else about the topic channel is derived
+   * from the messages and the transcript markers, so there is no second source
+   * of truth to keep in sync.
+   */
+  context_management?: LocalConversationContextManagement;
 };
+
+export interface LocalConversationContextManagement {
+  /** True once the no-marker nudge went out for the current streak. */
+  nudge_sent_for_streak?: boolean;
+}

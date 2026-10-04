@@ -44,6 +44,7 @@ import {
   AUTO_REFLECTION_DESCRIPTION,
   launchReflectionSubagent,
 } from "@/cli/helpers/reflection-launcher";
+import { formatTopicNudgeHint } from "@/cli/helpers/topic-nudge";
 import {
   clearTopicTrimRequest,
   setTopicTrimRequest,
@@ -113,6 +114,7 @@ export async function offerTrimBeforeSend(
   const backend = getBackend();
   // The cloud backend owns its own context management: no picker, no hints.
   if (!(backend instanceof LocalBackend)) return false;
+  reportPendingTopicNudge(ctx);
   const conversationId = ctx.conversationIdRef.current;
   const contextWindow = ctx.effectiveContextWindowSize;
   const contextTokens = ctx.contextTrackerRef.current.lastContextTokens;
@@ -182,6 +184,22 @@ export async function offerTrimBeforeSend(
 function reportHint(ctx: CompactCommandContext, hint: string): void {
   const cmd = ctx.commandRunner.start("/compact", hint);
   cmd.finish(hint, true);
+}
+
+/**
+ * The user's half of the one-shot topic nudge (D-114).
+ *
+ * The reminder engine decides it and parks the numbers on the shared reminder
+ * state while the turn's message is being built; the TUI is the only channel
+ * that can show a line to the user, so it prints the notice here and clears it.
+ * Running on every send is deliberate: whoever gets there first prints exactly
+ * once, and the engine is what guarantees the nudge itself is one-shot.
+ */
+export function reportPendingTopicNudge(ctx: CompactCommandContext): void {
+  const notice = ctx.sharedReminderStateRef.current.pendingTopicNudge;
+  if (!notice) return;
+  ctx.sharedReminderStateRef.current.pendingTopicNudge = null;
+  reportHint(ctx, formatTopicNudgeHint(notice));
 }
 
 /**

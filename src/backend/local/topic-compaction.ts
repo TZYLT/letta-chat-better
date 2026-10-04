@@ -523,9 +523,49 @@ export function shouldNudgeTopicMarker(input: {
   nudgeTurns?: number;
   alreadySentForStreak: boolean;
 }): boolean {
+  return decideTopicNudge(input).due;
+}
+
+export type TopicNudgeReason =
+  | "due"
+  | "disabled"
+  | "below_threshold"
+  | "already_sent";
+
+export interface TopicNudgeDecision {
+  due: boolean;
+  /** Why — structured, so a receipt or a log never has to guess. */
+  reason: TopicNudgeReason;
+  turnsSinceLastMarker: number;
+  nudgeTurns: number;
+}
+
+/**
+ * The same decision as `shouldNudgeTopicMarker`, with the reason kept.
+ *
+ * `nudgeTurns = 0` disables the nudge (D-115). The threshold is compared
+ * *before* the flag so a stale flag stays distinguishable: a flag that is set
+ * while the stretch is below the threshold means the stretch it belonged to
+ * ended (a new marker, or a trim), and the caller clears it. Reporting that as
+ * "already_sent" would hide the reset.
+ */
+export function decideTopicNudge(input: {
+  turnsSinceLastMarker: number;
+  nudgeTurns?: number;
+  alreadySentForStreak: boolean;
+}): TopicNudgeDecision {
   const nudgeTurns = input.nudgeTurns ?? DEFAULT_TOPIC_NUDGE_TURNS;
-  if (nudgeTurns <= 0 || input.alreadySentForStreak) return false;
-  return input.turnsSinceLastMarker >= nudgeTurns;
+  const turnsSinceLastMarker = Number.isFinite(input.turnsSinceLastMarker)
+    ? Math.max(0, Math.trunc(input.turnsSinceLastMarker))
+    : 0;
+  const base = { turnsSinceLastMarker, nudgeTurns };
+  if (nudgeTurns <= 0) return { ...base, due: false, reason: "disabled" };
+  if (turnsSinceLastMarker < nudgeTurns) {
+    return { ...base, due: false, reason: "below_threshold" };
+  }
+  return input.alreadySentForStreak
+    ? { ...base, due: false, reason: "already_sent" }
+    : { ...base, due: true, reason: "due" };
 }
 
 /**

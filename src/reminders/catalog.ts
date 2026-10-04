@@ -15,7 +15,8 @@ export type SharedReminderId =
   | "memory-git-sync"
   | "command-io"
   | "toolset-change"
-  | "disk-space";
+  | "disk-space"
+  | "topic-nudge";
 
 export interface SharedReminderDefinition {
   id: SharedReminderId;
@@ -103,6 +104,16 @@ export const SHARED_REMINDER_CATALOG: ReadonlyArray<SharedReminderDefinition> =
     {
       id: "disk-space",
       description: "Low disk space warning in managed Cloud sandboxes",
+      modes: [
+        "interactive",
+        "headless-one-shot",
+        "headless-bidirectional",
+        "listen",
+      ],
+    },
+    {
+      id: "topic-nudge",
+      description: "One-shot reminder to mark a topic boundary (local backend)",
       modes: [
         "interactive",
         "headless-one-shot",

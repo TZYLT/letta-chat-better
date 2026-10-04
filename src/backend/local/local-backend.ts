@@ -62,6 +62,10 @@ import type {
   StoredMessage,
 } from "./local-store";
 import {
+  consumeLocalTopicNudge,
+  localTopicNudgePorts,
+} from "./local-topic-nudge";
+import {
   type LocalTopicList,
   type LocalTopicTrimOutcome,
   type LocalTopicTrimPick,
@@ -89,7 +93,10 @@ import {
   type LocalFreezeReason,
 } from "./system-prompt-compilation";
 import type { LocalTopicMarker } from "./topic-compaction";
-import { userTurnsSinceLastTopicMarker } from "./topic-compaction";
+import {
+  type TopicNudgeDecision,
+  userTurnsSinceLastTopicMarker,
+} from "./topic-compaction";
 
 export interface LocalBackendOptions {
   storageDir: string;
@@ -547,6 +554,22 @@ export class LocalBackend extends HeadlessBackend {
       turnsSinceLastMarker: userTurnsSinceLastTopicMarker(messages, markers),
       contextMessageCount: messages.length,
     };
+  }
+
+  /**
+   * Local-only: decide the one-shot no-marker nudge (D-114) and settle its flag
+   * in the same call. Read the decision's `reason` for why it did not fire.
+   */
+  consumeTopicNudge(
+    conversationId: string,
+    agentId?: string,
+  ): TopicNudgeDecision {
+    return consumeLocalTopicNudge(localTopicNudgePorts(this.store), {
+      conversationId,
+      agentId:
+        agentId ?? this.store.resolveAgentIdForConversation(conversationId),
+      nudgeTurns: readTopicSettings().nudgeTurns,
+    });
   }
 
   /**

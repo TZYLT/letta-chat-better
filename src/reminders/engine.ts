@@ -6,10 +6,12 @@ import {
   buildSessionContext,
   type SessionContextSource,
 } from "@/cli/helpers/session-context";
+import { formatTopicNudgeReminder } from "@/cli/helpers/topic-nudge";
 import { SYSTEM_REMINDER_CLOSE, SYSTEM_REMINDER_OPEN } from "@/constants";
 import { experimentManager } from "@/experiments/manager";
 import { permissionMode } from "@/permissions/mode";
 import { settingsManager } from "@/settings-manager";
+import { shouldIncludeTopicMarking } from "@/settings-tool-gates";
 import { debugLog } from "@/utils/debug";
 import type { ShellContext } from "@/utils/shell-context";
 import {
@@ -504,6 +506,51 @@ async function buildDiskSpaceReminder(
   return result.text;
 }
 
+/**
+ * Feature ③ (D-114): the one-shot reminder that a stretch of conversation has
+ * gone unmarked.
+ *
+ * The decision, and the one-shot flag it settles, live in the local backend —
+ * it owns the messages, the transcript markers, and the conversation record. The
+ * cloud backend manages context server-side and never gets here, and the switch
+ * that turns off agent-side marking takes the reminder with it: nudging an agent
+ * to call a tool it cannot see would be noise.
+ *
+ * The user-visible half is printed by the TUI, which reads the notice left on
+ * the shared state.
+ */
+async function buildTopicNudgeReminder(
+  context: SharedReminderContext,
+): Promise<string | null> {
+  const conversationId = context.agent.conversationId;
+  if (!conversationId || !shouldIncludeTopicMarking()) return null;
+  try {
+    const [{ getBackend }, { LocalBackend }] = await Promise.all([
+      import("@/backend"),
+      import("@/backend/local/local-backend"),
+    ]);
+    const backend = getBackend();
+    if (!(backend instanceof LocalBackend)) return null;
+    const decision = backend.consumeTopicNudge(
+      conversationId,
+      context.agent.id,
+    );
+    if (!decision.due) return null;
+    const notice = {
+      turnsSinceLastMarker: decision.turnsSinceLastMarker,
+      nudgeTurns: decision.nudgeTurns,
+    };
+    context.state.pendingTopicNudge = notice;
+    return formatTopicNudgeReminder(notice);
+  } catch (error) {
+    debugLog(
+      "topic",
+      `Failed to build the topic nudge: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return null;
+  }
+}
+
 export const sharedReminderProviders: Record<
   SharedReminderId,
   SharedReminderProvider
@@ -518,6 +565,7 @@ export const sharedReminderProviders: Record<
   "command-io": buildCommandIoReminder,
   "toolset-change": buildToolsetChangeReminder,
   "disk-space": buildDiskSpaceReminder,
+  "topic-nudge": buildTopicNudgeReminder,
 };
 
 export function assertSharedReminderCoverage(): void {

@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import type { LocalMessage } from "@/backend/local/local-message";
 import {
   alignTrimBoundary,
+  decideTopicNudge,
   effectiveBoundaryMessageIds,
   evaluateTopicMarkerGate,
   isLocalUserTurnMessage,
@@ -626,6 +627,58 @@ describe("shouldNudgeTopicMarker", () => {
         alreadySentForStreak: false,
       }),
     ).toBe(false);
+  });
+});
+
+describe("decideTopicNudge", () => {
+  test("reports why, so a stale flag stays distinguishable", () => {
+    expect(
+      decideTopicNudge({
+        turnsSinceLastMarker: 12,
+        nudgeTurns: 50,
+        alreadySentForStreak: false,
+      }),
+    ).toMatchObject({ due: false, reason: "below_threshold" });
+    expect(
+      decideTopicNudge({
+        turnsSinceLastMarker: 50,
+        nudgeTurns: 50,
+        alreadySentForStreak: false,
+      }),
+    ).toMatchObject({ due: true, reason: "due" });
+    expect(
+      decideTopicNudge({
+        turnsSinceLastMarker: 60,
+        nudgeTurns: 50,
+        alreadySentForStreak: true,
+      }),
+    ).toMatchObject({ due: false, reason: "already_sent" });
+    // A flag left over from a finished streak reads as "below threshold", not
+    // as "already sent": the caller has to be able to tell them apart.
+    expect(
+      decideTopicNudge({
+        turnsSinceLastMarker: 2,
+        nudgeTurns: 50,
+        alreadySentForStreak: true,
+      }),
+    ).toMatchObject({ due: false, reason: "below_threshold" });
+    expect(
+      decideTopicNudge({
+        turnsSinceLastMarker: 60,
+        nudgeTurns: 0,
+        alreadySentForStreak: false,
+      }),
+    ).toMatchObject({ due: false, reason: "disabled", nudgeTurns: 0 });
+  });
+
+  test("normalizes a turn count a reader could not use", () => {
+    expect(
+      decideTopicNudge({
+        turnsSinceLastMarker: Number.NaN,
+        nudgeTurns: 3,
+        alreadySentForStreak: false,
+      }),
+    ).toMatchObject({ turnsSinceLastMarker: 0, reason: "below_threshold" });
   });
 });
 
