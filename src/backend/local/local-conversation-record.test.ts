@@ -1,11 +1,18 @@
 /**
- * Pre-flight pins for feature-③ (context management) state that must survive
- * `conversation.json` round-trips. The local conversation record is loaded with
- * a spread (`parsePersistedLocalConversation`) and persisted by serializing the
- * whole in-memory object, so a conversation-level field the store does not know
- * about — like the coming `context_management` nudge flag — must survive
- * load → mutate → persist. If that ever stops holding, the one-shot topic
- * marker nudge would re-fire after every restart.
+ * Pins for feature-③ (context management) state that must survive
+ * `conversation.json` round-trips.
+ *
+ * The local conversation record is loaded with a spread
+ * (`parsePersistedLocalConversation`) and persisted by serializing the whole
+ * in-memory object, which is what lets a conversation-level field this build does
+ * not know about — written by a newer build, or by a future feature — survive
+ * load → mutate → persist, and survive an `updateConversation` that touches an
+ * unrelated key. If that ever stops holding, the one-shot topic nudge would
+ * re-fire after every restart.
+ *
+ * `context_management` (the nudge flag, D-114) started as exactly such an unknown
+ * field and is now typed; the first two tests keep the forward-compatibility pins
+ * and the third drives the field through the write path that owns it.
  */
 import { afterEach, describe, expect, test } from "bun:test";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
@@ -142,5 +149,41 @@ describe("conversation record round-trip", () => {
     expect(after.context_management).toEqual({
       nudge_sent_for_streak: true,
     });
+  });
+});
+
+describe("the typed context_management field (D-114)", () => {
+  test("round-trips through the write path that sets and clears it", async () => {
+    const storageDir = await createStorageDirectory();
+    const store = new LocalStore(agentId, { storageDir });
+    sendUserMessage(store, "first");
+
+    expect(
+      store.contextRewrites.readContextManagement("default", agentId),
+    ).toEqual({});
+
+    store.contextRewrites.setTopicNudgeSent("default", agentId, true);
+    const written = JSON.parse(await readFile(recordPath(storageDir), "utf8"));
+    expect(written.context_management).toEqual({ nudge_sent_for_streak: true });
+
+    // The flag is durable: a restart reads the same answer, which is what stops
+    // the nudge from firing again after every reload.
+    const reopened = new LocalStore(agentId, { storageDir });
+    expect(
+      reopened.contextRewrites.readContextManagement("default", agentId),
+    ).toEqual({ nudge_sent_for_streak: true });
+    // Writing the same value again is a no-op, so a per-turn reader is free.
+    reopened.contextRewrites.setTopicNudgeSent("default", agentId, true);
+    expect(
+      JSON.parse(await readFile(recordPath(storageDir), "utf8"))
+        .context_management,
+    ).toEqual({ nudge_sent_for_streak: true });
+
+    // A finished stretch clears it, leaving no empty object behind.
+    reopened.contextRewrites.setTopicNudgeSent("default", agentId, false);
+    expect(
+      JSON.parse(await readFile(recordPath(storageDir), "utf8"))
+        .context_management,
+    ).toBeUndefined();
   });
 });
