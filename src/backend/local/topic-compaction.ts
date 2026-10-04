@@ -91,6 +91,13 @@ export type TrimBoundaryAdjustReason =
 export interface TrimPlan {
   /** Index of the first kept message; `0` means nothing is trimmed. */
   startIndex: number;
+  /**
+   * The boundary the request asked for, before the retention cap moved it. Equals
+   * `startIndex` unless `ratioCapApplied`; it is what a receipt reports as the
+   * *requested* retention so the cap override is visible in the numbers, not only
+   * in the `source` label.
+   */
+  requestedStartIndex: number;
   summarize: readonly LocalMessage[];
   /** What stays in context; a no-op plan keeps everything. */
   keep: readonly LocalMessage[];
@@ -400,6 +407,7 @@ function noopPlan(
 ): TrimPlan {
   return {
     startIndex: 0,
+    requestedStartIndex: 0,
     summarize: [],
     keep: [...messages],
     source,
@@ -452,6 +460,7 @@ export function resolveTrimPlan(input: {
   }
 
   let startIndex = aligned.startIndex;
+  const requestedStartIndex = aligned.startIndex;
   let ratioCapApplied = false;
   if (
     estimateLocalMessagesTokens(messages.slice(startIndex)) > retentionCapTokens
@@ -467,6 +476,7 @@ export function resolveTrimPlan(input: {
 
   return {
     startIndex,
+    requestedStartIndex,
     summarize: messages.slice(0, startIndex),
     keep: messages.slice(startIndex),
     source,

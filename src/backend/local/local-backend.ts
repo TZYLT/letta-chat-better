@@ -30,9 +30,6 @@ import { shouldIncludeTopicMarking } from "@/settings-tool-gates";
 import { isRecord } from "@/utils/type-guards";
 import {
   estimateLocalMessageTokens,
-  LOCAL_DEFAULT_COMPACTION_MODE,
-  LOCAL_DEFAULT_SLIDING_WINDOW_PERCENTAGE,
-  type LocalCompactionMode,
   type LocalCompactionStats,
   type LocalCompleteFunction,
   packageLocalSummaryMessage,
@@ -40,6 +37,13 @@ import {
   summarizeLocalMessagesSlidingWindow,
 } from "./compaction";
 import { initialMemoryFilesFromCreateBody } from "./initial-memory";
+import {
+  compactionSettingsRecord,
+  localCompactionSettingsForStorage,
+  type ResolvedLocalCompactionSettings,
+  resolveLocalCompactionSettings,
+  validateLocalCompactionSettingsRecord,
+} from "./local-compaction-settings";
 import type { LocalTopicMarkerAppendResult } from "./local-context-rewrite";
 import {
   createLocalExecutor,
@@ -56,6 +60,14 @@ import type {
   LocalStoreOptions,
   StoredMessage,
 } from "./local-store";
+import {
+  type LocalTopicList,
+  type LocalTopicTrimOutcome,
+  type LocalTopicTrimPick,
+  type LocalTopicTrimPorts,
+  listLocalTopics,
+  trimLocalConversationToTopic,
+} from "./local-topic-trim";
 import {
   getLocalBackendMemoryFilesystemRoot,
   isLocalBackendMemfsDisabledForProcess,
@@ -113,62 +125,6 @@ export interface LocalBackendModEventHooks {
   }) => void | Promise<void>;
   onLlmStart?: (info: LlmStartInfo) => void | Promise<void>;
   onLlmEnd?: (info: LlmEndInfo) => void | Promise<void>;
-}
-
-type LocalCompactionSettingsRecord = Record<string, unknown>;
-
-interface ResolvedLocalCompactionSettings {
-  mode: LocalCompactionMode;
-  prompt?: string | null;
-  clipChars?: number | null;
-  slidingWindowPercentage: number;
-}
-
-function compactionSettingsRecord(
-  value: unknown,
-): LocalCompactionSettingsRecord | null | undefined {
-  if (value === null) return null;
-  return isRecord(value) ? { ...value } : undefined;
-}
-
-function hasOwn(record: Record<string, unknown>, key: string): boolean {
-  return Object.hasOwn(record, key);
-}
-
-function localCompactionMode(value: unknown): LocalCompactionMode | undefined {
-  // The local backend converges on sliding-window compaction. `all` is gone
-  // (D-107): reading a stored `mode: "all"` now falls back to the default
-  // instead of resurrecting a mode the planner no longer implements, and
-  // writing one is rejected outright by validateLocalCompactionSettingsRecord.
-  return value === "sliding_window" ? value : undefined;
-}
-
-function validateLocalCompactionSettingsRecord(
-  settings: LocalCompactionSettingsRecord,
-): void {
-  if (settings.mode === undefined || settings.mode === null) return;
-  if (!localCompactionMode(settings.mode)) {
-    throw new Error(
-      `Local backend compaction supports only the "sliding_window" mode (received "${String(
-        settings.mode,
-      )}").`,
-    );
-  }
-}
-
-function localCompactionSettingsForStorage(
-  settings: LocalCompactionSettingsRecord | null | undefined,
-): LocalCompactionSettingsRecord | null | undefined {
-  if (settings === undefined || settings === null) return settings;
-
-  const hasLocalSetting =
-    hasOwn(settings, "mode") ||
-    hasOwn(settings, "prompt") ||
-    hasOwn(settings, "clip_chars") ||
-    hasOwn(settings, "sliding_window_percentage");
-  if (!hasLocalSetting) return undefined;
-
-  return { ...settings };
 }
 
 export class LocalBackend extends HeadlessBackend {
@@ -363,7 +319,7 @@ export class LocalBackend extends HeadlessBackend {
   ) {
     const [agentId, body] = args;
     const bodyRecord = body as Record<string, unknown>;
-    const settings = hasOwn(bodyRecord, "compaction_settings")
+    const settings = Object.hasOwn(bodyRecord, "compaction_settings")
       ? compactionSettingsRecord(bodyRecord.compaction_settings)
       : undefined;
     if (settings !== undefined && settings !== null) {
@@ -372,7 +328,7 @@ export class LocalBackend extends HeadlessBackend {
     const compactionSettingsForStorage =
       localCompactionSettingsForStorage(settings);
     let agent = await super.updateAgent(...args);
-    if (hasOwn(bodyRecord, "compaction_settings")) {
+    if (Object.hasOwn(bodyRecord, "compaction_settings")) {
       if (compactionSettingsForStorage !== undefined) {
         agent = this.store.setAgentCompactionSettings(
           agentId,
@@ -557,6 +513,72 @@ export class LocalBackend extends HeadlessBackend {
     };
   }
 
+  /**
+   * Local-only: the topic blocks of the current context, cut at each marker's
+   * *effective* boundary, plus every marker in the transcript for
+   * `/topics --all`. Read-only — a list never rewrites anything.
+   */
+  listTopics(
+    conversationId: string,
+    agentId?: string,
+    options: { rewindTurns?: number } = {},
+  ): LocalTopicList {
+    return listLocalTopics(this.topicTrimPorts(), {
+      conversationId,
+      ...(agentId === undefined ? {} : { agentId }),
+      ...options,
+    });
+  }
+
+  /**
+   * Local-only: summarize everything before a user-picked boundary and keep the
+   * rest. This is the *only* path that may trim context on a user's behalf; it
+   * returns `executed: false` (having written nothing) when the pick cannot be
+   * honored.
+   */
+  trimConversationToTopic(input: {
+    conversationId: string;
+    agentId?: string;
+    pick: LocalTopicTrimPick;
+    rewindTurns?: number;
+    trigger?: string;
+  }): Promise<LocalTopicTrimOutcome> {
+    return trimLocalConversationToTopic(this.topicTrimPorts(), input);
+  }
+
+  private topicTrimPorts(): LocalTopicTrimPorts {
+    return {
+      resolveAgentId: (conversationId) =>
+        this.store.resolveAgentIdForConversation(conversationId),
+      listMessages: (conversationId, agentId) =>
+        this.store.listLocalMessages(conversationId, agentId),
+      readMarkers: (conversationId, agentId) =>
+        this.store.contextRewrites.readTopicMarkers(conversationId, agentId),
+      contextWindow: (conversationId, agentId) =>
+        this.effectiveContextWindow(conversationId, agentId),
+      resolveSummarizerAgent: (conversationId, agentId) =>
+        this.frozenAgentForConversation(conversationId, agentId),
+      compactionSettings: (conversationId, agentId) =>
+        resolveLocalCompactionSettings(
+          this.frozenAgentForConversation(conversationId, agentId),
+        ),
+      rewrite: (input) => this.store.contextRewrites.rewriteInContext(input),
+      refreshFrozenPrefix: async (conversationId, agentId) => {
+        await this.compileAndMaybePersistSystemPrompt(conversationId, agentId, {
+          dryRun: false,
+          reason: "compaction",
+        });
+      },
+      onCompactionStart: (conversationId, agentId, trigger) =>
+        this.emitCompactStart(conversationId, agentId, trigger),
+      onCompactionEnd: (conversationId, agentId, trigger, stats) =>
+        this.emitCompactEnd(conversationId, agentId, trigger, stats),
+      complete: this.complete,
+      storageDir: this.storageDir,
+      modelsRuntime: this.piModelsRuntime,
+    };
+  }
+
   protected override async resolveSystemPromptForTurn(input: {
     conversationId: string;
     agentId: string;
@@ -707,61 +729,26 @@ export class LocalBackend extends HeadlessBackend {
     };
   }
 
-  private resolveCompactionSettings(
-    agent: LocalAgentRecord,
-    body?: ConversationMessageCompactBody,
-  ): ResolvedLocalCompactionSettings {
-    const bodyRecord = (body ?? {}) as Record<string, unknown>;
-    const requestSettings = compactionSettingsRecord(
-      bodyRecord.compaction_settings,
+  /**
+   * The agent a compaction should run as: the live record, overlaid with the
+   * model the frozen prefix pinned, so a pending `/model` switch only takes
+   * effect after the rewrite completes (requirement §6).
+   */
+  private frozenAgentForConversation(
+    conversationId: string,
+    agentId: string,
+  ): LocalAgentRecord {
+    const liveAgent = this.effectiveAgentForConversation(
+      conversationId,
+      agentId,
     );
-    if (requestSettings !== undefined && requestSettings !== null) {
-      validateLocalCompactionSettingsRecord(requestSettings);
-    }
-    const agentSettings = compactionSettingsRecord(agent.compaction_settings);
-    const baseSettings =
-      agentSettings && agentSettings !== null ? agentSettings : {};
-    const mergedSettings =
-      requestSettings && requestSettings !== null
-        ? { ...baseSettings, ...requestSettings }
-        : baseSettings;
-    const requestChangedMode =
-      requestSettings !== undefined &&
-      requestSettings !== null &&
-      hasOwn(requestSettings, "mode");
-    const requestChangedPrompt =
-      requestSettings !== undefined &&
-      requestSettings !== null &&
-      hasOwn(requestSettings, "prompt");
-    if (
-      requestChangedMode &&
-      !requestChangedPrompt &&
-      agentSettings &&
-      agentSettings !== null &&
-      agentSettings.mode !== requestSettings.mode
-    ) {
-      delete mergedSettings.prompt;
-    }
-
-    const mode =
-      localCompactionMode(mergedSettings.mode) ?? LOCAL_DEFAULT_COMPACTION_MODE;
-    return {
-      mode,
-      prompt:
-        typeof mergedSettings.prompt === "string" ||
-        mergedSettings.prompt === null
-          ? mergedSettings.prompt
-          : undefined,
-      clipChars:
-        typeof mergedSettings.clip_chars === "number" ||
-        mergedSettings.clip_chars === null
-          ? mergedSettings.clip_chars
-          : undefined,
-      slidingWindowPercentage:
-        typeof mergedSettings.sliding_window_percentage === "number"
-          ? mergedSettings.sliding_window_percentage
-          : LOCAL_DEFAULT_SLIDING_WINDOW_PERCENTAGE,
-    };
+    const frozenSnapshot = this.store.getCompiledSystemPrompt(
+      conversationId,
+      agentId,
+    );
+    return frozenSnapshot
+      ? applyFrozenAgentOverrides(liveAgent, frozenSnapshot)
+      : liveAgent;
   }
 
   private async compactLocalConversation(
@@ -797,20 +784,10 @@ export class LocalBackend extends HeadlessBackend {
     summary: string;
     stats: LocalCompactionStats;
   }> {
-    const liveAgent = this.effectiveAgentForConversation(
-      conversationId,
-      agentId,
-    );
     // The summary runs on the frozen model: a pending `/model` switch only
     // takes effect after compaction completes (requirement §6).
-    const frozenSnapshot = this.store.getCompiledSystemPrompt(
-      conversationId,
-      agentId,
-    );
-    const agent = frozenSnapshot
-      ? applyFrozenAgentOverrides(liveAgent, frozenSnapshot)
-      : liveAgent;
-    const settings = this.resolveCompactionSettings(agent, body);
+    const agent = this.frozenAgentForConversation(conversationId, agentId);
+    const settings = resolveLocalCompactionSettings(agent, body);
     const result = await this.compactLocalConversationSlidingWindow(
       conversationId,
       agentId,

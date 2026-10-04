@@ -83,6 +83,26 @@ export interface LocalCompactionStats {
   context_window?: number;
   messages_count_before?: number;
   messages_count_after?: number;
+  /**
+   * Audit trail for a user-picked topic trim, persisted on the `compaction`
+   * transcript row so a later reader can tell a topic cut from a plain
+   * sliding-window one, and can see how far the boundary was rewound and whether
+   * the retention cap overrode the picked topic.
+   */
+  trim?: LocalTrimStats;
+}
+
+export interface LocalTrimStats {
+  source: "topic_pick" | "ratio_suggestion" | "ratio_cap";
+  topic_title: string | null;
+  summarized_titles: string[];
+  /** User turns rewound from the marker anchor to the effective boundary. */
+  rewind_turns: number;
+  /** Retention the request asked for, before the ratio cap. */
+  requested_retention_tokens: number;
+  /** Retention actually written back. */
+  retention_tokens: number;
+  retention_cap_tokens: number | null;
 }
 
 export type LocalCompleteFunction = (
