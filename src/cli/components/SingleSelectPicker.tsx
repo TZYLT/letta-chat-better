@@ -5,7 +5,14 @@
 // Items are identified by key (string), not index.
 
 import { Box, type Key, useInput } from "ink";
-import { memo, type ReactNode, useCallback, useEffect, useState } from "react";
+import {
+  memo,
+  type ReactElement,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { colors } from "./colors";
 import { Text } from "./Text";
 
@@ -32,13 +39,15 @@ export interface SingleSelectPickerProps {
   /**
    * Override item rendering. When provided, the picker uses this
    * instead of its default label + description rendering.
-   * The picker still handles cursor state and input.
+   * The picker still handles cursor state and input. Return `null` for
+   * nothing — a raw string would be rendered outside `<Text>`, which Ink
+   * rejects, so the type does not allow one.
    */
   renderItem?: (
     item: SelectableItem,
     index: number,
     isSelected: boolean,
-  ) => ReactNode;
+  ) => ReactElement | null;
   /**
    * Called for keys the picker doesn't handle itself
    * (anything that isn't ↑↓/Enter/Escape/Ctrl-C).
@@ -47,9 +56,30 @@ export interface SingleSelectPickerProps {
   onUnhandledKey?: (input: string, key: Key) => void;
   /**
    * Override the footer content. When provided, replaces the default
-   * "Enter select · ↑↓ navigate · Esc cancel" hint.
+   * "Enter select · ↑↓/jk navigate · Esc cancel" hint. A plain string is
+   * wrapped in `<Text>` for you — Ink rejects a string child inside `<Box>`,
+   * so passing one raw would crash the whole overlay.
    */
   footer?: ReactNode;
+}
+
+/**
+ * Ink only accepts text that sits inside `<Text>`, but `footer` is a
+ * `ReactNode`: a caller handing the hint over as a plain string (TopicSelector
+ * does) would otherwise throw during commit. `null`/`undefined` means "use the
+ * default hint". The return type is what keeps this site safe — everything
+ * leaves here as an element.
+ */
+function resolvePickerFooter(footer: ReactNode): ReactElement {
+  if (footer == null) {
+    return <Text dimColor> Enter select · ↑↓/jk navigate · Esc cancel</Text>;
+  }
+  if (typeof footer === "string" || typeof footer === "number") {
+    return <Text dimColor>{footer}</Text>;
+  }
+  // Anything else (element, array of them, conditional `false`) renders as it
+  // would have; the fragment keeps the return type an element.
+  return <>{footer}</>;
 }
 
 export const SingleSelectPicker = memo(function SingleSelectPicker({
@@ -151,10 +181,8 @@ export const SingleSelectPicker = memo(function SingleSelectPicker({
       })}
 
       {/* Footer */}
-      <Box marginTop={footer ? 0 : 1}>
-        {footer ?? (
-          <Text dimColor> Enter select · ↑↓/jk navigate · Esc cancel</Text>
-        )}
+      <Box marginTop={footer == null ? 1 : 0}>
+        {resolvePickerFooter(footer)}
       </Box>
     </Box>
   );
