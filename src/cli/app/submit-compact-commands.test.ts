@@ -372,6 +372,41 @@ describe("handleCompactCommand", () => {
     expect(h.commands[0]?.output).toContain("Context trimmed.");
   });
 
+  test("confirming the suggested row is reported as the ratio's suggestion (V9)", async () => {
+    const local = await localConversation(8, { afterTurn: 4, title: "Alpha" });
+    const h = harness({
+      conversationId: local.conversationId,
+      agentId: local.agentId,
+    });
+    await handleCompactCommand("/compact", h.ctx);
+
+    const request = takeTopicTrimRequest();
+    expect(request?.suggestionIndex).toBe(2);
+    // Enter on the default cursor row: the block is the ratio's suggestion.
+    request?.onPick(request?.suggestionIndex ?? 0);
+    await Bun.sleep(0);
+
+    expect(h.commands[0]?.output).toContain(
+      "cut point:  ratio_cap (the suggested block kept too much",
+    );
+    expect(h.commands[0]?.output).not.toContain("the topic block you picked");
+  });
+
+  test("picking a row other than the suggestion stays an explicit topic pick", async () => {
+    const local = await localConversation(8, { afterTurn: 4, title: "Alpha" });
+    const h = harness({
+      conversationId: local.conversationId,
+      agentId: local.agentId,
+    });
+    await handleCompactCommand("/compact", h.ctx);
+
+    takeTopicTrimRequest()?.onPick(1);
+    await Bun.sleep(0);
+
+    expect(h.commands[0]?.output).toContain("Nothing to trim");
+    expect(h.commands[0]?.output).not.toContain("ratio_suggestion");
+  });
+
   test("a bare /compact with no markers trims by ratio and says so (D-119)", async () => {
     const local = await localConversation(8);
     const h = harness({

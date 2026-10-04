@@ -10,9 +10,16 @@ import { getActiveMemoryDirectory } from "@/agent/memory-runtime";
 import { requestCloudReflectionRun } from "@/agent/reflection-runs";
 import type { ConversationMessageCompactBody } from "@/backend";
 import { getBackend } from "@/backend";
+import { LocalBackend } from "@/backend/local/local-backend";
 import { refreshCustomCommands } from "@/cli/commands/custom";
+import {
+  COMPACT_COMMAND_USAGE,
+  COMPACT_MODE_LOCAL_UNSUPPORTED,
+  formatCompactPlanningFailure,
+  formatTopicTrimReceipt,
+  parseCompactCommandArgs,
+} from "@/cli/helpers/compact-command";
 import { buildDoctorMessage } from "@/cli/helpers/doctor-command";
-import { formatErrorDetails } from "@/cli/helpers/error-formatter";
 import {
   buildInitMessage,
   gatherInitGitContext,
@@ -411,33 +418,71 @@ function emitExecuteCommandResponse(
   );
 }
 
-type CompactMode =
-  | "all"
-  | "sliding_window"
-  | "self_compact_all"
-  | "self_compact_sliding_window";
+/**
+ * `/compact` has no interactive channel here: a local conversation must name the
+ * block to keep, and the block list comes from `/topics`. The cloud backend keeps
+ * its mode-based behaviour unchanged.
+ */
+async function compactLocalFromListener(
+  socket: WebSocket,
+  conversationRuntime: ConversationRuntime,
+  agentId: string,
+  backend: LocalBackend,
+  request: { kind: "auto" } | { kind: "block"; index: number },
+): Promise<string> {
+  const conversationId = conversationRuntime.conversationId;
+  if (request.kind === "auto") {
+    throw new Error(
+      "Choosing a cut point needs a terminal. Run /compact <n> with a block number from /topics.",
+    );
+  }
+  const list = backend.listTopics(conversationId, agentId);
+  if (request.index > list.blocks.length) {
+    throw new Error(
+      `There is no topic block ${request.index}. Run /topics to list the blocks.`,
+    );
+  }
 
-const VALID_COMPACT_MODES = new Set<CompactMode>([
-  "all",
-  "sliding_window",
-  "self_compact_all",
-  "self_compact_sliding_window",
-]);
+  const outcome = await backend.trimConversationToTopic({
+    conversationId,
+    agentId,
+    pick: { kind: "topic", index: request.index },
+  });
+  if (!outcome.executed) return formatTopicTrimReceipt(outcome);
 
-function compactHelpOutput(): string {
-  return [
-    "/compact help",
-    "",
-    "Summarize conversation history (compaction).",
-    "",
-    "USAGE",
-    "  /compact                   — compact with default mode",
-    "  /compact all               — compact all messages",
-    "  /compact sliding_window    — compact with sliding window",
-    "  /compact self_compact_all  — compact with self compact all",
-    "  /compact self_compact_sliding_window  — compact with self compact sliding window",
-    "  /compact help              — show this help",
-  ].join("\n");
+  markPostCompactionContextRemindersPending(conversationRuntime.reminderState);
+  // Launching reflection is best-effort — never fail the trim itself.
+  try {
+    const reflectionSettings = getReflectionSettings(
+      agentId,
+      getConversationWorkingDirectory(
+        conversationRuntime.listener,
+        agentId,
+        conversationId,
+      ),
+    );
+    if (
+      reflectionSettings.trigger === "compaction-event" &&
+      settingsManager.isMemfsEnabled(agentId)
+    ) {
+      void buildMaybeLaunchReflectionSubagent({
+        runtime: conversationRuntime,
+        socket,
+        agentId,
+        conversationId,
+      })("compaction-event");
+    }
+  } catch (reflectionError) {
+    debugLog(
+      "memory",
+      "Skipping post-compaction reflection:",
+      reflectionError instanceof Error
+        ? reflectionError.message
+        : String(reflectionError),
+    );
+  }
+  void regenerateConversationDescription(conversationId);
+  return formatTopicTrimReceipt(outcome);
 }
 
 /** /compact — Summarize conversation history through the active Backend. */
@@ -451,14 +496,20 @@ async function handleCompactCommand(
     throw new Error("No agent ID available for /compact command");
   }
 
-  const rawModeArg = args?.trim().split(/\s+/)[0];
-  if (rawModeArg === "help") {
-    return compactHelpOutput();
-  }
+  const parsed = parseCompactCommandArgs(
+    args?.trim() ? args.trim().split(/\s+/) : [],
+  );
+  if (parsed.kind === "help") return COMPACT_COMMAND_USAGE;
+  if (parsed.kind === "invalid") throw new Error(parsed.message);
 
-  const modeArg = rawModeArg as CompactMode | undefined;
-  if (modeArg && !VALID_COMPACT_MODES.has(modeArg)) {
-    throw new Error(`Invalid mode "${modeArg}". Run /compact help for usage.`);
+  const backend = getBackend();
+  const local = backend instanceof LocalBackend;
+  if (local) {
+    if (parsed.kind === "mode") throw new Error(COMPACT_MODE_LOCAL_UNSUPPORTED);
+  } else if (parsed.kind === "block") {
+    throw new Error(
+      "Picking a context cut point by number requires the local backend. Run /compact help.",
+    );
   }
 
   const preCompactResult = await runPreCompactHooks(
@@ -472,7 +523,17 @@ async function handleCompactCommand(
     throw new Error(`Compact blocked: ${feedback}`);
   }
 
-  const backend = getBackend();
+  if (local) {
+    return compactLocalFromListener(
+      socket,
+      conversationRuntime,
+      agentId,
+      backend as LocalBackend,
+      parsed.kind === "block" ? parsed : { kind: "auto" },
+    );
+  }
+
+  const modeArg = parsed.kind === "mode" ? parsed.mode : undefined;
   const modeDisplay = modeArg ? ` (mode: ${modeArg})` : "";
 
   try {
@@ -555,7 +616,7 @@ async function handleCompactCommand(
       return "Compaction run, but the number of messages is the same";
     }
 
-    throw new Error(formatErrorDetails(error, agentId));
+    throw new Error(formatCompactPlanningFailure(error));
   }
 }
 

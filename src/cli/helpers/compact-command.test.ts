@@ -140,6 +140,24 @@ describe("formatTopicTrimReceipt", () => {
     expect(receipt).toContain("moved to avoid splitting a tool call");
   });
 
+  test("confirming the suggested row is reported as the ratio's suggestion (V9)", () => {
+    const suggested = formatTopicTrimReceipt(outcome(), {
+      confirmedSuggestion: true,
+    });
+    expect(suggested).toContain(
+      "cut point:  ratio_suggestion (the block the retention ratio points at",
+    );
+    expect(suggested).not.toContain("the topic block you picked");
+
+    const capped = formatTopicTrimReceipt(
+      outcome({ ratioCapApplied: true, source: "ratio_cap" }),
+      { confirmedSuggestion: true },
+    );
+    expect(capped).toContain(
+      "cut point:  ratio_cap (the suggested block kept too much",
+    );
+  });
+
   test("a refusal explains itself instead of reporting numbers", () => {
     const nothingToTrim = formatTopicTrimReceipt(
       outcome({

@@ -44,15 +44,29 @@ export const COMPACT_COMMAND_USAGE = [
   "to trim there.",
 ].join("\n");
 
-/** What a trim did, or refused to do. */
-export function formatTopicTrimReceipt(outcome: LocalTopicTrimOutcome): string {
+/**
+ * What a trim did, or refused to do.
+ *
+ * `confirmedSuggestion` covers the picker's default row: the cut is still
+ * topic-aligned (the suggestion *is* a block), but the user did not choose it —
+ * the retention ratio did — and the receipt has to say so (V9, `ratio_suggestion`).
+ */
+export function formatTopicTrimReceipt(
+  outcome: LocalTopicTrimOutcome,
+  options: { confirmedSuggestion?: boolean } = {},
+): string {
   if (!outcome.executed) return formatTopicTrimRefusal(outcome);
 
-  const source = {
-    topic_pick: "the topic block you picked",
-    ratio_suggestion: "the retention ratio (nothing was marked)",
-    ratio_cap: "the retention ratio (the picked block kept too much)",
-  }[outcome.source];
+  const confirmedSuggestion = options.confirmedSuggestion === true;
+  const source = confirmedSuggestion
+    ? outcome.ratioCapApplied
+      ? "ratio_cap (the suggested block kept too much, so the ratio cut earlier)"
+      : "ratio_suggestion (the block the retention ratio points at, confirmed as it was)"
+    : {
+        topic_pick: "the topic block you picked",
+        ratio_suggestion: "the retention ratio (nothing was marked)",
+        ratio_cap: "the retention ratio (the picked block kept too much)",
+      }[outcome.source];
   const lines = [
     "Context trimmed.",
     `  kept:       ${outcome.numMessagesAfter} messages (~${outcome.retainedTokens} tokens), starting at ${outcome.firstKeptMessageId ?? "the summary"}`,

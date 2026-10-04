@@ -360,7 +360,7 @@ async function runTrim(
   input: string,
   pick: LocalTopicTrimPick,
   backend: LocalBackend,
-  extraNote?: string,
+  options: { extraNote?: string; confirmedSuggestion?: boolean } = {},
 ): Promise<{ submitted: boolean }> {
   const conversationId = ctx.conversationIdRef.current;
   const cmd = ctx.commandRunner.start(input, "Trimming context...");
@@ -383,12 +383,17 @@ async function runTrim(
       agentId: ctx.agentId,
       pick,
     });
-    const receipt = formatTopicTrimReceipt(outcome);
+    const receipt = formatTopicTrimReceipt(outcome, {
+      confirmedSuggestion: options.confirmedSuggestion === true,
+    });
     if (!outcome.executed) {
       cmd.finish(receipt, true);
       return { submitted: true };
     }
-    cmd.finish(extraNote ? `${receipt}\n\n${extraNote}` : receipt, true);
+    cmd.finish(
+      options.extraNote ? `${receipt}\n\n${options.extraNote}` : receipt,
+      true,
+    );
     await afterCompaction(ctx, conversationId);
   } catch (error) {
     cmd.fail(`Failed: ${formatCompactPlanningFailure(error)}`);
@@ -436,10 +441,13 @@ async function compactLocal(
 
   if (list.markers.length > 0) {
     // Hand the picker its rows and keep the trim in this environment: only the
-    // submit handler knows how to finish the compaction bookkeeping.
+    // submit handler knows how to finish the compaction bookkeeping. Confirming
+    // the row the cursor starts on is the "empty enter" case: the cut is still
+    // topic-aligned, but the ratio chose it, and the receipt says so (V9).
+    const suggestion = list.suggestedBlockIndex ?? 1;
     setTopicTrimRequest({
       blocks: list.blocks,
-      suggestionIndex: list.suggestedBlockIndex ?? 1,
+      suggestionIndex: suggestion,
       onPick: (blockIndex) => {
         ctx.setActiveOverlay(null);
         void runTrim(
@@ -447,6 +455,7 @@ async function compactLocal(
           `/compact ${blockIndex}`,
           { kind: "topic", index: blockIndex },
           backend,
+          { confirmedSuggestion: blockIndex === suggestion },
         );
       },
     });
@@ -456,13 +465,9 @@ async function compactLocal(
 
   // D-119: no markers means one block, so the ratio decides instead of asking.
   clearTopicTrimRequest();
-  return runTrim(
-    ctx,
-    input,
-    { kind: "ratio_suggestion" },
-    backend,
-    formatNoMarkerCompactHint(shouldIncludeTopicMarking()),
-  );
+  return runTrim(ctx, input, { kind: "ratio_suggestion" }, backend, {
+    extraNote: formatNoMarkerCompactHint(shouldIncludeTopicMarking()),
+  });
 }
 
 export async function handleCompactCommand(
