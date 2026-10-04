@@ -4342,8 +4342,8 @@ export function App({
     withCommandLock,
   });
 
-  // Interactive commands (like /agents, /model) used while the agent was busy
-  // are applied once streaming ends.
+  // Process queued overlay actions when streaming ends
+  // (commands like /agents or /model used while the agent was busy).
   useEffect(() => {
     if (
       !streaming &&
