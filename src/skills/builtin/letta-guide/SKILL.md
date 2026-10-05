@@ -65,10 +65,12 @@ applies_to:
   interfaces: [web, desktop, cli, sdk]
 ```
 
-- **Backends describe agent state, not the computer running tools.** `cloud`
-  means Letta Cloud; `local` means a user-managed backend.
-- **Interfaces** refer to the user's current interface: chat.letta.com (`web`,
-  cloud-only), CLI, Desktop, or SDK.
+- **Backends describe where the agent lives, not the computer running tools.**
+  Pages marked `cloud` are written for the official hosted service, which this
+  CLI does not use; every agent here runs on the `local` backend. Read a
+  `cloud`-only page to explain the difference, never as instructions to follow.
+- **Interfaces** refer to the user's current interface. This CLI is the `cli`
+  surface; `web` (chat.letta.com) is a hosted surface with no equivalent here.
 - Do NOT use context from files marked `status: legacy` unless providing
   historical context.
 

@@ -1,6 +1,6 @@
 ---
 name: syncing-memory-filesystem
-description: Diagnose and repair MemFS repository setup, remote sync, authentication failures, optional backup remotes, or merge/rebase conflicts. Do not load for routine memory reads or edits.
+description: Diagnose and repair MemFS repository setup, checkout problems, optional backup remotes, or merge/rebase conflicts. Do not load for routine memory reads or edits.
 ---
 
 # MemFS Repository Repair
@@ -21,6 +21,9 @@ MemFS is a Git repository projected onto the computer where the agent is
 running. `$MEMORY_DIR` is the repository root. There is no second `memory/`
 directory inside it.
 
+The repository is local-only. It has no hosted remote, so nothing is pushed or
+pulled for it and no server credentials are involved.
+
 The repository can use either memory layout. Inspect its current tree and the
 memory rules in the system prompt before editing files:
 
@@ -34,13 +37,9 @@ $MEMORY_DIR/                        $MEMORY_DIR/
 └── skills/       # agent-owned skills
 ```
 
-Cloud-backed agents have a hosted MemFS remote. Local-backend agents keep a
-local-only Git repository and do not need a remote or cloud credentials.
-
-The agent doing the memory work commits its changes. After each turn, the harness pushes
-clean committed changes for cloud-backed agents. Local-backend commits remain
-on the current machine. Do not run `git push` for normal MemFS sync; let the
-harness push after the turn.
+The agent doing the memory work commits its changes, and those commits stay on
+this machine. There is no remote, so the harness runs no post-turn sync and
+never pushes memory anywhere.
 
 Committed memory changes do not alter the current compiled prompt immediately.
 Use `/recompile` when the current conversation must see changed core memory
@@ -55,7 +54,7 @@ credential-helper edits:
 ```text
 /memfs status    # show whether MemFS is enabled and its path
 /memfs enable    # initialize or repair MemFS setup
-/memfs sync      # pull the hosted repository
+/memfs sync      # sync blocks and files now
 ```
 
 From a shell, the standalone status and pull commands are:
@@ -65,8 +64,7 @@ letta memory status --agent "$AGENT_ID"
 letta memory pull --agent "$AGENT_ID"
 ```
 
-`letta memory pull` is a no-op for a local-backend agent because there is no
-hosted remote.
+`letta memory pull` is a no-op and says so: there is no remote to pull from.
 
 Do not reproduce `/memfs enable` by PATCHing agent tags or constructing a Git
 remote by hand. The enable flow also updates the system prompt mode, recompiles
@@ -75,8 +73,8 @@ checkout, installs hooks, configures identity, and seeds default memory files.
 
 ## Inspect a Broken Checkout
 
-Use `$MEMORY_DIR` instead of a hard-coded `~/.letta/agents/...` path. Local and
-cloud-backed agents use different parent directories.
+Use `$MEMORY_DIR` instead of a hard-coded `~/.letta/agents/...` path; let the
+harness resolve the active root.
 
 ```bash
 git -C "$MEMORY_DIR" status --short --branch
@@ -84,16 +82,15 @@ git -C "$MEMORY_DIR" remote get-url origin | sed -E 's#(https?://)[^/@]+@#\1<red
 git -C "$MEMORY_DIR" log -5 --oneline
 ```
 
-Do not print credential-helper values or tokens. Do not change global Git
-configuration. The harness installs or refreshes repository-local auth during
-clone and pull when the active transport supports a persistent helper. Desktop
-may instead use a temporary Git transport proxy and intentionally omit the
-persistent helper.
+The `origin` remote is normally absent. It is present only when the user set
+the optional backup remote described below.
 
-If the checkout is missing `.git/`, use `/memfs enable`. If it exists but is
-behind, use `/memfs sync` or `letta memory pull --agent "$AGENT_ID"`. Pull also
-repairs recognized stale MemFS origin URLs and refreshes repository-local hooks,
-auth, branch tracking, and agent identity.
+Do not print credential-helper values or tokens. Do not change global Git
+configuration. The harness installs or refreshes repository-local hooks and
+identity when MemFS is enabled.
+
+If the checkout is missing `.git/`, use `/memfs enable`. There is no upstream
+to be behind, so a memory problem is never fixed by pulling.
 
 ## Uncommitted Changes
 
@@ -114,17 +111,15 @@ Memory content goes here.
 ```
 
 Review the complete diff before committing. Stage named memory files only and
-create a new commit. Once the repository is clean, the harness will push a
-cloud-backed agent's pending commits after the turn.
+create a new commit. Those commits stay on this machine; the harness does not
+push MemFS anywhere.
 
 ## Merge or Rebase Conflicts
 
-The harness first tries a fast-forward pull. When a remote push is rejected
-because the remote moved, post-turn sync tries `git pull --rebase` and retries
-the push. If that rebase conflicts, the harness launches a fresh background
-`memory` subagent to repair it. The primary conversation is not interrupted.
-The harness retries normal sync after the worker finishes. The instructions
-below are for explicit troubleshooting; routine repairs run in the background.
+The harness runs no post-turn sync and does not push memory, so it cannot
+produce a conflict by itself. A merge or rebase can still appear if the user
+pushed the optional backup remote, or ran Git in the memory repository
+themselves. The instructions below are for that case.
 
 Start by reading the current Git operation and every conflicted file:
 
@@ -148,13 +143,12 @@ git -C "$MEMORY_DIR" commit
 
 Do not start a new merge when a rebase is already in progress. Do not reset,
 abort, or discard either side without the user's approval. When the repository
-is clean and the merge or rebase is complete, the harness retries the hosted
-push after a future turn.
+is clean and the merge or rebase is complete, there is nothing further to push.
 
 ## Optional Backup Remote
 
 `/memory-repository` mirrors the agent's `main` branch to an additional Git
-URL. This is separate from the hosted MemFS origin.
+URL. It is the only remote a memory repository can have.
 
 ```text
 /memory-repository set git@github.com:you/my-memory.git
@@ -170,17 +164,18 @@ the commit; `/memory-repository status` shows the recent push log.
 
 Use normal SSH or Git credential handling for the backup URL. Avoid embedding a
 token in the URL because the URL is stored in `.git/config`. Use
-`/memory-repository push` only for this optional backup remote, not for normal
-MemFS synchronization.
+`/memory-repository push` only for this optional backup remote, never as a way
+to synchronize MemFS itself.
 
 ## Failure Checklist
 
 1. Confirm `$MEMORY_DIR` points to the active agent's repository.
-2. Check whether the backend is cloud-backed or local-only.
+2. Confirm the only remote, if any, is the user's own backup.
 3. Inspect `git status`, the origin URL, and the current Git operation.
-4. Use `/memfs enable` for a missing checkout and `/memfs sync` for a pull.
+4. Use `/memfs enable` for a missing checkout; a pull will not help.
 5. Preserve the active layout's indexes and frontmatter, then finish any
    existing merge or rebase.
-6. Leave hosted pushes to post-turn sync once the repository is clean.
+6. Leave memory commits local; do not add a remote or push to fix a memory
+   problem.
 7. If the command still fails, rerun it with `LETTA_DEBUG=1` and report the
    redacted error. Never print or copy credential-helper values.

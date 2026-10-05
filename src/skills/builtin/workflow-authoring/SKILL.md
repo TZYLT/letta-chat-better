@@ -65,8 +65,10 @@ the tool's `model` input) accepts any handle or alias listed by
 cheaper model for mechanical stages only when you know a valid handle.
 
 Use the invoking backend for workflow workers. Local execution requires an Agent
-SDK and App Server with local conversation support; `decide()` still uses the
-Cloud decisions service.
+SDK and App Server with local conversation support. `decide()` calls a decisions
+API on the configured server and the local backend does not implement it, so
+`decide()` fails here unless the user pointed `LETTA_BASE_URL` at a server that
+serves it. Prefer `agent()` with a `schema` when you need a shaped result.
 
 ## Script body hooks
 

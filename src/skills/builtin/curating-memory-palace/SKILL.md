@@ -37,7 +37,7 @@ Every blocker gets a button. When an item is a decision with real options, give 
 
 When only the user can fix something (raise a quota, attach a tool, log in), the item says what the user needs to do, and the button is still something you can do, such as "Walk me through fixing this" or "I fixed it, check again". For the second, re-run the failing check and clear the item if it passes.
 
-Offer the most reliable fix first, which usually means moving the work to Cloud. Anything that depends on the user's computer, such as a local schedule or a sign-in that lives on one machine, stops whenever that computer sleeps or Letta Code is closed. Offer to run the schedule in Cloud and to connect the account there before asking the user to keep a computer on. Suggest a fix on the user's computer only when Cloud cannot do the job, and say why.
+Offer the most reliable fix first. Every routine this agent can run lives on the user's computer, so a fix that depends on it — a schedule, or a sign-in that lives on one machine — stops whenever that computer sleeps or Letta Code is closed. Say that limit plainly when you propose such a fix, and prefer a fix that survives a closed laptop, such as a recorded rule, a ticket, or a check you run when the user is next active, when one would work as well. Never propose a fix that needs a hosted service this CLI does not have.
 
 The headline says what is going on; the button says what to do. Never repeat the button's label in the headline, and do not end the text with a "Next: ..." sentence that restates the button. Write the headline "**Grok CLI regression may still be live.**" with the button "Verify the Grok CLI regression", not the headline "**Verify the Grok CLI regression.**"
 
@@ -47,7 +47,7 @@ Offer a Schedule button when the evidence shows recurring work: the user asked f
 
 Do not offer one for one-off work, for work that reports when it finishes (such as CI or a deploy), for anything more often than hourly, for work that needs the user during the run, or for anything on the Dismissed list. Offer at most two at a time.
 
-The label names the work and when it runs, with a time zone. The instruction asks you to set it up and says what to do, when, where to send results, and when to stay quiet. Set it up in Cloud unless the work truly needs one of the user's computers, record it in memory, and tell the user where it runs.
+The label names the work and when it runs, with a time zone. The instruction asks you to set it up and says what to do, when, where to send results, and when to stay quiet. Set it up with `letta cron` on the computer the agent runs on, record it in memory, and tell the user where it runs: it only fires while a Letta session is running on that machine.
 
 ### Button format
 
@@ -57,7 +57,7 @@ A fenced code block with the language `palace-action` becomes a button. It holds
 **The dependency report is still manual.** You asked for it on Sep 15, Sep 22, and Sep 29.
 
 ```palace-action
-{"actionId": "schedule-dep-report", "label": "Send the dependency report Mondays at 9am PT", "conversationId": "new", "instruction": "Set up a Cloud schedule for Mondays at 9am PT: run the dependency report, post it to #eng-deps, and skip weeks with no changes. Record it in memory and tell me where it runs."}
+{"actionId": "schedule-dep-report", "label": "Send the dependency report Mondays at 9am PT", "conversationId": "new", "instruction": "Set up a schedule for Mondays at 9am PT with letta cron: run the dependency report, post it to #eng-deps, and skip weeks with no changes. Record it in memory and tell me where it runs."}
 ```
 ````
 

@@ -17,7 +17,7 @@ test("scopes the memory filesystem skill to repository operations", async () => 
   );
 
   expect(skill?.description).toContain(
-    "Diagnose and repair MemFS repository setup, remote sync, authentication failures, optional backup remotes, or merge/rebase conflicts.",
+    "Diagnose and repair MemFS repository setup, checkout problems, optional backup remotes, or merge/rebase conflicts.",
   );
   expect(skill?.description).toContain(
     "Do not load for routine memory reads or edits.",
@@ -72,8 +72,12 @@ test("keeps memory repository repair guidance aligned with the harness", async (
   const content = readFileSync(skill.path, "utf8");
 
   expect(content).toContain("`$MEMORY_DIR` is the repository root");
-  expect(content).toContain("Do not run `git push` for normal MemFS sync");
-  expect(content).toMatch(/the harness pushes\s+clean committed changes/);
+  expect(content).toMatch(
+    /There is no remote, so the harness runs no post-turn\s+sync/,
+  );
+  expect(content).toMatch(/the harness does not\s+push MemFS anywhere/);
+  expect(content).not.toContain("cloud-backed");
+  expect(content).not.toContain("hosted repository");
   expect(content).toContain(
     "Do not reproduce `/memfs enable` by PATCHing agent tags",
   );

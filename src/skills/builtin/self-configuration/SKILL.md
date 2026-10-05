@@ -53,21 +53,17 @@ Local settings, server state, and the current process are different sources of t
 - `letta model set [model_handle] [--reasoning <reasoning-option>] [--default]` changes the current conversation's model or reasoning; add `--default` only when the user asks for the agent default.
 - `letta model get [--default]` gets the current model configuration; `--default` gets the agent's default configuration.
 
-### Account credits and model quota
+### Session usage
 
-Run `letta usage` for a Markdown overview of the current plan, credit balance, and `letta/*` model quota (`lettaTier` only). Report the server's bucket (`full`, `high`, `medium`, `low`, or `empty`) and quota/daily reset timestamps as-is; do not infer exact requests or percentages. Amounts are credits, not dollars; preserve negative balances. An omitted daily reset is shown as unavailable.
-
-The command uses CLI auth and respects `LETTA_API_KEY`/`LETTA_BASE_URL`, not agent or conversation selectors. Credits belong to the organization; user-scoped quota belongs to the authenticated user, not necessarily the person chatting with the agent. In local mode, use `letta --backend cloud usage` only when the user wants Cloud account usage.
-
-Use `letta model list` for available models; credits and quota buckets do not guarantee inference availability. `letta usage` does not include session token statistics; the interactive `/usage` command is a separate surface. If either lookup fails, the command exits nonzero without partial usage. Treat that as unavailable data, not zero credits or exhausted quota.
+Session token and context statistics are available in the interactive TUI with `/usage`. It reports the current session only. This CLI has no account, so there is no CLI subcommand for plan credits or model quota: models are reached either through the user's own provider keys or through a connected subscription the user configured.
 
 ### Billing path when changing models
 
-The same model can often be reached through more than one route: a connected subscription (for example a ChatGPT or Grok plan), the Letta plan (`letta/*`), or per-token billing against organization credits or the user's own API key. Users choose provider names, so a handle's prefix does not reliably show which route it bills through.
+The same model can often be reached through more than one route: a connected subscription (for example a ChatGPT or Grok plan) or per-token billing against the user's own API key. Users choose provider names, so a handle's prefix does not reliably show which route it bills through.
 
 Before switching models, consider how the current model is billed and keep the user on that route unless they asked to change it. Use the current handle, the labels in `letta model list`, and anything the user has said about billing as evidence. If several available handles serve the requested model and you cannot tell which one uses the user's subscription, list the candidates and ask before switching. Do not silently move a user from a subscription to per-token billing.
 
-`letta model list --byok` includes both connected subscriptions and user API keys, so it does not separate the two. `letta usage` covers only Letta credits and `letta/*` quota, not connected subscriptions.
+`letta model list --byok` includes both connected subscriptions and user API keys, so it does not separate the two.
 
 ### Harness and server settings
 
@@ -124,10 +120,10 @@ Required environment for live API writes:
 export LETTA_API_KEY=...
 export AGENT_ID=agent-...
 export CONVERSATION_ID=conv-...   # only needed for conversation-scoped changes
-export LETTA_BASE_URL=...         # required; use the current server, not a hard-coded Cloud URL
+export LETTA_BASE_URL=...         # required; use the current server, not a hard-coded remote URL
 ```
 
-The scripts in this skill default to `AGENT_ID`, `CONVERSATION_ID`, and `LETTA_BASE_URL`. Server reads and writes require `LETTA_BASE_URL` or explicit `--base-url`; they never silently fall back to `api.letta.com`. Keep `LETTA_BASE_URL` paired with the `LETTA_API_KEY` supplied by the current runtime so local, self-hosted, and non-default Cloud environments are not accidentally redirected. Pass explicit IDs when there is any doubt. `--show` fetches the selected agent or conversation and prints only safe effective fields. Server operations reject target IDs that differ from the current env ID unless `--allow-other-agent` is passed. Dry-run output is labeled: `offline_partial_patch` means no server state was fetched; `effective_merged_patch` means the script fetched current server state and shows the merged patch that would be sent.
+The scripts in this skill default to `AGENT_ID`, `CONVERSATION_ID`, and `LETTA_BASE_URL`. Server reads and writes require `LETTA_BASE_URL` or explicit `--base-url`; they never silently fall back to a public default host. Keep `LETTA_BASE_URL` paired with the `LETTA_API_KEY` supplied by the current runtime so a local or self-hosted agent is not accidentally redirected. Pass explicit IDs when there is any doubt. `--show` fetches the selected agent or conversation and prints only safe effective fields. Server operations reject target IDs that differ from the current env ID unless `--allow-other-agent` is passed. Dry-run output is labeled: `offline_partial_patch` means no server state was fetched; `effective_merged_patch` means the script fetched current server state and shows the merged patch that would be sent.
 
 ### Dry-runable update script
 
@@ -288,7 +284,7 @@ path.
 
 Per-agent `agents[]` entries are keyed by `agentId` plus server. For api.letta.com, `baseUrl` may be omitted. For another server, preserve the server key.
 
-Base URL resolution is split between runtime API calls and settings lookup. Runtime API calls require `LETTA_BASE_URL` or an explicit script `--base-url`; do not replace it with a hard-coded Cloud URL. Settings server keys resolve from `LETTA_SETTINGS_BASE_URL`, `env.LETTA_SETTINGS_BASE_URL`, `LETTA_BASE_URL`, `env.LETTA_BASE_URL`, then api.letta.com. Do not move `agents[]` entries across base URLs unless the user is deliberately migrating servers.
+Base URL resolution is split between runtime API calls and settings lookup. Runtime API calls require `LETTA_BASE_URL` or an explicit script `--base-url`; do not replace it with a hard-coded remote URL. Settings server keys resolve from `LETTA_SETTINGS_BASE_URL`, `env.LETTA_SETTINGS_BASE_URL`, `LETTA_BASE_URL`, `env.LETTA_BASE_URL`, then api.letta.com. Do not move `agents[]` entries across base URLs unless the user is deliberately migrating servers.
 
 Toolset values currently include `auto`, `letta`, `default`, `codex`, and `none`. Use `auto` unless the user explicitly wants a manual override.
 

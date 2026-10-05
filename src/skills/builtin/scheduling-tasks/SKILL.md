@@ -1,6 +1,6 @@
 ---
 name: scheduling-tasks
-description: Advanced scheduling through the letta cron CLI for other conversations, computers, run history, and schedule replacement. Use Wake for ordinary create/list/cancel operations in the current conversation.
+description: Advanced scheduling through the letta cron CLI for other conversations, run history, and schedule replacement. Use Wake for ordinary create/list/cancel operations in the current conversation.
 ---
 
 # Scheduling Tasks
@@ -12,20 +12,15 @@ For ordinary one-shot or recurring work in the current conversation, use Wake in
 ## When to Use This Skill
 
 - The task should run in a fresh, default, or different conversation
-- The task needs a specific connected computer
 - You need run history, replacement, or broader schedule inspection
 - Wake cannot see or manage the schedule you need
 
 ## Where Schedules Run
 
-Execution determines schedule ownership; there is no runner selection flag:
+Every schedule is device-local. It lives in `~/.letta/crons.json` and fires from the Letta process on this computer:
 
-- In a managed Cloud sandbox, schedules are durable Cloud schedules and run in the agent's Cloud sandbox.
-- On a user-managed computer or self-hosted runtime, schedules are local and fire only while a Letta session is running there.
-
-From a managed Cloud sandbox, `--computer <deviceId>` can run the scheduled work on a specific connected computer. Get the device ID from `letta computers list`. If that computer is offline at fire time, execution falls back to the Cloud sandbox. Local execution cannot target another computer.
-
-Creation and execution follow those rules, while management commands still show and cancel both local and Cloud inventory. This keeps schedules created by older CLI versions visible without changing where new schedules run.
+- A schedule only fires while a Letta session is running on this computer. A fire that comes due while nothing is running is recorded as missed and is not replayed later.
+- There is no runner selection flag and no remote target. `--computer` is rejected, and a schedule cannot run on another computer or in a hosted sandbox.
 
 ## CLI Usage
 
@@ -53,14 +48,16 @@ letta cron add --name <short-name> --description <text> --prompt <text> <schedul
 | `--at <time>` | One-shot | `"in 45m"`, `"2026-09-24T09:00:00-07:00"` |
 | `--cron <expr>` | Raw cron (recurring) | `"0 9 * * 1-5"` |
 
+Exactly one of the three is required. `--once` is accepted with `--at` (already one-shot there) and rejected with `--cron`.
+
 **Optional flags:**
 
 | Flag | Description |
 |------|-------------|
 | `--agent <id>` | Agent ID (defaults to `LETTA_AGENT_ID` from the current shell/session) |
 | `--conversation <id>` | Conversation target: omit or pass `new` for a fresh conversation per fire; pass `self` for the current conversation; pass `default` for the agent default; or pass a concrete ID |
-| `--computer <id>` | From managed Cloud, execute on a specific connected computer |
-| `--once` | Mark `--at` as one-shot (already the default for `--at`) |
+
+`--computer` is accepted by the parser only so it can be rejected with a clear error. There is no way to run a schedule anywhere but this computer.
 
 ### Listing Tasks
 
@@ -84,7 +81,7 @@ letta cron get <id-or-name> [--agent <id>]
 letta cron runs --id <task-id> [--limit <n>] [--agent <id>]
 ```
 
-For local run history, `--run-id <id>` selects one run. Cloud history ignores that flag.
+`--run-id <id>` selects one run.
 
 ### Binding a Task to the Right Conversation
 
@@ -126,9 +123,11 @@ In-place editing is not available. To change a schedule, create and verify the r
 
 ## Timezones
 
-Cloud-schedule recurring expressions (both `--cron` and the expression `--every` compiles to) are interpreted in **UTC**. Users say times in their local timezone, so convert before writing the expression: a user in PDT asking for "9am daily" needs `--cron "0 16 * * *"` (9am PDT = 16:00 UTC; 17:00 during PST). State the conversion in your reply so the user can catch a wrong assumption. Local-runner recurring tasks use the computer's local timezone.
+Recurring expressions — `--cron`, and the expression `--every` compiles to — are interpreted in **the computer's local timezone**, captured when the task is created. Write the expression in the user's own wall-clock time and do not convert to UTC: a user in California asking for "9am daily" needs `--cron "0 9 * * *"`.
 
-For a one-shot calendar request such as "tomorrow at 9am," resolve the date in the user's timezone and pass `--at` an RFC 3339 timestamp with an explicit offset. Infer a reasonable timezone from available context instead of asking a redundant follow-up. State the timezone you used in the confirmation (for example, "Scheduled for 9:00 AM PT") so the user can correct the assumption. A bare clock such as `--at "9:00am"` uses the current process timezone, which may be UTC in Cloud; use it only when that is the intended timezone. Relative values such as `--at "in 45m"` do not need a timezone.
+Because the timezone is captured at creation, a task keeps matching that same wall-clock time. If the computer later moves to another timezone and the user wants the schedule to follow it, delete the task and create it again.
+
+For a one-shot calendar request such as "tomorrow at 9am," resolve the date in the user's timezone and pass `--at` an RFC 3339 timestamp with an explicit offset. Infer a reasonable timezone from available context instead of asking a redundant follow-up. State the timezone you used in the confirmation (for example, "Scheduled for 9:00 AM PT") so the user can correct the assumption. A bare clock such as `--at "9:00am"` uses this computer's timezone and schedules tomorrow if that time has already passed there. Relative values such as `--at "in 45m"` do not need a timezone.
 
 ## Examples
 
@@ -139,10 +138,10 @@ letta cron add \
   --name "dog-walk-reminder" \
   --description "Daily 9am (America/Los_Angeles) reminder to walk the dog" \
   --prompt "Hey! It's 9am — time to walk the dog." \
-  --cron "0 16 * * *"
+  --cron "0 9 * * *"
 ```
 
-Note: `--every 1d` fires daily at midnight (UTC on a Cloud schedule), so use `--cron` for a specific time of day, converting the user's local time to UTC first.
+`--every 1d` also lands on midnight, so use `--cron` whenever the user names a time of day.
 
 ### "Check on the deploy in 30 minutes"
 
@@ -163,10 +162,10 @@ letta cron add \
   --name "timesheet-reminder" \
   --description "Weekday 5pm (America/Los_Angeles) timesheet reminder" \
   --prompt "Friendly reminder: don't forget to submit your timesheet before EOD!" \
-  --cron "0 0 * * 2-6"
+  --cron "0 17 * * 1-5"
 ```
 
-Note the day shift: 5pm UTC−7 is midnight UTC the *next* day, so weekdays Mon–Fri become `2-6`. Always re-derive both the hour and the day fields after converting.
+The day-of-week field is the user's own weekday because the expression is read in local time, so no day shift is needed.
 
 ### "What reminders do I have?"
 
@@ -199,11 +198,11 @@ Include context about what the user originally asked for, so you can give a help
 
 - **Minimum granularity**: 1 minute. Intervals under 60 seconds are rounded up.
 - **Recurring tasks**: No longer auto-expire. They remain active until explicitly cancelled.
-- **One-shot cleanup (local runner)**: One-shot local tasks are garbage-collected 24 hours after firing.
+- **Terminal task cleanup**: A task that reached a terminal state — fired, missed, or cancelled — is removed 24 hours later.
 - **Default binding**: `letta cron add` uses `--agent` first, then `LETTA_AGENT_ID`. Omit `--conversation` for a fresh conversation per fire; use `--conversation self` to capture `LETTA_CONVERSATION_ID` explicitly.
-- **Local scheduler requirement**: Local schedules only fire while a Letta session is running on their computer; fires while no session runs are marked as missed. Cloud schedules fire from the cloud regardless.
+- **Scheduler requirement**: A schedule only fires while a Letta session is running on this computer; a fire that comes due while nothing is running is marked missed.
 - **`--at` for specific times**: prefer RFC 3339 with an explicit offset. A bare `--at "3:00pm"` uses the process timezone and schedules tomorrow if that time has already passed there.
-- **Cloud schedule creation failures are loud**: if creating a Cloud schedule fails in a managed Cloud sandbox, no schedule is created; it never falls back to a local schedule.
+- **Creation failures are loud**: `letta cron add` exits nonzero and prints the reason to stderr, and no task is stored. Check the exit code instead of assuming the task exists.
 
 ## Cron Expression Reference
 
@@ -219,9 +218,9 @@ For `--cron`, use numeric 5-field cron syntax (named days/months, seconds, `?`, 
 * * * * *
 ```
 
-Common patterns (UTC on Cloud schedules):
+Common patterns (read in the computer's local timezone):
 - `*/5 * * * *` — every 5 minutes
 - `0 */2 * * *` — every 2 hours
-- `0 9 * * *` — daily at 9:00 UTC
-- `0 9 * * 1-5` — weekdays at 9:00 UTC
-- `30 8 1 * *` — 8:30 UTC on the 1st of each month
+- `0 9 * * *` — daily at 9:00
+- `0 9 * * 1-5` — weekdays at 9:00
+- `30 8 1 * *` — 8:30 on the 1st of each month
