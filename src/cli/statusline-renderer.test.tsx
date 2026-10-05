@@ -44,7 +44,6 @@ function createStatuslineFixture({
       toolset,
     }),
     ui: {
-      hasTemporaryModelOverride: false,
       isByokProvider: false,
       isOpenAICodexProvider: false,
       rightColumnWidth,

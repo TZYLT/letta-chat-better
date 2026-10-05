@@ -266,7 +266,6 @@ path.
 | `showCompactions` | Show compaction activity |
 | `sessionContextEnabled` | Send device/agent context at session start |
 | `autoConversationTitles` | Generate conversation titles |
-| `autoSwapOnQuotaLimit` | Auto-switch temporary model on quota errors |
 | `includeWorktreeTool` | Include worktree tool in toolsets (global only) |
 | `topicMarkingEnabled` | Let agents mark topic boundaries (global only; local backend only, default on) |
 | `topicMarkerWarnTurns` | User turns below which an agent marker is only warned about (global only; default 10, `0` = off) |

@@ -70,7 +70,6 @@ export interface Settings {
   sessionContextEnabled: boolean; // Send device/agent context on first message of each session
   autoConversationTitles: boolean; // Generate AI conversation titles when possible
   autoConversationTitlesRollbackApplied?: boolean; // One-time rollback marker for the default-on title experiment
-  autoSwapOnQuotaLimit: boolean; // Auto-switch to temporary Auto model override on quota-limit errors
   includeWorktreeTool: boolean; // Include EnterWorktree in toolsets when true
   topicMarkingEnabled: boolean; // Let agents mark topic boundaries (local backend); default on
   preferredBackendMode?: "api" | "local"; // Startup backend preference when no explicit --backend is provided
@@ -177,7 +176,6 @@ const DEFAULT_SETTINGS: Settings = {
   sessionContextEnabled: true,
   autoConversationTitles: false,
   autoConversationTitlesRollbackApplied: true,
-  autoSwapOnQuotaLimit: true,
   includeWorktreeTool: true,
   topicMarkingEnabled: true,
   recentModels: [],

@@ -93,7 +93,6 @@ function createContext(): Context {
     setLlmConfig: noop,
     setModelReasoningPrompt: noop,
     setQueuedOverlayAction: noop,
-    setTempModelOverride: noop,
     withCommandLock: async () => {
       throw new Error("Picker tests must not write backend configuration");
     },

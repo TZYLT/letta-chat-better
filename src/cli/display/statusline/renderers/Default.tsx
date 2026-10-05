@@ -26,12 +26,8 @@ export function buildDefaultStatuslineParts(
   ui: StatuslineUiContext,
   rightColumnWidth = getDefaultStatuslineRightColumnWidth(context, ui),
 ): DefaultStatuslineParts {
-  const indicatorWidth = ui.hasTemporaryModelOverride ? 2 : 0;
   const separatorWidth = 3;
-  const availableTextWidth = Math.max(
-    12,
-    rightColumnWidth - separatorWidth - indicatorWidth,
-  );
+  const availableTextWidth = Math.max(12, rightColumnWidth - separatorWidth);
   const maxAgentChars = Math.max(8, Math.floor(availableTextWidth * 0.4));
   const displayAgentName = truncateStatuslineText(
     context.agent.name || "Unnamed",
@@ -47,20 +43,13 @@ export function buildDefaultStatuslineParts(
   );
 
   const rightWidth =
-    displayAgentName.length +
-    separatorWidth +
-    displayModel.length +
-    indicatorWidth;
+    displayAgentName.length + separatorWidth + displayModel.length;
   const rightPrefixSpaces = Math.max(0, rightColumnWidth - rightWidth);
 
   const rightCoreParts: string[] = [];
   rightCoreParts.push(chalk.hex(colors.footer.agentName)(displayAgentName));
   rightCoreParts.push(chalk.dim(" · "));
   rightCoreParts.push(chalk.dim(displayModel));
-  if (ui.hasTemporaryModelOverride) {
-    rightCoreParts.push(chalk.dim(" "));
-    rightCoreParts.push(chalk.yellow("▲"));
-  }
 
   const rightCore = rightCoreParts.join("");
   const right = " ".repeat(rightPrefixSpaces) + rightCore;

@@ -851,32 +851,6 @@ export function App({
     agentStateRef.current = agentState;
   }, [agentState]);
   const [currentModelId, setCurrentModelId] = useState<string | null>(null);
-  const [tempModelOverride, _setTempModelOverride] = useState<string | null>(
-    null,
-  );
-  const [tempModelOverrideContext, setTempModelOverrideContext] = useState<{
-    agentId: string;
-    conversationId: string;
-  }>({ agentId, conversationId });
-  const tempModelOverrideRef = useRef<string | null>(null);
-  const setTempModelOverride = useCallback((next: string | null) => {
-    tempModelOverrideRef.current = next;
-    _setTempModelOverride(next);
-  }, []);
-
-  // Keep temporary override scoped to the current agent/conversation identity.
-  // This uses render-time state adjustment instead of an Effect.
-  if (
-    tempModelOverrideContext.agentId !== agentId ||
-    tempModelOverrideContext.conversationId !== conversationId
-  ) {
-    setTempModelOverrideContext({ agentId, conversationId });
-    if (tempModelOverride !== null) {
-      setTempModelOverride(null);
-    } else if (tempModelOverrideRef.current !== null) {
-      tempModelOverrideRef.current = null;
-    }
-  }
   // Full model handle for API calls (e.g., "anthropic/claude-sonnet-4-5-20251101")
   const [currentModelHandle, setCurrentModelHandle] = useState<string | null>(
     null,
@@ -892,7 +866,6 @@ export function App({
   // Prefer the currently-active model handle, then fall back to agent.model
   // (canonical handle) and finally llm_config reconstruction.
   const currentModelLabel =
-    tempModelOverride ||
     currentModelHandle ||
     agentState?.model ||
     (llmConfig?.model_endpoint_type && llmConfig?.model
@@ -974,8 +947,6 @@ export function App({
       : undefined) ??
     llmConfig?.context_window ??
     modelPresetContextWindow;
-
-  const hasTemporaryModelOverride = tempModelOverride !== null;
 
   // Billing tier for conditional UI and error context (fetched once on mount)
   const [billingTier, setBillingTier] = useState<string | null>(null);
@@ -1359,7 +1330,6 @@ export function App({
 
   // Retry counter for transient LLM API errors (ref for synchronous access in loop)
   const llmApiErrorRetriesRef = useRef(0);
-  const quotaAutoSwapAttemptedRef = useRef(false);
   const emptyResponseRetriesRef = useRef(0);
   const chatgptPlanSwapsRef = useRef(0);
   const chatgptExhaustedProvidersRef = useRef(new Set<string>());
@@ -3675,7 +3645,6 @@ export function App({
     processingConversationRef,
     queueApprovalResults,
     queueSnapshotRef,
-    quotaAutoSwapAttemptedRef,
     refreshDerived,
     refreshDerivedThrottled,
     resetTrajectoryBases,
@@ -3703,7 +3672,6 @@ export function App({
     setRestoredInput,
     setStreaming,
     setConversationSummary,
-    setTempModelOverride,
     setThinkingMessage,
     setTrajectoryElapsedBaseMs,
     setTrajectoryTokenBase,
@@ -3711,7 +3679,6 @@ export function App({
     shouldAutoGenerateConversationTitleRef,
     syncTrajectoryElapsedBase,
     syncTrajectoryTokenBase,
-    tempModelOverrideRef,
     toolAbortControllerRef,
     toolResultsInFlightRef,
     trajectoryRunTokenStartRef,
@@ -3779,7 +3746,6 @@ export function App({
     startupApproval,
     startupApprovals,
     syncTrajectoryElapsedBase,
-    tempModelOverrideRef,
     toolAbortControllerRef,
     toolResultsInFlightRef,
     updateStreamingOutput,
@@ -4009,7 +3975,6 @@ export function App({
     setStaticItems,
     setStaticRenderEpoch,
     setStreaming,
-    tempModelOverrideRef,
     userCancelledRef,
   });
 
@@ -4336,7 +4301,6 @@ export function App({
     setLlmConfig,
     setModelReasoningPrompt,
     setQueuedOverlayAction,
-    setTempModelOverride,
     withCommandLock,
   });
 
@@ -4969,7 +4933,6 @@ export function App({
         handleSystemPromptSelect={handleSystemPromptSelect}
         handleToolsetSelect={handleToolsetSelect}
         hasBackfilledRef={hasBackfilledRef}
-        hasTemporaryModelOverride={hasTemporaryModelOverride}
         includeSystemPromptUpgradeTip={includeSystemPromptUpgradeTip}
         inputEnabled={inputEnabled}
         inputVisible={inputVisible}

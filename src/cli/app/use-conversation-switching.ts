@@ -121,7 +121,6 @@ type ConversationSwitchingContext = {
   setStaticItems: Dispatch<SetStateAction<StaticItem[]>>;
   setStaticRenderEpoch: Dispatch<SetStateAction<number>>;
   setStreaming: (value: boolean) => void;
-  tempModelOverrideRef: MutableRefObject<string | null>;
   userCancelledRef: MutableRefObject<boolean>;
 };
 
@@ -173,7 +172,6 @@ export function useConversationSwitching(ctx: ConversationSwitchingContext) {
     setStaticItems,
     setStaticRenderEpoch,
     setStreaming,
-    tempModelOverrideRef,
     userCancelledRef,
   } = ctx;
 
@@ -221,15 +219,13 @@ export function useConversationSwitching(ctx: ConversationSwitchingContext) {
 
         while (true) {
           try {
-            const preparedToolContext = await prepareScopedToolExecutionContext(
-              tempModelOverrideRef.current ?? undefined,
-            );
+            const preparedToolContext =
+              await prepareScopedToolExecutionContext();
             stream = await sendMessageStreamWithBackend(
               backend,
               forked.id,
               currentInput,
               {
-                overrideModel: tempModelOverrideRef.current ?? undefined,
                 preparedToolContext: preparedToolContext.preparedToolContext,
               },
             );

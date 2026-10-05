@@ -39,7 +39,6 @@ TOP_LEVEL_KEYS = [
     "showCompactions",
     "sessionContextEnabled",
     "autoConversationTitles",
-    "autoSwapOnQuotaLimit",
     "includeWorktreeTool",
     "topicMarkingEnabled",
     "topicMarkerWarnTurns",

@@ -116,7 +116,6 @@ type ConfigurationHandlersContext = {
     SetStateAction<ModelReasoningPrompt | null>
   >;
   setQueuedOverlayAction: Dispatch<SetStateAction<QueuedOverlayAction>>;
-  setTempModelOverride: (next: string | null) => void;
   withCommandLock: (asyncFn: () => Promise<void>) => Promise<void>;
 };
 
@@ -154,7 +153,6 @@ export function useConfigurationHandlers(ctx: ConfigurationHandlersContext) {
     setLlmConfig,
     setModelReasoningPrompt,
     setQueuedOverlayAction,
-    setTempModelOverride,
     withCommandLock,
   } = ctx;
 
@@ -615,7 +613,6 @@ export function useConfigurationHandlers(ctx: ConfigurationHandlersContext) {
               : {}),
           } as LlmConfig);
           setCurrentModelId(modelId);
-          setTempModelOverride(null);
 
           // Record the previous and new model in recents (by handle, since
           // availableHandles in ModelSelector uses handles).
@@ -714,7 +711,6 @@ export function useConfigurationHandlers(ctx: ConfigurationHandlersContext) {
       resetPendingReasoningCycle,
       withCommandLock,
       setHasConversationModelOverride,
-      setTempModelOverride,
       setActiveOverlay,
       setAgentState,
       setConversationOverrideContextWindowLimit,

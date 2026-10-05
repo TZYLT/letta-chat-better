@@ -23,7 +23,6 @@ import {
   isApprovalPendingError,
   isEmptyResponseRetryable,
   isInvalidToolCallIdsError,
-  isQuotaLimitErrorDetail,
   parseRetryAfterHeaderMs,
   rebuildInputWithFreshDenials,
   refreshInputOtidsForNewRequest,
@@ -121,7 +120,6 @@ import {
   ERROR_FEEDBACK_HINT,
   INTERRUPT_MESSAGE,
   LLM_API_ERROR_MAX_RETRIES,
-  TEMP_QUOTA_OVERRIDE_MODEL,
 } from "./constants";
 import { extractErrorMeta } from "./errors";
 import { uid } from "./ids";
@@ -231,7 +229,6 @@ type ConversationLoopContext = {
   processingConversationRef: MutableRefObject<number>;
   queueApprovalResults: QueueApprovalResults;
   queueSnapshotRef: MutableRefObject<QueuedMessage[]>;
-  quotaAutoSwapAttemptedRef: MutableRefObject<boolean>;
   refreshDerived: () => void;
   refreshDerivedThrottled: () => void;
   resetTrajectoryBases: () => void;
@@ -259,7 +256,6 @@ type ConversationLoopContext = {
   setRestoredInput: Dispatch<SetStateAction<string | null>>;
   setStreaming: (value: boolean) => void;
   setConversationSummary: (summary: string | null) => void;
-  setTempModelOverride: (next: string | null) => void;
   setThinkingMessage: Dispatch<SetStateAction<string>>;
   setTrajectoryElapsedBaseMs: Dispatch<SetStateAction<number>>;
   setTrajectoryTokenBase: Dispatch<SetStateAction<number>>;
@@ -267,7 +263,6 @@ type ConversationLoopContext = {
   shouldAutoGenerateConversationTitleRef: MutableRefObject<boolean>;
   syncTrajectoryElapsedBase: () => void;
   syncTrajectoryTokenBase: () => void;
-  tempModelOverrideRef: MutableRefObject<string | null>;
   toolAbortControllerRef: MutableRefObject<AbortController | null>;
   toolResultsInFlightRef: MutableRefObject<boolean>;
   trajectoryRunTokenStartRef: MutableRefObject<number>;
@@ -327,7 +322,6 @@ export function useConversationLoop(ctx: ConversationLoopContext) {
     processingConversationRef,
     queueApprovalResults,
     queueSnapshotRef,
-    quotaAutoSwapAttemptedRef,
     refreshDerived,
     refreshDerivedThrottled,
     resetTrajectoryBases,
@@ -355,7 +349,6 @@ export function useConversationLoop(ctx: ConversationLoopContext) {
     setRestoredInput,
     setStreaming,
     setConversationSummary,
-    setTempModelOverride,
     setThinkingMessage,
     setTrajectoryElapsedBaseMs,
     setTrajectoryTokenBase,
@@ -363,7 +356,6 @@ export function useConversationLoop(ctx: ConversationLoopContext) {
     shouldAutoGenerateConversationTitleRef,
     syncTrajectoryElapsedBase,
     syncTrajectoryTokenBase,
-    tempModelOverrideRef,
     toolAbortControllerRef,
     toolResultsInFlightRef,
     trajectoryRunTokenStartRef,
@@ -609,7 +601,6 @@ export function useConversationLoop(ctx: ConversationLoopContext) {
         llmApiErrorRetriesRef.current = 0;
         emptyResponseRetriesRef.current = 0;
         conversationBusyRetriesRef.current = 0;
-        quotaAutoSwapAttemptedRef.current = false;
         chatgptPlanSwapsRef.current = 0;
         chatgptExhaustedProvidersRef.current.clear();
       }
@@ -787,16 +778,14 @@ export function useConversationLoop(ctx: ConversationLoopContext) {
           let preStreamResumeResult: DrainResult | null = null;
           let prefetchedAgent: AgentState | null = null;
           try {
-            const preparedToolContext = await prepareScopedToolExecutionContext(
-              tempModelOverrideRef.current ?? undefined,
-            );
+            const preparedToolContext =
+              await prepareScopedToolExecutionContext();
             prefetchedAgent = preparedToolContext.agent;
             const nextStream = await sendMessageStream(
               conversationIdRef.current,
               currentInput,
               {
                 agentId: agentIdRef.current,
-                overrideModel: tempModelOverrideRef.current ?? undefined,
                 preparedToolContext: preparedToolContext.preparedToolContext,
                 allowResponseStateReuse:
                   options?.allowResponseStateReuse === true,
@@ -1925,11 +1914,8 @@ export function useConversationLoop(ctx: ConversationLoopContext) {
               // Execute auto-allowed tools (sequential for writes, parallel for reads)
               const approvalToolContextId =
                 approvalToolContextIdRef.current ??
-                (
-                  await prepareScopedToolExecutionContext(
-                    tempModelOverrideRef.current ?? undefined,
-                  )
-                ).preparedToolContext.contextId;
+                (await prepareScopedToolExecutionContext()).preparedToolContext
+                  .contextId;
               autoAllowedResults =
                 autoAllowed.length > 0
                   ? await executeAutoAllowedTools(
@@ -2358,60 +2344,7 @@ export function useConversationLoop(ctx: ConversationLoopContext) {
               buffersRef.current.interrupted = false;
               continue;
             }
-            // No sibling plan available; try the hosted Auto fallback below.
-          }
-
-          // Quota-limit fallback: hosted Letta API can recover by switching to
-          // Auto. Local/embedded mode has no hosted Auto router, so surface the
-          // provider quota error and let the user choose/connect a local model.
-          const autoSwapOnQuotaLimitEnabled =
-            settingsManager.getSetting("autoSwapOnQuotaLimit") !== false;
-          const supportsHostedAutoQuotaFallback =
-            !getBackend().capabilities.localModelCatalog;
-          const isQuotaLimit = isQuotaLimitErrorDetail(
-            detailFromRun ?? fallbackError,
-          );
-          const alreadyOnTempAuto =
-            tempModelOverrideRef.current === TEMP_QUOTA_OVERRIDE_MODEL;
-          const canAttemptQuotaAutoSwap =
-            autoSwapOnQuotaLimitEnabled &&
-            supportsHostedAutoQuotaFallback &&
-            isQuotaLimit &&
-            !alreadyOnTempAuto &&
-            !quotaAutoSwapAttemptedRef.current;
-
-          if (canAttemptQuotaAutoSwap) {
-            quotaAutoSwapAttemptedRef.current = true;
-            setTempModelOverride(TEMP_QUOTA_OVERRIDE_MODEL);
-
-            const statusId = uid("status");
-            buffersRef.current.byId.set(statusId, {
-              kind: "status",
-              id: statusId,
-              lines: [
-                "Quota limit reached; temporarily switching to Auto and continuing...",
-              ],
-            });
-            buffersRef.current.order.push(statusId);
-            refreshDerived();
-
-            currentInput = [
-              ...currentInput,
-              {
-                type: "message",
-                role: "user",
-                content: "Keep going.",
-              },
-            ];
-
-            buffersRef.current.byId.delete(statusId);
-            buffersRef.current.order = buffersRef.current.order.filter(
-              (id: string) => id !== statusId,
-            );
-            refreshDerived();
-
-            buffersRef.current.interrupted = false;
-            continue;
+            // No sibling plan available; surface the quota error below.
           }
 
           // Empty LLM response retry (e.g. Opus 4.6 occasionally returns no content).

@@ -111,7 +111,6 @@ type ApprovalFlowContext = {
   startupApproval: ApprovalRequest | null;
   startupApprovals: ApprovalRequest[];
   syncTrajectoryElapsedBase: () => void;
-  tempModelOverrideRef: MutableRefObject<string | null>;
   toolAbortControllerRef: MutableRefObject<AbortController | null>;
   toolResultsInFlightRef: MutableRefObject<boolean>;
   updateStreamingOutput: (
@@ -173,7 +172,6 @@ export function useApprovalFlow(ctx: ApprovalFlowContext) {
     startupApproval,
     startupApprovals,
     syncTrajectoryElapsedBase,
-    tempModelOverrideRef,
     toolAbortControllerRef,
     toolResultsInFlightRef,
     updateStreamingOutput,
@@ -434,11 +432,8 @@ export function useApprovalFlow(ctx: ApprovalFlowContext) {
         try {
           const approvalToolContextId =
             approvalToolContextIdRef.current ??
-            (
-              await prepareScopedToolExecutionContext(
-                tempModelOverrideRef.current ?? undefined,
-              )
-            ).preparedToolContext.contextId;
+            (await prepareScopedToolExecutionContext()).preparedToolContext
+              .contextId;
           executedResults = await executeApprovalBatch(
             allDecisions,
             (chunk) => {
@@ -859,11 +854,8 @@ export function useApprovalFlow(ctx: ApprovalFlowContext) {
             );
             const approvalToolContextId =
               approvalToolContextIdRef.current ??
-              (
-                await prepareScopedToolExecutionContext(
-                  tempModelOverrideRef.current ?? undefined,
-                )
-              ).preparedToolContext.contextId;
+              (await prepareScopedToolExecutionContext()).preparedToolContext
+                .contextId;
             const executedResults = await executeApprovalBatch(
               allDecisions,
               (chunk) => {

@@ -244,7 +244,6 @@ type AppViewProps = {
     commandId?: string | null,
   ) => Promise<void>;
   hasBackfilledRef: RefObject<boolean>;
-  hasTemporaryModelOverride: boolean;
   includeSystemPromptUpgradeTip: boolean;
   inputEnabled: boolean;
   inputVisible: boolean;
@@ -413,7 +412,6 @@ export function AppView(props: AppViewProps) {
     handleSystemPromptSelect,
     handleToolsetSelect,
     hasBackfilledRef,
-    hasTemporaryModelOverride,
     includeSystemPromptUpgradeTip,
     inputEnabled,
     inputVisible,
@@ -753,7 +751,6 @@ export function AppView(props: AppViewProps) {
                 agentName={agentName}
                 currentModel={currentModelDisplay}
                 currentModelProvider={currentModelProvider}
-                hasTemporaryModelOverride={hasTemporaryModelOverride}
                 currentReasoningEffort={currentReasoningEffort}
                 fileAutocompleteFdPath={fileAutocompleteFdPath}
                 messageQueue={queueDisplay}

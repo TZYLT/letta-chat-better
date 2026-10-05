@@ -389,7 +389,6 @@ const StatuslineSlot = memo(function StatuslineSlot({
   showExitHint,
   isOpenAICodexProvider,
   isByokProvider,
-  hasTemporaryModelOverride,
   hideFooter,
   rightColumnWidth,
   modContext,
@@ -407,7 +406,6 @@ const StatuslineSlot = memo(function StatuslineSlot({
   showExitHint: boolean;
   isOpenAICodexProvider: boolean;
   isByokProvider: boolean;
-  hasTemporaryModelOverride?: boolean;
   hideFooter: boolean;
   rightColumnWidth: number;
   modContext: ModContext;
@@ -424,7 +422,6 @@ const StatuslineSlot = memo(function StatuslineSlot({
   });
 
   const statuslineUi: StatuslineUiContext = {
-    hasTemporaryModelOverride: Boolean(hasTemporaryModelOverride),
     isByokProvider,
     isOpenAICodexProvider,
     rightColumnWidth,
@@ -832,7 +829,6 @@ export function Input({
   agentName,
   currentModel,
   currentModelProvider,
-  hasTemporaryModelOverride = false,
   currentReasoningEffort,
   fileAutocompleteFdPath,
   messageQueue,
@@ -881,7 +877,6 @@ export function Input({
   agentName?: string | null;
   currentModel?: string | null;
   currentModelProvider?: string | null;
-  hasTemporaryModelOverride?: boolean;
   currentReasoningEffort?: ModelReasoningEffort | null;
   fileAutocompleteFdPath?: string | null;
   messageQueue?: QueuedMessage[];
@@ -1999,7 +1994,6 @@ export function Input({
                   currentModelProvider?.startsWith("lc-") ||
                   currentModelProvider === OPENAI_CODEX_PROVIDER_NAME
                 }
-                hasTemporaryModelOverride={hasTemporaryModelOverride}
                 hideFooter={hideFooter}
                 rightColumnWidth={footerRightColumnWidth}
                 modContext={panelModContext}
@@ -2052,7 +2046,6 @@ export function Input({
     currentReasoningEffort,
     fileAutocompleteFdPath,
     currentModelProvider,
-    hasTemporaryModelOverride,
     hideFooter,
     footerRightColumnWidth,
     reserveInputSpace,
