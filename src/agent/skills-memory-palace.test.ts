@@ -83,12 +83,13 @@ describe("curating-memory-palace skill", () => {
     expect(content).toContain("palace-action");
   });
 
-  test("is not offered to local agents", async () => {
+  test("is offered to local agents too", async () => {
     const offer = await palaceSkillOffer(LOCAL_AGENT_ID);
 
-    expect(offer.listed).toBe(false);
-    expect(offer.discovered).toBe(false);
-    await expect(offer.content).rejects.toThrow("not found");
+    expect(offer.listed).toBe(true);
+    expect(offer.discovered).toBe(true);
+    const { content } = await offer.content;
+    expect(content).toContain("palace/MEMORY.md");
   });
 
   test("keeps a local agent's own copy of the skill", () => {

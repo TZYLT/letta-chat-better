@@ -10,30 +10,19 @@ const baseSkill: Skill = {
 };
 
 describe("isSkillAvailableForAgent", () => {
-  test("excludes bundled cloud-only skills for local agents", () => {
+  test("offers a bundled skill to local and Cloud agents alike", () => {
     const skill: Skill = { ...baseSkill, id: "curating-memory-palace" };
-    expect(isSkillAvailableForAgent(skill, "agent-local-123")).toBe(false);
+    expect(isSkillAvailableForAgent(skill, "agent-local-123")).toBe(true);
     expect(isSkillAvailableForAgent(skill, "agent-123")).toBe(true);
     expect(isSkillAvailableForAgent(skill, undefined)).toBe(true);
   });
 
-  test("keeps non-bundled overrides of cloud-only skills for local agents", () => {
+  test("offers a project override of the same skill", () => {
     const skill: Skill = {
       ...baseSkill,
       id: "curating-memory-palace",
       source: "project",
     };
     expect(isSkillAvailableForAgent(skill, "agent-local-123")).toBe(true);
-  });
-
-  test("keeps other bundled skills for local agents", () => {
-    for (const id of [
-      "scheduling-tasks",
-      "context-doctor",
-      "using-mcp-tools",
-    ]) {
-      const skill: Skill = { ...baseSkill, id };
-      expect(isSkillAvailableForAgent(skill, "agent-local-123")).toBe(true);
-    }
   });
 });

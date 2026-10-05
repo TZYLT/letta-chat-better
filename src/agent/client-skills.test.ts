@@ -109,53 +109,7 @@ describe("buildClientSkillsPayload", () => {
     expect(result.skills.map((skill) => skill.id)).toEqual(["manual-only"]);
   });
 
-  test("excludes a bundled cloud-only skill for local agents", async () => {
-    const { buildClientSkillsPayload, discoverClientSideSkills } = await import(
-      "@/agent/client-skills"
-    );
-
-    const discoverSkillsFn = async (): Promise<SkillDiscoveryResult> => ({
-      skills: [
-        {
-          ...baseSkill,
-          id: "curating-memory-palace",
-          description: "Cloud-only bundled skill",
-          path: "/tmp/bundled/curating-memory-palace/SKILL.md",
-          source: "bundled",
-        },
-        {
-          ...baseSkill,
-          id: "safe-bundled",
-          description: "Safe bundled skill",
-          path: "/tmp/bundled/safe/SKILL.md",
-          source: "bundled",
-        },
-      ],
-      errors: [],
-    });
-
-    const discovery = await discoverClientSideSkills({
-      agentId: "agent-local-123",
-      skillsDirectory: "/tmp/.skills",
-      skillSources: ["bundled"],
-      discoverSkillsFn,
-    });
-
-    expect(discovery.skills.map((skill) => skill.id)).toEqual(["safe-bundled"]);
-
-    const payload = await buildClientSkillsPayload({
-      agentId: "agent-local-123",
-      skillsDirectory: "/tmp/.skills",
-      skillSources: ["bundled"],
-      discoverSkillsFn,
-    });
-
-    expect(payload.clientSkills.map((skill) => skill.name)).toEqual([
-      "safe-bundled",
-    ]);
-  });
-
-  test("keeps a project override of a cloud-only skill for local agents", async () => {
+  test("keeps a project skill for local agents", async () => {
     const { discoverClientSideSkills } = await import("@/agent/client-skills");
 
     const discoverSkillsFn = async (): Promise<SkillDiscoveryResult> => ({

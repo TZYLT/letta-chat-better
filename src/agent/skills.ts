@@ -13,7 +13,6 @@ import { readdir, readFile, realpath, stat } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseFrontmatter } from "@/utils/frontmatter";
-import { isLocalAgentId } from "./agent-id";
 import { ALL_SKILL_SOURCES, type SkillSource } from "./skill-sources";
 
 /**
@@ -153,20 +152,18 @@ export function isUserInvocableSkill(skill: Skill): boolean {
   return skill.userInvocable !== false;
 }
 
-const LOCAL_AGENT_EXCLUDED_BUNDLED_SKILLS = new Set(["curating-memory-palace"]);
-
+/**
+ * Whether a skill may be offered to a given agent.
+ *
+ * This fork ships no agent-scoped skill exclusions: the cloud-only skills that
+ * used to be hidden from local agents are gone, and every remaining bundled
+ * skill applies to every agent. The function is kept as the single place to add
+ * such a rule back.
+ */
 export function isSkillAvailableForAgent(
-  skill: Skill,
-  agentId?: string,
+  _skill: Skill,
+  _agentId?: string,
 ): boolean {
-  if (
-    skill.source === "bundled" &&
-    agentId &&
-    isLocalAgentId(agentId) &&
-    LOCAL_AGENT_EXCLUDED_BUNDLED_SKILLS.has(skill.id)
-  ) {
-    return false;
-  }
   return true;
 }
 
