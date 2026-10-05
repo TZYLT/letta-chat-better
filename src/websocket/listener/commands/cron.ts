@@ -11,7 +11,6 @@ import {
   resumeTask as resumeCronTask,
   updateTask as updateCronTask,
 } from "@/cron";
-import { isManagedCloudSandbox } from "@/cron/runner";
 import { runCronTaskNow } from "@/cron/scheduler";
 import type {
   CronAddCommand,
@@ -120,11 +119,6 @@ export async function handleCronCommand(
 
   if (parsed.type === "cron_add") {
     try {
-      if (isManagedCloudSandbox()) {
-        throw new Error(
-          "Local schedules cannot be created in a managed Cloud sandbox",
-        );
-      }
       const scheduledFor = parsed.scheduled_for
         ? new Date(parsed.scheduled_for)
         : undefined;
@@ -287,11 +281,6 @@ export async function handleCronCommand(
         ? ("cron_pause_response" as const)
         : ("cron_resume_response" as const);
     try {
-      if (parsed.type === "cron_resume" && isManagedCloudSandbox()) {
-        throw new Error(
-          "Local schedules cannot be resumed in a managed Cloud sandbox",
-        );
-      }
       let scheduledFor: Date | undefined;
       if (parsed.type === "cron_resume" && parsed.scheduled_for !== undefined) {
         scheduledFor = new Date(parsed.scheduled_for);

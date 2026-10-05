@@ -11,21 +11,12 @@
  *   letta cron delete <id|name>   (alias: remove)
  *   letta cron delete --all [--agent <id>]
  *
- * Schedule ownership follows execution: managed Cloud sandboxes use durable
- * Cloud schedules; user-managed computers and self-hosted runtimes use their
- * local scheduler.
+ * Every schedule is device-local: it lives in ~/.letta/crons.json and fires
+ * from the WS listener process on this device. Durable Cloud schedules were
+ * removed with the rest of the Cloud surface.
  */
 
 import { parseArgs } from "node:util";
-import { ApiRequestError } from "@/backend/api/request";
-import {
-  type CloudSchedule,
-  createCloudSchedule,
-  deleteCloudSchedule,
-  getCloudSchedule,
-  listCloudScheduleHistory,
-  listCloudSchedules,
-} from "@/backend/api/schedules";
 import {
   addTask,
   deleteAllTasks,
@@ -39,22 +30,11 @@ import {
   readCronRunLogEntriesPage,
 } from "@/cron";
 import {
-  buildCloudScheduleInput,
-  CLOUD_EXECUTION_TARGET,
-  resolveCronCreatePlacement,
-} from "@/cron/runner";
-import { getRuntimeActingUserId } from "@/runtime-context";
-import {
   resolveCronAddConversationTarget,
   resolveCronAgentId,
   resolveCronConversationFilter,
 } from "./cron-scope";
-import {
-  canManageCloudSchedules,
-  ensureSettingsForCloud,
-  printAmbiguousTaskName,
-  resolveTaskName,
-} from "./cron-task-ref";
+import { printAmbiguousTaskName, resolveTaskName } from "./cron-task-ref";
 
 // ── Usage ───────────────────────────────────────────────────────────
 
@@ -82,10 +62,6 @@ Add options:
   --conversation <id>    Conversation target (omit or "new" for a fresh
                          conversation per fire; "self" for the current
                          conversation; "default" for the agent default)
-  --computer <id>        (managed Cloud sandbox only) Run on a connected
-                         external computer (deviceId from \`letta computers
-                         list\`). Falls back to the Cloud sandbox if that
-                         computer is offline at fire time.
 
 List/filter options:
   --agent <id>           Filter by agent ID
@@ -116,6 +92,8 @@ const CRON_OPTIONS = {
   id: { type: "string" },
   limit: { type: "string" },
   "run-id": { type: "string" },
+  // Accepted only so a stale `--computer` gets an actionable error instead of
+  // an "unknown option" usage dump.
   computer: { type: "string" },
 } as const;
 
@@ -130,42 +108,9 @@ function parseCronArgs(argv: string[]) {
   });
 }
 
-// ── Cloud output mapping ────────────────────────────────────────────
-
-function extractPromptFromCloudSchedule(
-  schedule: CloudSchedule,
-): string | null {
-  const messages = schedule.message?.messages;
-  if (!Array.isArray(messages)) return null;
-  const first = messages[0];
-  if (!first || typeof first.content !== "string") return null;
-  return first.content;
-}
-
-function formatCloudScheduleOutput(
-  schedule: CloudSchedule,
-): Record<string, unknown> {
-  const targetDeviceId = schedule.target_device_id ?? null;
-  return {
-    id: schedule.id,
-    runner: "cloud",
-    execution_target: targetDeviceId ?? CLOUD_EXECUTION_TARGET,
-    ...(targetDeviceId && { target_device_id: targetDeviceId }),
-    agent_id: schedule.agent_id,
-    conversation_id: schedule.conversation_id ?? "default",
-    name: schedule.name ?? null,
-    description: schedule.description ?? null,
-    prompt: extractPromptFromCloudSchedule(schedule),
-    schedule: schedule.schedule,
-    recurring: schedule.schedule.type === "recurring",
-    next_scheduled_time: schedule.next_scheduled_time,
-    created_at: schedule.created_at ?? null,
-  };
-}
-
 // ── Handlers ────────────────────────────────────────────────────────
 
-async function handleAdd(values: CronArgValues): Promise<number> {
+function handleAdd(values: CronArgValues): number {
   const name = values.name;
   if (!name || typeof name !== "string") {
     console.error("Error: --name is required.");
@@ -192,6 +137,13 @@ async function handleAdd(values: CronArgValues): Promise<number> {
 
   const conversationId = resolveCronAddConversationTarget(values.conversation);
   if (conversationId === null) return 1;
+
+  if (values.computer) {
+    console.error(
+      "Error: --computer is no longer supported. Schedules always run on this computer.",
+    );
+    return 1;
+  }
 
   // Determine schedule type
   const everyValue = values.every;
@@ -254,31 +206,6 @@ async function handleAdd(values: CronArgValues): Promise<number> {
     return 1;
   }
 
-  const placement = await resolveCronCreatePlacement({
-    agentId,
-    targetDeviceId: values.computer,
-  });
-  if ("error" in placement) {
-    console.error(`Error: ${placement.error}`);
-    return 1;
-  }
-  const { runner, targetDeviceId } = placement;
-
-  if (runner === "cloud") {
-    return handleCloudAdd({
-      agentId,
-      conversationId,
-      name,
-      description,
-      prompt,
-      cron,
-      recurring,
-      scheduledFor,
-      note,
-      targetDeviceId,
-    });
-  }
-
   try {
     const result = addTask({
       agent_id: agentId,
@@ -326,86 +253,7 @@ async function handleAdd(values: CronArgValues): Promise<number> {
   }
 }
 
-interface CloudAddParams {
-  agentId: string;
-  conversationId: string;
-  name: string;
-  description: string;
-  prompt: string;
-  cron: string;
-  recurring: boolean;
-  scheduledFor?: Date;
-  note?: string;
-  targetDeviceId?: string;
-}
-
-async function handleCloudAdd(params: CloudAddParams): Promise<number> {
-  let built: ReturnType<typeof buildCloudScheduleInput>;
-  try {
-    built = buildCloudScheduleInput({
-      name: params.name,
-      description: params.description,
-      prompt: params.prompt,
-      conversationId: params.conversationId,
-      cron: params.cron,
-      recurring: params.recurring,
-      scheduledFor: params.scheduledFor,
-      targetDeviceId: params.targetDeviceId,
-    });
-  } catch (err) {
-    console.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
-    return 1;
-  }
-
-  try {
-    const result = await createCloudSchedule(
-      params.agentId,
-      built.input,
-      getRuntimeActingUserId(),
-    );
-
-    const targetDeviceId =
-      result.target_device_id ?? built.input.target_device_id ?? null;
-
-    const output: Record<string, unknown> = {
-      id: result.id,
-      runner: "cloud",
-      execution_target: targetDeviceId ?? CLOUD_EXECUTION_TARGET,
-      ...(targetDeviceId && { target_device_id: targetDeviceId }),
-      agent_id: params.agentId,
-      conversation_id: params.conversationId,
-      recurring: params.recurring,
-      schedule: built.input.schedule,
-      ...(result.next_scheduled_at && {
-        next_scheduled_at: result.next_scheduled_at,
-      }),
-    };
-
-    const notes = [...built.notes];
-    if (params.note) notes.unshift(params.note);
-    if (notes.length > 0) {
-      output.notes = notes;
-    }
-
-    console.log(JSON.stringify(output, null, 2));
-    console.error(
-      targetDeviceId
-        ? `Created Cloud schedule: it fires from the cloud and runs on computer "${targetDeviceId}" (sandbox fallback if offline).`
-        : "Created Cloud schedule: it fires from the cloud and runs in this agent's managed cloud sandbox (survives local shutdown).",
-    );
-    return 0;
-  } catch (err) {
-    // Deliberately no fallback to the local runner: silently degrading to an
-    // ephemeral device-local schedule is the failure mode LET-9692 fixes.
-    console.error(
-      `Error: failed to create Cloud schedule: ${err instanceof Error ? err.message : String(err)}`,
-    );
-    console.error("No schedule was created. Retry the request.");
-    return 1;
-  }
-}
-
-async function handleList(values: CronArgValues): Promise<number> {
+function handleList(values: CronArgValues): number {
   const agentId = values.agent || process.env.LETTA_AGENT_ID || undefined;
   const conversationId = resolveCronConversationFilter(values.conversation);
   if (conversationId === null) return 1;
@@ -415,43 +263,11 @@ async function handleList(values: CronArgValues): Promise<number> {
     conversation_id: conversationId,
   }).map((task) => ({ ...task, runner: "local" }));
 
-  if (agentId && canManageCloudSchedules(agentId)) {
-    try {
-      await ensureSettingsForCloud();
-      const response = await listCloudSchedules(agentId);
-      for (const schedule of response.scheduled_messages) {
-        if (
-          conversationId &&
-          (schedule.conversation_id ?? "default") !== conversationId
-        ) {
-          continue;
-        }
-        output.push(formatCloudScheduleOutput(schedule));
-      }
-    } catch (err) {
-      if (
-        err instanceof ApiRequestError &&
-        (err.status === 404 || err.status === 405)
-      ) {
-        console.error(
-          "Note: Cloud schedules not listed (server does not serve the schedule routes, or this agent is not visible to the current credential).",
-        );
-      } else {
-        console.error(
-          `Warning: Cloud schedules not listed: ${err instanceof Error ? err.message : String(err)}`,
-        );
-      }
-    }
-  }
-
   console.log(JSON.stringify(output, null, 2));
   return 0;
 }
 
-async function handleGet(
-  values: CronArgValues,
-  positionals: string[],
-): Promise<number> {
+function handleGet(positionals: string[]): number {
   const taskRef = positionals[1];
   if (!taskRef) {
     console.error(
@@ -460,48 +276,22 @@ async function handleGet(
     return 1;
   }
 
-  const agentId = resolveCronAgentId(values.agent);
   const task = getTask(taskRef);
   if (task) {
     console.log(JSON.stringify({ ...task, runner: "local" }, null, 2));
     return 0;
   }
 
-  if (agentId && canManageCloudSchedules(agentId)) {
-    try {
-      await ensureSettingsForCloud();
-      const schedule = await getCloudSchedule(agentId, taskRef);
-      console.log(JSON.stringify(formatCloudScheduleOutput(schedule), null, 2));
-      return 0;
-    } catch (err) {
-      if (!(err instanceof ApiRequestError && err.status === 404)) {
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        return 1;
-      }
-    }
-  }
-
-  const resolved = await resolveTaskName(taskRef, { agentId });
+  const resolved = resolveTaskName(taskRef);
   if (resolved && "ambiguous" in resolved) {
     printAmbiguousTaskName(taskRef, resolved.ambiguous);
     return 1;
   }
-  if (resolved?.store === "local") {
-    const task = getTask(resolved.id);
-    if (task) {
-      console.log(JSON.stringify({ ...task, runner: "local" }, null, 2));
+  if (resolved) {
+    const named = getTask(resolved.id);
+    if (named) {
+      console.log(JSON.stringify({ ...named, runner: "local" }, null, 2));
       return 0;
-    }
-  }
-  if (resolved?.store === "cloud" && agentId) {
-    try {
-      const schedule = await getCloudSchedule(agentId, resolved.id);
-      console.log(JSON.stringify(formatCloudScheduleOutput(schedule), null, 2));
-      return 0;
-    } catch {
-      // fall through to not-found
     }
   }
 
@@ -509,10 +299,15 @@ async function handleGet(
   return 1;
 }
 
-async function handleRuns(values: CronArgValues): Promise<number> {
+function handleRuns(values: CronArgValues): number {
   const id = values.id;
   if (!id || typeof id !== "string") {
     console.error("Error: --id is required. Usage: letta cron runs --id <id>");
+    return 1;
+  }
+
+  if (!getTask(id)) {
+    console.error(`Error: task ${id} not found.`);
     return 1;
   }
 
@@ -520,50 +315,14 @@ async function handleRuns(values: CronArgValues): Promise<number> {
   const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 50;
   const runId = values["run-id"];
 
-  if (getTask(id)) {
-    try {
-      const logPath = getCronRunLogPath(id);
-      const page = readCronRunLogEntriesPage(logPath, {
-        jobId: id,
-        limit,
-        ...(typeof runId === "string" && runId.trim() ? { runId } : {}),
-      });
-      console.log(JSON.stringify(page, null, 2));
-      return 0;
-    } catch (err) {
-      console.error(
-        `Error: ${err instanceof Error ? err.message : String(err)}`,
-      );
-      return 1;
-    }
-  }
-
-  const agentId = resolveCronAgentId(values.agent);
-  if (!agentId) {
-    console.error(
-      `Error: --agent or LETTA_AGENT_ID is required to look up Cloud schedule runs for task ${id}.`,
-    );
-    return 1;
-  }
-  if (!canManageCloudSchedules(agentId)) {
-    console.error(`Error: task ${id} not found.`);
-    return 1;
-  }
-
   try {
-    await ensureSettingsForCloud();
-    const response = await listCloudScheduleHistory(agentId, id, { limit });
-    console.log(
-      JSON.stringify(
-        {
-          runner: "cloud",
-          entries: response.history,
-          has_next_page: response.has_next_page,
-        },
-        null,
-        2,
-      ),
-    );
+    const logPath = getCronRunLogPath(id);
+    const page = readCronRunLogEntriesPage(logPath, {
+      jobId: id,
+      limit,
+      ...(typeof runId === "string" && runId.trim() ? { runId } : {}),
+    });
+    console.log(JSON.stringify(page, null, 2));
     return 0;
   } catch (err) {
     console.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
@@ -571,10 +330,7 @@ async function handleRuns(values: CronArgValues): Promise<number> {
   }
 }
 
-async function handleDelete(
-  values: CronArgValues,
-  positionals: string[],
-): Promise<number> {
+function handleDelete(values: CronArgValues, positionals: string[]): number {
   if (values.all) {
     return handleDeleteAll(values);
   }
@@ -587,103 +343,42 @@ async function handleDelete(
     return 1;
   }
 
-  const found = deleteTask(taskRef);
-  if (found) {
+  if (deleteTask(taskRef)) {
     console.log(JSON.stringify({ deleted: taskRef, runner: "local" }));
     return 0;
   }
 
-  const agentId = resolveCronAgentId(values.agent);
-
-  if (agentId && canManageCloudSchedules(agentId)) {
-    try {
-      await ensureSettingsForCloud();
-      // Verify existence first: the cloud delete endpoint is a soft-delete
-      // update that reports success even for unknown IDs.
-      await getCloudSchedule(agentId, taskRef);
-      await deleteCloudSchedule(agentId, taskRef);
-      console.log(JSON.stringify({ deleted: taskRef, runner: "cloud" }));
-      return 0;
-    } catch (err) {
-      if (!(err instanceof ApiRequestError && err.status === 404)) {
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        return 1;
-      }
-      // 404 → not an ID; fall through to name resolution.
-    }
-  }
-
-  // Not an ID in either store — try it as a task name (LET-10492): `add`
-  // requires --name, so the name is the handle users actually remember.
-  const resolved = await resolveTaskName(taskRef, { agentId });
+  // Not an ID - try it as a task name (LET-10492): `add` requires --name, so
+  // the name is the handle users actually remember.
+  const resolved = resolveTaskName(taskRef);
   if (resolved && "ambiguous" in resolved) {
     printAmbiguousTaskName(taskRef, resolved.ambiguous);
     return 1;
   }
-  if (resolved?.store === "local" && deleteTask(resolved.id)) {
+  if (resolved && deleteTask(resolved.id)) {
     console.log(
       JSON.stringify({ deleted: resolved.id, name: taskRef, runner: "local" }),
     );
     return 0;
-  }
-  if (resolved?.store === "cloud" && agentId) {
-    try {
-      await deleteCloudSchedule(agentId, resolved.id);
-      console.log(
-        JSON.stringify({
-          deleted: resolved.id,
-          name: taskRef,
-          runner: "cloud",
-        }),
-      );
-      return 0;
-    } catch (err) {
-      console.error(
-        `Error: ${err instanceof Error ? err.message : String(err)}`,
-      );
-      return 1;
-    }
   }
 
   console.error(`Error: task ${taskRef} not found.`);
   return 1;
 }
 
-async function handleDeleteAll(values: CronArgValues): Promise<number> {
+function handleDeleteAll(values: CronArgValues): number {
   const agentId = resolveCronAgentId(values.agent);
   if (!agentId) {
     console.error("Error: --agent or LETTA_AGENT_ID required with --all.");
     return 1;
   }
 
-  const localDeleted = deleteAllTasks(agentId);
-  let cloudDeleted = 0;
-  if (canManageCloudSchedules(agentId)) {
-    try {
-      await ensureSettingsForCloud();
-      const response = await listCloudSchedules(agentId);
-      for (const schedule of response.scheduled_messages) {
-        await deleteCloudSchedule(agentId, schedule.id);
-        cloudDeleted += 1;
-      }
-    } catch (err) {
-      console.error(
-        `Error: failed to delete Cloud schedules: ${err instanceof Error ? err.message : String(err)}`,
-      );
-      console.error(
-        `Deleted so far: ${localDeleted} local, ${cloudDeleted} cloud.`,
-      );
-      return 1;
-    }
-  }
+  const deleted = deleteAllTasks(agentId);
 
   console.log(
     JSON.stringify({
-      deleted: localDeleted + cloudDeleted,
-      local_deleted: localDeleted,
-      cloud_deleted: cloudDeleted,
+      deleted,
+      local_deleted: deleted,
       agent_id: agentId,
     }),
   );
@@ -714,7 +409,7 @@ export async function runCronSubcommand(argv: string[]): Promise<number> {
     case "list":
       return handleList(parsed.values);
     case "get":
-      return handleGet(parsed.values, parsed.positionals);
+      return handleGet(parsed.positionals);
     case "runs":
       return handleRuns(parsed.values);
     case "delete":

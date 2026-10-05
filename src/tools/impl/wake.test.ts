@@ -1,26 +1,13 @@
-import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { CloudSchedule } from "@/backend/api/schedules";
 import { type CronTask, listTasks } from "@/cron";
 import { runWithRuntimeContext } from "@/runtime-context";
 import { wake } from "./wake";
 
 const NOW = new Date("2026-09-24T05:00:00.000Z");
-const originalManagedCloudRuntime = process.env.LETTA_MANAGED_CLOUD_RUNTIME;
 
-beforeEach(() => {
-  delete process.env.LETTA_MANAGED_CLOUD_RUNTIME;
-});
-
-afterEach(() => {
-  if (originalManagedCloudRuntime) {
-    process.env.LETTA_MANAGED_CLOUD_RUNTIME = originalManagedCloudRuntime;
-  } else {
-    delete process.env.LETTA_MANAGED_CLOUD_RUNTIME;
-  }
-});
 const SCOPE = {
   agentId: "agent-test",
   conversationId: "conv-current",
@@ -29,21 +16,6 @@ const SCOPE = {
 
 function payload(result: Awaited<ReturnType<typeof wake>>) {
   return JSON.parse(result.content) as Record<string, unknown>;
-}
-
-function cloudSchedule(overrides: Partial<CloudSchedule> = {}): CloudSchedule {
-  return {
-    id: "schedule-cloud",
-    agent_id: SCOPE.agentId,
-    name: "check build",
-    description: "Self-scheduled wake: check build",
-    conversation_id: SCOPE.conversationId,
-    message: { messages: [{ role: "user", content: "Check the build." }] },
-    schedule: { type: "one-time", scheduled_at: NOW.getTime() + 300_000 },
-    next_scheduled_time: new Date(NOW.getTime() + 300_000).toISOString(),
-    use_sandbox: true,
-    ...overrides,
-  };
 }
 
 function localTask(overrides: Partial<CronTask> = {}): CronTask {
@@ -83,65 +55,7 @@ function inScope<T>(fn: () => T): T {
 }
 
 describe("Wake", () => {
-  test("creates a durable Cloud wake bound to the current conversation", async () => {
-    let capturedInput: unknown;
-    let capturedActingUser: string | undefined;
-    let capturedPlacement: unknown;
-    const result = await inScope(() =>
-      wake(
-        {
-          action: "create",
-          name: "check deploy",
-          prompt: "Check whether the deploy finished.",
-          after_seconds: 300,
-        },
-        {
-          now: () => NOW,
-          listLocal: () => [],
-          listCloud: async () => ({
-            scheduled_messages: [],
-            has_next_page: false,
-          }),
-          resolvePlacement: async (input) => {
-            capturedPlacement = input;
-            return { runner: "cloud" as const };
-          },
-          createCloud: async (_agentId, input, actingUserId) => {
-            capturedInput = input;
-            capturedActingUser = actingUserId;
-            return {
-              id: "wake-cloud",
-              next_scheduled_at: "2026-09-24T05:05:00.000Z",
-              use_sandbox: true,
-            };
-          },
-        },
-      ),
-    );
-
-    expect(result.status).toBe("success");
-    expect(capturedPlacement).toEqual({ agentId: SCOPE.agentId });
-    expect(capturedActingUser).toBe(SCOPE.actingUserId);
-    expect(capturedInput).toMatchObject({
-      name: "check deploy",
-      conversation_id: SCOPE.conversationId,
-      messages: [
-        { role: "user", content: "Check whether the deploy finished." },
-      ],
-      schedule: {
-        type: "one-time",
-        scheduled_at: NOW.getTime() + 300_000,
-      },
-    });
-    expect(payload(result)).toMatchObject({
-      id: "wake-cloud",
-      runner: "cloud",
-      conversation_id: SCOPE.conversationId,
-      execution_target: "cloud-sandbox",
-    });
-  });
-
-  test("preserves local placement and an explicit timezone", async () => {
+  test("creates a local wake with an explicit timezone", async () => {
     let captured: unknown;
     const result = await inScope(() =>
       wake(
@@ -154,11 +68,6 @@ describe("Wake", () => {
         {
           now: () => NOW,
           listLocal: () => [],
-          listCloud: async () => ({
-            scheduled_messages: [],
-            has_next_page: false,
-          }),
-          resolvePlacement: async () => ({ runner: "local" as const }),
           addLocal: (input) => {
             captured = input;
             return { task: localTask(), warning: "No listener is running." };
@@ -181,8 +90,7 @@ describe("Wake", () => {
     });
   });
 
-  test("lists local and Cloud wakes bound to the current conversation", async () => {
-    process.env.LETTA_MANAGED_CLOUD_RUNTIME = "1";
+  test("lists local wakes bound to the current conversation", async () => {
     const result = await inScope(() =>
       wake(
         { action: "list" },
@@ -191,16 +99,6 @@ describe("Wake", () => {
             localTask(),
             localTask({ id: "fired", status: "fired" }),
           ],
-          listCloud: async () => ({
-            scheduled_messages: [
-              cloudSchedule(),
-              cloudSchedule({
-                id: "other",
-                conversation_id: "conv-other",
-              }),
-            ],
-            has_next_page: false,
-          }),
         },
       ),
     );
@@ -208,24 +106,17 @@ describe("Wake", () => {
     expect(payload(result)).toMatchObject({
       action: "listed",
       conversation_id: SCOPE.conversationId,
-      wakes: [
-        { id: "schedule-local", runner: "local" },
-        { id: "schedule-cloud", runner: "cloud" },
-      ],
+      wakes: [{ id: "schedule-local", runner: "local" }],
     });
   });
 
   test("cancels only a wake visible in the current conversation", async () => {
-    process.env.LETTA_MANAGED_CLOUD_RUNTIME = "1";
     const deleted: string[] = [];
     const deps = {
-      listLocal: () => [],
-      listCloud: async () => ({
-        scheduled_messages: [cloudSchedule()],
-        has_next_page: false,
-      }),
-      deleteCloud: async (_agentId: string, id: string) => {
+      listLocal: () => [localTask()],
+      deleteLocal: (id: string) => {
         deleted.push(id);
+        return true;
       },
     };
 
@@ -236,20 +127,16 @@ describe("Wake", () => {
     expect(deleted).toEqual([]);
 
     const cancelled = await inScope(() =>
-      wake({ action: "cancel", id: "schedule-cloud" }, deps),
+      wake({ action: "cancel", id: "schedule-local" }, deps),
     );
     expect(cancelled.status).toBe("success");
-    expect(deleted).toEqual(["schedule-cloud"]);
+    expect(deleted).toEqual(["schedule-local"]);
   });
 
   test("rejects ambiguous timing and high-frequency recurring wakes", async () => {
     const deps = {
       now: () => NOW,
       listLocal: () => [],
-      listCloud: async () => ({
-        scheduled_messages: [],
-        has_next_page: false,
-      }),
     };
     const ambiguous = await inScope(() =>
       wake(
@@ -293,11 +180,6 @@ describe("Wake", () => {
         {
           now: () => NOW,
           listLocal: () => [],
-          listCloud: async () => ({
-            scheduled_messages: [],
-            has_next_page: false,
-          }),
-          resolvePlacement: async () => ({ runner: "local" as const }),
           addLocal: (input) => {
             recurringInput = input;
             return {
@@ -328,11 +210,6 @@ describe("Wake", () => {
             Array.from({ length: 20 }, (_, index) =>
               localTask({ id: `wake-${index}` }),
             ),
-          listCloud: async () => ({
-            scheduled_messages: [],
-            has_next_page: false,
-          }),
-          resolvePlacement: async () => ({ runner: "local" as const }),
         },
       ),
     );

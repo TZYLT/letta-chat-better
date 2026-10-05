@@ -1,36 +1,19 @@
 /**
  * Task-reference resolution for `letta cron get`/`delete` (LET-10492).
  *
- * `add` requires `--name`, so names are the handle users (and agents)
- * actually remember — but the stores address tasks by ID. This module
- * resolves a positional that didn't match any ID as a task *name* across
- * local and Cloud inventory.
+ * `add` requires `--name`, so names are the handle users (and agents) actually
+ * remember - but the store addresses tasks by ID. This module resolves a
+ * positional that didn't match any ID as a task *name*. Every task lives in the
+ * device-local store; the Cloud schedule inventory this used to search was
+ * removed with the rest of the Cloud surface.
  */
 
-import { isLocalAgentId } from "@/agent/agent-id";
-import { listCloudSchedules } from "@/backend/api/schedules";
-import { resolveBackendMode } from "@/backend/backend-mode";
 import { listTasks } from "@/cron";
 
 export interface ResolvedTaskRef {
-  /** The task/schedule id the reference resolved to. */
+  /** The task id the reference resolved to. */
   id: string;
-  /** Where the match was found (informs which store to act on first). */
-  store: "local" | "cloud";
-}
-
-/**
- * The local runner path never needs settings, so the cron subcommand does not
- * initialize them upfront; every cloud API call does (server URL + auth).
- * Idempotent — safe to call before each cloud request.
- */
-export async function ensureSettingsForCloud(): Promise<void> {
-  const { settingsManager } = await import("@/settings-manager");
-  await settingsManager.initialize();
-}
-
-export function canManageCloudSchedules(agentId: string): boolean {
-  return resolveBackendMode() === "api" && !isLocalAgentId(agentId);
+  store: "local";
 }
 
 /**
@@ -38,37 +21,19 @@ export function canManageCloudSchedules(agentId: string): boolean {
  * task name. `letta cron delete <name>` failing with "not found" while the
  * schedule keeps firing is a footgun.
  *
- * Searches local and reachable Cloud inventory. Exact-match only. Returns:
+ * Exact-match only. Returns:
  * - `{ id, store }` for exactly one match
  * - `{ ambiguous }` with the matching ids when several tasks share the name
  * - `null` for no match (callers keep their existing not-found error)
  */
-export async function resolveTaskName(
+export function resolveTaskName(
   name: string,
-  options: {
-    agentId: string;
-  },
-): Promise<ResolvedTaskRef | { ambiguous: ResolvedTaskRef[] } | null> {
+): ResolvedTaskRef | { ambiguous: ResolvedTaskRef[] } | null {
   const matches: ResolvedTaskRef[] = [];
 
   for (const task of listTasks()) {
     if (task.name === name) {
       matches.push({ id: task.id, store: "local" });
-    }
-  }
-
-  if (options.agentId && canManageCloudSchedules(options.agentId)) {
-    try {
-      await ensureSettingsForCloud();
-      const response = await listCloudSchedules(options.agentId);
-      for (const schedule of response.scheduled_messages) {
-        if (schedule.name === name) {
-          matches.push({ id: schedule.id, store: "cloud" });
-        }
-      }
-    } catch {
-      // Name lookup is best-effort sugar on top of ID addressing: a failed
-      // Cloud list falls through to the caller's ID-based not-found path.
     }
   }
 

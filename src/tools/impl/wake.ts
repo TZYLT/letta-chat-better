@@ -1,13 +1,4 @@
 import { CronExpressionParser } from "cron-parser";
-import { isLocalAgentId } from "@/agent/agent-id";
-import { ApiRequestError } from "@/backend/api/request";
-import {
-  type CloudSchedule,
-  createCloudSchedule,
-  deleteCloudSchedule,
-  listCloudSchedules,
-} from "@/backend/api/schedules";
-import { resolveBackendMode } from "@/backend/backend-mode";
 import {
   type AddTaskInput,
   addTask,
@@ -17,12 +8,7 @@ import {
   listTasks,
   parseRfc3339Timestamp,
 } from "@/cron";
-import {
-  buildCloudScheduleInput,
-  CLOUD_EXECUTION_TARGET,
-  resolveCronCreatePlacement,
-} from "@/cron/runner";
-import { getRuntimeActingUserId, getRuntimeContext } from "@/runtime-context";
+import { getRuntimeContext } from "@/runtime-context";
 
 type WakeAction = "create" | "list" | "cancel";
 
@@ -44,7 +30,7 @@ interface WakeScope {
 
 interface WakeRecord {
   id: string;
-  runner: "local" | "cloud";
+  runner: "local";
   name: string | null;
   prompt: string | null;
   recurring: boolean;
@@ -55,10 +41,6 @@ interface WakeRecord {
 
 interface WakeDeps {
   now?: () => Date;
-  resolvePlacement?: typeof resolveCronCreatePlacement;
-  createCloud?: typeof createCloudSchedule;
-  listCloud?: typeof listCloudSchedules;
-  deleteCloud?: typeof deleteCloudSchedule;
   addLocal?: typeof addTask;
   listLocal?: typeof listTasks;
   deleteLocal?: typeof deleteTask;
@@ -175,11 +157,6 @@ function parseCreateTiming(
   return { cron, recurring: true };
 }
 
-function promptFromCloudSchedule(schedule: CloudSchedule): string | null {
-  const first = schedule.message.messages?.[0];
-  return first && typeof first.content === "string" ? first.content : null;
-}
-
 function localWakeRecord(task: CronTask): WakeRecord {
   return {
     id: task.id,
@@ -193,68 +170,13 @@ function localWakeRecord(task: CronTask): WakeRecord {
   };
 }
 
-function cloudWakeRecord(schedule: CloudSchedule): WakeRecord {
-  return {
-    id: schedule.id,
-    runner: "cloud",
-    name: schedule.name ?? null,
-    prompt: promptFromCloudSchedule(schedule),
-    recurring: schedule.schedule.type === "recurring",
-    scheduled_at: schedule.next_scheduled_time,
-    cron:
-      schedule.schedule.type === "recurring"
-        ? schedule.schedule.cron_expression
-        : null,
-    status: "active",
-  };
-}
-
-async function listCurrentWakes(
-  scope: WakeScope,
-  args: WakeArgs,
-  deps: WakeDeps,
-): Promise<{ wakes: WakeRecord[]; warnings: string[] }> {
-  const wakes = (deps.listLocal ?? listTasks)({
+function listCurrentWakes(scope: WakeScope, deps: WakeDeps): WakeRecord[] {
+  return (deps.listLocal ?? listTasks)({
     agent_id: scope.agentId,
     conversation_id: scope.conversationId,
   })
     .filter((task) => task.status === "active" || task.status === "paused")
     .map(localWakeRecord);
-  const warnings: string[] = [];
-
-  if (resolveBackendMode() === "local" || isLocalAgentId(scope.agentId)) {
-    return { wakes, warnings };
-  }
-
-  try {
-    let after: string | undefined;
-    do {
-      args.signal?.throwIfAborted();
-      const page = await (deps.listCloud ?? listCloudSchedules)(scope.agentId, {
-        limit: 100,
-        after,
-      });
-      const matching = page.scheduled_messages.filter(
-        (schedule) => schedule.conversation_id === scope.conversationId,
-      );
-      wakes.push(...matching.map(cloudWakeRecord));
-      after = page.has_next_page
-        ? page.scheduled_messages.at(-1)?.id
-        : undefined;
-    } while (after);
-  } catch (error) {
-    if (
-      error instanceof ApiRequestError &&
-      (error.status === 404 || error.status === 405)
-    ) {
-      return { wakes, warnings };
-    }
-    warnings.push(
-      `Cloud wakes could not be listed: ${error instanceof Error ? error.message : String(error)}`,
-    );
-  }
-
-  return { wakes, warnings };
 }
 
 function requireCreateText(args: WakeArgs): { name: string; prompt: string } {
@@ -273,25 +195,17 @@ function requireCreateText(args: WakeArgs): { name: string; prompt: string } {
   return { name, prompt };
 }
 
-async function createWake(
+function createWake(
   args: WakeArgs,
   scope: WakeScope,
   deps: WakeDeps,
-): Promise<WakeResult> {
+): WakeResult {
   const { name, prompt } = requireCreateText(args);
   const now = (deps.now ?? (() => new Date()))();
   const timing = parseCreateTiming(args, now);
   args.signal?.throwIfAborted();
-  const placement = await (deps.resolvePlacement ?? resolveCronCreatePlacement)(
-    { agentId: scope.agentId },
-  );
-  if ("error" in placement) throw new Error(placement.error);
 
-  const current = await listCurrentWakes(scope, args, deps);
-  if (placement.runner === "cloud" && current.warnings.length > 0) {
-    throw new Error(current.warnings[0]);
-  }
-  const activeWakeCount = current.wakes.filter(
+  const activeWakeCount = listCurrentWakes(scope, deps).filter(
     (wake) => wake.status === "active",
   ).length;
   if (activeWakeCount >= MAX_ACTIVE_WAKES) {
@@ -300,45 +214,11 @@ async function createWake(
     );
   }
 
-  const description = `Self-scheduled wake: ${name}`;
-  if (placement.runner === "cloud") {
-    const built = buildCloudScheduleInput({
-      name,
-      description,
-      prompt,
-      conversationId: scope.conversationId,
-      cron: timing.cron,
-      recurring: timing.recurring,
-      scheduledFor: timing.scheduledFor,
-      targetDeviceId: placement.targetDeviceId,
-    });
-    const created = await (deps.createCloud ?? createCloudSchedule)(
-      scope.agentId,
-      built.input,
-      getRuntimeActingUserId(),
-    );
-    const targetDeviceId =
-      created.target_device_id ?? built.input.target_device_id ?? null;
-    return result("success", {
-      action: "created",
-      id: created.id,
-      name,
-      runner: "cloud",
-      execution_target: targetDeviceId ?? CLOUD_EXECUTION_TARGET,
-      conversation_id: scope.conversationId,
-      recurring: timing.recurring,
-      ...(created.next_scheduled_at && {
-        next_scheduled_at: created.next_scheduled_at,
-      }),
-      notes: [...current.warnings, ...built.notes],
-    });
-  }
-
   const input: AddTaskInput = {
     agent_id: scope.agentId,
     conversation_id: scope.conversationId,
     name,
-    description,
+    description: `Self-scheduled wake: ${name}`,
     cron: timing.cron,
     timezone: "UTC",
     recurring: timing.recurring,
@@ -346,8 +226,8 @@ async function createWake(
     scheduled_for: timing.scheduledFor,
   };
   const created = (deps.addLocal ?? addTask)(input);
-  const warnings = [...current.warnings, created.warning].filter(
-    (warning): warning is string => Boolean(warning),
+  const warnings = [created.warning].filter((warning): warning is string =>
+    Boolean(warning),
   );
   return result("success", {
     action: "created",
@@ -361,33 +241,28 @@ async function createWake(
   });
 }
 
-async function cancelWake(
+function cancelWake(
   args: WakeArgs,
   scope: WakeScope,
   deps: WakeDeps,
-): Promise<WakeResult> {
+): WakeResult {
   const id = args.id?.trim();
   if (!id) throw new Error("Wake cancel requires id.");
-  const current = await listCurrentWakes(scope, args, deps);
-  const wake = current.wakes.find((candidate) => candidate.id === id);
+  const wake = listCurrentWakes(scope, deps).find(
+    (candidate) => candidate.id === id,
+  );
   if (!wake) {
-    if (current.warnings.length > 0) {
-      throw new Error(current.warnings[0]);
-    }
     throw new Error(`Wake ${id} was not found in the current conversation.`);
   }
 
   args.signal?.throwIfAborted();
-  if (wake.runner === "cloud") {
-    await (deps.deleteCloud ?? deleteCloudSchedule)(scope.agentId, id);
-  } else if (!(deps.deleteLocal ?? deleteTask)(id)) {
+  if (!(deps.deleteLocal ?? deleteTask)(id)) {
     throw new Error(`Wake ${id} was already removed.`);
   }
   return result("success", {
     action: "cancelled",
     id,
-    runner: wake.runner,
-    warnings: current.warnings,
+    runner: "local",
   });
 }
 
@@ -400,18 +275,15 @@ export async function wake(
     const scope = requireScope();
     switch (args.action) {
       case "create":
-        return await createWake(args, scope, deps);
-      case "list": {
-        const current = await listCurrentWakes(scope, args, deps);
+        return createWake(args, scope, deps);
+      case "list":
         return result("success", {
           action: "listed",
           conversation_id: scope.conversationId,
-          wakes: current.wakes,
-          warnings: current.warnings,
+          wakes: listCurrentWakes(scope, deps),
         });
-      }
       case "cancel":
-        return await cancelWake(args, scope, deps);
+        return cancelWake(args, scope, deps);
       default:
         throw new Error("Wake action must be create, list, or cancel.");
     }

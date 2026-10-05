@@ -7,17 +7,15 @@ import { resolveTaskName } from "./cron-task-ref";
 /**
  * Name resolution for `letta cron get`/`delete` (LET-10492).
  *
- * These tests exercise the local execution path, which
- * never touch the network. The cloud branch shares the same match/ambiguity
- * logic and is best-effort by design (failures fall through to the caller's
- * not-found error).
+ * These tests exercise the device-local store, which never touches the network.
+ * The Cloud schedule inventory this resolver used to search was removed with
+ * the rest of the Cloud surface.
  */
 
 const TEST_DIR = path.join(import.meta.dir, "__cron_task_ref_test_tmp__");
 
 const origHome = process.env.LETTA_HOME;
 const origXdg = process.env.XDG_CONFIG_HOME;
-const origManagedCloudRuntime = process.env.LETTA_MANAGED_CLOUD_RUNTIME;
 
 beforeEach(() => {
   if (existsSync(TEST_DIR)) {
@@ -25,7 +23,6 @@ beforeEach(() => {
   }
   mkdirSync(TEST_DIR, { recursive: true });
   process.env.LETTA_HOME = TEST_DIR;
-  delete process.env.LETTA_MANAGED_CLOUD_RUNTIME;
 });
 
 afterEach(() => {
@@ -36,11 +33,6 @@ afterEach(() => {
   else delete process.env.LETTA_HOME;
   if (origXdg) process.env.XDG_CONFIG_HOME = origXdg;
   else delete process.env.XDG_CONFIG_HOME;
-  if (origManagedCloudRuntime) {
-    process.env.LETTA_MANAGED_CLOUD_RUNTIME = origManagedCloudRuntime;
-  } else {
-    delete process.env.LETTA_MANAGED_CLOUD_RUNTIME;
-  }
 });
 
 function addNamedTask(name: string): string {
@@ -56,36 +48,24 @@ function addNamedTask(name: string): string {
   return result.task.id;
 }
 
-describe("resolveTaskName (local store)", () => {
-  test("resolves a unique name to its task id", async () => {
+describe("resolveTaskName", () => {
+  test("resolves a unique name to its task id", () => {
     const id = addNamedTask("nightly-report");
 
-    const resolved = await resolveTaskName("nightly-report", {
-      agentId: "agent-local-test",
-    });
-
-    expect(resolved).toEqual({ id, store: "local" });
+    expect(resolveTaskName("nightly-report")).toEqual({ id, store: "local" });
   });
 
-  test("returns null when no task has the name", async () => {
+  test("returns null when no task has the name", () => {
     addNamedTask("nightly-report");
 
-    const resolved = await resolveTaskName("does-not-exist", {
-      agentId: "agent-local-test",
-    });
-
-    expect(resolved).toBeNull();
+    expect(resolveTaskName("does-not-exist")).toBeNull();
   });
 
-  test("reports ambiguity when multiple tasks share the name", async () => {
+  test("reports ambiguity when multiple tasks share the name", () => {
     const first = addNamedTask("dup-name");
     const second = addNamedTask("dup-name");
 
-    const resolved = await resolveTaskName("dup-name", {
-      agentId: "agent-local-test",
-    });
-
-    expect(resolved).toEqual({
+    expect(resolveTaskName("dup-name")).toEqual({
       ambiguous: [
         { id: first, store: "local" },
         { id: second, store: "local" },
@@ -93,14 +73,10 @@ describe("resolveTaskName (local store)", () => {
     });
   });
 
-  test("does not match task ids as names", async () => {
+  test("does not match task ids as names", () => {
     const id = addNamedTask("some-task");
 
     // The resolver is name-only; ID addressing is the caller's first pass.
-    const resolved = await resolveTaskName(id, {
-      agentId: "agent-local-test",
-    });
-
-    expect(resolved).toBeNull();
+    expect(resolveTaskName(id)).toBeNull();
   });
 });
