@@ -1,9 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { resolveTelemetryAgentOrigin } from "@/telemetry/agent-origin";
-import { type TelemetryEvent, telemetry } from "@/telemetry/index";
+import { telemetry } from "@/telemetry/index";
 
 type TelemetryTestState = {
-  events: TelemetryEvent[];
   currentAgentId: string | null;
   currentAgentOrigin: string | null;
 };
@@ -13,7 +12,6 @@ const originalTelemetrySetting = process.env.LETTA_CODE_TELEM;
 
 describe("telemetry agent origin", () => {
   beforeEach(() => {
-    telemetryState.events = [];
     telemetryState.currentAgentId = null;
     telemetryState.currentAgentOrigin = null;
     process.env.LETTA_CODE_TELEM = "1";
@@ -42,21 +40,27 @@ describe("telemetry agent origin", () => {
     ).toBeUndefined();
   });
 
-  test("enriches queued and subsequent events after headless agent resolution", () => {
-    telemetry.trackSessionStart();
-
+  test("keeps only the allowlisted origin after headless agent resolution", () => {
     telemetry.setCurrentAgent("agent-subconscious", [
       "customer:private",
       "origin:claude-subconcious",
     ]);
-    telemetry.trackUserInput("hello", "user", "model-1");
 
-    expect(telemetryState.events).toHaveLength(2);
-    for (const event of telemetryState.events) {
-      expect(event.data.agent_id).toBe("agent-subconscious");
-      expect(event.data.agent_origin).toBe("claude-subconscious");
-      expect(event.data).not.toHaveProperty("agent_tags");
-      expect(JSON.stringify(event.data)).not.toContain("customer:private");
-    }
+    expect(telemetryState.currentAgentId).toBe("agent-subconscious");
+    expect(telemetryState.currentAgentOrigin).toBe("claude-subconscious");
+    // Raw tags must not survive anywhere the boundary-error log could pick up.
+    expect(JSON.stringify(telemetryState.currentAgentOrigin)).not.toContain(
+      "customer:private",
+    );
+  });
+
+  test("clears the origin when the agent is cleared", () => {
+    telemetry.setCurrentAgent("agent-subconscious", [
+      "origin:claude-subconcious",
+    ]);
+    telemetry.setCurrentAgent(null, null);
+
+    expect(telemetryState.currentAgentId).toBeNull();
+    expect(telemetryState.currentAgentOrigin).toBeNull();
   });
 });

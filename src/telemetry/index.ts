@@ -1,20 +1,11 @@
-import { randomUUID } from "node:crypto";
-import { LETTA_CLOUD_API_URL } from "@/auth/oauth";
-import { getServerHealth } from "@/backend/api/health";
-import { submitTelemetryMetadata } from "@/backend/api/metadata";
-import { getServerUrl } from "@/backend/api/server-url";
-import { isLocalBackendEnvEnabled } from "@/backend/local/paths";
-import { getRuntimeActingUserId } from "@/runtime-context";
-import { settingsManager } from "@/settings-manager";
 import { debugLogFile } from "@/utils/debug";
-import { isLoopbackHostname, parseUrl } from "@/utils/url";
 import { getVersion } from "@/version";
 import {
   resolveTelemetryAgentOrigin,
   type TelemetryAgentOrigin,
 } from "./agent-origin";
+import { appendBoundaryError } from "./boundary-error-log";
 import { extractInputChannel } from "./channel";
-import { isPermanentRejection, TelemetryEventQueueCap } from "./event-queue";
 import { installFatalErrorHandlers } from "./fatal-error-handler";
 
 export type TelemetrySurface =
@@ -23,14 +14,11 @@ export type TelemetrySurface =
   | "letta_code_cli_server"
   | "letta_code_desktop";
 
-export type TelemetryBackend =
-  | "cloud"
-  | "local"
-  | "docker_deprecated"
-  | "self_hosted_api"
-  | "unknown";
-
 export interface TelemetryInitOptions {
+  /**
+   * Retained for call-site compatibility. The SIGINT drain handler that read it
+   * belonged to the removed cloud transport.
+   */
   handleSigint?: boolean;
 }
 
@@ -225,58 +213,6 @@ export function getListenerTelemetrySurface(
     : "letta_code_cli_server";
 }
 
-function isTelemetryCloudServerUrl(serverUrl: string): boolean {
-  const parsed = parseUrl(serverUrl, { allowMissingProtocol: true });
-  const cloud = parseUrl(LETTA_CLOUD_API_URL, { allowMissingProtocol: true });
-  return Boolean(parsed && cloud && parsed.hostname === cloud.hostname);
-}
-
-function isLikelyDeprecatedDockerBackendUrl(serverUrl: string): boolean {
-  const parsed = parseUrl(serverUrl, { allowMissingProtocol: true });
-  return Boolean(
-    parsed && isLoopbackHostname(parsed.hostname) && parsed.port === "8283",
-  );
-}
-
-function getServerUrlForTelemetry(): string | null {
-  try {
-    return getServerUrl();
-  } catch {
-    return process.env.LETTA_BASE_URL || LETTA_CLOUD_API_URL;
-  }
-}
-
-export function resolveTelemetryBackend(options?: {
-  env?: NodeJS.ProcessEnv;
-  serverUrl?: string | null;
-}): TelemetryBackend {
-  const env = options?.env ?? process.env;
-  if (isLocalBackendEnvEnabled(env)) {
-    return "local";
-  }
-
-  const serverUrl = Object.hasOwn(options ?? {}, "serverUrl")
-    ? options?.serverUrl
-    : getServerUrlForTelemetry();
-  if (!serverUrl) {
-    return "unknown";
-  }
-
-  if (isTelemetryCloudServerUrl(serverUrl)) {
-    return "cloud";
-  }
-
-  if (isLettaCodeDesktopRuntime(env)) {
-    return "cloud";
-  }
-
-  if (isLikelyDeprecatedDockerBackendUrl(serverUrl)) {
-    return "docker_deprecated";
-  }
-
-  return "self_hosted_api";
-}
-
 /**
  * Returns true for error messages that are non-actionable noise:
  * - Billing/plan limit responses (premium-unavailable, usage-exceeded, not-enough-credits)
@@ -300,11 +236,7 @@ function isNonActionableError(message: string): boolean {
 }
 
 class TelemetryManager {
-  private events: TelemetryEvent[] = [];
-  // Transport-only snapshots: never serialize identity into telemetry JSON.
-  private eventActingUsers = new WeakMap<TelemetryEvent, string | undefined>();
   private sessionId: string;
-  private deviceId: string | null = null;
   private currentAgentId: string | null = null;
   private currentAgentOrigin: TelemetryAgentOrigin | null = null;
   private surface: TelemetrySurface = "letta_code_tui";
@@ -313,54 +245,7 @@ class TelemetryManager {
   private toolCallCount = 0;
   private sessionEndTracked = false;
   private initialized = false;
-  private flushInterval: NodeJS.Timeout | null = null;
-  private removeSigintHandler: (() => void) | null = null;
   private removeFatalErrorHandlers: (() => void) | null = null;
-  private serverVersion: string | null = null;
-  /** Deduplicates concurrent flushes (prevents the 429 double-flush race on shutdown). */
-  private inflightFlush: Promise<void> | null = null;
-  private eventQueueCap = new TelemetryEventQueueCap();
-
-  private async resolveTelemetryApiKey(): Promise<string | undefined> {
-    if (process.env.LETTA_API_KEY) {
-      return process.env.LETTA_API_KEY;
-    }
-
-    try {
-      const settings = await settingsManager.getSettingsWithSecureTokens();
-      return settings.env?.LETTA_API_KEY || undefined;
-    } catch {
-      return undefined;
-    }
-  }
-
-  private getTelemetryDeviceId(): string {
-    const existing = this.deviceId?.trim();
-    if (existing) {
-      return existing;
-    }
-
-    try {
-      const generated = settingsManager.getOrCreateDeviceId().trim();
-      if (generated) {
-        this.deviceId = generated;
-        return generated;
-      }
-    } catch {
-      // Settings may not be initialized in some early/exit flush paths. Fall
-      // back to a process-local UUID so cloud pass-through telemetry never
-      // sends an empty organization/device id.
-    }
-
-    const fallback = randomUUID();
-    this.deviceId = fallback;
-    return fallback;
-  }
-
-  private readonly FLUSH_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes
-  private readonly MAX_BATCH_SIZE = 50;
-  /** Max time to drain queued events on exit (bounded so we never hang the shell). */
-  private readonly DRAIN_TIMEOUT_MS = 3_000;
   private sessionStatsGetter?: () => {
     totalWallMs: number;
     totalApiMs: number;
@@ -405,68 +290,17 @@ class TelemetryManager {
   }
 
   /**
-   * Check if the user is connected to Letta Cloud (api.letta.com)
+   * Install the crash handlers.
+   *
+   * Analytics are no longer collected, so this is the only thing init() still
+   * does: it keeps the fatal handlers that pin a non-zero exit code and route
+   * the crash into the local boundary-error log.
    */
-  private isCloudUser(): boolean {
-    try {
-      return getServerUrl().includes("api.letta.com");
-    } catch {
-      // Settings not initialized yet — check env var directly
-      return (
-        !process.env.LETTA_BASE_URL ||
-        process.env.LETTA_BASE_URL.includes("api.letta.com")
-      );
-    }
-  }
-
-  /**
-   * Initialize telemetry and start periodic flushing
-   */
-  init(options: TelemetryInitOptions = {}) {
+  init(_options: TelemetryInitOptions = {}) {
     if (!this.isTelemetryEnabled() || this.initialized) {
       return;
     }
     this.initialized = true;
-
-    // Initialize device ID (persistent across sessions)
-    this.deviceId = settingsManager.getOrCreateDeviceId();
-
-    this.trackSessionStart();
-
-    // Fetch server version for diagnostics (best-effort, non-blocking)
-    this.fetchServerVersion().catch(() => {});
-
-    // Set up periodic flushing
-    this.flushInterval = setInterval(() => {
-      this.flush().catch((err) => {
-        // Silently fail - we don't want telemetry to interfere with user experience
-        if (process.env.LETTA_DEBUG) {
-          console.error("Telemetry flush error:", err);
-        }
-      });
-    }, this.FLUSH_INTERVAL_MS);
-
-    // Don't let the interval prevent process from exiting
-    this.flushInterval.unref();
-
-    if (options.handleSigint !== false) {
-      // Await drain() (bounded by DRAIN_TIMEOUT_MS) so the final batch ships before exit.
-      const sigintHandler = () => {
-        void (async () => {
-          try {
-            this.trackSessionEnd(undefined, "sigint");
-            await this.drain();
-          } catch {
-            // Silently ignore - don't prevent process from exiting
-          }
-          process.exit(0);
-        })();
-      };
-      process.on("SIGINT", sigintHandler);
-      this.removeSigintHandler = () => {
-        process.off("SIGINT", sigintHandler);
-      };
-    }
 
     this.removeFatalErrorHandlers = installFatalErrorHandlers({
       drain: () => this.drain(),
@@ -474,65 +308,24 @@ class TelemetryManager {
         this.trackError(errorType, message, context);
       },
     });
-
-    // Fatal handlers can only make a bounded flush attempt. Persisting unsent
-    // events for delivery on the next startup would make crash telemetry more
-    // reliable without extending the fatal shutdown deadline.
   }
 
   /**
-   * Track a telemetry event
+   * Analytics sink, intentionally inert.
+   *
+   * The event pipeline, its queue and its transport are gone. The typed
+   * per-event methods below are retained so their ~100 call sites stay
+   * untouched; they still maintain local counters and session state, and
+   * trackError writes to the local boundary-error log rather than calling
+   * here. Deleting the remaining call sites is a pure-deletion follow-up.
    */
-  private track(
-    type: TelemetryEvent["type"],
-    data:
-      | Record<string, unknown>
-      | SessionStartData
-      | SessionEndData
-      | ToolUsageData
-      | ErrorData
-      | UserInputData
-      | ChannelGatewayLifecycleData
-      | ReflectionStartData
-      | ReflectionEndData
-      | ReflectionWorktreeCleanupData
-      | ReflectionArenaVoteData,
-  ) {
-    if (!this.isTelemetryEnabled()) {
-      return;
-    }
-
-    const event: TelemetryEvent = {
-      type,
-      timestamp: new Date().toISOString(),
-      data: {
-        ...data,
-        session_id: this.sessionId,
-        agent_id: this.currentAgentId || undefined,
-        agent_origin: this.currentAgentOrigin || undefined,
-        surface: this.surface,
-        backend: resolveTelemetryBackend(),
-      },
-    };
-
-    this.eventActingUsers.set(event, getRuntimeActingUserId());
-    this.events.push(event);
-    // Drop the oldest events if failed re-queues have grown the queue to its bound.
-    this.eventQueueCap.enforce(this.events);
-
-    // Flush if batch size is reached
-    if (this.events.length >= this.MAX_BATCH_SIZE) {
-      this.flush().catch((err) => {
-        if (process.env.LETTA_DEBUG) {
-          console.error("Telemetry flush error:", err);
-        }
-      });
-    }
+  private track(_type: TelemetryEvent["type"], _data: unknown) {
+    // No transport remains: nothing is collected, queued or transmitted.
   }
 
   /**
-   * Set the current agent ID (called from App.tsx when agent changes)
-   * This is automatically added to all telemetry events
+   * Set the current agent ID (called from App.tsx when agent changes).
+   * trackError stamps it onto local boundary-error entries.
    */
   setCurrentAgentId(agentId: string | null) {
     this.currentAgentId = agentId;
@@ -540,8 +333,8 @@ class TelemetryManager {
   }
 
   /**
-   * Attach safe analytics fields from an agent that the caller already loaded.
-   * Events queued during startup are enriched without another API request.
+   * Record the origin of an agent the caller already loaded, so boundary
+   * errors carry it without another API request.
    */
   setCurrentAgent(
     agentId: string | null,
@@ -551,20 +344,6 @@ class TelemetryManager {
     this.currentAgentOrigin = agentId
       ? (resolveTelemetryAgentOrigin(tags) ?? null)
       : null;
-
-    if (!agentId) {
-      return;
-    }
-
-    for (const event of this.events) {
-      if (event.data.agent_id && event.data.agent_id !== agentId) {
-        continue;
-      }
-      event.data.agent_id = agentId;
-      if (this.currentAgentOrigin) {
-        event.data.agent_origin = this.currentAgentOrigin;
-      }
-    }
   }
 
   setSurface(surface: TelemetrySurface) {
@@ -572,24 +351,11 @@ class TelemetryManager {
   }
 
   /**
-   * Fetch and cache server version from /v1/health (fire-and-forget, best-effort)
+   * Always null: the version came from a /v1/health probe against the cloud
+   * server. Callers keep the method so their payload shape is unchanged.
    */
-  async fetchServerVersion(): Promise<void> {
-    try {
-      const data = await getServerHealth({
-        baseUrl: getServerUrl(),
-        signal: AbortSignal.timeout(3000),
-      });
-      if (data.version) {
-        this.serverVersion = data.version;
-      }
-    } catch {
-      // Best-effort — don't let this affect startup
-    }
-  }
-
   getServerVersion(): string | null {
-    return this.serverVersion;
+    return null;
   }
 
   /**
@@ -757,6 +523,14 @@ class TelemetryManager {
     });
   }
 
+  /**
+   * Append a boundary error to the local JSONL log.
+   *
+   * The cloud-only guard is gone on purpose: it read isCloudUser(), which is
+   * false under the local backend, so every one of the callers below used to
+   * drop its error silently. The local log replaces the upload, which means
+   * local mode keeps diagnostics it never had before.
+   */
   trackError(
     errorType: string,
     errorMessage: string,
@@ -773,33 +547,32 @@ class TelemetryManager {
       omitDebugLogTail?: boolean;
     },
   ) {
-    if (!this.isCloudUser()) {
-      return;
-    }
-
     if (isNonActionableError(errorMessage)) {
       return;
     }
 
-    const data: ErrorData = {
-      error_type: errorType,
-      error_message: errorMessage,
+    appendBoundaryError({
+      errorType,
+      message: errorMessage,
       context,
-      http_status: options?.httpStatus,
-      model_id: options?.modelId,
-      run_id: options?.runId,
-      recent_chunks: options?.recentChunks,
-      debug_log_tail: options?.omitDebugLogTail
+      httpStatus: options?.httpStatus,
+      modelId: options?.modelId,
+      runId: options?.runId,
+      recentChunks: options?.recentChunks,
+      debugLogTail: options?.omitDebugLogTail
         ? undefined
         : debugLogFile.getTail(),
-      is_subagent: options?.isSubagent,
-      subagent_type: options?.subagentType,
-      model_handle: options?.modelHandle,
-      fallback_kind: options?.fallbackKind,
+      isSubagent: options?.isSubagent,
+      subagentType: options?.subagentType,
+      modelHandle: options?.modelHandle,
+      fallbackKind: options?.fallbackKind,
+      sessionId: this.sessionId,
+      agentId: this.currentAgentId ?? undefined,
+      agentOrigin: this.currentAgentOrigin ?? undefined,
+      surface: this.surface,
       platform: process.platform,
       version: getVersion(),
-    };
-    this.track("error", data);
+    });
   }
 
   /** Agent ID is automatically added to user input from currentAgentId. */
@@ -897,96 +670,26 @@ class TelemetryManager {
     });
   }
 
-  /** Concurrent callers share one in-flight POST (prevents 429 double-flush race on shutdown). */
-  async flush(): Promise<void> {
-    if (this.inflightFlush) {
-      return this.inflightFlush;
-    }
-    if (this.events.length === 0 || !this.isTelemetryEnabled()) {
-      return;
-    }
-
-    this.inflightFlush = this.performFlush().finally(() => {
-      this.inflightFlush = null;
-    });
-    return this.inflightFlush;
+  /**
+   * No-op: there is no queue and no transport left. Boundary errors are written
+   * synchronously by trackError, so shutdown has nothing to flush. The method
+   * stays because ~10 call sites await it on exit paths.
+   */
+  flush(): Promise<void> {
+    return Promise.resolve();
   }
 
-  private async performFlush(): Promise<void> {
-    const eventsToSend = [...this.events];
-    this.events = [];
-
-    const apiKey = await this.resolveTelemetryApiKey();
-
-    const deviceId = this.getTelemetryDeviceId();
-
-    const groups = new Map<string | undefined, TelemetryEvent[]>();
-    for (const event of eventsToSend) {
-      const actingUserId = this.eventActingUsers.get(event);
-      const group = groups.get(actingUserId) ?? [];
-      group.push(event);
-      groups.set(actingUserId, group);
-    }
-
-    const failed = new Set<TelemetryEvent>();
-    await Promise.all(
-      [...groups].map(async ([actingUserId, events]) => {
-        try {
-          await submitTelemetryMetadata(
-            apiKey,
-            deviceId,
-            {
-              service: "letta-code",
-              server_version: this.serverVersion || undefined,
-              events,
-            },
-            { signal: AbortSignal.timeout(5000), actingUserId },
-          );
-        } catch (error) {
-          // Permanent 4xx rejections fail on every retry, so drop the group.
-          if (isPermanentRejection(error)) return;
-          for (const event of events) failed.add(event);
-        }
-      }),
-    );
-    // Keep failed snapshots in their original order, ahead of late arrivals.
-    // Successful groups must not be duplicated when another identity fails.
-    this.events.unshift(...eventsToSend.filter((event) => failed.has(event)));
-    this.eventQueueCap.enforce(this.events);
-  }
-
-  /** Await in-flight flush and drain remaining queue (bounded by DRAIN_TIMEOUT_MS). Replaces fire-and-forget flush on exit. */
-  async drain(): Promise<void> {
-    if (!this.isTelemetryEnabled()) {
-      return;
-    }
-    const deadline = Date.now() + this.DRAIN_TIMEOUT_MS;
-    // Loop in case new events arrive mid-drain (e.g. trackError from uncaughtException).
-    while (this.events.length > 0 || this.inflightFlush) {
-      if (Date.now() >= deadline) {
-        return;
-      }
-      try {
-        await this.flush();
-      } catch {
-        // Swallow — already logged inside performFlush; don't block exit.
-        return;
-      }
-    }
+  /** No-op counterpart to flush(), retained for shutdown call sites. */
+  drain(): Promise<void> {
+    return Promise.resolve();
   }
 
   /**
    * Clean up resources
    */
   cleanup() {
-    this.removeSigintHandler?.();
-    this.removeSigintHandler = null;
     this.removeFatalErrorHandlers?.();
     this.removeFatalErrorHandlers = null;
-    if (this.flushInterval) {
-      clearInterval(this.flushInterval);
-      this.flushInterval = null;
-    }
     this.initialized = false;
   }
 }

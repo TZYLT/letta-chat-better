@@ -1,16 +1,11 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { extractInputChannel, messageChannelTelemetry } from "./channel";
-import { type TelemetryEvent, telemetry } from "./index";
+import { telemetry } from "./index";
 
-const state = telemetry as unknown as {
-  events: TelemetryEvent[];
-  messageCount: number;
-};
-const originalEvents = state.events;
+const state = telemetry as unknown as { messageCount: number };
 const originalMessageCount = state.messageCount;
 const originalSetting = process.env.LETTA_CODE_TELEM;
 afterEach(() => {
-  state.events = originalEvents;
   state.messageCount = originalMessageCount;
   if (originalSetting === undefined) delete process.env.LETTA_CODE_TELEM;
   else process.env.LETTA_CODE_TELEM = originalSetting;
@@ -41,7 +36,7 @@ describe("channel telemetry", () => {
     ).toBeUndefined();
   });
 
-  test("does not multiply user input events for batched messages", () => {
+  test("counts a batched message once and never retains its content", () => {
     expect(
       extractInputChannel(`${notification("slack")}\n${notification("slack")}`),
     ).toBe("slack");
@@ -50,19 +45,22 @@ describe("channel telemetry", () => {
         `${notification("slack")}\n${notification("telegram")}`,
       ),
     ).toBe("mixed");
-    state.events = [];
+
+    const before = state.messageCount;
     process.env.LETTA_CODE_TELEM = "1";
     telemetry.trackUserInput(
       `${notification("slack")}\n${notification("slack")}`,
       "user",
       "model-1",
     );
-    expect(state.events).toHaveLength(1);
-    expect(state.events[0]?.data.channel).toBe("slack");
-    expect(JSON.stringify(state.events)).not.toContain("private message");
-    expect(JSON.stringify(state.events)).not.toContain("Private Name");
     telemetry.trackUserInput("ordinary input", "user", "model-1");
-    expect(state.events[1]?.data.channel).toBeUndefined();
+
+    expect(state.messageCount).toBe(before + 2);
+    // The event payload that used to carry the channel label is gone. The only
+    // channel surface left is the pure extractor plus the local error log, and
+    // neither one receives message content.
+    expect(JSON.stringify(telemetry)).not.toContain("private message");
+    expect(JSON.stringify(telemetry)).not.toContain("Private Name");
   });
 
   test("only retains channel and action from outgoing arguments", () => {

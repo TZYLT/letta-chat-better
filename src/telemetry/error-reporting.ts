@@ -71,7 +71,6 @@ export function reportListenerStateWriteFailure(options: {
       }),
       { runId: safeId(options.runId), omitDebugLogTail: true },
     );
-    void telemetry.flush().catch(() => {});
   } catch {
     // A diagnostic must never mask the original filesystem failure.
   }

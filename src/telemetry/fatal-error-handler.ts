@@ -46,7 +46,7 @@ async function drainWithTimeout(
       }),
     ]);
   } catch {
-    // Fatal telemetry is best-effort and must never delay termination.
+    // Fatal diagnostics are best-effort and must never delay termination.
   } finally {
     if (timeout) {
       clearTimeout(timeout);
@@ -56,7 +56,8 @@ async function drainWithTimeout(
 
 /**
  * Installs one-shot fatal handlers that preserve process-failure semantics
- * while giving telemetry a bounded opportunity to flush.
+ * while giving the crash report a bounded opportunity to reach the local
+ * boundary-error log.
  */
 export function installFatalErrorHandlers(
   options: FatalErrorHandlerOptions,
