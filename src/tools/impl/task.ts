@@ -93,10 +93,10 @@ export interface SpawnBackgroundSubagentTaskArgs {
   prompt: string;
   description: string;
   /**
-   * Exact model handle for a harness caller (reflection arena): used verbatim,
-   * with no resolution or fallback. Agent-facing launches never set it — a Letta
-   * subagent runs the parent conversation's model, and `launchSubagent` rejects
-   * the `model` argument for them.
+   * Exact model handle for a harness caller: used verbatim, with no resolution
+   * or fallback. Agent-facing launches never set it — a Letta subagent runs the
+   * parent conversation's model, and `launchSubagent` rejects the `model`
+   * argument for them.
    */
   exactModelHandle?: string;
   /** Replace the subagent's configured system prompt/persona (advanced). */

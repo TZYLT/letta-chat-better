@@ -85,22 +85,11 @@ import {
 } from "@/cli/helpers/conversation-title";
 import type { AdvancedDiffSuccess } from "@/cli/helpers/diff";
 import { setErrorContext } from "@/cli/helpers/error-context";
-import { formatErrorDetails } from "@/cli/helpers/error-formatter";
 import { parsePatchOperations } from "@/cli/helpers/format-args-display";
 import { CLI_GLYPHS } from "@/cli/helpers/glyphs";
 import { getReflectionSettings } from "@/cli/helpers/memory-reminder";
 import type { ExecutionPhase } from "@/cli/helpers/phase-visuals";
 import { maybeLaunchPostTurnReflection } from "@/cli/helpers/post-turn-reflection";
-import {
-  buildReflectionArenaChoiceQuestions,
-  finalizeReflectionArenaChoice,
-  formatReflectionArenaDeferredMessage,
-  parseReflectionArenaChoiceAnswers,
-  REFLECTION_ARENA_MODEL_A_DEFAULT,
-  type ReflectionArenaChoiceQuestion,
-  sampleReflectionArenaComparisonModel,
-} from "@/cli/helpers/reflection-arena";
-import { launchReflectionArena } from "@/cli/helpers/reflection-arena-launcher";
 import {
   AUTO_REFLECTION_DESCRIPTION,
   launchReflectionSubagent,
@@ -534,11 +523,6 @@ export function App({
   const [worktreeDiffSelectorPending, setWorktreeDiffSelectorPending] =
     useState<{
       worktrees: import("@/web/worktree-diff-list").WorktreeDiffOption[];
-    } | null>(null);
-  const [reflectionArenaChoicePending, setReflectionArenaChoicePending] =
-    useState<{
-      questions: ReflectionArenaChoiceQuestion[];
-      runId: string;
     } | null>(null);
 
   // If we have approval requests, we should show the approval dialog instead of the input area
@@ -3546,33 +3530,6 @@ export function App({
         reminderState: sharedReminderStateRef.current,
         contextTracker: contextTrackerRef.current,
         launch: async (triggerSource) => {
-          if (experimentManager.isEnabled("reflection_arena")) {
-            const arenaResult = await launchReflectionArena({
-              agentId: reflectionAgentId,
-              conversationId: conversationIdRef.current ?? "default",
-              triggerSource,
-              models: [
-                REFLECTION_ARENA_MODEL_A_DEFAULT,
-                sampleReflectionArenaComparisonModel(),
-              ],
-              feedbackContext: {
-                parentAgentName: agentName,
-                parentAgentDescription: agentDescription,
-                surface: "letta_code_tui",
-              },
-              onReady: (message, readyRun) => {
-                appendTaskNotificationEvents([message]);
-                setReflectionArenaChoicePending({
-                  runId: readyRun.runId,
-                  questions: buildReflectionArenaChoiceQuestions(
-                    readyRun.runId,
-                  ),
-                });
-              },
-            });
-            return arenaResult.launched;
-          }
-
           const result = await launchReflectionSubagent({
             agentId: reflectionAgentId,
             conversationId: conversationIdRef.current ?? "default",
@@ -4005,49 +3962,6 @@ export function App({
     setNeedsEagerApprovalCheck,
   });
 
-  const handleReflectionArenaChoiceSubmit = useCallback(
-    async (answers: Record<string, string>) => {
-      const pending = reflectionArenaChoicePending;
-      if (!pending) return;
-      setReflectionArenaChoicePending(null);
-      setCommandRunning(true);
-      try {
-        const answer = parseReflectionArenaChoiceAnswers(answers);
-        const { message } = await finalizeReflectionArenaChoice({
-          runId: pending.runId,
-          choice: answer.choice,
-          notes: answer.notes,
-          onHfUploadComplete: (message) => {
-            appendTaskNotificationEvents([message]);
-          },
-        });
-        appendTaskNotificationEvents([message]);
-      } catch (error) {
-        appendTaskNotificationEvents([
-          `Failed to record reflection arena choice: ${formatErrorDetails(error, agentId)}`,
-        ]);
-      } finally {
-        setCommandRunning(false);
-      }
-    },
-    [
-      reflectionArenaChoicePending,
-      setCommandRunning,
-      appendTaskNotificationEvents,
-      agentId,
-    ],
-  );
-
-  const handleReflectionArenaChoiceCancel = useCallback(() => {
-    const pending = reflectionArenaChoicePending;
-    setReflectionArenaChoicePending(null);
-    if (pending) {
-      appendTaskNotificationEvents([
-        formatReflectionArenaDeferredMessage(pending.runId),
-      ]);
-    }
-  }, [reflectionArenaChoicePending, appendTaskNotificationEvents]);
-
   const onSubmit = useSubmitHandler({
     abortControllerRef,
     agentDescription,
@@ -4129,7 +4043,6 @@ export function App({
     setModelSelectorOptions,
     setNeedsEagerApprovalCheck,
     setProfileConfirmPending,
-    setReflectionArenaChoicePending,
     setWorktreeDiffSelectorPending,
     setReasoningTabCycleEnabled: _setReasoningTabCycleEnabled,
     setSearchQuery,
@@ -4178,7 +4091,6 @@ export function App({
       pendingApprovals.length === 0 &&
       !commandRunning &&
       !isExecutingTool &&
-      !reflectionArenaChoicePending &&
       !anySelectorOpen && // Don't dequeue while a selector/overlay is open
       !waitingForQueueCancelRef.current && // Don't dequeue while waiting for cancel
       !userCancelledRef.current && // Don't dequeue if user just cancelled
@@ -4252,7 +4164,6 @@ export function App({
     pendingApprovals,
     commandRunning,
     isExecutingTool,
-    reflectionArenaChoicePending,
     anySelectorOpen,
     dequeueEpoch,
     queuedOverlayAction,
@@ -4812,20 +4723,8 @@ export function App({
     trajectoryTokenDisplayRef.current,
   );
   const inputVisible = !showExitStats;
-  const reflectionArenaChoiceVisible = Boolean(
-    reflectionArenaChoicePending &&
-      !showExitStats &&
-      !streaming &&
-      !commandRunning &&
-      !isExecutingTool &&
-      pendingApprovals.length === 0 &&
-      !anySelectorOpen,
-  );
   const inputEnabled =
-    !showExitStats &&
-    pendingApprovals.length === 0 &&
-    !reflectionArenaChoiceVisible &&
-    !anySelectorOpen;
+    !showExitStats && pendingApprovals.length === 0 && !anySelectorOpen;
   const onEscapeCommandCancel = useCallback(() => {
     if (isActiveConnectOperationCancellable()) {
       cancelActiveConnectOperation();
@@ -4858,9 +4757,7 @@ export function App({
         titleData={terminalTitleData}
         shouldAnimate={shouldAnimate}
         hasActiveProgress={terminalTitleTaskRunning}
-        requiresAction={
-          pendingApprovals.length > 0 || reflectionArenaChoiceVisible
-        }
+        requiresAction={pendingApprovals.length > 0}
         previewTitle={terminalTitlePreviewOverride}
       />
       <AppView
@@ -4927,8 +4824,6 @@ export function App({
         handlePermissionModeChange={handlePermissionModeChange}
         handlePersonalitySelect={handlePersonalitySelect}
         handleProfileEscapeCancel={handleProfileEscapeCancel}
-        handleReflectionArenaChoiceCancel={handleReflectionArenaChoiceCancel}
-        handleReflectionArenaChoiceSubmit={handleReflectionArenaChoiceSubmit}
         handleSleeptimeModeSelect={handleSleeptimeModeSelect}
         handleSystemPromptSelect={handleSystemPromptSelect}
         handleToolsetSelect={handleToolsetSelect}
@@ -4953,9 +4848,6 @@ export function App({
         onSubmit={onSubmit}
         pendingApprovals={pendingApprovals}
         pendingConversationSwitchRef={pendingConversationSwitchRef}
-        reflectionArenaChoicePending={
-          reflectionArenaChoiceVisible ? reflectionArenaChoicePending : null
-        }
         pendingIds={pendingIds}
         precomputedDiffsRef={precomputedDiffsRef}
         profileConfirmPending={profileConfirmPending}

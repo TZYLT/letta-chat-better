@@ -61,18 +61,3 @@ export function classifyReflectionConfigurationError(
 
   return undefined;
 }
-
-export function isRetryableReflectionArenaModelError(
-  error: string | undefined,
-): boolean {
-  if (!error || classifyReflectionConfigurationError(error)) return false;
-  const normalized = error.toLowerCase();
-  return [
-    "not-enough-credits",
-    "no credits",
-    "out of credits",
-    "insufficient credits",
-    "exceeded-quota",
-    "llm_insufficient_credits",
-  ].some((marker) => normalized.includes(marker));
-}

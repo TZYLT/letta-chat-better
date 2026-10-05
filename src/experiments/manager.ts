@@ -44,13 +44,6 @@ const EXPERIMENT_DEFINITIONS: readonly ExperimentDefinition[] = [
     envVar: "LETTA_MEMORY_PALACE",
   },
   {
-    id: "reflection_arena",
-    label: "reflection arena",
-    description:
-      "Run blind A/B comparisons between reflection models on the same transcript sample.",
-    envVar: "LETTA_REFLECTION_ARENA",
-  },
-  {
     id: "tui_cron",
     label: "TUI cron scheduler",
     description:

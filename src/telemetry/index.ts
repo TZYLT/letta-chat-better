@@ -32,8 +32,7 @@ export interface TelemetryEvent {
     | "channel_gateway_lifecycle"
     | "reflection_start"
     | "reflection_end"
-    | "reflection_worktree_cleanup"
-    | "reflection_arena_vote";
+    | "reflection_worktree_cleanup";
   timestamp: string;
   data: Record<string, unknown>;
 }
@@ -168,27 +167,6 @@ export interface ReflectionWorktreeCleanupData {
   reflection_worktree_id?: string;
   commit_count?: number;
   model?: string;
-  version?: string;
-  platform?: string;
-}
-
-export interface ReflectionArenaVoteData {
-  run_id: string;
-  choice: "win_loss" | "tie";
-  winner: string | null;
-  loser: string | null;
-  winner_agent_id: string | null;
-  loser_agent_id: string | null;
-  parent_agent_id: string;
-  parent_convo_id: string;
-  timestamp: string;
-  feedbackstr: string | null;
-  lc_version: string;
-  memory_base_commit: string | null;
-  memory_candidate_commit: string | null;
-  transcript_payload: string | null;
-  transcript_payload_chars: number | null;
-  transcript_payload_truncated: boolean;
   version?: string;
   platform?: string;
 }
@@ -658,16 +636,6 @@ class TelemetryManager {
       platform: process.platform,
     };
     this.track("reflection_worktree_cleanup", data);
-  }
-
-  trackReflectionArenaVote(
-    vote: Omit<ReflectionArenaVoteData, "version" | "platform">,
-  ) {
-    this.track("reflection_arena_vote", {
-      ...vote,
-      version: getVersion(),
-      platform: process.platform,
-    });
   }
 
   /**

@@ -41,13 +41,6 @@ import { formatErrorDetails } from "@/cli/helpers/error-formatter";
 import { getReflectionSettings } from "@/cli/helpers/memory-reminder";
 import { runPostCompactionTail } from "@/cli/helpers/post-compaction";
 import {
-  buildReflectionArenaChoiceQuestions,
-  REFLECTION_ARENA_MODEL_A_DEFAULT,
-  type ReflectionArenaChoiceQuestion,
-  sampleReflectionArenaComparisonModel,
-} from "@/cli/helpers/reflection-arena";
-import { launchReflectionArena } from "@/cli/helpers/reflection-arena-launcher";
-import {
   AUTO_REFLECTION_DESCRIPTION,
   launchReflectionSubagent,
 } from "@/cli/helpers/reflection-launcher";
@@ -56,12 +49,10 @@ import {
   clearTopicTrimRequest,
   setTopicTrimRequest,
 } from "@/cli/helpers/topic-trim-request";
-import { experimentManager } from "@/experiments/manager";
 import { runPreCompactHooks } from "@/hooks";
 import type { SharedReminderState } from "@/reminders/state";
 import { shouldAdvertiseTopicMarking } from "@/settings-tool-gates";
 import { readTopicSettings } from "@/topic-settings";
-import { debugLog } from "@/utils/debug";
 
 export interface CompactCommandContext {
   agentDescription: string | null;
@@ -82,12 +73,6 @@ export interface CompactCommandContext {
   }) => Promise<void>;
   setActiveOverlay: Dispatch<SetStateAction<ActiveOverlay>>;
   setCommandRunning: (value: boolean) => void;
-  setReflectionArenaChoicePending: Dispatch<
-    SetStateAction<{
-      questions: ReflectionArenaChoiceQuestion[];
-      runId: string;
-    } | null>
-  >;
   sharedReminderStateRef: MutableRefObject<SharedReminderState>;
 }
 
@@ -338,34 +323,6 @@ async function afterCompaction(
         parentAgentDescription: ctx.agentDescription,
         surface: "letta_code_tui",
       };
-      if (experimentManager.isEnabled("reflection_arena")) {
-        void launchReflectionArena({
-          agentId: ctx.agentId,
-          conversationId,
-          triggerSource: "compaction-event",
-          models: [
-            REFLECTION_ARENA_MODEL_A_DEFAULT,
-            sampleReflectionArenaComparisonModel(),
-          ],
-          feedbackContext,
-          onReady: (message, readyRun) => {
-            ctx.appendTaskNotificationEvents([message]);
-            ctx.setReflectionArenaChoicePending({
-              runId: readyRun.runId,
-              questions: buildReflectionArenaChoiceQuestions(readyRun.runId),
-            });
-          },
-        }).catch((reflectionError) => {
-          debugLog(
-            "memory",
-            "Skipping post-compaction reflection arena:",
-            reflectionError instanceof Error
-              ? reflectionError.message
-              : String(reflectionError),
-          );
-        });
-        return;
-      }
       void launchReflectionSubagent({
         agentId: ctx.agentId,
         conversationId,

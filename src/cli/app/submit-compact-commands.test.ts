@@ -161,7 +161,6 @@ function harness(input: {
       overlays.push(typeof value === "function" ? null : value);
     },
     setCommandRunning: () => {},
-    setReflectionArenaChoicePending: () => {},
     sharedReminderStateRef: { current: reminderState },
   };
   return {

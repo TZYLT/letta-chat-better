@@ -68,18 +68,6 @@ import {
 } from "@/cli/helpers/paste-registry";
 import { resolveReasoningTabToggleCommand } from "@/cli/helpers/reasoning-tab-toggle";
 import { parseReflectCommandArgs } from "@/cli/helpers/reflect-command";
-import {
-  buildReflectionArenaChoiceQuestions,
-  finalizeReflectionArenaChoice,
-  formatReflectionArenaAwaitingChoice,
-  loadReflectionArenaRun,
-  REFLECTION_ARENA_MODEL_A_DEFAULT,
-  type ReflectionArenaChoice,
-  type ReflectionArenaChoiceQuestion,
-  sampleReflectionArenaComparisonModel,
-  startReflectionArenaRun,
-} from "@/cli/helpers/reflection-arena";
-import { launchReflectionArena } from "@/cli/helpers/reflection-arena-launcher";
 import { finalizeMultiReflectionCompletion } from "@/cli/helpers/reflection-completion";
 import {
   AUTO_REFLECTION_DESCRIPTION,
@@ -92,7 +80,6 @@ import {
   tryReserveReflectionLaunch,
 } from "@/cli/helpers/reflection-launcher";
 import {
-  buildAutoReflectionPayload,
   buildMultiReflectionPayload,
   buildReflectionAutoPayload,
   buildReflectionSelectorPrompt,
@@ -306,12 +293,6 @@ type SubmitHandlerContext = {
   setProfileConfirmPending: Dispatch<
     SetStateAction<ProfileConfirmPending | null>
   >;
-  setReflectionArenaChoicePending: Dispatch<
-    SetStateAction<{
-      questions: ReflectionArenaChoiceQuestion[];
-      runId: string;
-    } | null>
-  >;
   setWorktreeDiffSelectorPending: Dispatch<
     SetStateAction<WorktreeDiffSelectorPending | null>
   >;
@@ -343,128 +324,6 @@ type SubmitHandlerContext = {
   userCancelledRef: MutableRefObject<boolean>;
   onReload?: () => Promise<void>;
 };
-
-type ReflectArenaCommandArgs =
-  | {
-      instruction?: string;
-      kind: "launch";
-      modelA?: string;
-      modelB?: string;
-    }
-  | {
-      choice: ReflectionArenaChoice;
-      kind: "choose";
-      notes?: string;
-      runId: string;
-    }
-  | { kind: "resume"; runId: string };
-
-function parseReflectArenaCommandArgs(input: string): ReflectArenaCommandArgs {
-  const trimmed = input.trim();
-  const command = trimmed.split(/\s+/, 1)[0] ?? "/reflect-arena";
-  const parts = parseModCommandArgv(trimmed.slice(command.length).trim());
-  if (parts[0] === "choose") {
-    const runId = parts[1];
-    const rawChoice = parts[2];
-    if (!runId || !rawChoice) {
-      throw new Error(
-        "Usage: /reflect-arena choose <run-id> <1|2|tie> [notes]",
-      );
-    }
-    if (rawChoice !== "1" && rawChoice !== "2" && rawChoice !== "tie") {
-      throw new Error(
-        "Usage: /reflect-arena choose <run-id> <1|2|tie> [notes]",
-      );
-    }
-    return {
-      kind: "choose",
-      runId,
-      choice: rawChoice,
-      notes: parts.slice(3).join(" ").trim() || undefined,
-    };
-  }
-  if (parts[0] === "resume") {
-    const runId = parts[1];
-    if (!runId) {
-      throw new Error("Usage: /reflect-arena resume <run-id>");
-    }
-    return { kind: "resume", runId };
-  }
-
-  let modelA: string | undefined;
-  let modelB: string | undefined;
-  const instructions: string[] = [];
-  for (let index = 0; index < parts.length; index += 1) {
-    const part = parts[index];
-    if (!part) continue;
-    if (part === "--model-a") {
-      modelA = parts[index + 1];
-      if (!modelA) throw new Error("Usage: /reflect-arena --model-a <model>");
-      index += 1;
-      continue;
-    }
-    if (part.startsWith("--model-a=")) {
-      modelA = part.slice("--model-a=".length).trim();
-      if (!modelA) throw new Error("Usage: /reflect-arena --model-a <model>");
-      continue;
-    }
-    if (part === "--model-b") {
-      modelB = parts[index + 1];
-      if (!modelB) throw new Error("Usage: /reflect-arena --model-b <model>");
-      index += 1;
-      continue;
-    }
-    if (part.startsWith("--model-b=")) {
-      modelB = part.slice("--model-b=".length).trim();
-      if (!modelB) throw new Error("Usage: /reflect-arena --model-b <model>");
-      continue;
-    }
-    if (
-      part === "--instruction" ||
-      part === "--instructions" ||
-      part === "-i"
-    ) {
-      const instruction = parts
-        .slice(index + 1)
-        .join(" ")
-        .trim();
-      if (!instruction) {
-        throw new Error("Usage: /reflect-arena --instruction <instruction>");
-      }
-      instructions.push(instruction);
-      break;
-    }
-    if (part.startsWith("--instruction=")) {
-      const instruction = part.slice("--instruction=".length).trim();
-      if (!instruction) {
-        throw new Error("Usage: /reflect-arena --instruction <instruction>");
-      }
-      instructions.push(instruction);
-      continue;
-    }
-    if (part === "--") {
-      const instruction = parts
-        .slice(index + 1)
-        .join(" ")
-        .trim();
-      if (!instruction) {
-        throw new Error("Usage: /reflect-arena -- <instruction>");
-      }
-      instructions.push(instruction);
-      break;
-    }
-    throw new Error(
-      "Usage: /reflect-arena [--model-a <model>] [--model-b <model>] [--instruction <instruction>]",
-    );
-  }
-
-  return {
-    kind: "launch",
-    modelA,
-    modelB,
-    instruction: instructions.join("\n").trim() || undefined,
-  };
-}
 
 export function useSubmitHandler(ctx: SubmitHandlerContext) {
   const {
@@ -544,7 +403,6 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
     setModelSelectorOptions,
     setNeedsEagerApprovalCheck,
     setProfileConfirmPending,
-    setReflectionArenaChoicePending,
     setWorktreeDiffSelectorPending,
     setReasoningTabCycleEnabled,
     setSearchQuery,
@@ -2580,108 +2438,6 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
           return { submitted: true };
         }
 
-        // Experimental reflection arena - blind A/B reflection model comparison
-        if (
-          trimmed === "/reflect-arena" ||
-          trimmed.startsWith("/reflect-arena ")
-        ) {
-          const cmd = commandRunner.start(msg, "Preparing reflection arena...");
-
-          if (!experimentManager.isEnabled("reflection_arena")) {
-            cmd.fail(
-              "Reflection arena is experimental. Enable it with /experiments or LETTA_REFLECTION_ARENA=1.",
-            );
-            return { submitted: true };
-          }
-
-          if (!isActiveMemfsEnabled(agentId)) {
-            cmd.fail(
-              "Memory filesystem is not enabled. Reflection arena requires MemFS.",
-            );
-            return { submitted: true };
-          }
-
-          try {
-            const arenaArgs = parseReflectArenaCommandArgs(trimmed);
-            if (arenaArgs.kind === "choose") {
-              const { message } = await finalizeReflectionArenaChoice({
-                runId: arenaArgs.runId,
-                choice: arenaArgs.choice,
-                notes: arenaArgs.notes,
-                onHfUploadComplete: (message) => {
-                  appendTaskNotificationEvents([message]);
-                },
-              });
-              cmd.finish(message, true);
-              return { submitted: true };
-            }
-            if (arenaArgs.kind === "resume") {
-              const run = await loadReflectionArenaRun(arenaArgs.runId);
-              if (run.status !== "awaiting_choice") {
-                cmd.fail(
-                  `Reflection arena run ${arenaArgs.runId} is ${run.status}; expected awaiting_choice.`,
-                );
-                return { submitted: true };
-              }
-              setReflectionArenaChoicePending({
-                runId: run.runId,
-                questions: buildReflectionArenaChoiceQuestions(run.runId),
-              });
-              cmd.finish(
-                `${formatReflectionArenaAwaitingChoice(run)}\n\nResumed reflection arena choice prompt for run ${run.runId}.`,
-                true,
-              );
-              return { submitted: true };
-            }
-
-            const reflectionConversationId =
-              conversationIdRef.current ?? "default";
-            const payload = await buildAutoReflectionPayload(
-              agentId,
-              reflectionConversationId,
-            );
-            if (!payload) {
-              cmd.fail("No new transcript content to reflect on.");
-              return { submitted: true };
-            }
-
-            const modelA = arenaArgs.modelA ?? REFLECTION_ARENA_MODEL_A_DEFAULT;
-            const modelB =
-              arenaArgs.modelB ?? sampleReflectionArenaComparisonModel();
-
-            const run = await startReflectionArenaRun({
-              agentId,
-              conversationId: reflectionConversationId,
-              triggerSource: "manual",
-              instruction: arenaArgs.instruction,
-              models: [modelA, modelB],
-              payload,
-              feedbackContext: {
-                parentAgentName: agentName,
-                parentAgentDescription: agentDescription,
-                surface: "letta_code_tui",
-              },
-              onReady: (message, readyRun) => {
-                appendTaskNotificationEvents([message]);
-                setReflectionArenaChoicePending({
-                  runId: readyRun.runId,
-                  questions: buildReflectionArenaChoiceQuestions(
-                    readyRun.runId,
-                  ),
-                });
-              },
-            });
-            cmd.finish(
-              `Started reflection arena run ${run.runId}. View the transcript payload here: ${run.payloadPath}`,
-              true,
-            );
-          } catch (error) {
-            const errorDetails = formatErrorDetails(error, agentId);
-            cmd.fail(`Failed to start reflection arena: ${errorDetails}`);
-          }
-
-          return { submitted: true };
-        }
         // All manual aliases resolve ownership before entering any legacy mode.
         if (/^\/(dream|reflect|reflection)(?:\s|$)/.test(trimmed)) {
           const agentId = commandScope.agentId;
@@ -2713,45 +2469,6 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
             const reflectArgs = parseReflectCommandArgs(trimmed);
 
             if (reflectArgs.kind === "single") {
-              if (experimentManager.isEnabled("reflection_arena")) {
-                const arenaResult = await launchReflectionArena({
-                  agentId,
-                  conversationId: reflectionConversationId,
-                  triggerSource: "manual",
-                  instruction: reflectArgs.instruction,
-                  models: [
-                    REFLECTION_ARENA_MODEL_A_DEFAULT,
-                    sampleReflectionArenaComparisonModel(),
-                  ],
-                  feedbackContext: {
-                    parentAgentName: agentName,
-                    parentAgentDescription: agentDescription,
-                    surface: "letta_code_tui",
-                  },
-                  onReady: (message, readyRun) => {
-                    appendTaskNotificationEvents([message]);
-                    setReflectionArenaChoicePending({
-                      runId: readyRun.runId,
-                      questions: buildReflectionArenaChoiceQuestions(
-                        readyRun.runId,
-                      ),
-                    });
-                  },
-                });
-                if (!arenaResult.launched) {
-                  cmd.fail(
-                    getReflectionLaunchSkippedMessage(arenaResult.reason) ??
-                      "Failed to start reflection arena.",
-                  );
-                  return { submitted: true };
-                }
-                cmd.finish(
-                  `Started reflection arena run ${arenaResult.run.runId}. View the transcript payload here: ${arenaResult.payloadPath}`,
-                  true,
-                );
-                return { submitted: true };
-              }
-
               const result = await launchReflectionSubagent(
                 {
                   agentId,
@@ -3588,7 +3305,6 @@ ${SYSTEM_REMINDER_CLOSE}
       resetTrajectoryBases,
       systemInfoReminderEnabled,
       appendTaskNotificationEvents,
-      setReflectionArenaChoicePending,
       maybeCarryOverActiveConversationModel,
       setConversationAutoTitleEligibility,
       setConversationIdAndRef,

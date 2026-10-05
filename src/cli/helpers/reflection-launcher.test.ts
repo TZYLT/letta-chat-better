@@ -1,4 +1,4 @@
-import { describe, expect, mock, spyOn, test } from "bun:test";
+import { describe, expect, mock, test } from "bun:test";
 import { execFileSync } from "node:child_process";
 import {
   existsSync,
@@ -9,8 +9,6 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import * as memoryWorktree from "@/agent/memory-worktree";
-import { launchReflectionArena } from "@/cli/helpers/reflection-arena-launcher";
 import {
   clearAutomaticReflectionSuppression,
   getReflectionLaunchSkippedMessage,
@@ -127,10 +125,6 @@ describe("reflection launchers", () => {
       const originalOptIn = process.env.LETTA_ENABLE_WINDOWS_AUTO_REFLECTION;
       // Stop allowed launches at the next gate without API or filesystem work.
       const isCutover = mock(async () => true);
-      const isParentDirty = spyOn(
-        memoryWorktree,
-        "reflectionMemoryParentHasChanges",
-      ).mockResolvedValue(true);
       try {
         Object.defineProperty(process, "platform", { value: platform });
         if (optIn === undefined) {
@@ -147,20 +141,7 @@ describe("reflection launchers", () => {
           reason: skipped ? "windows_disabled" : "cutover",
         });
         expect(isCutover).toHaveBeenCalledTimes(skipped ? 0 : 1);
-        const arenaResult = await launchReflectionArena({
-          agentId: "agent-arena-platform-test",
-          conversationId: "conv-arena-platform-test",
-          triggerSource,
-          models: ["model-a", "model-b"],
-          onReady: () => {},
-        });
-        expect(arenaResult).toEqual({
-          launched: false,
-          reason: skipped ? "windows_disabled" : "parent_dirty",
-        });
-        expect(isParentDirty).toHaveBeenCalledTimes(skipped ? 0 : 1);
       } finally {
-        isParentDirty.mockRestore();
         if (originalPlatform) {
           Object.defineProperty(process, "platform", originalPlatform);
         }

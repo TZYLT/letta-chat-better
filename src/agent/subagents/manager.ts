@@ -800,10 +800,10 @@ ${SYSTEM_REMINDER_CLOSE}
  *
  * @param type - Subagent type (e.g., "code-reviewer", "general-purpose")
  * @param prompt - The task prompt for the subagent
- * @param exactModelHandle - Optional exact model handle from a harness caller
- *   (reflection arena experiments). Used verbatim — there is no resolution,
- *   catalogue lookup, tier default, or fallback. Omitted by every agent-facing
- *   launch, which runs the child on the parent conversation's model.
+ * @param exactModelHandle - Optional exact model handle from a harness caller.
+ *   Used verbatim — there is no resolution, catalogue lookup, tier default, or
+ *   fallback. Omitted by every agent-facing launch, which runs the child on the
+ *   parent conversation's model.
  * @param subagentId - ID for tracking in the state store (registered by Task tool)
  * @param signal - Optional abort signal for interruption handling
  * @param existingAgentId - Optional ID of an existing agent to deploy
