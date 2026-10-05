@@ -371,7 +371,7 @@ Load `creating-skills` to create or edit a skill. Load `acquiring-skills` when t
 
 ## Agent secrets
 
-Agent-scoped secrets hold credential values that are referenced as `$NAME` in shell commands. Cloud agents store them server-side on the agent; local agents use OS secure storage. The harness substitutes `$NAME` at exec time and scrubs values from tool output, so values never enter agent context.
+Agent-scoped secrets hold credential values that are referenced as `$NAME` in shell commands. They are kept in OS secure storage. The harness substitutes `$NAME` at exec time and scrubs values from tool output, so values never enter agent context.
 
 ```bash
 letta secret list                                   # names only, never values
