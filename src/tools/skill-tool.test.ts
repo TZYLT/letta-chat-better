@@ -92,18 +92,18 @@ describe("Skill tool memory filesystem lookup", () => {
     rmSync(tempRoot, { recursive: true, force: true });
   });
 
-  test("does not load bundled image generation skill for local agents", async () => {
+  test("does not load a bundled cloud-only skill for local agents", async () => {
     process.env.MEMORY_DIR = join(tempRoot, "empty-memory");
     process.env.LETTA_MEMORY_DIR = join(tempRoot, "empty-letta-memory");
     process.env.HOME = tempRoot;
 
     await expect(
       readSkillContent(
-        "image-generation",
+        "curating-memory-palace",
         currentSkillsDirectory ?? join(tempRoot, ".skills"),
         "agent-local-skill-test",
       ),
-    ).rejects.toThrow('Skill "image-generation" not found');
+    ).rejects.toThrow('Skill "curating-memory-palace" not found');
   });
 
   test("init loads the bundled v2 memory guidance", async () => {

@@ -109,7 +109,7 @@ describe("buildClientSkillsPayload", () => {
     expect(result.skills.map((skill) => skill.id)).toEqual(["manual-only"]);
   });
 
-  test("excludes bundled image generation skill for local agents", async () => {
+  test("excludes a bundled cloud-only skill for local agents", async () => {
     const { buildClientSkillsPayload, discoverClientSideSkills } = await import(
       "@/agent/client-skills"
     );
@@ -118,9 +118,9 @@ describe("buildClientSkillsPayload", () => {
       skills: [
         {
           ...baseSkill,
-          id: "image-generation",
-          description: "Generate images",
-          path: "/tmp/bundled/image-generation/SKILL.md",
+          id: "curating-memory-palace",
+          description: "Cloud-only bundled skill",
+          path: "/tmp/bundled/curating-memory-palace/SKILL.md",
           source: "bundled",
         },
         {
@@ -155,16 +155,16 @@ describe("buildClientSkillsPayload", () => {
     ]);
   });
 
-  test("keeps project image generation skills for local agents", async () => {
+  test("keeps a project override of a cloud-only skill for local agents", async () => {
     const { discoverClientSideSkills } = await import("@/agent/client-skills");
 
     const discoverSkillsFn = async (): Promise<SkillDiscoveryResult> => ({
       skills: [
         {
           ...baseSkill,
-          id: "image-generation",
+          id: "curating-memory-palace",
           description: "Project override",
-          path: "/tmp/project/image-generation/SKILL.md",
+          path: "/tmp/project/curating-memory-palace/SKILL.md",
           source: "project",
         },
       ],
@@ -179,7 +179,7 @@ describe("buildClientSkillsPayload", () => {
     });
 
     expect(result.skills.map((skill) => skill.id)).toEqual([
-      "image-generation",
+      "curating-memory-palace",
     ]);
   });
 

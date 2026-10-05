@@ -153,10 +153,7 @@ export function isUserInvocableSkill(skill: Skill): boolean {
   return skill.userInvocable !== false;
 }
 
-const LOCAL_AGENT_EXCLUDED_BUNDLED_SKILLS = new Set([
-  "curating-memory-palace",
-  "image-generation",
-]);
+const LOCAL_AGENT_EXCLUDED_BUNDLED_SKILLS = new Set(["curating-memory-palace"]);
 
 export function isSkillAvailableForAgent(
   skill: Skill,

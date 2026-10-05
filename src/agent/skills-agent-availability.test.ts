@@ -11,12 +11,10 @@ const baseSkill: Skill = {
 
 describe("isSkillAvailableForAgent", () => {
   test("excludes bundled cloud-only skills for local agents", () => {
-    for (const id of ["curating-memory-palace", "image-generation"]) {
-      const skill: Skill = { ...baseSkill, id };
-      expect(isSkillAvailableForAgent(skill, "agent-local-123")).toBe(false);
-      expect(isSkillAvailableForAgent(skill, "agent-123")).toBe(true);
-      expect(isSkillAvailableForAgent(skill, undefined)).toBe(true);
-    }
+    const skill: Skill = { ...baseSkill, id: "curating-memory-palace" };
+    expect(isSkillAvailableForAgent(skill, "agent-local-123")).toBe(false);
+    expect(isSkillAvailableForAgent(skill, "agent-123")).toBe(true);
+    expect(isSkillAvailableForAgent(skill, undefined)).toBe(true);
   });
 
   test("keeps non-bundled overrides of cloud-only skills for local agents", () => {
