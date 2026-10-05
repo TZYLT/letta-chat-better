@@ -483,9 +483,9 @@ export async function runListenSubcommand(argv: string[]): Promise<number> {
         return 1;
       }
 
-      // A spawner owns Desktop child lifecycle. Standalone `letta server`
-      // and its `letta remote` alias instead claim their exact local
-      // registration slot before starting channel adapters or registering.
+      // A spawner owns Desktop child lifecycle. A standalone `letta server`
+      // instead claims its exact local registration slot before starting
+      // channel adapters or registering.
       if (shouldAcquireStandaloneListenerLock()) {
         const listenerInstanceId = registerOptions.listenerInstanceId;
         if (!listenerInstanceId) {

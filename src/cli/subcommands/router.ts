@@ -3,24 +3,19 @@ import { runBackendSubcommand } from "./backend";
 import { runChannelsSubcommand } from "./channels";
 import { runConnectSubcommand } from "./connect";
 import { runCronSubcommand } from "./cron";
-import { runFeedbackSubcommand } from "./feedback";
-import { runListenSubcommand } from "./listen.tsx";
 import { runLocalBackendSubcommand } from "./local-backend";
 import { runMcpSubcommand } from "./mcp";
 import { runMemorySubcommand } from "./memory";
 import { runMessagesSubcommand } from "./messages";
 import { runModelSubcommand } from "./model";
 import { runModsSubcommand } from "./mods";
-import { runPermissionsSubcommand } from "./permissions";
 import { runSandboxSubcommand } from "./sandbox";
 import { runSecretSubcommand } from "./secret";
 import { asLegacyAppServerCommand, runServerSubcommand } from "./server";
 import { runSetupSubcommand } from "./setup";
-import { runSharedMemorySubcommand } from "./shared-memory";
 import { runInstallSubcommand, runSkillsSubcommand } from "./skills";
 import { runStepsSubcommand } from "./steps";
 import { runTrajectoriesSubcommand } from "./trajectories";
-import { runUsageSubcommand } from "./usage";
 
 async function runVersionSubcommand(): Promise<number> {
   const { getVersion } = await import("@/version");
@@ -36,7 +31,6 @@ export function subcommandNeedsEarlyBackendMode(
     case "channel-gateway":
     case "agents":
     case "connect":
-    case "feedback":
     case "install":
     case "memfs":
     case "memory":
@@ -46,14 +40,10 @@ export function subcommandNeedsEarlyBackendMode(
     case "model":
     case "models":
     case "mods":
-    case "permissions":
-    case "remote":
     case "sandbox":
     case "secret":
     case "server":
-    case "shared-memory":
     case "skills":
-    case "usage":
       return true;
     default:
       return false;
@@ -78,10 +68,6 @@ export async function runSubcommand(argv: string[]): Promise<number | null> {
     case "model":
     case "models": // alias
       return runModelSubcommand(rest);
-    case "usage":
-      return runUsageSubcommand(rest);
-    case "permissions":
-      return runPermissionsSubcommand(rest);
     case "app-server":
       console.error(
         "Warning: `letta app-server` is deprecated. Use `letta server --listen` instead.",
@@ -101,10 +87,6 @@ export async function runSubcommand(argv: string[]): Promise<number | null> {
       return runSecretSubcommand(rest);
     case "server":
       return runServerSubcommand(rest);
-    case "feedback":
-      return runFeedbackSubcommand(rest);
-    case "remote": // alias
-      return runListenSubcommand(rest);
     case "connect":
       return runConnectSubcommand(rest);
     case "backend":
@@ -113,8 +95,6 @@ export async function runSubcommand(argv: string[]): Promise<number | null> {
       return runSetupSubcommand(rest);
     case "install":
       return runInstallSubcommand(rest);
-    case "shared-memory":
-      return runSharedMemorySubcommand(rest);
     case "skills":
       return runSkillsSubcommand(rest);
     case "cron":

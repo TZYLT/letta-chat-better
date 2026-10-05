@@ -17,8 +17,8 @@ import { markManagedCloudRuntimeFromListenerIdentity } from "@/managed-cloud-run
  * with manual listeners or other installations.
  *
  * Manual listener identity behavior remains unchanged (legacy name-derived
- * ids). Standalone `letta server`/`letta remote` processes use that exact id
- * for their local single-instance guard; in-app `/listen` remains a separate
+ * ids). A standalone `letta server` process uses that exact id
+ * for its local single-instance guard; in-app `/listen` remains a separate
  * surface and is not part of that guard.
  */
 

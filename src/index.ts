@@ -166,7 +166,6 @@ USAGE
   letta memory ...      Memory filesystem subcommands
   letta agents ...      Agents subcommands (JSON-only)
   letta model ...       Get, list, or set models and reasoning (JSON-only)
-  letta usage           Show account credits and Letta quota (Markdown)
   letta messages ...    Messages subcommands (JSON-only)
   letta mcp ...         List, search, and call MCP servers available to an agent
   letta mods ...        List and manage local mods

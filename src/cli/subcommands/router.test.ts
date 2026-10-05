@@ -37,39 +37,6 @@ describe("subcommand router", () => {
     expect(exitCode).toBe(0);
   });
 
-  test("routes permissions help before TUI startup", async () => {
-    const messages: string[] = [];
-    const originalLog = console.log;
-    console.log = (message?: unknown) => {
-      messages.push(String(message));
-    };
-
-    try {
-      expect(subcommandNeedsEarlyBackendMode("permissions")).toBe(true);
-      expect(await runSubcommand(["permissions", "--help"])).toBe(0);
-      expect(messages.join("\n")).toContain("letta permissions [--agent <id>]");
-    } finally {
-      console.log = originalLog;
-    }
-  });
-
-  test("routes feedback help before TUI startup", async () => {
-    const messages: string[] = [];
-    const originalLog = console.log;
-    console.log = (message?: unknown) => {
-      messages.push(String(message));
-    };
-
-    try {
-      const exitCode = await runSubcommand(["feedback", "--help"]);
-
-      expect(exitCode).toBe(0);
-      expect(messages.join("\n")).toContain("letta feedback --message <text>");
-    } finally {
-      console.log = originalLog;
-    }
-  });
-
   test("routes unified MCP help before TUI startup", async () => {
     const messages: string[] = [];
     const originalWrite = process.stdout.write;
@@ -171,6 +138,14 @@ describe("subcommand router", () => {
     expect(await runSubcommand(["teleport", "--help"])).toBeNull();
   });
 
+  test("does not register the removed account and relay subcommands", async () => {
+    expect(await runSubcommand(["usage", "--help"])).toBeNull();
+    expect(await runSubcommand(["permissions", "--help"])).toBeNull();
+    expect(await runSubcommand(["shared-memory", "--help"])).toBeNull();
+    expect(await runSubcommand(["feedback", "--help"])).toBeNull();
+    expect(await runSubcommand(["remote", "--help"])).toBeNull();
+  });
+
   test("routes sandbox help", async () => {
     const messages: string[] = [];
     const originalLog = console.log;
@@ -198,7 +173,6 @@ describe("subcommand router", () => {
     expect(subcommandNeedsEarlyBackendMode("model")).toBe(true);
     expect(subcommandNeedsEarlyBackendMode("models")).toBe(true);
     expect(subcommandNeedsEarlyBackendMode("mods")).toBe(true);
-    expect(subcommandNeedsEarlyBackendMode("permissions")).toBe(true);
     expect(subcommandNeedsEarlyBackendMode("sandbox")).toBe(true);
     expect(subcommandNeedsEarlyBackendMode("version")).toBe(false);
     expect(subcommandNeedsEarlyBackendMode("backend")).toBe(false);
