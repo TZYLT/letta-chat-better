@@ -159,18 +159,6 @@
       "reason": "Exercises reflection launch preflight with real Git processes and temporary local-backend environment overrides."
     },
     {
-      "path": "src/telemetry/flush-auth.test.ts",
-      "timeoutMs": 15000,
-      "env": { "LETTA_CODE_TELEM": "1" },
-      "reason": "Explicitly exercises telemetry emission with mocked network requests."
-    },
-    {
-      "path": "src/telemetry/flush-batching.test.ts",
-      "timeoutMs": 15000,
-      "env": { "LETTA_CODE_TELEM": "1" },
-      "reason": "Explicitly exercises telemetry batching with mocked network requests."
-    },
-    {
       "path": "src/tools/bash.test.ts",
       "timeoutMs": 30000,
       "reason": "Spawns real shells and temporarily mutates process platform and PATH state."
