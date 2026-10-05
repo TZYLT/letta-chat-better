@@ -31,7 +31,6 @@ import {
   type ReflectionSettings,
 } from "@/cli/helpers/memory-reminder";
 import { formatPersonalitySwappedMessage } from "@/cli/helpers/personality-pending";
-import { DEFAULT_SUMMARIZATION_MODEL } from "@/constants";
 import { experimentManager } from "@/experiments/manager";
 import type { ExperimentId } from "@/experiments/types";
 import { OPENAI_CODEX_PROVIDER_NAME } from "@/providers/openai-codex-provider";
@@ -1029,14 +1028,11 @@ export function useConfigurationHandlers(ctx: ConfigurationHandlersContext) {
         });
 
         try {
-          // Spread existing compaction_settings to preserve model/other fields,
-          // only override the mode. If no model is configured, default to
-          // letta/auto so compaction uses a consistent summarization model.
+          // Spread existing compaction_settings to preserve the model and any
+          // other fields; only override the mode.
           const existing = agentState?.compaction_settings;
-          const existingModel = existing?.model?.trim();
           const nextCompactionSettings = {
             ...existing,
-            model: existingModel || DEFAULT_SUMMARIZATION_MODEL,
             // Rejects modes this backend cannot run (a queued overlay action can
             // carry one chosen before the backend changed).
             mode: assertCompactionModeForBackend(mode),

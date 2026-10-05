@@ -30,14 +30,14 @@ function mkAgentState(overrides: Partial<AgentState>): AgentState {
 }
 
 describe("reconcileExistingAgentState", () => {
-  test("does not update when compaction model and attached tools are already correct", async () => {
+  test("does not update when the attached tools are already correct", async () => {
     const agent = mkAgentState({
       tools: [
         mkTool("tool-web", "web_search"),
         mkTool("tool-fetch", "fetch_webpage"),
       ],
       compaction_settings: {
-        model: "letta/auto",
+        mode: "sliding_window",
       },
     });
 
@@ -66,7 +66,6 @@ describe("reconcileExistingAgentState", () => {
       ],
       compaction_settings: {
         mode: "sliding_window",
-        model: "",
       },
     });
 
@@ -78,7 +77,6 @@ describe("reconcileExistingAgentState", () => {
       ],
       compaction_settings: {
         mode: "sliding_window",
-        model: "letta/auto",
       },
     });
 
@@ -103,10 +101,7 @@ describe("reconcileExistingAgentState", () => {
     );
 
     expect(result.updated).toBe(true);
-    expect(result.appliedTweaks).toEqual([
-      "set_compaction_model",
-      "sync_attached_tools",
-    ]);
+    expect(result.appliedTweaks).toEqual(["sync_attached_tools"]);
     expect(result.agent).toBe(updatedAgent);
 
     expect(list).toHaveBeenCalledTimes(1);
@@ -114,11 +109,8 @@ describe("reconcileExistingAgentState", () => {
 
     // Must preserve existing tools and only append the missing base tool
     expect(update).toHaveBeenCalledTimes(1);
+    // Compaction settings are never rewritten; only the missing base tool is added.
     expect(update).toHaveBeenCalledWith("agent-test", {
-      compaction_settings: {
-        mode: "sliding_window",
-        model: "letta/auto",
-      },
       tool_ids: ["tool-web", "tool-convo", "tool-fetch"],
     });
 
@@ -137,7 +129,7 @@ describe("reconcileExistingAgentState", () => {
         mkTool("tool-mcp", "custom_mcp_tool"),
       ],
       compaction_settings: {
-        model: "letta/auto",
+        mode: "sliding_window",
       },
     });
 

@@ -3,7 +3,6 @@ import type {
   AgentUpdateParams,
 } from "@letta-ai/letta-client/resources/agents/agents";
 import type { Tool } from "@letta-ai/letta-client/resources/tools";
-import { DEFAULT_SUMMARIZATION_MODEL } from "@/constants";
 
 export const DEFAULT_ATTACHED_BASE_TOOLS = [
   "web_search",
@@ -122,19 +121,6 @@ export async function reconcileExistingAgentState(
   const patch: AgentUpdateParams = {};
   const appliedTweaks: string[] = [];
   const skippedTweaks: string[] = [];
-
-  const configuredCompactionModel =
-    typeof agent.compaction_settings?.model === "string"
-      ? agent.compaction_settings.model.trim()
-      : "";
-
-  if (!configuredCompactionModel) {
-    patch.compaction_settings = {
-      ...(agent.compaction_settings ?? {}),
-      model: DEFAULT_SUMMARIZATION_MODEL,
-    };
-    appliedTweaks.push("set_compaction_model");
-  }
 
   const desiredToolNames = DEFAULT_ATTACHED_BASE_TOOLS;
   const desiredTools = await resolveDesiredAttachedToolIds(

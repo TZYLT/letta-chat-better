@@ -56,7 +56,6 @@ import {
   clearTopicTrimRequest,
   setTopicTrimRequest,
 } from "@/cli/helpers/topic-trim-request";
-import { DEFAULT_SUMMARIZATION_MODEL } from "@/constants";
 import { experimentManager } from "@/experiments/manager";
 import { runPreCompactHooks } from "@/hooks";
 import type { SharedReminderState } from "@/reminders/state";
@@ -269,9 +268,6 @@ async function compactByMode(
       ? {
           compaction_settings: {
             mode,
-            model:
-              ctx.agentStateRef.current?.compaction_settings?.model?.trim() ||
-              DEFAULT_SUMMARIZATION_MODEL,
           },
         }
       : undefined;

@@ -30,7 +30,6 @@ import { runPostCompactionTail } from "@/cli/helpers/post-compaction";
 import { parseReflectCommandArgs } from "@/cli/helpers/reflect-command";
 import { launchReflectionSubagent } from "@/cli/helpers/reflection-launcher";
 import { buildModCommandPrompt } from "@/cli/mods/command-runtime";
-import { DEFAULT_SUMMARIZATION_MODEL } from "@/constants";
 import { runPreCompactHooks } from "@/hooks";
 import type { ModCommand } from "@/mods/types";
 import { settingsManager } from "@/settings-manager";
@@ -546,13 +545,9 @@ async function handleCompactCommand(
   try {
     let compactParams: ConversationMessageCompactBody | undefined;
     if (modeArg) {
-      const agent = await backend.retrieveAgent(agentId);
       compactParams = {
         compaction_settings: {
           mode: modeArg,
-          model:
-            agent.compaction_settings?.model?.trim() ||
-            DEFAULT_SUMMARIZATION_MODEL,
         },
       } as ConversationMessageCompactBody;
     }
