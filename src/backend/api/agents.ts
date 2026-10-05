@@ -17,10 +17,7 @@ export async function createMinimalAgent(
     "POST",
     "/v1/agents",
     { name },
-    {
-      baseUrl: "https://api.letta.com",
-      apiKey,
-    },
+    { apiKey },
   );
 }
 

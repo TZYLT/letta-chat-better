@@ -194,7 +194,7 @@ const DEFAULT_LOCAL_PROJECT_SETTINGS: LocalProjectSettings = {
   lastAgent: null,
 };
 
-const DEFAULT_LETTA_API_URL = "https://api.letta.com";
+const SERVER_KEY_CLOUD = "api.letta.com"; // frozen storage key, not the URL default
 const SETTINGS_BASE_URL_ENV = "LETTA_SETTINGS_BASE_URL";
 
 function isSubagentProcess(): boolean {
@@ -278,7 +278,7 @@ function getApiServerKey(settings?: Settings | null): string {
     settings?.env?.[SETTINGS_BASE_URL_ENV] ||
     process.env.LETTA_BASE_URL ||
     settings?.env?.LETTA_BASE_URL ||
-    DEFAULT_LETTA_API_URL;
+    SERVER_KEY_CLOUD;
   return normalizeBaseUrl(baseUrl);
 }
 
@@ -317,7 +317,7 @@ function getCurrentMemfsServerKey(settings?: Settings | null): string {
   const baseUrl =
     process.env.LETTA_MEMFS_BASE_URL ||
     settings?.env?.LETTA_MEMFS_BASE_URL ||
-    DEFAULT_LETTA_API_URL;
+    SERVER_KEY_CLOUD;
   return normalizeBaseUrl(baseUrl);
 }
 
@@ -1484,7 +1484,7 @@ class SettingsManager {
   getPinnedAgentsForServerKey(serverKey: string): string[] {
     const settings = this.getSettings();
     const normalizedBaseUrl =
-      serverKey === "api.letta.com" ? undefined : serverKey;
+      serverKey === SERVER_KEY_CLOUD ? undefined : serverKey;
 
     return (
       settings.agents
@@ -1613,7 +1613,7 @@ class SettingsManager {
     const settings = this.getSettings();
     const serverKey = serverKeyOverride ?? getCurrentServerKey(settings);
     const normalizedBaseUrl =
-      serverKey === "api.letta.com" ? undefined : serverKey;
+      serverKey === SERVER_KEY_CLOUD ? undefined : serverKey;
 
     return settings.agents?.find(
       (a) =>
@@ -1640,7 +1640,7 @@ class SettingsManager {
     const settings = this.getSettings();
     const serverKey = serverKeyOverride ?? getCurrentServerKey(settings);
     const normalizedBaseUrl =
-      serverKey === "api.letta.com" ? undefined : serverKey;
+      serverKey === SERVER_KEY_CLOUD ? undefined : serverKey;
 
     const agents = [...(settings.agents || [])];
     const idx = agents.findIndex(
