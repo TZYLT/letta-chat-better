@@ -5,7 +5,7 @@ description: Reference for the `letta mcp` CLI, which finds and invokes MCP tool
 
 # Using MCP tools
 
-`letta mcp` gives the agent one unified view of every MCP server it can reach: servers connected to the agent in Letta Cloud and servers configured locally on this machine. It works from any surface where the agent runs — cloud sandboxes (chat.letta.com), Letta Desktop, and terminals. All output is JSON.
+`letta mcp` gives the agent one unified view of every MCP server it can reach: servers configured locally on this machine. It works on Letta Desktop and in terminals. All output is JSON.
 
 ## Commands
 
@@ -37,8 +37,8 @@ Every command accepts `--agent <id>`, defaulting to `LETTA_AGENT_ID`/`AGENT_ID` 
 
 ## Troubleshooting
 
-- `list` empty → no MCP servers are available. Ask the user to connect one on the Letta Cloud MCP servers page or configure a local one in the Letta Code app.
-- Cloud server with no tools (or `0 tools` in the reminder) → tools were never synced. Ask the user to resync it from the MCP servers page; the CLI has no refresh action.
-- `unauthorized` or another auth error on `call` → the server's stored credentials are missing or stale (`tools` can still list from previously synced rows). Ask the user to re-authenticate the server: cloud servers on the MCP servers page, local OAuth servers by connecting once in the Letta Code app — this CLI is non-interactive and only reuses persisted credentials.
+- `list` empty → no MCP servers are available. Ask the user to configure a local MCP server in the Letta Code app.
+- Server with no tools (or `0 tools` in the reminder) → tools were never synced. Ask the user to resync it in the Letta Code app; the CLI has no refresh action.
+- `unauthorized` or another auth error on `call` → the server's stored credentials are missing or stale (`tools` can still list from previously synced rows). Ask the user to re-authenticate the server by connecting once in the Letta Code app — this CLI is non-interactive and only reuses persisted credentials.
 - `ambiguous_server_name` → two servers share a name; the error hint explains how to disambiguate.
 - Duplicate tool names across servers get a numeric suffix (`_2`); the printed name is always the callable one.

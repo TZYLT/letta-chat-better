@@ -81,14 +81,12 @@ Close panels when they are transient, and close/replace long-lived panels from t
 
 ### Panel use case: dreaming indicator overrides
 
-When a user asks to change the "dreaming" UI/indicator, the reflection status above the input, or to add the full background-agent URL, use an `order: 1` panel replacement. The user should not need to know any internal row/component name.
+When a user asks to change the "dreaming" UI/indicator or the reflection status above the input, use an `order: 1` panel replacement. The user should not need to know any internal row/component name.
 
 Checklist:
 
 - Open a panel with `order: 1`, not an additive panel.
 - Read active hidden background agents from `ctx.backgroundAgents`; filter by `status` (`pending`/`running`).
-- Use `agent.agentId` to build `https://chat.letta.com/chat/${agent.agentId}`.
-- If the user asks for the full URL, render visible text; do not use `ctx.link()` because it hides the URL behind OSC-8.
 - If preserving animation, own the timer and call `panel.update()`; clean up timer and panel in the disposer.
 - Keep `render()` pure: do not call diagnostics or mutate external state from render.
 
@@ -96,7 +94,7 @@ Critical shape:
 
 ```ts
 const panel = letta.ui.openPanel({
-  id: "dreaming-url",
+  id: "dreaming-indicator",
   order: 1,
   render(ctx) {
     const agent = ctx.backgroundAgents.find(
@@ -104,10 +102,7 @@ const panel = letta.ui.openPanel({
     );
     if (!agent) return "";
 
-    const url = agent.agentId
-      ? `https://chat.letta.com/chat/${agent.agentId}`
-      : null;
-    // Render spinner/label/elapsed, plus visible URL if requested.
+    // Render spinner/label/elapsed.
   },
 });
 ```

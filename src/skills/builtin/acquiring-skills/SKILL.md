@@ -5,7 +5,7 @@ description: Discover and install skills from Hermes, ClawHub, GitHub, and other
 
 # Acquiring New Skills
 
-This skill teaches you how to safely discover and install skills from external sources, including the Hermes Skills Hub, ClawHub (OpenClaw), GitHub repositories, and Letta community repos.
+This skill teaches you how to safely discover and install skills from external sources, including the Hermes Skills Hub, ClawHub (OpenClaw), and GitHub repositories.
 
 ## SAFETY - READ THIS FIRST
 
@@ -14,7 +14,6 @@ Skills can contain:
 - **Scripts** (Python, TypeScript, Bash) - Risk: malicious code execution
 
 ### Trusted Sources (no user approval needed for download)
-- `https://github.com/letta-ai/skills` - Letta's community skills
 - `https://github.com/anthropics/skills` - Anthropic's official skills
 - `official/*` - Hermes official optional skills (from `NousResearch/hermes-agent`)
 
@@ -176,11 +175,10 @@ letta skills install https://github.com/owner/repo/blob/main/path/to/skill/SKILL
 letta skills install owner/repo/path/to/skill
 ```
 
-### 4. Letta & Anthropic Community Repos
+### 4. Anthropic Community Repos
 
 | Repository | Description |
 |------------|-------------|
-| https://github.com/letta-ai/skills | Community skills for Letta agents |
 | https://github.com/anthropics/skills | Anthropic's official Agent Skills |
 
 These can be installed via the GitHub URL forms above, or manually cloned and copied.
@@ -250,7 +248,7 @@ When looking for a skill to solve a user's problem:
 
 1. **Search Hermes Skills Hub first** — `hermes skills search <query>` searches 88k+ skills across all registries. If Hermes CLI isn't available, browse the official optional-skills on GitHub (finance, mlops, blockchain, devops, research, creative, security, etc.).
 2. **Search ClawHub** — community registry with versioning. Use `clawhub search` or the web UI.
-3. **Search GitHub** — look for repos with `SKILL.md` files. Try `github.com/letta-ai/skills` and `github.com/anthropics/skills` first.
+3. **Search GitHub** — look for repos with `SKILL.md` files. Try `github.com/anthropics/skills` first.
 4. **Ask the user** — they may know of a specific skill repo or have preferences about sources.
 
 ## Complete Example
