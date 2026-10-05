@@ -30,10 +30,7 @@ Git Safety Protocol:
   - Ensure it accurately reflects the changes and their purpose
 3. Run the following commands:
    - Add relevant untracked files to the staging area.
-   - Create the commit with a message ending with:
-   👾 Generated with [Letta Code](https://letta.com)
-
-   Co-Authored-By: Letta Code <noreply@letta.com>
+   - Create the commit with a concise message that focuses on the "why".
    - Run git status after the commit completes to verify success.
    Note: git status depends on the commit completing, so run it sequentially after the commit.
 4. If the commit fails due to pre-commit hook: fix the issue and create a NEW commit
@@ -46,11 +43,7 @@ Important notes:
 - If there are no changes to commit (i.e., no untracked files and no modifications), do not create an empty commit
 - In order to ensure good formatting, ALWAYS pass the commit message as a single-quoted string with embedded newlines, a la this example:
 <example>
-git commit -m 'Commit message here.
-
-👾 Generated with [Letta Code](https://letta.com)
-
-Co-Authored-By: Letta Code <noreply@letta.com>'
+git commit -m 'Commit message here.'
 </example>
 
 Use single quotes (not double quotes) and do NOT wrap the message in `$(...)` or backticks — single-quoting preserves the message verbatim (including `$VAR`, backticks, and other special characters) without needing escapes.
