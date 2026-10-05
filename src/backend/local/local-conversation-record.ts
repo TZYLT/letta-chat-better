@@ -1,4 +1,5 @@
 import type { ConversationCreateBody, ConversationUpdateBody } from "@/backend";
+import { isRecord } from "@/utils/type-guards";
 import {
   normalizeLocalModelHandle,
   supportedConversationModelSettingsFromBody,
@@ -154,7 +155,11 @@ export function updateLocalConversationRecord(
         : normalizeLocalModelHandle(bodyRecord.model, modelSettings ?? {});
   }
   if (modelSettings !== undefined) {
-    next.model_settings = modelSettings as StoredConversation["model_settings"];
+    next.model_settings = mergeConversationModelSettings(
+      current,
+      next.model,
+      modelSettings,
+    ) as StoredConversation["model_settings"];
   }
   if (typeof bodyRecord.context_window_limit === "number") {
     (next as unknown as Record<string, unknown>).context_window_limit =
@@ -170,4 +175,30 @@ export function updateLocalConversationRecord(
     next.tags = bodyRecord.tags;
   }
   return next;
+}
+
+/**
+ * Conversation-scoped `model_settings` patches are partial: a caller that only
+ * changes one key (reasoning effort, provider parameters) must not lose the keys
+ * it did not touch. This mirrors the agent-scoped rule in
+ * `LocalStore.updateAgentRecord` — merge the patch over the stored settings while
+ * the model is unchanged, and apply it alone when the model changes so that
+ * `LocalStore.withConversationModelDefaults` can refill `context_window_limit` /
+ * `max_tokens` from the catalog defaults of the new model.
+ *
+ * An explicit `null` still means "clear"; the defaults are reapplied afterwards.
+ */
+function mergeConversationModelSettings(
+  current: StoredConversation,
+  nextModel: string | null | undefined,
+  requested: Record<string, unknown> | null,
+): Record<string, unknown> | null {
+  if (requested === null) return null;
+  // `?? null` makes "never had a model" and "model cleared" compare equal.
+  const modelChanged = (nextModel ?? null) !== (current.model ?? null);
+  if (modelChanged) return requested;
+  return {
+    ...(isRecord(current.model_settings) ? current.model_settings : {}),
+    ...requested,
+  };
 }
