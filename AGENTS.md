@@ -866,27 +866,6 @@ params; using `summary` returns ALL conversations for the agent.
 
 ---
 
-## Shared Remote Server (lettamate)
-
-`/Users/lettamate/letta-code` is a shared remote macOS server. Multiple
-agents/people share worktrees here.
-
-1. **Never use someone else's git credentials.** Set `GIT_AUTHOR_NAME`,
-   `GIT_AUTHOR_EMAIL`, `GIT_COMMITTER_NAME`, `GIT_COMMITTER_EMAIL` explicitly
-   when committing.
-2. **Never commit directly on main.** Always work in worktrees.
-3. **Use clearly-named worktrees** prefixed with `amelia-` (e.g.
-   `.letta/worktrees/amelia-rebase-2184`).
-4. **Check existing worktrees** before creating new ones.
-5. **Secrets** available via `$SECRET_NAME` substitution at exec time (not
-   persistent env vars): `GITHUB_TOKEN`, `LETTA_API_KEY`, `SLACK_BOT_TOKEN`,
-   `SLACK_APP_TOKEN`.
-6. **Pre-existing `gh` auth** is for `just-cameron`, do NOT use it.
-7. **Fine-grained PATs don't work for org repos.** Use a classic PAT (`ghp_`
-   prefix) with `repo` scope.
-
----
-
 ## Secret Injection Syntax
 
 The harness only supports literal `$NAME` references for secret injection:
