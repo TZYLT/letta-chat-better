@@ -3,7 +3,6 @@
 
 import { Box, useInput } from "ink";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { getBackend } from "@/backend";
 import { useTerminalWidth } from "@/cli/hooks/use-terminal-width";
 import {
   type HookCommand,
@@ -60,7 +59,6 @@ function getHookDisplayLabel(hook: HookCommand | undefined): string {
 
 interface HooksManagerProps {
   onClose: () => void;
-  agentId?: string;
 }
 
 type Screen =
@@ -149,7 +147,6 @@ function boxBottom(width: number): string {
 
 export const HooksManager = memo(function HooksManager({
   onClose,
-  agentId,
 }: HooksManagerProps) {
   const terminalWidth = useTerminalWidth();
   const boxWidth = Math.min(terminalWidth - 4, 70);
@@ -161,42 +158,12 @@ export const HooksManager = memo(function HooksManager({
   const [hooks, setHooks] = useState<HookWithSource[]>([]);
   const [totalHooks, setTotalHooks] = useState(0);
 
-  // Dynamic tool names from agent
-  const [toolNames, setToolNames] = useState<string[]>(FALLBACK_TOOL_NAMES);
+  // Local backends do not manage tools server-side, so the matcher picker
+  // always uses the static fallback list.
+  const toolNames = FALLBACK_TOOL_NAMES;
 
   // Track whether all hooks are disabled
   const [hooksDisabled, setHooksDisabledState] = useState(isUserHooksDisabled);
-
-  // Fetch agent tools on mount
-  useEffect(() => {
-    if (!agentId) return;
-
-    const fetchAgentTools = async () => {
-      try {
-        if (!getBackend().capabilities.serverSideToolManagement) {
-          return;
-        }
-        const { getClient } = await import("@/backend/api/client");
-        const client = await getClient();
-        // Use dedicated tools endpoint instead of fetching whole agent
-        // Pass limit to avoid pagination issues
-        const toolsPage = await client.agents.tools.list(agentId, {
-          limit: 50,
-        });
-        const names = toolsPage.items
-          ?.map((t) => t.name)
-          .filter((n): n is string => !!n);
-        if (names && names.length > 0) {
-          // Sort alphabetically for easier scanning
-          setToolNames(names.sort());
-        }
-      } catch {
-        // Keep fallback tool names on error
-      }
-    };
-
-    fetchAgentTools();
-  }, [agentId]);
 
   // New hook state
   const [newMatcher, setNewMatcher] = useState("");

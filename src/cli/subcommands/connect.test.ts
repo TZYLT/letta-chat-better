@@ -8,10 +8,8 @@ function setProviderTarget(target: "api" | "local") {
   __testSetBackend({
     capabilities: {
       remoteMemfs: target === "api",
-      serverSideToolManagement: target === "api",
       serverSecrets: target === "api",
       promptRecompile: target === "api",
-      byokProviderRefresh: target === "api",
       localModelCatalog: target === "local",
       localMemfs: target === "local",
     },

@@ -2015,24 +2015,24 @@ describe("listen-client multi-worker concurrency", () => {
   });
 
   test("handleIncomingMessage reuses client_message_id as the message otid", async () => {
-    const { runtime } = createRuntime(
-      "agent-client-message-id",
-      "conv-client-message-id",
-    );
+    const agentId = "agent-client-message-id";
+    const { runtime } = createRuntime(agentId, "conv-client-message-id");
+    // Skip the one-shot MCP-servers reminder so only the user text is asserted.
+    runtime.reminderState.hasSentMcpServersInfo = true;
+    runtime.reminderState.lastSentMcpServerNamesKey = "";
     const socket = new MockSocket();
+    const userMessage = {
+      role: "user",
+      content: "hello",
+      client_message_id: "cm-user-otid",
+    } as IncomingMessage["messages"][number];
 
     await __listenClientTestUtils.handleIncomingMessage(
       {
         type: "message",
-        agentId: "agent-client-message-id",
+        agentId,
         conversationId: "conv-client-message-id",
-        messages: [
-          {
-            role: "user",
-            content: "hello",
-            client_message_id: "cm-user-otid",
-          } as IncomingMessage["messages"][number],
-        ],
+        messages: [userMessage],
       },
       socket as unknown as WebSocket,
       runtime,

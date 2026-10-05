@@ -58,10 +58,8 @@ function installLocalSecretStorage(values = new Map<string, string>()) {
 
 const capabilities = {
   remoteMemfs: true,
-  serverSideToolManagement: true,
   serverSecrets: true,
   promptRecompile: true,
-  byokProviderRefresh: true,
   localModelCatalog: false,
   localMemfs: false,
 };

@@ -1,5 +1,4 @@
 import { getBackend } from "@/backend";
-import { refreshByokProviders } from "@/backend/api/providers";
 import { isOpenAICompatibleProxyEndpoint } from "@/utils/openai-endpoint";
 import type { ModelReasoningEffort } from "./model";
 
@@ -276,13 +275,6 @@ export async function getAvailableModelHandles(options?: {
       source: "network",
       fetchedAt: entry.fetchedAt,
     };
-  }
-
-  // When forceRefresh is true, first refresh BYOK providers to get latest models
-  // This matches the behavior in ADE (letta-cloud) where refresh is called before listing models
-  const backend = getBackend();
-  if (forceRefresh && backend.capabilities.byokProviderRefresh) {
-    await refreshByokProviders();
   }
 
   const requestGeneration = generation;

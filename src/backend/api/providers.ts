@@ -1,4 +1,3 @@
-import { debugWarn } from "@/utils/debug";
 import { apiRequest } from "./request";
 
 export interface ProviderResponse {
@@ -125,42 +124,5 @@ export async function removeProviderByName(
   const existing = await getProviderByName(providerName);
   if (existing) {
     await deleteProvider(existing.id);
-  }
-}
-
-/**
- * Refresh connected BYOK providers before listing models. The cloud API treats
- * refresh as best-effort, so this helper logs per-provider failures but keeps
- * the caller's model refresh path moving.
- */
-export async function refreshByokProviders(): Promise<void> {
-  try {
-    const providers = await listProviders();
-    const byokProviders = providers.filter(
-      (provider) => provider.provider_category === "byok",
-    );
-
-    await Promise.allSettled(
-      byokProviders.map(async (provider) => {
-        try {
-          await apiRequest<ProviderResponse>(
-            "PATCH",
-            `/v1/providers/${provider.id}/refresh`,
-          );
-        } catch (error) {
-          debugWarn(
-            "available-models",
-            `Failed to refresh provider ${provider.name} (${provider.id}):`,
-            error,
-          );
-        }
-      }),
-    );
-  } catch (error) {
-    debugWarn(
-      "available-models",
-      "Failed to list providers for refresh:",
-      error,
-    );
   }
 }

@@ -313,10 +313,8 @@ describe("APIBackend", () => {
     });
     expect(backend.capabilities).toEqual({
       remoteMemfs: true,
-      serverSideToolManagement: true,
       serverSecrets: true,
       promptRecompile: true,
-      byokProviderRefresh: true,
       localModelCatalog: false,
       localMemfs: false,
       // Depends on the configured server URL; environment-routing-capability.test.ts

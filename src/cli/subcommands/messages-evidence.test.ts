@@ -35,10 +35,8 @@ const backend = {
   retrieveConversation,
   capabilities: {
     remoteMemfs: false,
-    serverSideToolManagement: false,
     serverSecrets: false,
     promptRecompile: false,
-    byokProviderRefresh: false,
     localModelCatalog: false,
     localMemfs: false,
     environmentRouting: true,

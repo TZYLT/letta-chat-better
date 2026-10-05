@@ -25,10 +25,8 @@ const updateAgentMock = mock(
 
 const capabilities = {
   remoteMemfs: true,
-  serverSideToolManagement: true,
   serverSecrets: true,
   promptRecompile: true,
-  byokProviderRefresh: true,
   localModelCatalog: false,
   localMemfs: false,
 };

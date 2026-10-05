@@ -18,10 +18,8 @@ import type { StartListenerOptions } from "./types";
 
 const capabilities = {
   remoteMemfs: false,
-  serverSideToolManagement: false,
   serverSecrets: false,
   promptRecompile: false,
-  byokProviderRefresh: false,
   localModelCatalog: true,
   localMemfs: false,
 };

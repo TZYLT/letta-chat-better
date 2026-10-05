@@ -196,10 +196,8 @@ const FAKE_HEADLESS_MODEL = "dev/fake-headless";
 
 export const HEADLESS_BACKEND_CAPABILITIES: BackendCapabilities = {
   remoteMemfs: false,
-  serverSideToolManagement: false,
   serverSecrets: false,
   promptRecompile: false,
-  byokProviderRefresh: false,
   localModelCatalog: true,
   localMemfs: false,
   environmentRouting: false,

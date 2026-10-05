@@ -33,7 +33,6 @@ import {
 } from "@/agent/model";
 import type { PersonalityId } from "@/agent/personality-presets";
 import { shouldRecommendDefaultPrompt } from "@/agent/prompt-assets";
-import { reconcileExistingAgentState } from "@/agent/reconcile-existing-agent-state";
 import { prefetchModelCatalog } from "@/agent/remote-model-catalog";
 import { recordSessionEnd } from "@/agent/session-history";
 import { SessionStats } from "@/agent/stats";
@@ -45,7 +44,6 @@ import {
   subscribe as subscribeToSubagents,
 } from "@/agent/subagent-state";
 import { getBackend, isLocalBackendEnabled } from "@/backend";
-import { getClient } from "@/backend/api/client";
 import { getBillingTier } from "@/backend/api/metadata";
 import { subscribePiProviderRegistry } from "@/backend/dev/pi-provider-mod-registry";
 import { useConversationTitleSync } from "@/cli/app/conversation-title-sync";
@@ -2827,8 +2825,6 @@ export function App({
   // Fetch llmConfig when agent is ready
   useEffect(() => {
     if (loadingState === "ready" && agentId && agentId !== "loading") {
-      let cancelled = false;
-
       const fetchConfig = async () => {
         try {
           // Use pre-loaded agent state if available, otherwise fetch
@@ -2929,41 +2925,11 @@ export function App({
           }
           // Store full handle for API calls (e.g., compaction)
           setCurrentModelHandle(agentModelHandle || null);
-
-          if (backend.capabilities.serverSideToolManagement) {
-            const client = await getClient();
-            void reconcileExistingAgentState(client, agent)
-              .then((reconcileResult) => {
-                if (!reconcileResult.updated || cancelled) {
-                  return;
-                }
-                if (agentIdRef.current !== agent.id) {
-                  return;
-                }
-
-                setAgentState(reconcileResult.agent);
-                setAgentDescription(reconcileResult.agent.description ?? null);
-              })
-              .catch((reconcileError) => {
-                debugWarn(
-                  "agent-config",
-                  `Failed to reconcile existing agent settings for ${agentId}: ${
-                    reconcileError instanceof Error
-                      ? reconcileError.message
-                      : String(reconcileError)
-                  }`,
-                );
-              });
-          }
         } catch (error) {
           debugLog("agent-config", "Error fetching agent config: %O", error);
         }
       };
       fetchConfig();
-
-      return () => {
-        cancelled = true;
-      };
     }
     return undefined;
   }, [loadingState, agentId, initialAgentState]);

@@ -168,10 +168,8 @@ export interface ConversationResumeTail {
 
 export interface BackendCapabilities {
   remoteMemfs: boolean;
-  serverSideToolManagement: boolean;
   serverSecrets: boolean;
   promptRecompile: boolean;
-  byokProviderRefresh: boolean;
   localModelCatalog: boolean;
   localMemfs: boolean;
   /**
@@ -377,10 +375,8 @@ export class APIBackend implements Backend {
   get capabilities(): BackendCapabilities {
     return {
       remoteMemfs: true,
-      serverSideToolManagement: true,
       serverSecrets: true,
       promptRecompile: true,
-      byokProviderRefresh: true,
       localModelCatalog: false,
       localMemfs: false,
       // Environment routing only exists on Letta Cloud; an APIBackend pointed

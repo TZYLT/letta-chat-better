@@ -1633,7 +1633,7 @@ export function AppView(props: AppViewProps) {
 
             {/* Hooks Manager - for managing hooks configuration */}
             {activeOverlay === "hooks" && (
-              <HooksManager onClose={closeOverlay} agentId={agentId} />
+              <HooksManager onClose={closeOverlay} />
             )}
 
             {/* Pin Dialog - for naming agent before pinning */}

@@ -99,16 +99,8 @@ describe("headless backend lifecycle wiring", () => {
 
     const section = source.slice(start, end);
     expect(section).toContain("backend.retrieveAgent(agentId)");
-    const capabilityGuardIndex = section.indexOf(
-      "backend.capabilities.serverSideToolManagement",
-    );
-    const getClientIndex = section.indexOf("getClient()");
-    expect(capabilityGuardIndex).toBeGreaterThan(-1);
-    expect(getClientIndex).toBeGreaterThan(capabilityGuardIndex);
-    expect(section.slice(0, capabilityGuardIndex)).not.toContain("getClient");
-    expect(section.slice(0, capabilityGuardIndex)).not.toContain(
-      "client.agents.",
-    );
+    expect(section).not.toContain("getClient");
+    expect(section).not.toContain("client.agents.");
   });
 
   test("memfs flag application skips remote operations for local backends", () => {

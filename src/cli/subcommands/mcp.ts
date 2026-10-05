@@ -1,6 +1,5 @@
 import { parseArgs } from "node:util";
 import { LETTA_CLOUD_API_URL } from "@/auth/oauth";
-import { getBackend } from "@/backend";
 import { getClient as getDefaultClient } from "@/backend/api/client";
 import { getServerUrl } from "@/backend/api/server-url";
 import {
@@ -172,10 +171,9 @@ function getLocalServers(
 }
 
 function serverMcpAvailable(deps: McpSubcommandDependencies): boolean {
-  return (
-    deps.isServerMcpAvailable ??
-    (() => getBackend().capabilities.serverSideToolManagement)
-  )();
+  // Local backends never manage MCP servers on the server side, so the default
+  // is "unavailable". Tests inject an override to exercise the server path.
+  return deps.isServerMcpAvailable?.() ?? false;
 }
 
 async function getServerClient(
