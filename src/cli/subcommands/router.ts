@@ -3,7 +3,6 @@ import { runBackendSubcommand } from "./backend";
 import { runChannelsSubcommand } from "./channels";
 import { runConnectSubcommand } from "./connect";
 import { runCronSubcommand } from "./cron";
-import { runEnvironmentsSubcommand } from "./environments";
 import { runFeedbackSubcommand } from "./feedback";
 import { runListenSubcommand } from "./listen.tsx";
 import { runLocalBackendSubcommand } from "./local-backend";
@@ -20,7 +19,6 @@ import { runSetupSubcommand } from "./setup";
 import { runSharedMemorySubcommand } from "./shared-memory";
 import { runInstallSubcommand, runSkillsSubcommand } from "./skills";
 import { runStepsSubcommand } from "./steps";
-import { runTeleportSubcommand } from "./teleport";
 import { runTrajectoriesSubcommand } from "./trajectories";
 import { runUsageSubcommand } from "./usage";
 
@@ -38,9 +36,6 @@ export function subcommandNeedsEarlyBackendMode(
     case "channel-gateway":
     case "agents":
     case "connect":
-    case "computers":
-    case "environments":
-    case "envs":
     case "feedback":
     case "install":
     case "memfs":
@@ -58,7 +53,6 @@ export function subcommandNeedsEarlyBackendMode(
     case "server":
     case "shared-memory":
     case "skills":
-    case "teleport":
     case "usage":
       return true;
     default:
@@ -99,18 +93,12 @@ export async function runSubcommand(argv: string[]): Promise<number | null> {
       return runStepsSubcommand(rest);
     case "mcp":
       return runMcpSubcommand(rest);
-    case "computers":
-    case "environments": // legacy alias
-    case "envs": // legacy alias
-      return runEnvironmentsSubcommand(rest);
     case "mods":
       return runModsSubcommand(rest);
     case "sandbox":
       return runSandboxSubcommand(rest);
     case "secret":
       return runSecretSubcommand(rest);
-    case "teleport":
-      return runTeleportSubcommand(rest);
     case "server":
       return runServerSubcommand(rest);
     case "feedback":

@@ -167,8 +167,6 @@ USAGE
   letta agents ...      Agents subcommands (JSON-only)
   letta model ...       Get, list, or set models and reasoning (JSON-only)
   letta usage           Show account credits and Letta quota (Markdown)
-  letta computers ...   List available remote computers (JSON-only)
-  letta teleport ...    Move the current conversation between computers
   letta messages ...    Messages subcommands (JSON-only)
   letta mcp ...         List, search, and call MCP servers available to an agent
   letta mods ...        List and manage local mods
@@ -192,8 +190,6 @@ SUBCOMMANDS
   letta memory pull --agent <id>
   letta memory tokens [--memory-dir <path>] [--agent <id>] [--format text|json]
   letta agents list [--query <text> | --name <name> | --tags <tags>]
-  letta computers list [--online-only] | current
-  letta teleport list|cloud|local|<computer>
   letta messages search --query <text> [--all-agents]
   letta messages list [--agent <id>]
   letta messages transcript --conversation <id> [--out <path>]

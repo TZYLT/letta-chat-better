@@ -164,23 +164,11 @@ describe("subcommand router", () => {
     expect(await runSubcommand(["dream", "--help"])).toBeNull();
   });
 
-  test("routes computers help and keeps environment aliases", async () => {
-    const messages: string[] = [];
-    const originalLog = console.log;
-    console.log = (message?: unknown) => {
-      messages.push(String(message));
-    };
-
-    try {
-      const exitCode = await runSubcommand(["computers", "help"]);
-
-      expect(exitCode).toBe(0);
-      expect(messages.join("\n")).toContain("letta computers list");
-      expect(await runSubcommand(["environments", "help"])).toBe(0);
-      expect(await runSubcommand(["envs", "help"])).toBe(0);
-    } finally {
-      console.log = originalLog;
-    }
+  test("does not register the removed computer and teleport subcommands", async () => {
+    expect(await runSubcommand(["computers", "--help"])).toBeNull();
+    expect(await runSubcommand(["environments", "--help"])).toBeNull();
+    expect(await runSubcommand(["envs", "--help"])).toBeNull();
+    expect(await runSubcommand(["teleport", "--help"])).toBeNull();
   });
 
   test("routes sandbox help", async () => {
@@ -200,34 +188,11 @@ describe("subcommand router", () => {
     }
   });
 
-  test("routes teleport help", async () => {
-    const messages: string[] = [];
-    const originalLog = console.log;
-    console.log = (message?: unknown) => {
-      messages.push(String(message));
-    };
-
-    try {
-      const exitCode = await runSubcommand(["teleport", "help"]);
-
-      expect(exitCode).toBe(0);
-      expect(messages.join("\n")).toContain("letta teleport list");
-      expect(messages.join("\n")).toContain("letta teleport cloud");
-      expect(messages.join("\n")).toContain("letta teleport local");
-      expect(messages.join("\n")).not.toContain("letta teleport back");
-    } finally {
-      console.log = originalLog;
-    }
-  });
-
   test("identifies backend-aware subcommands for early backend selection", () => {
     expect(subcommandNeedsEarlyBackendMode("app-server")).toBe(true);
     expect(subcommandNeedsEarlyBackendMode("connect")).toBe(true);
     expect(subcommandNeedsEarlyBackendMode("dream")).toBe(false);
     expect(subcommandNeedsEarlyBackendMode("server")).toBe(true);
-    expect(subcommandNeedsEarlyBackendMode("computers")).toBe(true);
-    expect(subcommandNeedsEarlyBackendMode("environments")).toBe(true);
-    expect(subcommandNeedsEarlyBackendMode("envs")).toBe(true);
     expect(subcommandNeedsEarlyBackendMode("memory")).toBe(true);
     expect(subcommandNeedsEarlyBackendMode("mcp")).toBe(true);
     expect(subcommandNeedsEarlyBackendMode("model")).toBe(true);
@@ -235,7 +200,6 @@ describe("subcommand router", () => {
     expect(subcommandNeedsEarlyBackendMode("mods")).toBe(true);
     expect(subcommandNeedsEarlyBackendMode("permissions")).toBe(true);
     expect(subcommandNeedsEarlyBackendMode("sandbox")).toBe(true);
-    expect(subcommandNeedsEarlyBackendMode("teleport")).toBe(true);
     expect(subcommandNeedsEarlyBackendMode("version")).toBe(false);
     expect(subcommandNeedsEarlyBackendMode("backend")).toBe(false);
     expect(subcommandNeedsEarlyBackendMode(undefined)).toBe(false);
