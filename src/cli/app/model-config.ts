@@ -210,10 +210,10 @@ export function getErrorHintForStopReason(
     return ERROR_FEEDBACK_HINT;
   }
 
-  // When the user is on an auto-routed model (letta/auto*), the reported
-  // model_endpoint_type reflects whichever downstream provider the proxy chose,
-  // not a provider the user explicitly selected. Don't blame a specific
-  // provider in that case -- the issue may be on the proxy side.
+  // When the runtime reports an auto-routed model, the reported
+  // model_endpoint_type reflects whichever downstream provider the router
+  // chose, not a provider the user explicitly selected. Don't blame a specific
+  // provider in that case -- the issue may be on the router side.
   const isAutoModel = currentModelId?.startsWith("auto") ?? false;
   const statusInfo =
     modelEndpointType && !isAutoModel

@@ -99,20 +99,29 @@ function providerPrefix(modelHandle: string): string | null {
   return modelHandle.slice(0, slashIndex);
 }
 
-const MODEL_HANDLE_PROVIDER_PREFIXES = new Set(
-  models
-    .map((model) => providerPrefix(model.handle))
-    .filter((provider): provider is string => provider !== null),
-);
-
 const LOCAL_MODEL_PROVIDER_PREFIXES = new Set(
   LOCAL_MODEL_HANDLE_PREFIXES.map((prefix) => prefix.slice(0, -1)),
 );
 
+/**
+ * Provider prefixes present in the live catalog.
+ *
+ * Rebuilt per call on purpose: the catalog array is refilled in place after
+ * this module loads, so a module-level snapshot would freeze at empty and
+ * every runtime provider prefix would look unknown.
+ */
+function catalogProviderPrefixes(): Set<string> {
+  return new Set(
+    models
+      .map((model) => providerPrefix(model.handle))
+      .filter((provider): provider is string => provider !== null),
+  );
+}
+
 function isKnownModelProviderPrefix(provider: string): boolean {
   return (
     KNOWN_LLM_CONFIG_ENDPOINT_TYPES.has(provider) ||
-    MODEL_HANDLE_PROVIDER_PREFIXES.has(provider) ||
+    catalogProviderPrefixes().has(provider) ||
     LOCAL_MODEL_PROVIDER_PREFIXES.has(provider)
   );
 }

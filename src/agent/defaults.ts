@@ -11,7 +11,7 @@ import { getServerUrl } from "@/backend/api/server-url";
 import { settingsManager } from "@/settings-manager";
 import { type CreateAgentOptions, createAgent } from "./create";
 import { parseMdxFrontmatter } from "./memory";
-import { getDefaultModel, resolveModel } from "./model";
+import { getDefaultModel, models, resolveModel } from "./model";
 import { buildCreateAgentOptionsForPersonality } from "./personality";
 import { MEMORY_PROMPTS } from "./prompt-assets";
 
@@ -82,19 +82,18 @@ export function selectDefaultAgentModel(params: {
     return resolvedPreferred;
   }
 
-  const firstNonAutoHandle = Array.from(handles).find(
-    (handle) => handle !== "letta/auto" && handle !== "letta/auto-fast",
-  );
-  if (firstNonAutoHandle) {
-    return firstNonAutoHandle;
+  const firstHandle = Array.from(handles)[0];
+
+  // An empty catalog has no default to prefer, and the caller's availability
+  // list is authoritative, so fall back to whatever it listed first.
+  if (models.length > 0) {
+    const defaultHandle = getDefaultModel();
+    if (handles.has(defaultHandle)) {
+      return defaultHandle;
+    }
   }
 
-  const defaultHandle = getDefaultModel();
-  if (handles.has(defaultHandle)) {
-    return defaultHandle;
-  }
-
-  return Array.from(handles)[0];
+  return firstHandle;
 }
 
 async function resolveDefaultAgentModel(

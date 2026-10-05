@@ -952,10 +952,8 @@ export function App({
   const currentModelProvider = llmConfig?.provider_name ?? null;
   const isLocalBackend = isLocalBackendEnabled();
   const currentReasoningEffort: ModelReasoningEffort | null =
-    currentModelLabel?.startsWith("letta/auto")
-      ? null
-      : (derivedReasoningEffort ??
-        inferReasoningEffortFromModelPreset(currentModelId, currentModelLabel));
+    derivedReasoningEffort ??
+    inferReasoningEffortFromModelPreset(currentModelId, currentModelLabel);
   const modelPresetContextWindow = useMemo(() => {
     if (!currentModelLabel) return undefined;
     const info = getModelInfoForLlmConfig(currentModelLabel, {

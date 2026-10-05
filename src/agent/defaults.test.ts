@@ -3,6 +3,7 @@ import {
   DEFAULT_AGENT_CONFIGS,
   selectDefaultAgentModel,
 } from "@/agent/defaults";
+import { getDefaultModel } from "@/agent/model";
 import {
   getPersonalityContent,
   getPersonalityHumanContent,
@@ -26,23 +27,32 @@ describe("selectDefaultAgentModel", () => {
     expect(result).toBe("anthropic/claude-haiku-4-5");
   });
 
-  test("falls back to a server-available non-auto handle on self-hosted", () => {
+  test("falls back to the first server-available handle on self-hosted", () => {
     const result = selectDefaultAgentModel({
       isSelfHosted: true,
-      availableHandles: ["letta/auto", "anthropic/claude-haiku-4-5"],
+      availableHandles: ["openai/gpt-5.6-sol", "anthropic/claude-haiku-4-5"],
     });
 
-    expect(result).toBe("anthropic/claude-haiku-4-5");
+    expect(result).toBe("openai/gpt-5.6-sol");
+  });
+
+  test("prefers the catalog default when the server lists it", () => {
+    const result = selectDefaultAgentModel({
+      isSelfHosted: true,
+      availableHandles: ["openai/gpt-5.6-sol", getDefaultModel()],
+    });
+
+    expect(result).toBe(getDefaultModel());
   });
 
   test("falls back when the preferred self-hosted model is unavailable", () => {
     const result = selectDefaultAgentModel({
       preferredModel: "gpt-5",
       isSelfHosted: true,
-      availableHandles: ["letta/auto", "anthropic/claude-haiku-4-5"],
+      availableHandles: ["openai/gpt-5.6-sol", "anthropic/claude-haiku-4-5"],
     });
 
-    expect(result).toBe("anthropic/claude-haiku-4-5");
+    expect(result).toBe("openai/gpt-5.6-sol");
   });
 
   test("keeps the preferred self-hosted handle when model availability cannot be fetched", () => {
@@ -58,7 +68,7 @@ describe("selectDefaultAgentModel", () => {
     const result = selectDefaultAgentModel({
       preferredModel: "haiku",
       isSelfHosted: false,
-      availableHandles: ["letta/auto"],
+      availableHandles: ["openai/gpt-5.6-sol"],
     });
 
     expect(result).toBe("anthropic/claude-haiku-4-5");
