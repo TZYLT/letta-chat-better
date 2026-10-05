@@ -1,6 +1,9 @@
 import { describe, expect, test } from "bun:test";
 
 import { getDefaultModel, getDefaultModelForTier } from "@/agent/model";
+import { setupRuntimeModelCatalogFixture } from "@/test-utils/runtime-model-catalog";
+
+setupRuntimeModelCatalogFixture();
 
 describe("getDefaultModelForTier", () => {
   test("returns the default model for free tier", () => {

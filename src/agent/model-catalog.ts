@@ -29,12 +29,6 @@ export interface CatalogModel {
  */
 export const models: CatalogModel[] = [];
 
-const BUILTIN_MODEL_ALIASES = new Map([
-  ["auto", "letta/auto"],
-  ["auto-chat", "letta/auto-chat"],
-  ["auto-fast", "letta/auto-fast"],
-]);
-
 function resolveEstablishedCliAlias(
   modelIdentifier: string,
 ): CatalogModel | null {
@@ -94,17 +88,12 @@ export function resolveModel(modelIdentifier: string): string | null {
   const entry = resolveCatalogModel(modelIdentifier);
   if (entry) return entry.handle;
 
-  const builtinHandle = BUILTIN_MODEL_ALIASES.get(modelIdentifier);
-  if (builtinHandle) return builtinHandle;
-
   // Runtime/custom catalogs can contain handles not known before startup.
   return modelIdentifier.includes("/") ? modelIdentifier : null;
 }
 
 /** Get the default model handle from the active catalog. */
 export function getDefaultModel(): string {
-  if (models.length === 0) return "letta/auto";
-
   const autoModel = models.find((model) => model.id === "auto");
   if (autoModel) return autoModel.handle;
 

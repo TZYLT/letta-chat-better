@@ -25,10 +25,31 @@ describe("runtime model catalog", () => {
     expect(reference[0]?.id).toBe("runtime-model");
   });
 
-  test("keeps managed Auto aliases available before cloud hydration", () => {
-    expect(resolveModel("auto")).toBe("letta/auto");
-    expect(resolveModel("auto-chat")).toBe("letta/auto-chat");
-    expect(getDefaultModel()).toBe("letta/auto");
+  test("does not invent a handle when the catalog is empty", () => {
+    expect(models).toHaveLength(0);
+    expect(resolveModel("auto")).toBeNull();
+    expect(resolveModel("auto-chat")).toBeNull();
+    expect(() => getDefaultModel()).toThrow("Model catalog is unavailable.");
+  });
+
+  test("prefers a runtime-provided auto entry over the positional fallback", () => {
+    models.push(
+      {
+        id: "runtime-first",
+        handle: "provider/runtime-first",
+        label: "Runtime First",
+        description: "",
+      },
+      {
+        id: "auto",
+        handle: "provider/auto",
+        label: "Auto",
+        description: "",
+      },
+    );
+
+    expect(resolveModel("auto")).toBe("provider/auto");
+    expect(getDefaultModel()).toBe("provider/auto");
   });
 
   test("resolves unique local pi-ai model IDs", () => {

@@ -13,16 +13,18 @@ import {
   DEFAULT_ROOT_MEMORY_BLOCK,
   LETTA_CODE_AGENT_TYPE,
 } from "@/agent/create-agent-request";
-import { resolveModel } from "@/agent/model-catalog";
+import { getDefaultModel } from "@/agent/model-catalog";
 import { updateAgentSystemPromptMemfs } from "@/agent/modify";
 import { buildCreateAgentOptionsForPersonality } from "@/agent/personality";
 import {
   DEFAULT_CREATE_AGENT_PERSONALITIES,
   getPersonalityCreationTags,
-  getPersonalityOption,
 } from "@/agent/personality-presets";
 import { buildSystemPrompt } from "@/agent/prompt-assets";
 import { getBackend } from "@/backend";
+import { setupRuntimeModelCatalogFixture } from "@/test-utils/runtime-model-catalog";
+
+setupRuntimeModelCatalogFixture();
 
 describe("buildCreateAgentRequest", () => {
   test("owns the complete default creation policy without a personality", async () => {
@@ -220,7 +222,6 @@ describe("buildCreateAgentRequestForPersonality", () => {
       const cliOptions = await buildCreateAgentOptionsForPersonality({
         personalityId,
       });
-      const personality = getPersonalityOption(personalityId);
 
       // Same content the CLI's createAgent() would send for this personality.
       expect(request.name).toBe(cliOptions.name as string);
@@ -229,9 +230,7 @@ describe("buildCreateAgentRequestForPersonality", () => {
         DEFAULT_ROOT_MEMORY_BLOCK,
         ...(cliOptions.memoryBlocks as typeof request.memory_blocks),
       ]);
-      expect(request.model).toBe(
-        resolveModel(personality.defaultModel ?? "auto") as string,
-      );
+      expect(request.model).toBe(getDefaultModel());
 
       // Direct Cloud creation and the CLI Cloud path both delegate the default
       // prompt to the service. Local CLI creation still resolves it client-side.
@@ -312,9 +311,15 @@ describe("buildCreateAgentRequestForPersonality", () => {
   test("resolves model overrides by ID or handle", async () => {
     const byId = await buildCreateAgentRequestForPersonality({
       personalityId: "memo",
-      model: "auto-chat",
+      model: "gpt-5.6-sol",
     });
-    expect(byId.model).toBe(resolveModel("auto-chat") as string);
+    expect(byId.model).toBe("openai/gpt-5.6-sol");
+
+    const byHandle = await buildCreateAgentRequestForPersonality({
+      personalityId: "memo",
+      model: "openai/gpt-5.6-sol",
+    });
+    expect(byHandle.model).toBe("openai/gpt-5.6-sol");
 
     const passthrough = await buildCreateAgentRequestForPersonality({
       personalityId: "memo",

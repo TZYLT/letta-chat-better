@@ -62,7 +62,6 @@ export const PERSONALITY_OPTIONS: PersonalityOption[] = [
     id: "kawaii",
     label: "Letta-Chan",
     description: "sugoi~ (◕‿◕)✨",
-    defaultModel: "auto-chat",
   },
   {
     id: "claude",
