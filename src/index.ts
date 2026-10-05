@@ -169,7 +169,6 @@ USAGE
   letta messages ...    Messages subcommands (JSON-only)
   letta mcp ...         List, search, and call MCP servers available to an agent
   letta mods ...        List and manage local mods
-  letta sandbox ...     Transfer files to or from the current Cloud sandbox
   letta server ...      Run a remote computer, channels, or the App Server
   letta connect ...     Connect providers from terminal
   letta backend ...     Show or set the default backend

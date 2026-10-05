@@ -9,7 +9,6 @@ import { runMemorySubcommand } from "./memory";
 import { runMessagesSubcommand } from "./messages";
 import { runModelSubcommand } from "./model";
 import { runModsSubcommand } from "./mods";
-import { runSandboxSubcommand } from "./sandbox";
 import { runSecretSubcommand } from "./secret";
 import { asLegacyAppServerCommand, runServerSubcommand } from "./server";
 import { runSetupSubcommand } from "./setup";
@@ -40,7 +39,6 @@ export function subcommandNeedsEarlyBackendMode(
     case "model":
     case "models":
     case "mods":
-    case "sandbox":
     case "secret":
     case "server":
     case "skills":
@@ -81,8 +79,6 @@ export async function runSubcommand(argv: string[]): Promise<number | null> {
       return runMcpSubcommand(rest);
     case "mods":
       return runModsSubcommand(rest);
-    case "sandbox":
-      return runSandboxSubcommand(rest);
     case "secret":
       return runSecretSubcommand(rest);
     case "server":

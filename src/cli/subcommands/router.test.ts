@@ -146,21 +146,8 @@ describe("subcommand router", () => {
     expect(await runSubcommand(["remote", "--help"])).toBeNull();
   });
 
-  test("routes sandbox help", async () => {
-    const messages: string[] = [];
-    const originalLog = console.log;
-    console.log = (message?: unknown) => {
-      messages.push(String(message));
-    };
-
-    try {
-      const exitCode = await runSubcommand(["sandbox", "help"]);
-
-      expect(exitCode).toBe(0);
-      expect(messages.join("\n")).toContain("letta sandbox upload");
-    } finally {
-      console.log = originalLog;
-    }
+  test("does not register the removed sandbox subcommand", async () => {
+    expect(await runSubcommand(["sandbox", "--help"])).toBeNull();
   });
 
   test("identifies backend-aware subcommands for early backend selection", () => {
@@ -173,7 +160,6 @@ describe("subcommand router", () => {
     expect(subcommandNeedsEarlyBackendMode("model")).toBe(true);
     expect(subcommandNeedsEarlyBackendMode("models")).toBe(true);
     expect(subcommandNeedsEarlyBackendMode("mods")).toBe(true);
-    expect(subcommandNeedsEarlyBackendMode("sandbox")).toBe(true);
     expect(subcommandNeedsEarlyBackendMode("version")).toBe(false);
     expect(subcommandNeedsEarlyBackendMode("backend")).toBe(false);
     expect(subcommandNeedsEarlyBackendMode(undefined)).toBe(false);
