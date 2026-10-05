@@ -16,7 +16,7 @@ describe("LocalBackend conversation forks", () => {
       content: "compiled system",
       coreMemory: "core",
       compiledAt: "2026-01-01T00:00:00.000Z",
-      rawSystemHash: "hash",
+      systemTemplateHash: "hash",
       memfsRevision: "rev",
       freezeSchema: 1,
       frozenSkillsBlock: "<available_skills>A</available_skills>",
@@ -121,7 +121,7 @@ describe("LocalBackend conversation forks", () => {
       content: "compiled system",
       coreMemory: "core",
       compiledAt: "2026-01-01T00:00:00.000Z",
-      rawSystemHash: "hash",
+      systemTemplateHash: "hash",
       memfsRevision: "rev",
       frozenReason: "conversation_created",
     });

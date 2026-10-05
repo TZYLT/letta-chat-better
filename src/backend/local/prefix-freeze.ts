@@ -400,7 +400,7 @@ export function buildContextPendingReport(input: {
     unappliedCommits: input.memory.unappliedCommits,
     diffStat: input.memory.diffStat,
     fullDiff: input.memory.fullDiff,
-    appliedRawSystemHash: snapshot?.rawSystemHash,
+    appliedRawSystemHash: snapshot?.systemTemplateHash,
     liveRawSystemHash: hashRawSystemPrompt(input.liveAgent.system),
     appliedSkillsBlock: snapshot?.frozenSkillsBlock,
     observedSkillsBlock: snapshot?.observedSkillsBlock,

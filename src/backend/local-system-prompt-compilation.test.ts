@@ -140,7 +140,7 @@ describe("local system prompt compilation", () => {
         previousMessageCount: 7,
       });
 
-      expect(compiled.rawSystemHash).toBe(
+      expect(compiled.systemTemplateHash).toBe(
         hashRawSystemPrompt("hello {CORE_MEMORY}"),
       );
       expect(compiled.memfsRevision).toBe(head);

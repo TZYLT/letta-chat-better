@@ -35,7 +35,12 @@ export interface LocalCompiledSystemPrompt {
   content: string;
   coreMemory: string;
   compiledAt: string;
-  rawSystemHash: string;
+  /**
+   * Hash of the `agent.system` template only — it does NOT cover the compiled
+   * prompt, nor the core memory injected into it. Core-memory changes are
+   * tracked by `memfsRevision`, not by this hash.
+   */
+  systemTemplateHash: string;
   memfsRevision?: string;
 
   /** Prefix-freeze snapshot marker; absent means "not frozen yet". */
@@ -499,7 +504,7 @@ export function compileLocalSystemPrompt(
         : `${content}\n\n${TOPIC_MARKING_PROMPT.trim()}`,
     coreMemory,
     compiledAt: compiledAt.toISOString(),
-    rawSystemHash: hashRawSystemPrompt(options.agent.system),
+    systemTemplateHash: hashRawSystemPrompt(options.agent.system),
     memfsRevision: memfs.revision,
   };
 }

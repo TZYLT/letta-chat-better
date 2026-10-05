@@ -16,7 +16,7 @@ function snapshot(
     content: "compiled",
     coreMemory: "memory",
     compiledAt: "2026-01-01T00:00:00.000Z",
-    rawSystemHash: "hash-a",
+    systemTemplateHash: "hash-a",
     memfsRevision: "rev-a",
     ...overrides,
   };
