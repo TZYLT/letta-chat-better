@@ -119,12 +119,8 @@ export function closeListenerRuntimeConnections(
   if (runtime.socket) {
     socketsToClose.add(runtime.socket);
   }
-  if (runtime.streamSocket) {
-    socketsToClose.add(runtime.streamSocket);
-  }
   for (const connection of runtime.connections.values()) {
     collectSocket(connection.writer);
-    collectSocket(connection.streamWriter);
   }
   for (const connectionId of [...runtime.connections.keys()]) {
     closeListenerConnection(runtime, connectionId);
@@ -132,8 +128,6 @@ export function closeListenerRuntimeConnections(
   runtime.connectionIdsByRuntimeKey.clear();
   runtime.socket = null;
   runtime.transport = null;
-  runtime.streamSocket = null;
-  runtime.streamTransport = null;
 
   for (const socket of socketsToClose) {
     if (suppressCallbacks) {

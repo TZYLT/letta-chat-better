@@ -66,7 +66,6 @@ import {
   safeEmitWsEvent,
   setActiveRuntime,
 } from "./runtime";
-import { attachSplitStreamSocketHandlers } from "./split-stream-lifecycle";
 import { notifyStreamObserversRuntimeStopped } from "./stream-observers";
 import { replaySyncStateForRuntime } from "./sync-replay";
 import {
@@ -220,16 +219,10 @@ export function createRuntime(): ListenerRuntime {
   return {
     socket: null,
     transport: null,
-    streamSocket: null,
-    streamTransport: null,
     heartbeatInterval: null,
-    reconnectTimeout: null,
     lastPongAt: null,
     intentionallyClosed: false,
-    hasSuccessfulConnection: false,
-    everConnected: false,
     sessionId: `listen-${crypto.randomUUID()}`,
-    nextConnectionAttempt: 0,
     nextConnectionOrdinal: 0,
     connections: new Map(),
     connectionIdsByRuntimeKey: new Map(),
@@ -309,7 +302,6 @@ export async function startConnectedListenerRuntime(
     startHeartbeat?: boolean;
     startCronScheduler?: boolean;
     startProcessServices?: boolean;
-    streamTransport?: ListenerTransport | null;
     emitInitialState?: boolean;
     recoverRecordedWork?: typeof recoverRecordedTurns;
   } = {},
@@ -330,8 +322,6 @@ export async function startConnectedListenerRuntime(
         ? "_ws_open"
         : "_local_open",
   });
-  runtime.hasSuccessfulConnection = true;
-  runtime.everConnected = true;
   await opts.onConnected(opts.connectionId);
 
   await emitInitialState(runtime, transport, opts.connectionId, options);
@@ -430,9 +420,9 @@ export async function startConnectedListenerRuntime(
 /**
  * Attach an already-open, locally accepted websocket to a listener runtime.
  *
- * Unlike the cloud listener client path, this helper does not reconnect on
- * close. It is intended for local app-server transports where the HTTP server
- * keeps running and the next client connection creates a fresh runtime.
+ * This helper does not reconnect on close. It is intended for local
+ * app-server transports where the HTTP server keeps running and the next
+ * client connection creates a fresh runtime.
  */
 
 export async function attachOpenListenerSocket(
@@ -440,7 +430,6 @@ export async function attachOpenListenerSocket(
   socket: WebSocket,
   opts: StartListenerOptions,
   options: {
-    streamSocket?: WebSocket | null;
     startHeartbeat?: boolean;
     startCronScheduler?: boolean;
     startProcessServices?: boolean;
@@ -451,12 +440,10 @@ export async function attachOpenListenerSocket(
     return;
   }
 
-  const streamSocket = options.streamSocket ?? null;
   const connection = openListenerConnection({
     runtime,
     connectionId: opts.connectionId,
     writer: socket,
-    streamWriter: streamSocket,
     options: opts,
   });
   const fileCommandSession = createFileCommandSession({
@@ -537,14 +524,6 @@ export async function attachOpenListenerSocket(
     }
   });
 
-  if (streamSocket) {
-    attachSplitStreamSocketHandlers({
-      runtime,
-      streamSocket,
-      trackListenerError,
-    });
-  }
-
   await options.startupReady;
   if (
     connection.cancellation.signal.aborted ||
@@ -553,8 +532,6 @@ export async function attachOpenListenerSocket(
     return;
   }
 
-  const streamTransport =
-    streamSocket?.readyState === WebSocket.OPEN ? streamSocket : null;
   await startConnectedListenerRuntime(
     runtime,
     transport,
@@ -564,7 +541,6 @@ export async function attachOpenListenerSocket(
       startHeartbeat: options.startHeartbeat ?? false,
       startCronScheduler: options.startCronScheduler ?? true,
       startProcessServices: options.startProcessServices ?? true,
-      streamTransport,
       emitInitialState: false,
     },
   );

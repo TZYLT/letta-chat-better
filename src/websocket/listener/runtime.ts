@@ -48,10 +48,6 @@ export function nextEventSeq(runtime: ListenerRuntime | null): number | null {
 }
 
 export function clearRuntimeTimers(runtime: ListenerRuntime): void {
-  if (runtime.reconnectTimeout) {
-    clearTimeout(runtime.reconnectTimeout);
-    runtime.reconnectTimeout = null;
-  }
   if (runtime.heartbeatInterval) {
     clearInterval(runtime.heartbeatInterval);
     runtime.heartbeatInterval = null;

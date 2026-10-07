@@ -42,26 +42,17 @@ import type { TurnLifecycle } from "./turn-lifecycle";
 export interface StartListenerOptions {
   connectionId: string;
   wsUrl: string;
-  supportsSplitStatusChannels?: boolean;
-  supportsPairedListenerGenerations?: boolean;
   deviceId: string;
   connectionName: string;
   skillsDirectory?: string;
   onConnected: (connectionId: string) => void | Promise<void>;
   onDisconnected: () => void;
-  onNeedsReregister?: () => void;
   onError: (error: Error) => void;
   onStatusChange?: (
     status: "idle" | "receiving" | "processing",
     connectionId: string,
   ) => void;
   onLog?: (message: string) => void;
-  onRetrying?: (
-    attempt: number,
-    maxAttempts: number,
-    nextRetryIn: number,
-    connectionId: string,
-  ) => void;
   onWsEvent?: (
     direction: "send" | "recv",
     label: "client" | "protocol" | "control" | "lifecycle",
@@ -311,7 +302,6 @@ export type ListenerConnectionState = {
   id: ListenerConnectionId;
   ordinal: number;
   writer: ListenerTransport;
-  streamWriter: ListenerTransport | null;
   cancellation: AbortController;
   initialized: boolean;
   subscriptions: Set<string>;
@@ -322,20 +312,14 @@ export type ListenerConnectionState = {
 export type ListenerRuntime = {
   socket: WebSocket | null;
   transport?: ListenerTransport | null;
-  streamSocket?: WebSocket | null;
-  streamTransport?: ListenerTransport | null;
   heartbeatInterval: NodeJS.Timeout | null;
-  reconnectTimeout: NodeJS.Timeout | null;
   /**
-   * Epoch ms of the last `pong` observed from the cloud relay. Used by the
-   * heartbeat watchdog to detect a half-open socket (no `close` event) and
-   * force a reconnect. `null` until the first pong on a connection.
+   * Epoch ms of the last `pong` observed from the peer. Used by the heartbeat
+   * watchdog to detect a half-open socket (no `close` event) and force a
+   * reconnect. `null` until the first pong on a connection.
    */
   lastPongAt: number | null;
   intentionallyClosed: boolean;
-  hasSuccessfulConnection: boolean;
-  /** True once the WS has connected at least once. Never reset to false. */
-  everConnected: boolean;
   /** Global local mod adapter for desktop/listener surfaces. */
   modAdapter?: ModAdapter | undefined;
   /** Isolated agent-scoped adapters loaded from each agent's MemFS. */
@@ -343,8 +327,6 @@ export type ListenerRuntime = {
   /** Coalesces concurrent first-loads for one agent's scoped adapter. */
   agentModAdapterLoads?: Map<string, Promise<ModAdapter | null>>;
   sessionId: string;
-  /** Increments once for every control/stream reconnect pair. */
-  nextConnectionAttempt: number;
   /** Monotonic allocator used for deterministic connection ordering. */
   nextConnectionOrdinal: number;
   /** All currently open listener transports, keyed by explicit identity. */

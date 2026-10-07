@@ -58,14 +58,10 @@ function refreshLegacySingleConnection(runtime: ListenerRuntime): void {
     isListenerTransportOpen(connection.writer),
   );
   const only = live.length === 1 ? live[0] : null;
-  // Keep the process-scoped transport stable across relay socket replacement.
+  // Keep the process-scoped transport stable across socket replacement.
   // Turn continuations may capture this handle before a transient disconnect.
   runtime.transport = runtime.processTransport ?? only?.writer ?? null;
-  runtime.streamTransport = only?.streamWriter ?? null;
   runtime.socket = only ? socketForTransport(only.writer) : null;
-  runtime.streamSocket = only?.streamWriter
-    ? socketForTransport(only.streamWriter)
-    : null;
 }
 
 export function createConnectionRequestKey(
@@ -79,7 +75,6 @@ export function openListenerConnection(params: {
   runtime: ListenerRuntime;
   connectionId: ListenerConnectionId;
   writer: ListenerTransport;
-  streamWriter?: ListenerTransport | null;
   cancellation?: AbortController;
   options: StartListenerOptions;
 }): ListenerConnectionState {
@@ -95,7 +90,6 @@ export function openListenerConnection(params: {
     id: params.connectionId,
     ordinal: resumed?.ordinal ?? params.runtime.nextConnectionOrdinal,
     writer: params.writer,
-    streamWriter: params.streamWriter ?? null,
     cancellation: params.cancellation ?? new AbortController(),
     initialized: false,
     subscriptions: resumed?.subscriptions ?? new Set(),
@@ -199,10 +193,7 @@ export function findListenerConnectionByTransport(
   transport: ListenerTransport,
 ): ListenerConnectionState | null {
   for (const connection of runtime.connections.values()) {
-    if (
-      connection.writer === transport ||
-      connection.streamWriter === transport
-    ) {
+    if (connection.writer === transport) {
       return connection;
     }
   }
@@ -288,23 +279,6 @@ export function resolveListenerConnectionTargets(params: {
   }
 
   return connections.map((connection) => {
-    const streamTransport = connection?.streamWriter;
-    if (
-      params.streamMessage &&
-      streamTransport &&
-      isListenerTransportOpen(streamTransport)
-    ) {
-      return { connection, transport: streamTransport };
-    }
-    const legacyStreamTransport = params.runtime?.streamTransport;
-    if (
-      !connection &&
-      params.streamMessage &&
-      legacyStreamTransport &&
-      isListenerTransportOpen(legacyStreamTransport)
-    ) {
-      return { connection, transport: legacyStreamTransport };
-    }
     return { connection, transport: connection?.writer ?? params.origin };
   });
 }

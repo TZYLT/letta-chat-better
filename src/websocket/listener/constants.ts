@@ -1,23 +1,15 @@
-// Split listener pairs are only usable once both control and stream sockets
-// complete their opening handshake. If the stream upgrade makes no progress,
-// tear down the incomplete pair and let the normal reconnect path build a
-// coherent replacement instead of awaiting the stream socket forever.
-export const LISTENER_STREAM_OPEN_TIMEOUT_MS = 30000; // 30 seconds
-
-// Listener heartbeat: app-level ping/pong over the cloud relay. Each `ping`
-// refreshes the environment's lastHeartbeat (the relay marks an env offline
-// after ~120s of silence) and the relay replies with a `pong`.
+// Listener heartbeat: app-level ping/pong over the listener transport. A `ping`
+// probes the peer, and the peer replies with a `pong`.
 export const LISTENER_HEARTBEAT_INTERVAL_MS = 30000; // 30 seconds
 // Dead-peer detection window. If no `pong` is observed within this window, the
 // underlying TCP is treated as half-open (laptop sleep, network switch,
 // NAT/idle timeout) — which never emits a `close` event — and the socket is
-// force-terminated to trigger the reconnect path. Set to 3 missed heartbeats
-// so a single transient drop does not kill an otherwise healthy connection,
-// while still reconnecting before the relay's ~120s offline cutoff.
+// force-terminated. Set to 3 missed heartbeats so a single transient drop does
+// not kill an otherwise healthy connection.
 export const LISTENER_PONG_TIMEOUT_MS = 90000; // 3 missed heartbeats
 
 /**
- * Returns true when the listener has not observed a relay `pong` within
+ * Returns true when the listener has not observed a peer `pong` within
  * `timeoutMs`, indicating a likely half-open socket that should be terminated
  * to trigger a reconnect. Returns false when no pong has been recorded yet
  * (`lastPongAt === null`) so a freshly-connected socket is never killed before

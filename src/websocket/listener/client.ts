@@ -120,7 +120,6 @@ function createLegacyTestRuntime(): ConversationRuntime & {
   connectionId: string | null;
   connectionName: string | null;
   sessionId: string;
-  nextConnectionAttempt: number;
   nextConnectionOrdinal: number;
   connections: ListenerRuntime["connections"];
   connectionIdsByRuntimeKey: ListenerRuntime["connectionIdsByRuntimeKey"];
@@ -142,12 +141,9 @@ function createLegacyTestRuntime(): ConversationRuntime & {
   };
   onWsEvent?: StartListenerOptions["onWsEvent"];
   reminderState: ListenerRuntime["reminderState"];
-  reconnectTimeout: NodeJS.Timeout | null;
   heartbeatInterval: NodeJS.Timeout | null;
   lastPongAt: number | null;
   intentionallyClosed: boolean;
-  hasSuccessfulConnection: boolean;
-  everConnected: boolean;
   conversationRuntimes: ListenerRuntime["conversationRuntimes"];
   memfsSyncedAgents: ListenerRuntime["memfsSyncedAgents"];
   secretsHydrationByAgent: ListenerRuntime["secretsHydrationByAgent"];
@@ -172,7 +168,6 @@ function createLegacyTestRuntime(): ConversationRuntime & {
     connectionId: string | null;
     connectionName: string | null;
     sessionId: string;
-    nextConnectionAttempt: number;
     nextConnectionOrdinal: number;
     connections: ListenerRuntime["connections"];
     connectionIdsByRuntimeKey: ListenerRuntime["connectionIdsByRuntimeKey"];
@@ -194,12 +189,9 @@ function createLegacyTestRuntime(): ConversationRuntime & {
     };
     onWsEvent?: StartListenerOptions["onWsEvent"];
     reminderState: ListenerRuntime["reminderState"];
-    reconnectTimeout: NodeJS.Timeout | null;
     heartbeatInterval: NodeJS.Timeout | null;
     lastPongAt: number | null;
     intentionallyClosed: boolean;
-    hasSuccessfulConnection: boolean;
-    everConnected: boolean;
     conversationRuntimes: ListenerRuntime["conversationRuntimes"];
     memfsSyncedAgents: ListenerRuntime["memfsSyncedAgents"];
     secretsHydrationByAgent: ListenerRuntime["secretsHydrationByAgent"];
@@ -268,12 +260,6 @@ function createLegacyTestRuntime(): ConversationRuntime & {
       get: () => listener.sessionId,
       set: (value: string) => {
         listener.sessionId = value;
-      },
-    },
-    nextConnectionAttempt: {
-      get: () => listener.nextConnectionAttempt,
-      set: (value: number) => {
-        listener.nextConnectionAttempt = value;
       },
     },
     nextConnectionOrdinal: {
@@ -395,12 +381,6 @@ function createLegacyTestRuntime(): ConversationRuntime & {
         listener.reminderState = value;
       },
     },
-    reconnectTimeout: {
-      get: () => listener.reconnectTimeout,
-      set: (value: NodeJS.Timeout | null) => {
-        listener.reconnectTimeout = value;
-      },
-    },
     heartbeatInterval: {
       get: () => listener.heartbeatInterval,
       set: (value: NodeJS.Timeout | null) => {
@@ -417,18 +397,6 @@ function createLegacyTestRuntime(): ConversationRuntime & {
       get: () => listener.intentionallyClosed,
       set: (value: boolean) => {
         listener.intentionallyClosed = value;
-      },
-    },
-    hasSuccessfulConnection: {
-      get: () => listener.hasSuccessfulConnection,
-      set: (value: boolean) => {
-        listener.hasSuccessfulConnection = value;
-      },
-    },
-    everConnected: {
-      get: () => listener.everConnected,
-      set: (value: boolean) => {
-        listener.everConnected = value;
       },
     },
     conversationRuntimes: {

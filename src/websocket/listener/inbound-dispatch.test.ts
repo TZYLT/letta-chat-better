@@ -228,12 +228,10 @@ test("direct remote turn follows the replacement WS pair after reconnect", async
   const listener = createRuntime();
   setActiveRuntime(listener);
   const originalControl = new MockSocket();
-  const originalStream = new MockSocket();
   openListenerConnection({
     runtime: listener,
     connectionId: "relay",
     writer: originalControl as never,
-    streamWriter: originalStream as never,
     options: makeOptions("relay"),
   });
   markListenerConnectionInitialized(listener, "relay");
@@ -340,7 +338,6 @@ test("direct remote turn follows the replacement WS pair after reconnect", async
   );
 
   originalControl.readyState = WebSocket.CLOSED;
-  originalStream.readyState = WebSocket.CLOSED;
   rejectPendingApprovalResolversForConnection(
     runtime,
     "relay",
@@ -349,12 +346,10 @@ test("direct remote turn follows the replacement WS pair after reconnect", async
   suspendListenerConnection(listener, "relay");
 
   const replacementControl = new MockSocket();
-  const replacementStream = new MockSocket();
   openListenerConnection({
     runtime: listener,
     connectionId: "relay",
     writer: replacementControl as never,
-    streamWriter: replacementStream as never,
     options: makeOptions("relay"),
   });
   markListenerConnectionInitialized(listener, "relay");

@@ -74,58 +74,6 @@ describe("listener heartbeat watchdog", () => {
     expect(watchdog.shouldTerminate(120_000)).toBe(false);
   });
 
-  test("split listeners ping control and the current stream transport", async () => {
-    const runtime = __listenClientTestUtils.createListenerRuntime();
-    const connectionId = "split-heartbeat";
-    const control = createOpenTransport();
-    const firstStream = createOpenTransport();
-    const replacementStream = createOpenTransport();
-    const pingTargets: ListenerTransport[] = [];
-    openListenerConnection({
-      runtime,
-      connectionId,
-      writer: control,
-      streamWriter: firstStream,
-      options: createOptions(connectionId),
-    });
-
-    try {
-      startConnectionHeartbeat(
-        runtime,
-        control,
-        () => {},
-        (target) => {
-          pingTargets.push(target);
-          return true;
-        },
-        { intervalMs: 5 },
-      );
-      await waitFor(
-        () =>
-          pingTargets.includes(control) && pingTargets.includes(firstStream),
-        "split listener did not ping both transports",
-      );
-
-      const firstStreamPingCount = pingTargets.filter(
-        (target) => target === firstStream,
-      ).length;
-      const connection = runtime.connections.get(connectionId);
-      if (!connection) throw new Error("listener connection missing");
-      connection.streamWriter = replacementStream;
-
-      await waitFor(
-        () => pingTargets.includes(replacementStream),
-        "replacement stream transport was not pinged",
-      );
-      expect(
-        pingTargets.filter((target) => target === firstStream),
-      ).toHaveLength(firstStreamPingCount);
-      expect(pingTargets).toContain(control);
-    } finally {
-      clearRuntimeTimers(runtime);
-    }
-  });
-
   test("single-socket listeners send only the control heartbeat", async () => {
     const runtime = __listenClientTestUtils.createListenerRuntime();
     const connectionId = "single-heartbeat";

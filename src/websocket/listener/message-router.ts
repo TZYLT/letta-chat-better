@@ -53,6 +53,7 @@ import {
   enqueueInboundUserMessage,
   getInboundClientMessageId,
 } from "./inbound-queue";
+import { parseListenerReadyMessage } from "./listener-ready";
 import {
   isExecuteCommandCommand,
   parseServerLifecycleMessage,
@@ -67,7 +68,6 @@ import {
 } from "./queue";
 import { emitLoopErrorNotice } from "./recoverable-notices";
 import { getActiveRuntime, safeEmitWsEvent } from "./runtime";
-import { parseListenerReadyMessage } from "./split-stream-lifecycle";
 import { validateResponseFormat } from "./structured-output";
 import {
   buildTeleportContinuationMessages,

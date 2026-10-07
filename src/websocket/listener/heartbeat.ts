@@ -46,20 +46,6 @@ export function createMissedPongWatchdog(
   };
 }
 
-function getCurrentStreamTransport(
-  runtime: ListenerRuntime,
-  controlTransport: ListenerTransport,
-): ListenerTransport | null {
-  for (const connection of runtime.connections.values()) {
-    if (connection.writer !== controlTransport) continue;
-    const streamTransport = connection.streamWriter;
-    if (streamTransport && streamTransport !== controlTransport) {
-      return streamTransport;
-    }
-  }
-  return null;
-}
-
 export function startConnectionHeartbeat(
   runtime: ListenerRuntime,
   transport: ListenerTransport,
@@ -86,10 +72,6 @@ export function startConnectionHeartbeat(
     const sentAt = Date.now();
     if (sendPing(transport)) {
       watchdog.recordPing(sentAt);
-    }
-    const streamTransport = getCurrentStreamTransport(runtime, transport);
-    if (streamTransport) {
-      sendPing(streamTransport);
     }
   }, options.intervalMs ?? LISTENER_HEARTBEAT_INTERVAL_MS);
 }
