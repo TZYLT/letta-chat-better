@@ -5,6 +5,15 @@ function readSource(relativePath: string): string {
   return readFileSync(new URL(relativePath, import.meta.url), "utf-8");
 }
 
+/**
+ * Source-text wiring checks for the local-first setup path.
+ *
+ * Two cases were removed with the `/login` overlay: they asserted
+ * `LettaLoginOverlay.tsx` forwarded `activateCloudBackend={false}` and that
+ * `LettaLoginView.tsx` / `LettaLoginOverlay.tsx` handled reauthentication
+ * without trusting stale credentials. Both files are gone — the Cloud login
+ * surface was deleted, so there is no overlay left to assert against.
+ */
 describe("cloud-default setup wiring", () => {
   test("setup menu offers local mode and persists that choice", () => {
     const source = readSource("../auth/setup-ui.tsx");
@@ -27,55 +36,6 @@ describe("cloud-default setup wiring", () => {
     expect(source).not.toContain("Welcome to Letta Code!");
     expect(source).not.toContain("How do you want to start?");
     expect(source).not.toContain("Choose where your agents should live");
-  });
-
-  test("in-session login preserves the active backend while setup activates cloud", () => {
-    const overlaySource = readSource("./components/LettaLoginOverlay.tsx");
-    const setupSource = readSource("../auth/setup-ui.tsx");
-
-    expect(overlaySource).toContain("activateCloudBackend={false}");
-    expect(setupSource).toContain("activateCloudBackend");
-  });
-
-  test("reauthentication paths do not trust stale stored credentials", () => {
-    const loginSource = readSource("../auth/LettaLoginView.tsx");
-    const setupSource = readSource("../auth/setup-ui.tsx");
-    const setupRunnerSource = readSource("../auth/setup.ts");
-    const overlaySource = readSource("./components/LettaLoginOverlay.tsx");
-    const indexSource = readSource("../index.ts");
-
-    expect(loginSource).not.toContain("onAlreadyLoggedIn");
-    expect(loginSource).not.toContain("currentSettings.env?.LETTA_API_KEY");
-    expect(loginSource).toContain("Requesting authorization code...");
-    expect(loginSource).toContain(
-      "LETTA_API_KEY is set in your environment, so OAuth login cannot replace the credential Letta Code is using.",
-    );
-
-    expect(setupSource).toContain(
-      "const [selectedOption, setSelectedOption] = useState(0)",
-    );
-    expect(setupSource).toContain('onCancel={() => setMode("menu")}');
-    expect(setupRunnerSource).toContain("initialMode?: SetupInitialMode");
-    expect(setupRunnerSource).toContain("Promise<SetupResult>");
-    expect(setupRunnerSource).toContain('settle({ kind: "cancelled" })');
-    expect(setupRunnerSource).toContain("instance.unmount()");
-
-    expect(overlaySource).toContain(
-      "validateCredentialsWithResult(baseURL, apiKey)",
-    );
-    expect(overlaySource).toContain("onAlreadyLoggedInRef.current()");
-    expect(overlaySource).toContain("Could not verify current credentials");
-    expect(indexSource).toContain(
-      "LETTA_API_KEY is set in your environment, so setup cannot replace the credential Letta Code is using.",
-    );
-    expect(indexSource).toContain(
-      'initialMode: baseURL === LETTA_CLOUD_API_URL ? "device-code" : "menu"',
-    );
-    expect(indexSource).toContain('setupResult.kind === "cancelled"');
-    expect(indexSource).toContain("const shouldValidateCredentials =");
-    expect(indexSource).toContain(
-      "baseURL === LETTA_CLOUD_API_URL || Boolean(apiKey)",
-    );
   });
 
   test("explicit cloud agent setup disables local mode to avoid restart loops", () => {

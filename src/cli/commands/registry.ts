@@ -585,15 +585,6 @@ export const commands: Record<string, Command> = {
       return "Exiting...";
     },
   },
-  "/login": {
-    desc: "Sign in with Letta",
-    order: 43,
-    noArgs: true,
-    handler: () => {
-      // Handled specially in use-submit-handler.ts
-      return "Signing in...";
-    },
-  },
   "/logout": {
     desc: "Clear saved credentials and exit",
     order: 44,

@@ -31,7 +31,6 @@ import { HelpDialog } from "@/cli/components/HelpDialog";
 import { HooksManager } from "@/cli/components/HooksManager";
 import { Input } from "@/cli/components/InputRich";
 import { InstallGithubAppFlow } from "@/cli/components/InstallGithubAppFlow";
-import { LettaLoginOverlay } from "@/cli/components/LettaLoginOverlay";
 import { McpSelector } from "@/cli/components/McpSelector";
 import { MemfsTreeViewer } from "@/cli/components/MemfsTreeViewer";
 import { MemoryTabViewer } from "@/cli/components/MemoryTabViewer";
@@ -790,16 +789,6 @@ export function AppView(props: AppViewProps) {
                       "Connect dialog dismissed",
                     );
                   }}
-                  onOpenLogin={() => {
-                    const overlayCommand = completeOverlay("model");
-                    overlayCommand?.finish("Models dialog dismissed", true);
-                    openOverlay(
-                      "login",
-                      "/login",
-                      "Opening login...",
-                      "Login dismissed",
-                    );
-                  }}
                   onCancel={closeOverlay}
                   filterProvider={modelSelectorOptions.filterProvider}
                   forceRefresh={modelSelectorOptions.forceRefresh}
@@ -1068,15 +1057,6 @@ export function AppView(props: AppViewProps) {
                     backendMode,
                   });
                 }}
-                onLogin={() => {
-                  completeOverlay("resume");
-                  openOverlay(
-                    "login",
-                    "/login",
-                    "Opening login...",
-                    "Login dismissed",
-                  );
-                }}
                 onCancel={closeOverlay}
                 onCreateNewAgent={(name: string, backendMode) => {
                   const overlayCommand = completeOverlay("resume");
@@ -1085,38 +1065,6 @@ export function AppView(props: AppViewProps) {
                     backendMode,
                   });
                 }}
-              />
-            )}
-
-            {activeOverlay === "login" && (
-              <LettaLoginOverlay
-                onComplete={() => {
-                  const overlayCommand = completeOverlay("login");
-                  const cmd =
-                    overlayCommand ??
-                    commandRunner.start(
-                      "/login",
-                      "Signed in with Letta. Switch agents with /agents.",
-                    );
-                  cmd.finish(
-                    "Signed in with Letta. Switch agents with /agents.",
-                    true,
-                  );
-                }}
-                onAlreadyLoggedIn={() => {
-                  const overlayCommand = completeOverlay("login");
-                  const cmd =
-                    overlayCommand ??
-                    commandRunner.start(
-                      "/login",
-                      "Already signed in with Letta. Run /logout to sign out.",
-                    );
-                  cmd.finish(
-                    "Already signed in with Letta. Run /logout to sign out.",
-                    true,
-                  );
-                }}
-                onCancel={closeOverlay}
               />
             )}
 

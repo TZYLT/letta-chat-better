@@ -1415,12 +1415,6 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
           return { submitted: true };
         }
 
-        // Special handling for /login command - sign in with Letta
-        if (trimmed === "/login") {
-          openOverlay("login", "/login", "Opening login...", "Login dismissed");
-          return { submitted: true };
-        }
-
         // Special handling for /logout command
         if (trimmed === "/logout") {
           if (isAgentBusy()) {
