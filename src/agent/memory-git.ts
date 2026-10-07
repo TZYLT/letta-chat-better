@@ -15,7 +15,6 @@ import {
 import { homedir, platform } from "node:os";
 import { dirname, join } from "node:path";
 import { promisify } from "node:util";
-import { invalidPendingMemory } from "@/agent/memory-constraints-audit";
 import { getMemoryGitDir } from "@/agent/memory-git-dir";
 import { getDesktopAccessToken } from "@/auth/desktop-credentials";
 import {
@@ -1840,8 +1839,9 @@ export async function syncPendingMemoryCommitsAfterTurn(
 ): Promise<MemoryPostTurnSyncResult> {
   const { getBackend } = await import("@/backend");
   const backend = getBackend();
-  const localOnly =
-    backend.capabilities.localMemfs && !backend.capabilities.remoteMemfs;
+  // Local memory has no Letta remote to push to. This used to be
+  // `localMemfs && !remoteMemfs`; the second half is a constant now.
+  const localOnly = backend.capabilities.localMemfs;
   const memoryDir = options.memoryDir ?? getScopedMemoryFilesystemRoot(agentId);
 
   if (!existsSync(join(memoryDir, ".git"))) {
@@ -1879,105 +1879,15 @@ export async function syncPendingMemoryCommitsAfterTurn(
     };
   }
 
-  if (!backend.capabilities.remoteMemfs) {
-    return {
-      status: "skipped",
-      summary: localOnly
-        ? "Local backend MemFS has no Letta remote to push."
-        : "Active backend does not support remote MemFS pushes.",
-      memoryDir,
-      localOnly,
-    };
-  }
-
-  const token = await getAuthToken();
-  await prepareMemoryRepoForGitOps(memoryDir, agentId, token);
-  const divergence = await getMemoryAheadBehind(memoryDir);
-  if (!divergence || divergence.ahead <= 0) {
-    return {
-      status: "clean",
-      summary: "Memory repo is clean and has no pending commits to push.",
-      memoryDir,
-      localOnly,
-    };
-  }
-
-  const initialValidation = invalidPendingMemory(memoryDir, localOnly);
-  if (initialValidation) return initialValidation;
-
-  try {
-    await runGitWithRetry(memoryDir, ["push", "-u", "origin", "main"], token, {
-      operation: "post-turn push pending memory commits",
-    });
-    return {
-      status: "pushed",
-      summary: `Pushed ${divergence.ahead} pending memory commit(s).`,
-      memoryDir,
-      localOnly,
-    };
-  } catch (pushError) {
-    if (!isNonFastForwardPushError(pushError)) {
-      return {
-        status: "push_failed",
-        summary:
-          pushError instanceof Error ? pushError.message : String(pushError),
-        memoryDir,
-        localOnly,
-      };
-    }
-
-    try {
-      await runGitWithRetry(memoryDir, ["pull", "--rebase"], token, {
-        operation: "post-turn rebase memory before push",
-      });
-      const postRebaseConflictSummary =
-        await getMemoryConflictSummary(memoryDir);
-      if (postRebaseConflictSummary) {
-        return {
-          status: "conflict",
-          summary: postRebaseConflictSummary,
-          memoryDir,
-          localOnly,
-        };
-      }
-      const rebasedValidation = invalidPendingMemory(memoryDir, localOnly);
-      if (rebasedValidation) return rebasedValidation;
-      await runGitWithRetry(
-        memoryDir,
-        ["push", "-u", "origin", "main"],
-        token,
-        {
-          operation: "post-turn push rebased memory commits",
-        },
-      );
-      return {
-        status: "pushed",
-        summary: `Rebased and pushed ${divergence.ahead} pending memory commit(s).`,
-        memoryDir,
-        localOnly,
-      };
-    } catch (rebaseOrPushError) {
-      const postFailureConflictSummary =
-        await getMemoryConflictSummary(memoryDir);
-      if (postFailureConflictSummary) {
-        return {
-          status: "conflict",
-          summary: postFailureConflictSummary,
-          memoryDir,
-          localOnly,
-        };
-      }
-      return {
-        status: "push_failed",
-        summary:
-          rebaseOrPushError instanceof Error
-            ? rebaseOrPushError.message
-            : String(rebaseOrPushError),
-        memoryDir,
-        localOnly,
-      };
-    }
-  }
+  // Local memory has no Letta remote to push to. This used to be a check for
+  // `remoteMemfs`, which selected a remote push path; that path is gone, so a
+  // clean or dirty local repo stops here.
+  return {
+    status: "skipped",
+    summary: "Local backend MemFS has no Letta remote to push.",
+    memoryDir,
+    localOnly,
+  };
 }
 
 /**
