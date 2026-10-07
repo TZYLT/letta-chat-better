@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
 import { Letta } from "@letta-ai/letta-client";
-import { ACTING_USER_ID_HEADER } from "@/agent/acting-user";
 import {
   getConversationId,
   getCurrentAgentId,
@@ -295,162 +294,133 @@ describe("listener turn lifecycle integration", () => {
     expect(executeApprovalBatch).toHaveBeenCalledTimes(1);
   });
 
-  test.each([
-    ["user-a", "user-b"],
-    [undefined, "user-b"],
-    ["user-a", undefined],
-    ["user-a", "user-a"],
-    [undefined, undefined],
-  ])(
-    "reminder and steering keep request actor %s with queued author %s",
-    async (activeUser, queuedUser) => {
-      const runtime = getOrCreateScopedRuntime(
-        createRuntime(),
-        "agent-1",
-        "conv-1",
-      );
-      const turnLease = runtime.turnLifecycle.begin({
-        origin: "message",
-        workingDirectory: process.cwd(),
-        initialStatus: "PROCESSING_API_RESPONSE",
-      });
-      enqueueInboundUserMessage(runtime, {
-        type: "message",
-        agentId: "agent-1",
-        conversationId: "conv-1",
-        messages: [
-          {
-            role: "user",
-            content: "scheduled reminder",
-            otid: "reminder-otid",
-            attribution: {},
-          },
-        ],
-      });
-      enqueueInboundUserMessage(
-        runtime,
+  test("reminder and steering keep both inputs in one request", async () => {
+    const runtime = getOrCreateScopedRuntime(
+      createRuntime(),
+      "agent-1",
+      "conv-1",
+    );
+    const turnLease = runtime.turnLifecycle.begin({
+      origin: "message",
+      workingDirectory: process.cwd(),
+      initialStatus: "PROCESSING_API_RESPONSE",
+    });
+    enqueueInboundUserMessage(runtime, {
+      type: "message",
+      agentId: "agent-1",
+      conversationId: "conv-1",
+      messages: [
         {
-          type: "message",
-          agentId: "agent-1",
-          conversationId: "conv-1",
-          messages: [{ role: "user", content: "queued input" }],
+          role: "user",
+          content: "scheduled reminder",
+          otid: "reminder-otid",
+          attribution: {},
         },
-        queuedUser,
-      );
-      const approval = {
-        toolCallId: "call-monitor",
-        toolName: "Bash",
-        toolArgs: '{"command":"pwd"}',
-      };
-      const requests: Array<{ actor: string | undefined; body: unknown }> = [];
-      const server = Bun.serve({
-        port: 0,
-        async fetch(request) {
-          const actor = request.headers.get(ACTING_USER_ID_HEADER) ?? undefined;
-          requests.push({ actor, body: await request.json() });
-          if (actor !== activeUser) {
-            return Response.json(
-              { message: "Conversation not found" },
-              { status: 404 },
-            );
-          }
-          return new Response(
-            'data: {"message_type":"stop_reason","stop_reason":"end_turn"}\n\n',
-            {
-              headers: { "Content-Type": "text/event-stream" },
-            },
-          );
-        },
-      });
-      const backend = createTestStreamBackend(
-        new Letta({
-          apiKey: "test-key",
-          baseURL: server.url.toString(),
-          maxRetries: 0,
-        }),
-      );
-      const preparedToolContext =
-        await prepareToolExecutionContextForSpecificTools([]);
-
-      try {
-        const result = await startToolApproval(runtime, turnLease, {
-          approvals: [approval],
-          processOwnedTurn: true,
-          buildSendOptions: () =>
-            ({
-              agentId: "agent-1",
-              streamTokens: true,
-              background: true,
-              workingDirectory: process.cwd(),
-              actingUserId: activeUser,
-            }) as never,
-          dependencies: {
-            classifyApprovals: async () => ({
-              autoAllowed: [{ approval, parsedArgs: {}, context: null }],
-              autoDenied: [],
-              needsUserInput: [],
-            }),
-            executeApprovalBatch: async () => [
-              {
-                type: "tool" as const,
-                tool_call_id: approval.toolCallId,
-                status: "success" as const,
-                tool_return: "/workspace",
-              },
-            ],
-            ensureSecretsHydrated: async () => {},
-            sendApprovalContinuation: async (
-              conversationId: string,
-              messages: Parameters<typeof sendMessageStreamWithBackend>[2],
-              options: Parameters<typeof sendMessageStreamWithBackend>[3],
-            ) => {
-              const stream = await sendMessageStreamWithBackend(
-                backend,
-                conversationId,
-                messages,
-                {
-                  ...options,
-                  preparedToolContext,
-                  skillSources: [],
-                },
-              );
-              for await (const _event of stream) {
-                /* Drain the real SDK stream. */
-              }
-              return {
-                kind: "terminal" as const,
-                drainResult: {
-                  stopReason: "end_turn" as const,
-                  apiDurationMs: 0,
-                },
-              };
-            },
-          } as never,
-        });
-
-        expect(result.kind).toBe("terminal");
-        expect(requests).toHaveLength(1);
-        expect(requests[0]?.actor).toBe(activeUser);
-        expect(JSON.stringify(requests[0]?.body)).toContain("call-monitor");
-        expect(JSON.stringify(requests[0]?.body)).toContain(
-          "scheduled reminder",
+      ],
+    });
+    enqueueInboundUserMessage(runtime, {
+      type: "message",
+      agentId: "agent-1",
+      conversationId: "conv-1",
+      messages: [{ role: "user", content: "queued input" }],
+    });
+    const approval = {
+      toolCallId: "call-monitor",
+      toolName: "Bash",
+      toolArgs: '{"command":"pwd"}',
+    };
+    const bodies: unknown[] = [];
+    const server = Bun.serve({
+      port: 0,
+      async fetch(request) {
+        bodies.push(await request.json());
+        return new Response(
+          'data: {"message_type":"stop_reason","stop_reason":"end_turn"}\n\n',
+          {
+            headers: { "Content-Type": "text/event-stream" },
+          },
         );
-        expect(JSON.stringify(requests[0]?.body)).toContain('"attribution":{}');
-        expect(JSON.stringify(requests[0]?.body)).toContain("reminder-otid");
-        expect(JSON.stringify(requests[0]?.body)).toContain("queued input");
-        if (queuedUser) {
-          expect(JSON.stringify(requests[0]?.body)).toContain(
-            JSON.stringify({ acting_user_id: queuedUser }),
-          );
-        }
-        expect(runtime.queueRuntime.length).toBe(0);
-        runtime.turnLifecycle.finish(turnLease, "end_turn");
-      } finally {
-        server.stop(true);
-        releaseToolExecutionContext(preparedToolContext.contextId);
-      }
-    },
-  );
+      },
+    });
+    const backend = createTestStreamBackend(
+      new Letta({
+        apiKey: "test-key",
+        baseURL: server.url.toString(),
+        maxRetries: 0,
+      }),
+    );
+    const preparedToolContext =
+      await prepareToolExecutionContextForSpecificTools([]);
+
+    try {
+      const result = await startToolApproval(runtime, turnLease, {
+        approvals: [approval],
+        processOwnedTurn: true,
+        buildSendOptions: () =>
+          ({
+            agentId: "agent-1",
+            streamTokens: true,
+            background: true,
+            workingDirectory: process.cwd(),
+          }) as never,
+        dependencies: {
+          classifyApprovals: async () => ({
+            autoAllowed: [{ approval, parsedArgs: {}, context: null }],
+            autoDenied: [],
+            needsUserInput: [],
+          }),
+          executeApprovalBatch: async () => [
+            {
+              type: "tool" as const,
+              tool_call_id: approval.toolCallId,
+              status: "success" as const,
+              tool_return: "/workspace",
+            },
+          ],
+          ensureSecretsHydrated: async () => {},
+          sendApprovalContinuation: async (
+            conversationId: string,
+            messages: Parameters<typeof sendMessageStreamWithBackend>[2],
+            options: Parameters<typeof sendMessageStreamWithBackend>[3],
+          ) => {
+            const stream = await sendMessageStreamWithBackend(
+              backend,
+              conversationId,
+              messages,
+              {
+                ...options,
+                preparedToolContext,
+                skillSources: [],
+              },
+            );
+            for await (const _event of stream) {
+              /* Drain the real SDK stream. */
+            }
+            return {
+              kind: "terminal" as const,
+              drainResult: {
+                stopReason: "end_turn" as const,
+                apiDurationMs: 0,
+              },
+            };
+          },
+        } as never,
+      });
+
+      expect(result.kind).toBe("terminal");
+      expect(bodies).toHaveLength(1);
+      expect(JSON.stringify(bodies[0])).toContain("call-monitor");
+      expect(JSON.stringify(bodies[0])).toContain("scheduled reminder");
+      expect(JSON.stringify(bodies[0])).toContain('"attribution":{}');
+      expect(JSON.stringify(bodies[0])).toContain("reminder-otid");
+      expect(JSON.stringify(bodies[0])).toContain("queued input");
+      expect(runtime.queueRuntime.length).toBe(0);
+      runtime.turnLifecycle.finish(turnLease, "end_turn");
+    } finally {
+      server.stop(true);
+      releaseToolExecutionContext(preparedToolContext.contextId);
+    }
+  });
 
   test("teleport yields after persisting the current tool result", async () => {
     const listener = createRuntime();

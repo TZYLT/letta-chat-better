@@ -247,7 +247,6 @@ describe("Monitor", () => {
     const scope = {
       agentId: "agent-captured",
       conversationId: "conv-captured",
-      actingUserId: "user-captured",
     };
     const prepared = await prepareToolExecutionContextForSpecificTools(
       ["Monitor"],
@@ -258,7 +257,6 @@ describe("Monitor", () => {
         {
           agentId: "agent-other",
           conversationId: "conv-other",
-          actingUserId: "user-other",
         },
         () =>
           executeTool(
@@ -277,8 +275,7 @@ describe("Monitor", () => {
         queuedMessages.every(
           (message) =>
             message.agentId === scope.agentId &&
-            message.conversationId === scope.conversationId &&
-            message.actingUserId === scope.actingUserId,
+            message.conversationId === scope.conversationId,
         ),
       ).toBe(true);
     } finally {
@@ -500,18 +497,16 @@ describe("Monitor", () => {
     });
 
     try {
-      const result = await runWithRuntimeContext(
-        { actingUserId: "user-socket" },
-        () =>
-          monitor({
-            description: "socket events",
-            timeout_ms: 5000,
-            persistent: false,
-            command: "",
-            ws: {
-              url: `ws://127.0.0.1:${address.port}/events?token=secret`,
-            },
-          }),
+      const result = await runWithRuntimeContext({}, () =>
+        monitor({
+          description: "socket events",
+          timeout_ms: 5000,
+          persistent: false,
+          command: "",
+          ws: {
+            url: `ws://127.0.0.1:${address.port}/events?token=secret`,
+          },
+        }),
       );
       await waitFor(
         () => backgroundProcesses.get(result.taskId)?.status === "completed",
@@ -523,11 +518,7 @@ describe("Monitor", () => {
       expect(eventText).toContain("first\nsecond");
       expect(eventText).toContain("[binary frame, 3 bytes]");
       expect(eventText).toContain("[WebSocket closed: 1000 done]");
-      expect(
-        queuedMessages.every(
-          (message) => message.actingUserId === "user-socket",
-        ),
-      ).toBe(true);
+      expect(queuedMessages.length).toBeGreaterThan(0);
       expect(backgroundProcesses.get(result.taskId)?.command).toBe(
         `ws://127.0.0.1:${address.port}/events`,
       );

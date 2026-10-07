@@ -128,7 +128,6 @@ export async function ensureMemoryRepair(
     agentId: string;
     conversationId?: string | null;
     result: MemoryPostTurnSyncResult;
-    actingUserId?: string;
   },
   spawn: (args: SpawnBackgroundSubagentTaskArgs) => unknown,
   claimRepair = claimMemoryConflictRepair,
@@ -156,7 +155,6 @@ export async function ensureMemoryRepair(
         writableRoots: [params.result.memoryDir],
       },
       memoryRepairToken: claim.token,
-      actingUserId: params.actingUserId,
     });
     return true;
   } catch (error) {

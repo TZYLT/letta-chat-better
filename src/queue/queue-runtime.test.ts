@@ -250,25 +250,24 @@ describe("dequeue coalescable items", () => {
     expect((second?.items[0] as MessageQueueItem).content).toBe("b");
   });
 
-  test("coalesces task notifications for the same acting user", () => {
+  test("coalesces task notifications", () => {
     const q = new QueueRuntime();
-    q.enqueue({ ...makeTask("a"), actingUserId: "cloud-user-a" });
-    q.enqueue({ ...makeTask("b"), actingUserId: "cloud-user-a" });
+    q.enqueue(makeTask("a"));
+    q.enqueue(makeTask("b"));
 
     const batch = q.tryDequeue(null);
 
-    expect(batch?.items.map((item) => item.actingUserId)).toEqual([
-      "cloud-user-a",
-      "cloud-user-a",
-    ]);
+    expect(
+      batch?.items.map((item) => ("text" in item ? item.text : undefined)),
+    ).toEqual(["a", "b"]);
     expect(q.length).toBe(0);
   });
 
-  test("dequeues different acting users in arrival order without author gating", () => {
+  test("dequeues task notifications in arrival order", () => {
     const q = new QueueRuntime();
     q.enqueue(makeTask("unattributed"));
-    q.enqueue({ ...makeTask("a"), actingUserId: "cloud-user-a" });
-    q.enqueue({ ...makeTask("b"), actingUserId: "cloud-user-b" });
+    q.enqueue(makeTask("a"));
+    q.enqueue(makeTask("b"));
 
     const first = q.tryDequeue(null);
     const second = q.tryDequeue(null);
@@ -276,11 +275,6 @@ describe("dequeue coalescable items", () => {
     expect(
       first?.items.map((item) => ("text" in item ? item.text : undefined)),
     ).toEqual(["unattributed", "a", "b"]);
-    expect(first?.items.map((item) => item.actingUserId)).toEqual([
-      undefined,
-      "cloud-user-a",
-      "cloud-user-b",
-    ]);
     expect(second).toBeNull();
     expect(q.length).toBe(0);
   });

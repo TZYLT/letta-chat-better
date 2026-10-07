@@ -22,7 +22,6 @@ import { buildHeadlessSenderReminder } from "./headless-message-sender";
 const scope: AgentRuntimeScope = {
   agent_id: "agent-child",
   conversation_id: "conv-child",
-  acting_user_id: "user-parent",
 };
 const settings: RuntimeExecutionSettings = {
   parent_agent_id: "agent-parent",
@@ -151,7 +150,6 @@ test.each([
         });
         expect(input).toMatchObject({
           computer: "conn-target",
-          actingUserId: "user-parent",
           content,
         });
         wire.emit({

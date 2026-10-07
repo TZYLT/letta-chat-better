@@ -13,7 +13,6 @@ describe("Monitor stop command parsing", () => {
     runtime: {
       agent_id: "agent-a",
       conversation_id: "conv-a",
-      acting_user_id: "user-a",
     },
   };
   test("preserves runtime and relay actor through the wire parser", () => {
@@ -33,7 +32,6 @@ describe("Monitor stop command parsing", () => {
     for (const invalid of [
       { ...command, runtime: undefined },
       { ...command, runtime: { agent_id: "agent-a" } },
-      { ...command, runtime: { ...command.runtime, acting_user_id: 5 } },
       { ...command, process_id: "" },
       { ...command, request_id: "" },
     ])

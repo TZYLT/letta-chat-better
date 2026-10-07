@@ -38,7 +38,6 @@ export function listenerExternalToolBackgroundOptions(
   runtimeScope: {
     agentId?: string | null;
     conversationId?: string | null;
-    actingUserId?: string;
   },
 ): {
   runtimeScope: typeof runtimeScope;

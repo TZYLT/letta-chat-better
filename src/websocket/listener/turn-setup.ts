@@ -117,19 +117,7 @@ export async function prepareListenerTurn(params: {
     onStatusChange?.("processing", connectionId);
   }
 
-  const hasAttributedUserMessage = msg.messages.some(
-    (message) =>
-      "role" in message &&
-      message.role === "user" &&
-      message.attribution?.acting_user_id,
-  );
-  if (!msg.actingUserId && hasAttributedUserMessage) {
-    console.warn("[Listen] Attributed input is missing acting user identity", {
-      agentId,
-      conversationId,
-    });
-  }
-  trackListenerUserInput(msg.messages, "unknown", msg.actingUserId);
+  trackListenerUserInput(msg.messages, "unknown");
 
   const messagesToSend: Array<MessageCreate | ApprovalCreate> = [];
   let queuedInterruptedToolCallIds: string[] = [];
@@ -319,7 +307,6 @@ export async function prepareListenerTurn(params: {
     environmentDeviceId,
     agentId,
     conversationId,
-    actingUserId: msg.actingUserId,
     clientToolset: msg.clientToolset,
     clientToolAllowlist: msg.clientToolAllowlist,
     // Honor explicit client exclusions; headless execution does not block questions.

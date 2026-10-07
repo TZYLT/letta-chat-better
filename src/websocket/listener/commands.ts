@@ -1,5 +1,4 @@
 import type WebSocket from "ws";
-import { actingUserRequestOptions } from "@/agent/acting-user";
 import { regenerateConversationDescription } from "@/agent/conversation-description";
 import {
   applySetMaxContext,
@@ -120,14 +119,12 @@ export async function handleExecuteCommand(
       case "clear":
         output = await handleClearCommand(socket, conversationRuntime, {
           ...opts,
-          actingUserId: command.runtime.acting_user_id,
         });
         break;
 
       case "clear-messages":
         output = await handleClearCommand(socket, conversationRuntime, {
           ...opts,
-          actingUserId: command.runtime.acting_user_id,
           resetAllAgentMessages: true,
         });
         break;
@@ -147,7 +144,6 @@ export async function handleExecuteCommand(
             type: "message",
             agentId,
             conversationId: conversationRuntime.conversationId,
-            actingUserId: command.runtime.acting_user_id,
             messages: [
               {
                 type: "message",
@@ -190,7 +186,6 @@ export async function handleExecuteCommand(
           socket,
           conversationRuntime,
           trimmedArgs,
-          command.runtime.acting_user_id,
         );
         break;
 
@@ -638,8 +633,6 @@ async function handleClearCommand(
   opts: {
     onStatusChange?: StartListenerOptions["onStatusChange"];
     connectionId?: string;
-    /** Cloud user id stamped on the relayed frame; echoed on the create call. */
-    actingUserId?: string;
     /** Whether to reset the API agent's complete message history. */
     resetAllAgentMessages?: boolean;
   },
@@ -677,14 +670,9 @@ async function handleClearCommand(
       invalidateExternalToolNotifications(conversationRuntime);
     }
 
-    // Create a new conversation, attributing it to the human who ran
-    // /clear when the frame was relayed by cloud with an acting user.
-    const conversation = await backend.createConversation(
-      {
-        agent_id: agentId,
-      },
-      actingUserRequestOptions(opts.actingUserId),
-    );
+    const conversation = await backend.createConversation({
+      agent_id: agentId,
+    });
 
     // Clear runtime state for the current conversation
     clearConversationRuntimeState(conversationRuntime);
@@ -820,13 +808,12 @@ async function handleReflectCommand(
   socket: WebSocket,
   conversationRuntime: ConversationRuntime,
   args = "",
-  actingUserId?: string,
 ): Promise<string> {
   const agentId = conversationRuntime.agentId;
   if (!agentId) throw new Error("No agent ID available for reflection.");
   const conversationId = conversationRuntime.conversationId;
   const output = await requestCloudReflectionRun(
-    { agentId, conversationId, actingUserId },
+    { agentId, conversationId },
     args,
   );
   if (output !== null) return output;

@@ -287,7 +287,6 @@ export async function launchListenerConversation(
         clientMessageId,
         content: params.content,
         computer: params.connectionId,
-        actingUserId: params.scope.acting_user_id,
       },
       AbortSignal.timeout(30_000),
     );

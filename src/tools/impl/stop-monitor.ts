@@ -40,7 +40,6 @@ export async function stopMonitor(
     kind: "task_notification",
     agentId: command.runtime.agent_id,
     conversationId: command.runtime.conversation_id,
-    actingUserId: command.runtime.acting_user_id,
     text: formatMonitorEventNotification({
       taskId: command.process_id,
       event:

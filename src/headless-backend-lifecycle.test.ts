@@ -26,7 +26,6 @@ function expectManagedPromptUpdatesViaBackend(source: string): void {
 describe("headless backend lifecycle wiring", () => {
   test("headless startup and approval recovery route lifecycle SDK calls through Backend", () => {
     const source = readSource("./headless.ts");
-    const startupBackendSource = readSource("./headless-startup-backend.ts");
 
     expect(source).toContain("const backend = getBackend();");
     const backendReadyIndex = source.indexOf("const backend = getBackend();");
@@ -37,19 +36,16 @@ describe("headless backend lifecycle wiring", () => {
       "getClient()",
     );
 
-    expect(source).toContain("createStartupBackend(backend");
-    expect(source).toContain("startupBackend.retrieveAgent(");
-    expect(source).toContain("startupBackend.retrieveConversation(");
-    expect(source).toContain("startupBackend.createConversation(");
-    expect(startupBackendSource).toContain("backend.retrieveAgent(");
-    expect(startupBackendSource).toContain("backend.retrieveConversation(");
-    expect(startupBackendSource).toContain("backend.createConversation(");
+    // Startup goes straight through the Backend abstraction; there is no
+    // acting-user request wrapper between the two any more.
+    expect(source).toContain("backend.retrieveAgent(");
+    expect(source).toContain("backend.retrieveConversation(");
+    expect(source).toContain("backend.createConversation(");
     expectManagedPromptUpdatesViaBackend(source);
 
     expect(source).not.toContain("client.agents.");
     expect(source).not.toContain("client.conversations.");
     expect(source).not.toContain("client.messages.");
-    expect(startupBackendSource).not.toContain("client.");
   });
 
   test("resume data probes use Backend instead of raw SDK clients", () => {

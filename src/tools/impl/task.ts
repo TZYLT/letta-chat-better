@@ -5,7 +5,6 @@
  * Supports both built-in subagent types and custom subagents defined in .letta/agents/.
  */
 
-import { ACTING_USER_ID_ENV } from "@/agent/acting-user";
 import { getConversationId, getCurrentAgentId } from "@/agent/context";
 import { getScopedMemoryFilesystemRoot } from "@/agent/memory-filesystem";
 import {
@@ -30,10 +29,7 @@ import { forkParentConversation } from "@/agent/subagents/fork-conversation";
 import { spawnSubagent } from "@/agent/subagents/manager";
 import { getBackend } from "@/backend";
 import { runSubagentStopHooks } from "@/hooks";
-import {
-  getCurrentWorkingDirectory,
-  getRuntimeContext,
-} from "@/runtime-context";
+import { getCurrentWorkingDirectory } from "@/runtime-context";
 import type {
   SubagentLaunchArgs,
   SubagentLaunchResult,
@@ -110,8 +106,6 @@ export interface SpawnBackgroundSubagentTaskArgs {
   forkedContext?: boolean;
   /** Parent conversation scope for routing notifications in listener mode. */
   parentScope?: { agentId: string; conversationId: string };
-  /** Authenticated Cloud user responsible for the launch-time turn. */
-  actingUserId?: string;
   /** Transcript/payload file exposed as TRANSCRIPT_PATH for reflection prompts. */
   transcriptPath?: string;
   /** Optional exact memory scope for harness-created memory worktrees. */
@@ -293,7 +287,6 @@ export function spawnBackgroundSubagentTask(
     maxTurns,
     forkedContext,
     parentScope,
-    actingUserId: explicitActingUserId,
     silentCompletion: requestedSilentCompletion,
     emitCompletionNotification,
     completionSummary,
@@ -310,10 +303,6 @@ export function spawnBackgroundSubagentTask(
     (emitCompletionNotification ?? !silentCompletion);
 
   const resolvedParentScope = resolveNotificationScope(parentScope);
-  const actingUserId =
-    explicitActingUserId ??
-    getRuntimeContext()?.actingUserId ??
-    process.env[ACTING_USER_ID_ENV];
 
   const spawnSubagentFn = deps?.spawnSubagentImpl ?? spawnSubagent;
   const copyGitHubPullRequestTagsFn =
@@ -356,7 +345,6 @@ export function spawnBackgroundSubagentTask(
     outputFile,
     abortController,
     runtimeScope: resolvedParentScope,
-    actingUserId,
   };
   backgroundTasks.set(taskId, bgTask);
   writeTaskTranscriptStart(outputFile, description, subagentType);
@@ -402,7 +390,6 @@ export function spawnBackgroundSubagentTask(
       scope,
       systemPromptOverride,
       environment,
-      actingUserId,
       args.config,
       args.clientMessageId,
     );
@@ -423,7 +410,7 @@ export function spawnBackgroundSubagentTask(
           // Awaited by the worker so a one-shot drain sees the repair task.
           repair: (result) =>
             ensureMemoryRepair(
-              { ...resolvedParentScope, actingUserId, result },
+              { ...resolvedParentScope, result },
               spawnBackgroundSubagentTask,
             ),
           getSnapshot: getSubagentSnapshotFn,
@@ -526,7 +513,6 @@ export function spawnBackgroundSubagentTask(
           text: notificationXml,
           agentId: resolvedParentScope?.agentId,
           conversationId: resolvedParentScope?.conversationId,
-          actingUserId: bgTask.actingUserId,
         });
       }
 
@@ -612,7 +598,6 @@ export function spawnBackgroundSubagentTask(
           text: notificationXml,
           agentId: resolvedParentScope?.agentId,
           conversationId: resolvedParentScope?.conversationId,
-          actingUserId: bgTask.actingUserId,
         });
       }
 
@@ -829,7 +814,6 @@ export async function launchSubagent(
             model,
             parentAgentId,
             parentConversationId: resolvedParentScope?.conversationId,
-            actingUserId: resolvedParentScope?.actingUserId,
             cwd: getCurrentWorkingDirectory(),
             mcpReminder,
             signal: childSignal,

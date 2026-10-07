@@ -52,7 +52,6 @@ export async function autoBackgroundExternalTool<T extends ExternalResult>(
       ? {
           agentId: runtime.agentId,
           conversationId: runtime.conversationId,
-          actingUserId: runtime.actingUserId,
         }
       : undefined);
   // Only listener tools opt in. Headless SDK tools share one stdin reader, and

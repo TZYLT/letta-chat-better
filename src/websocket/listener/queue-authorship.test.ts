@@ -44,16 +44,16 @@ test("preserves every input message and author across queue entries", () => {
     client_message_id: string;
     attribution: { acting_user_id?: string };
   };
-  enqueueInboundUserMessage(
-    runtime,
-    { type: "message", ...scope, messages: first },
-    "human-a",
-  );
-  enqueueInboundUserMessage(
-    runtime,
-    { type: "message", ...scope, messages: [third] },
-    "human-b",
-  );
+  enqueueInboundUserMessage(runtime, {
+    type: "message",
+    ...scope,
+    messages: first,
+  });
+  enqueueInboundUserMessage(runtime, {
+    type: "message",
+    ...scope,
+    messages: [third],
+  });
   const ids = runtime.queueRuntime.peek().map((item) => item.id);
   const consumed = consumeQueuedTurn(runtime);
   expect(consumed?.queuedTurn.messages).toEqual([...first, third]);
@@ -81,53 +81,44 @@ test("a principal reminder never blocks later human steering", () => {
     content: "scheduled reminder",
     attribution: {},
   } satisfies MessageCreate & { attribution: object };
+  const steer = {
+    role: "user",
+    content: "steer",
+    attribution: { acting_user_id: "human-b" },
+  } satisfies MessageCreate & { attribution: object };
   enqueueInboundUserMessage(runtime, {
     type: "message",
     agentId: "agent-a",
     conversationId: "conv-a",
     messages: [reminder],
   });
-  enqueueInboundUserMessage(
-    runtime,
-    {
-      type: "message",
-      agentId: "agent-a",
-      conversationId: "conv-a",
-      messages: [{ role: "user", content: "steer" }],
-    },
-    "human-b",
-  );
+  enqueueInboundUserMessage(runtime, {
+    type: "message",
+    agentId: "agent-a",
+    conversationId: "conv-a",
+    messages: [steer],
+  });
   const consumed = consumeQueuedTurn(runtime);
-  expect(consumed?.queuedTurn.messages).toEqual([
-    reminder,
-    {
-      role: "user",
-      content: "steer",
-      attribution: { acting_user_id: "human-b" },
-    },
-  ]);
+  expect(consumed?.queuedTurn.messages).toEqual([reminder, steer]);
   expect(runtime.queueRuntime.length).toBe(0);
 });
 
-test("mixed-owner background notifications use bearer authorship", () => {
+test("background notifications carry no local authorship", () => {
   const runtime = getOrCreateScopedRuntime(
     createRuntime(),
     "agent-a",
     "conv-a",
   );
-  for (const actingUserId of ["human-a", "human-b", undefined]) {
-    const item: Omit<TaskNotificationQueueItem, "id" | "enqueuedAt"> = {
-      kind: "task_notification",
-      source: "task_notification",
-      agentId: "agent-a",
-      conversationId: "conv-a",
-      text: "completed",
-      actingUserId,
-    };
-    runtime.queueRuntime.enqueue(item);
-  }
+  const item: Omit<TaskNotificationQueueItem, "id" | "enqueuedAt"> = {
+    kind: "task_notification",
+    source: "task_notification",
+    agentId: "agent-a",
+    conversationId: "conv-a",
+    text: "completed",
+  };
+  runtime.queueRuntime.enqueue(item);
   const consumed = consumeQueuedTurn(runtime);
-  expect(consumed?.queuedTurn.messages).toHaveLength(3);
+  expect(consumed?.queuedTurn.messages).toHaveLength(1);
   for (const message of consumed?.queuedTurn.messages ?? []) {
     expect(message).toMatchObject({
       role: "user",
@@ -135,11 +126,10 @@ test("mixed-owner background notifications use bearer authorship", () => {
       attribution: {},
     });
   }
-  expect(consumed?.queuedTurn.actingUserId).toBeUndefined();
   expect(runtime.queueRuntime.length).toBe(0);
 });
 
-test("same-owner background notifications keep their acting user", () => {
+test("notification batches keep their message order and content", () => {
   const runtime = getOrCreateScopedRuntime(
     createRuntime(),
     "agent-a",
@@ -152,12 +142,10 @@ test("same-owner background notifications keep their acting user", () => {
       agentId: "agent-a",
       conversationId: "conv-a",
       text,
-      actingUserId: "human-a",
     };
     runtime.queueRuntime.enqueue(item);
   }
   const consumed = consumeQueuedTurn(runtime);
-  expect(consumed?.queuedTurn.actingUserId).toBe("human-a");
   expect(consumed?.queuedTurn.messages).toHaveLength(2);
   for (const message of consumed?.queuedTurn.messages ?? []) {
     expect(message).toMatchObject({ attribution: {} });
@@ -177,15 +165,15 @@ test("same-author messages stay separate and paused messages stay parked", () =>
     conversationId: "conv-a",
     messages: [{ role: "user" as const, content, otid: content }],
   });
-  enqueueInboundUserMessage(runtime, incoming("first"), "human-a");
-  enqueueInboundUserMessage(runtime, incoming("second"), "human-a");
+  enqueueInboundUserMessage(runtime, incoming("first"));
+  enqueueInboundUserMessage(runtime, incoming("second"));
   const batch = consumeQueuedTurn(runtime);
   expect(batch?.queuedTurn.messages).toHaveLength(2);
   expect(batch?.queuedTurn.messages.map((message) => message.otid)).toEqual([
     "first",
     "second",
   ]);
-  enqueueInboundUserMessage(runtime, incoming("paused"), "human-a");
+  enqueueInboundUserMessage(runtime, incoming("paused"));
   runtime.queueRuntime.pause();
   const item: Omit<TaskNotificationQueueItem, "id" | "enqueuedAt"> = {
     kind: "task_notification",

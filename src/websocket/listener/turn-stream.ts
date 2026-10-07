@@ -1,6 +1,5 @@
 import type { Stream } from "@letta-ai/letta-client/core/streaming";
 import type { LettaStreamingResponse } from "@letta-ai/letta-client/resources/agents/messages";
-import { getStreamRequestContext } from "@/agent/message";
 import { normalizeStreamErrorTypeToStopReason } from "@/agent/turn-recovery-policy";
 import type { createBuffers } from "@/cli/helpers/accumulator";
 import { drainStreamWithResume } from "@/cli/helpers/stream";
@@ -80,7 +79,6 @@ export async function drainTurnStreamWithEmission(
             runtime,
             {
               runId: maybeRunId,
-              actingUserId: getStreamRequestContext(stream)?.actingUserId,
             },
             "run_observed",
           );

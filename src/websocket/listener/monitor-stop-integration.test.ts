@@ -98,16 +98,12 @@ for (const busy of [false, true])
     });
     try {
       if (busy) {
-        enqueueInboundUserMessage(
-          target,
-          {
-            type: "message",
-            agentId: "agent-a",
-            conversationId: "default",
-            messages: [{ role: "user", content: "Also run the tests." }],
-          },
-          "human-a",
-        );
+        enqueueInboundUserMessage(target, {
+          type: "message",
+          agentId: "agent-a",
+          conversationId: "default",
+          messages: [{ role: "user", content: "Also run the tests." }],
+        });
       }
       const command = {
         type: "monitor_stop",
@@ -116,7 +112,6 @@ for (const busy of [false, true])
         runtime: {
           agent_id: "agent-a",
           conversation_id: "default",
-          acting_user_id: "human-a",
         },
       };
       await handler(Buffer.from(JSON.stringify(command)));
@@ -131,14 +126,12 @@ for (const busy of [false, true])
         expect(target.queueRuntime.length).toBe(2);
         expect(target.queueRuntime.peek()[1]).toMatchObject({
           kind: "task_notification",
-          actingUserId: "human-a",
         });
         target.turnLifecycle.finishCommand();
         scheduleQueuePump(target, socket, opts, processQueuedTurn);
       }
       await deliveredPromise;
       expect(delivered).toHaveLength(1);
-      expect(delivered[0]?.actingUserId).toBe("human-a");
       expect(delivered[0]?.messages[0]).toMatchObject({ role: "user" });
       const content = JSON.stringify(delivered[0]?.messages);
       expect(content).toContain("The user cancelled this Monitor.");

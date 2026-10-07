@@ -21,7 +21,6 @@ export function trackExternalFollowupCompletion(args: {
   parentScope: {
     agentId: string;
     conversationId: string;
-    actingUserId?: string;
   };
   completion: Promise<SubagentResult>;
   interrupt: () => Promise<void>;
@@ -74,7 +73,6 @@ export function spawnExternalCodingAgentFollowup(args: {
   parentScope: {
     agentId: string;
     conversationId: string;
-    actingUserId?: string;
   };
 }): SpawnBackgroundSubagentTaskResult {
   const target = parseExternalCodingAgentId(args.agentId);
@@ -100,7 +98,6 @@ export function spawnExternalCodingAgentFollowup(args: {
           prompt,
           parentAgentId: args.parentScope.agentId,
           parentConversationId: args.parentScope.conversationId,
-          actingUserId: args.parentScope.actingUserId,
           resumeSessionId: target.sessionId,
           cwd: getCurrentWorkingDirectory(),
           signal,

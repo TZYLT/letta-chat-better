@@ -157,7 +157,7 @@ describe("spawnBackgroundSubagentTask", () => {
     expect(outputContent).toContain("[Task completed]");
   });
 
-  test("keeps launch-time acting user through delayed completion", async () => {
+  test("completes a delayed background subagent and queues its notification", async () => {
     let resolveSpawn: ((result: SubagentResult) => void) | undefined;
     const spawnSubagentImpl = mock(
       (..._args: unknown[]) =>
@@ -166,37 +166,28 @@ describe("spawnBackgroundSubagentTask", () => {
         }),
     );
 
-    const launched = runWithRuntimeContext(
-      { actingUserId: "cloud-user-a" },
-      () =>
-        spawnBackgroundSubagentTask({
-          subagentType: "general-purpose",
-          prompt: "Investigate",
-          description: "Investigate billing",
-          parentScope: {
-            agentId: "agent-parent",
-            conversationId: "conv-parent",
-          },
-          deps: {
-            spawnSubagentImpl,
-            copyGitHubPullRequestTagsImpl: async () => {},
-            addToMessageQueueImpl,
-            formatTaskNotificationImpl,
-            runSubagentStopHooksImpl,
-            generateSubagentIdImpl,
-            registerSubagentImpl,
-            completeSubagentImpl,
-            getSubagentSnapshotImpl,
-          },
-        }),
-    );
+    spawnBackgroundSubagentTask({
+      subagentType: "general-purpose",
+      prompt: "Investigate",
+      description: "Investigate billing",
+      parentScope: {
+        agentId: "agent-parent",
+        conversationId: "conv-parent",
+      },
+      deps: {
+        spawnSubagentImpl,
+        copyGitHubPullRequestTagsImpl: async () => {},
+        addToMessageQueueImpl,
+        formatTaskNotificationImpl,
+        runSubagentStopHooksImpl,
+        generateSubagentIdImpl,
+        registerSubagentImpl,
+        completeSubagentImpl,
+        getSubagentSnapshotImpl,
+      },
+    });
 
-    expect(backgroundTasks.get(launched.taskId)?.actingUserId).toBe(
-      "cloud-user-a",
-    );
-    expect(spawnSubagentImpl.mock.calls[0]?.[15]).toBe("cloud-user-a");
-
-    runWithRuntimeContext({ actingUserId: "cloud-user-b" }, () => {
+    runWithRuntimeContext({}, () => {
       resolveSpawn?.({
         agentId: "agent-child",
         conversationId: "conv-child",
@@ -207,7 +198,6 @@ describe("spawnBackgroundSubagentTask", () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(queueMessages).toHaveLength(1);
-    expect(queueMessages[0]?.actingUserId).toBe("cloud-user-a");
   });
 
   test("copies PR tags from the Agent conversation to its parent", async () => {

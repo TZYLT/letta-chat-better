@@ -594,7 +594,6 @@ export function createListenerMessageHandler(
             options: opts,
             processQueuedTurn,
             processIncomingMessage,
-            actingUserId: parsed.runtime.acting_user_id,
             trackListenerError,
             onInputAccepted: ({ accepted, disposition }) =>
               acknowledgeInput(
@@ -636,7 +635,6 @@ export function createListenerMessageHandler(
           const enqueued = enqueueInboundUserMessage(
             scopedRuntime,
             stampedIncoming,
-            parsed.runtime.acting_user_id,
           );
           if (enqueued) {
             rememberAcceptedInputDisposition(

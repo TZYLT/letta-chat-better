@@ -66,24 +66,19 @@ async function waitFor(predicate: () => boolean): Promise<void> {
 }
 
 describe("recovered approval lease boundaries", () => {
-  test("a queued user's identity survives recovered denial continuation", async () => {
+  test("queued input survives recovered denial continuation", async () => {
     const runtime = getOrCreateScopedRuntime(
       createRuntime(),
       "agent-1",
       "conv-1",
     );
     runtime.recoveredApprovalState = createRecoveredState();
-    enqueueInboundUserMessage(
-      runtime,
-      {
-        type: "message",
-        agentId: "agent-1",
-        conversationId: "conv-1",
-        messages: [{ role: "user", content: "message from Charles" }],
-      },
-      "cloud-user-charles",
-    );
-    let receivedActingUserId: string | undefined;
+    enqueueInboundUserMessage(runtime, {
+      type: "message",
+      agentId: "agent-1",
+      conversationId: "conv-1",
+      messages: [{ role: "user", content: "message from Charles" }],
+    });
     let receivedMessages: unknown;
 
     const handled = await startRecoveredApprovalContinuation(
@@ -98,7 +93,6 @@ describe("recovered approval lease boundaries", () => {
         _batchId,
         turnLease,
       ) => {
-        receivedActingUserId = message.actingUserId;
         receivedMessages = message.messages;
         if (turnLease) ownerRuntime.turnLifecycle.finish(turnLease, "end_turn");
       },
@@ -112,7 +106,6 @@ describe("recovered approval lease boundaries", () => {
     );
 
     expect(handled).toBe(true);
-    expect(receivedActingUserId).toBeUndefined();
     expect(receivedMessages).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -120,9 +113,6 @@ describe("recovered approval lease boundaries", () => {
           approvals: createDenialResults(),
         }),
       ]),
-    );
-    expect(JSON.stringify(receivedMessages)).toContain(
-      '"attribution":{"acting_user_id":"cloud-user-charles"}',
     );
   });
 

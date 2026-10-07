@@ -25,7 +25,6 @@ export type ListenerStateWritePhase =
 export interface InterruptedTurnRecord {
   revision?: string;
   teleportId?: string;
-  actingUserId?: string;
   agentId: string;
   conversationId: string;
   runId: string | null;
@@ -138,7 +137,7 @@ export function recordListenerWork(
   update: Partial<
     Pick<
       InterruptedTurnRecord,
-      "runId" | "toolCallIds" | "results" | "requestOtid" | "actingUserId"
+      "runId" | "toolCallIds" | "results" | "requestOtid"
     >
   >,
   phase: ListenerStateWritePhase,
@@ -153,7 +152,6 @@ export function recordListenerWork(
     toolCallIds: previous?.toolCallIds ?? [],
     results: previous?.results ?? [],
     requestOtid: previous?.requestOtid ?? randomUUID(),
-    actingUserId: previous?.actingUserId,
     workingDirectory:
       runtime.activeWorkingDirectory ??
       previous?.workingDirectory ??

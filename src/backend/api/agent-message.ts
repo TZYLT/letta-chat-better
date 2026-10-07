@@ -1,5 +1,4 @@
 import type { MessageCreate } from "@letta-ai/letta-client/resources/agents/agents";
-import { actingUserRequestOptions } from "@/agent/acting-user";
 import type { Backend } from "@/backend";
 
 /** Optional routing values share the same meaning in CLI and tool sends. */
@@ -66,7 +65,6 @@ export async function resolveAgentMessageDestination(
     agentId?: string;
     conversationId?: string;
     senderAgentId?: string;
-    actingUserId?: string;
     /** Calling runtime, independent of optional sender attribution overrides. */
     currentConversation?: { agentId?: string; conversationId?: string };
   },
@@ -78,7 +76,7 @@ export async function resolveAgentMessageDestination(
   if (!agentId && !conversationId) {
     throw new Error("Choose a destination with agent_id or conversation_id.");
   }
-  const options = { signal, ...actingUserRequestOptions(input.actingUserId) };
+  const options = { signal };
   if (conversationId && conversationId !== "default") {
     const conversation = await backend.retrieveConversation(
       conversationId,

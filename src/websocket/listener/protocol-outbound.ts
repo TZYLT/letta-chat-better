@@ -689,10 +689,6 @@ export function emitDequeuedUserMessage(
         message_type: "user_message",
         content,
         otid,
-        created_by_id:
-          payload.attribution === undefined
-            ? incoming.actingUserId
-            : payload.attribution.acting_user_id,
       } as StreamDelta,
       {
         agent_id: incoming.agentId,

@@ -21,19 +21,18 @@ afterEach(() => {
     originalGetSettingsWithSecureTokens;
 });
 
-test("shared agent discovery carries the current sender", async () => {
-  const actingUserIds: Array<string | null> = [];
+test("shared agent discovery sends the API key without a caller identity", async () => {
+  const headers: Array<Headers> = [];
   globalThis.fetch = mock(async (_input, init) => {
-    actingUserIds.push(
-      new Headers(init?.headers).get("X-Letta-Acting-User-Id"),
-    );
+    headers.push(new Headers(init?.headers));
     return new Response(JSON.stringify({ agents: [], nextCursor: null }), {
       status: 200,
       headers: { "content-type": "application/json" },
     });
   }) as unknown as typeof fetch;
 
-  await listSharedAgentsForCurrentUser({}, "user-sender");
+  await listSharedAgentsForCurrentUser({});
 
-  expect(actingUserIds).toEqual(["user-sender"]);
+  expect(headers).toHaveLength(1);
+  expect(headers[0]?.get("Authorization")).toBe("Bearer test-key");
 });

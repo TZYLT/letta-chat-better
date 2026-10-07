@@ -23,7 +23,6 @@ let notices: import("@/utils/message-queue-bridge").QueuedMessage[];
 const scope = {
   agent_id: "agent-a",
   conversation_id: "conv-a",
-  acting_user_id: "user-a",
 };
 function command(processId: string, runtime = scope): MonitorStopCommand {
   return {
@@ -93,7 +92,6 @@ describe("stopMonitor", () => {
       kind: "task_notification",
       agentId: scope.agent_id,
       conversationId: scope.conversation_id,
-      actingUserId: scope.acting_user_id,
     });
     const [retry, second] = await Promise.all([
       stopMonitor(command(id)),

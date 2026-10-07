@@ -97,7 +97,7 @@ describe("pre-stream recovery lease boundaries", () => {
     expect(runtime.queuedMessagesByItemId.size).toBe(1);
   });
 
-  test("a queued user's identity survives pre-stream approval recovery", async () => {
+  test("queued input survives pre-stream approval recovery", async () => {
     const runtime = getOrCreateScopedRuntime(
       createRuntime(),
       "agent-1",
@@ -108,28 +108,23 @@ describe("pre-stream recovery lease boundaries", () => {
       workingDirectory: process.cwd(),
       initialStatus: "WAITING_FOR_API_RESPONSE",
     });
-    enqueueInboundUserMessage(
-      runtime,
-      {
-        type: "message",
-        agentId: "agent-1",
-        conversationId: "conv-1",
-        messages: [
-          {
-            role: "user",
-            content: "message from Charles",
-            client_message_id: "cm-charles",
-          },
-        ],
-      },
-      "cloud-user-charles",
-    );
+    enqueueInboundUserMessage(runtime, {
+      type: "message",
+      agentId: "agent-1",
+      conversationId: "conv-1",
+      messages: [
+        {
+          role: "user",
+          content: "message from Charles",
+          client_message_id: "cm-charles",
+        },
+      ],
+    });
     const approval = {
       toolCallId: "call-1",
       toolName: "Bash",
       toolArgs: '{"command":"pwd"}',
     };
-    let sentActingUserId: string | undefined;
     let sentMessages: unknown;
 
     const result = await resolveStaleApprovals(
@@ -147,9 +142,8 @@ describe("pre-stream recovery lease boundaries", () => {
         sendApprovalContinuation: async (
           _conversationId,
           messages,
-          options,
+          _options,
         ) => {
-          sentActingUserId = options?.actingUserId;
           sentMessages = messages;
           return { kind: "stream" as const, stream: {} as never };
         },
@@ -161,10 +155,7 @@ describe("pre-stream recovery lease boundaries", () => {
     );
 
     expect(result?.stopReason).toBe("end_turn");
-    expect(sentActingUserId).toBeUndefined();
-    expect(JSON.stringify(sentMessages)).toContain(
-      '"attribution":{"acting_user_id":"cloud-user-charles"}',
-    );
+    expect(JSON.stringify(sentMessages)).toContain("message from Charles");
     expect(
       runtime.listener.clientMessageIdsByRunIdByConversation
         ?.get(runtime.key)

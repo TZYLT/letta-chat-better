@@ -32,11 +32,10 @@ describe("reflection admission HTTP", () => {
       status: "queued",
       run_id: "run-fixture",
     });
-    expect(
-      await postReflectionRun(client, "agent-fixture", body, {
-        headers: { "X-Letta-Acting-User-Id": "user-fixture" },
-      }),
-    ).toEqual({ status: "queued", run_id: "run-fixture" });
+    expect(await postReflectionRun(client, "agent-fixture", body)).toEqual({
+      status: "queued",
+      run_id: "run-fixture",
+    });
     expect(requests).toHaveLength(1);
     const request = requests[0];
     expect(request?.url).toBe(
@@ -46,7 +45,6 @@ describe("reflection admission HTTP", () => {
     expect(request?.headers.get("authorization")).toBe(
       "Bearer scoped-fixture-key",
     );
-    expect(request?.headers.get("X-Letta-Acting-User-Id")).toBe("user-fixture");
     expect(await request?.json()).toEqual(body);
   });
 

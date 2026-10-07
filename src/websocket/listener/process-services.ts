@@ -118,7 +118,6 @@ export function installProcessEventRouting(params: {
       source: "task_notification",
       text: queuedMessage.text,
       content: queuedMessage.content,
-      actingUserId: queuedMessage.actingUserId,
       agentId: queuedMessage.agentId ?? targetRuntime.agentId ?? undefined,
       conversationId:
         queuedMessage.conversationId ?? targetRuntime.conversationId,

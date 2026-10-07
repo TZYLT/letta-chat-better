@@ -4,7 +4,7 @@ export interface ForkConversationOptions {
   agentId?: string;
   hidden?: boolean;
   messageId?: string;
-  /** Extra headers forwarded on the request (e.g. acting-user echo). */
+  /** Extra headers forwarded on the request. */
   headers?: Record<string, string>;
   signal?: AbortSignal;
 }

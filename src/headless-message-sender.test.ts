@@ -1,17 +1,15 @@
 import { expect, test } from "bun:test";
-import { ACTING_USER_ID_ENV } from "@/agent/acting-user";
 import { composeSubagentChildEnv } from "@/agent/subagents/subagent-launcher";
 import { buildAgentSendReminder } from "@/backend/api/agent-message";
 import { consumeSubagentLaunch } from "@/utils/subagent-launch-marker";
 import { buildHeadlessSenderReminder } from "./headless-message-sender";
 
-test("nested launches use the immediate parent scope without changing the acting user", () => {
+test("nested launches use the immediate parent scope", () => {
   const inherited = {
     LETTA_PARENT_AGENT_ID: "agent-grandparent",
     LETTA_PARENT_CONVERSATION_ID: "conv-grandparent",
     AGENT_ID: "agent-unrelated",
     CONVERSATION_ID: "conv-unrelated",
-    [ACTING_USER_ID_ENV]: "user-owner",
   };
   const env = composeSubagentChildEnv({
     parentProcessEnv: inherited,
@@ -28,7 +26,6 @@ test("nested launches use the immediate parent scope without changing the acting
       false,
     ),
   );
-  expect(env[ACTING_USER_ID_ENV]).toBe("user-owner");
   // A CLI command run later by the child is not another launch from its parent.
   expect(
     buildHeadlessSenderReminder(consumeSubagentLaunch(env), undefined, env),

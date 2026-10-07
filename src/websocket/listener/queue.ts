@@ -1,7 +1,4 @@
-import {
-  type AttributedMessageCreate,
-  withMessageAttribution,
-} from "@/agent/message-attribution";
+import type { AttributedMessageCreate } from "@/agent/message-attribution";
 import type {
   DequeuedBatch,
   QueueBlockedReason,
@@ -82,17 +79,6 @@ function externalToolScopeSelection(message?: IncomingMessage): string {
   return JSON.stringify(message?.externalToolScopeIds ?? []);
 }
 
-function getBatchActingUserId(items: QueueItem[]): string | undefined {
-  const actingUserId = items[0]?.actingUserId;
-  if (
-    !actingUserId ||
-    items.some((item) => item.actingUserId !== actingUserId)
-  ) {
-    return undefined;
-  }
-  return actingUserId;
-}
-
 function buildQueuedTurnMessage(
   runtime: ConversationRuntime,
   batch: DequeuedBatch,
@@ -102,27 +88,10 @@ function buildQueuedTurnMessage(
   for (const item of batch.items) {
     const incoming = runtime.queuedMessagesByItemId.get(item.id);
     if (item.kind === "message" && incoming) {
-      template ??= {
-        ...incoming,
-        actingUserId: incoming.actingUserId ?? item.actingUserId,
-      };
-      messages.push(
-        ...incoming.messages.map((message) =>
-          "content" in message
-            ? withMessageAttribution(
-                message,
-                item.actingUserId ?? incoming.actingUserId,
-              )
-            : message,
-        ),
-      );
+      template ??= incoming;
+      messages.push(...incoming.messages);
     } else if (item.kind === "message") {
-      messages.push(
-        withMessageAttribution(
-          { role: "user", content: item.content },
-          item.actingUserId,
-        ),
-      );
+      messages.push({ role: "user", content: item.content });
     } else if (isCoalescable(item.kind) && "text" in item) {
       messages.push({
         role: "user",
@@ -143,7 +112,6 @@ function buildQueuedTurnMessage(
     agentId: scopeItem?.agentId ?? runtime.agentId ?? undefined,
     conversationId: scopeItem?.conversationId ?? runtime.conversationId,
     ...template,
-    actingUserId: template?.actingUserId ?? getBatchActingUserId(batch.items),
     messages,
   };
 }

@@ -17,7 +17,6 @@ const originalBaseUrl = process.env.LETTA_BASE_URL;
 const originalApiKey = process.env.LETTA_API_KEY;
 const originalRuntimeDeviceId = process.env.LETTA_RUNTIME_ENVIRONMENT_DEVICE_ID;
 const originalConversationId = process.env.LETTA_CONVERSATION_ID;
-const originalActingUserId = process.env.LETTA_ACTING_USER_ID;
 const originalLettaHome = process.env.LETTA_HOME;
 
 const addArgs = [
@@ -59,7 +58,6 @@ function installCloudApiTripwire() {
     method: string;
     pathname: string;
     body: Record<string, unknown> | undefined;
-    actingUserId: string | null;
   }> = [];
 
   globalThis.fetch = mock(async (input, init) => {
@@ -71,8 +69,6 @@ function installCloudApiTripwire() {
       body: init?.body
         ? (JSON.parse(String(init.body)) as Record<string, unknown>)
         : undefined,
-      actingUserId:
-        new Headers(init?.headers).get("X-Letta-Acting-User-Id") ?? null,
     });
 
     return jsonResponse({ error: "unexpected request" }, 500);
@@ -87,7 +83,6 @@ beforeEach(() => {
   process.env.LETTA_API_KEY = "test-key";
   delete process.env.LETTA_RUNTIME_ENVIRONMENT_DEVICE_ID;
   delete process.env.LETTA_CONVERSATION_ID;
-  delete process.env.LETTA_ACTING_USER_ID;
   settingsManager.initialize = mock(
     async () => {},
   ) as typeof settingsManager.initialize;
@@ -119,7 +114,6 @@ afterEach(() => {
     ["LETTA_API_KEY", originalApiKey],
     ["LETTA_RUNTIME_ENVIRONMENT_DEVICE_ID", originalRuntimeDeviceId],
     ["LETTA_CONVERSATION_ID", originalConversationId],
-    ["LETTA_ACTING_USER_ID", originalActingUserId],
     ["LETTA_HOME", originalLettaHome],
   ] as const) {
     if (value === undefined) delete process.env[key];

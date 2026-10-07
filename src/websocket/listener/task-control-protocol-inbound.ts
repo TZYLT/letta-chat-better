@@ -44,8 +44,6 @@ export function isMonitorStopCommand(
     isAgentRuntimeScope(c.runtime) &&
     c.runtime.agent_id.length > 0 &&
     c.runtime.conversation_id.length > 0 &&
-    (c.runtime.acting_user_id === undefined ||
-      typeof c.runtime.acting_user_id === "string") &&
     typeof c.process_id === "string" &&
     c.process_id.length > 0
   );

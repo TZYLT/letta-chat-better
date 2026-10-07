@@ -42,14 +42,12 @@ describe("queued notification identity", () => {
       content,
       agentId: "agent-image",
       conversationId: "conv-image",
-      actingUserId: "human-image",
     } as Omit<TaskNotificationQueueItem, "id" | "enqueuedAt">);
 
     const consumed = consumeQueuedTurn(runtime);
     expect(consumed?.queuedTurn).toMatchObject({
       agentId: "agent-image",
       conversationId: "conv-image",
-      actingUserId: "human-image",
     });
     const message = consumed?.queuedTurn.messages[0];
     if (!message || !("content" in message)) {
@@ -110,7 +108,6 @@ describe("queued notification identity", () => {
       type: "message",
       agentId: "agent-1",
       conversationId: "conv-1",
-      actingUserId: "human-a",
       messages: [
         {
           role: "user",
@@ -147,12 +144,10 @@ describe("queued notification identity", () => {
     const deltas = socket.sentPayloads.map(
       (payload) => JSON.parse(payload).delta,
     );
-    expect(
-      deltas.map((delta) => [delta.content, delta.otid, delta.created_by_id]),
-    ).toEqual([
-      ["Alice", "a", "human-a"],
-      ["reminder", "r", undefined],
-      ["Bob", "b", "human-b"],
+    expect(deltas.map((delta) => [delta.content, delta.otid])).toEqual([
+      ["Alice", "a"],
+      ["reminder", "r"],
+      ["Bob", "b"],
     ]);
     expect(
       runtime.dequeuedClientMessageIdsByBatchId.get(

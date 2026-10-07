@@ -278,7 +278,6 @@ async function handleIncomingMessageInner(
       preparedToolContext: setup.preparedToolContext.preparedToolContext,
       overrideModel,
       responseFormat: msg.responseFormat,
-      actingUserId: msg.actingUserId,
       getInput: () => turnInput,
       getInterruptedToolCallIds: () =>
         pendingNormalizationInterruptedToolCallIds,
@@ -387,7 +386,6 @@ async function handleIncomingMessageInner(
           conversationId,
           workingDirectory: turnWorkingDirectory,
           permissionMode: turnPermissionModeState.mode,
-          actingUserId: msg.actingUserId,
           assistantMessage: findLastAssistantText(transcriptLines),
           transcriptLines,
           getCachedAgent: setup.getCachedAgent,

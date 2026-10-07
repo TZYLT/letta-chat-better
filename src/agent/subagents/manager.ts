@@ -9,7 +9,6 @@
 
 import { rmSync } from "node:fs";
 import { platform } from "node:os";
-import { resolveActingUserId } from "@/agent/acting-user";
 import { getConversationId, getCurrentAgentId } from "@/agent/context";
 import { getScopedMemoryFilesystemRoot } from "@/agent/memory-filesystem";
 import { detectMemoryFormat } from "@/agent/memory-format";
@@ -282,7 +281,6 @@ async function executeSubagent(
   memoryScope?: SubagentMemoryScope,
   systemPromptOverride?: string,
   environment?: string,
-  actingUserIdOverride?: string,
   parentAgentName?: string | null,
   parentConversationId?: string,
   clientMessageId?: string,
@@ -398,7 +396,6 @@ async function executeSubagent(
       memoryScope,
       inheritedApiKey,
       inheritedBaseUrl,
-      actingUserId: actingUserIdOverride,
       transcriptPath,
       subagentId,
       subagentName:
@@ -561,7 +558,6 @@ async function executeSubagent(
             memoryScope,
             systemPromptOverride,
             environment,
-            actingUserIdOverride,
             parentAgentName,
             parentConversationId,
             clientMessageId,
@@ -593,7 +589,6 @@ async function executeSubagent(
           memoryScope,
           systemPromptOverride,
           environment,
-          actingUserIdOverride,
           parentAgentName,
           parentConversationId,
           clientMessageId,
@@ -712,7 +707,6 @@ async function executeSubagent(
           memoryScope,
           systemPromptOverride,
           environment,
-          actingUserIdOverride,
           parentAgentName,
           parentConversationId,
           clientMessageId,
@@ -829,11 +823,9 @@ async function spawnSubagentInContext(
   memoryScope?: SubagentMemoryScope,
   systemPromptOverride?: string,
   environment?: string,
-  actingUserId?: string,
   resolvedConfig?: SubagentConfig,
   clientMessageId?: string,
 ): Promise<SubagentResult> {
-  const launchActingUserId = resolveActingUserId(actingUserId);
   let config = resolvedConfig ?? (await getAllSubagentConfigs())[type];
 
   if (!config) {
@@ -966,7 +958,6 @@ async function spawnSubagentInContext(
     memoryScope,
     effectiveSystemPromptOverride,
     environment,
-    launchActingUserId,
     parentAgent?.name,
     resolvedParentConversationId,
     clientMessageId,

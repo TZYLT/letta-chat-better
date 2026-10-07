@@ -21,7 +21,6 @@ const ID = "11111111-1111-4111-8111-111111111111";
 const scope = {
   agentId: "agent-parent",
   conversationId: "conv-parent",
-  actingUserId: "user-parent",
 };
 let directory: string | undefined;
 let server: Server | undefined;
@@ -56,7 +55,6 @@ async function endpoint(
   calls: Array<{
     url: string;
     body: Record<string, unknown>;
-    actingUser: string | undefined;
   }>,
   fail = false,
   beforeResponse?: (requestNumber: number) => Promise<void>,
@@ -71,9 +69,6 @@ async function endpoint(
     calls.push({
       url: request.url ?? "",
       body,
-      actingUser: request.headers["x-letta-acting-user-id"] as
-        | string
-        | undefined,
     });
     await beforeResponse?.(calls.length);
     if (fail) {
@@ -101,7 +96,6 @@ describe("native CLI JSONL capture", () => {
     const calls: Array<{
       url: string;
       body: Record<string, unknown>;
-      actingUser: string | undefined;
     }> = [];
     const url = await endpoint(calls);
     rememberNativeSession("claude_code", ID, scope, "https://api.letta.com");
@@ -129,7 +123,6 @@ describe("native CLI JSONL capture", () => {
     const calls: Array<{
       url: string;
       body: Record<string, unknown>;
-      actingUser: string | undefined;
     }> = [];
     let firstReceived!: () => void;
     let releaseFirst!: () => void;
@@ -173,7 +166,6 @@ describe("native CLI JSONL capture", () => {
       const calls: Array<{
         url: string;
         body: Record<string, unknown>;
-        actingUser: string | undefined;
       }> = [];
       const url = await endpoint(calls);
       rememberNativeSession(source, ID, scope, "https://api.letta.com");
@@ -186,7 +178,6 @@ describe("native CLI JSONL capture", () => {
       expect(calls[0]?.url).toContain(
         `/v1/conversations/${scope.conversationId}/native-session/chunks`,
       );
-      expect(calls[0]?.actingUser).toBe(scope.actingUserId);
       expect(calls[0]?.body).toMatchObject({
         agent_id: scope.agentId,
         source,
@@ -209,14 +200,11 @@ describe("native CLI JSONL capture", () => {
         appended,
       );
       await appendFile(path, '{"actor":"new"}\n');
-      await captureNativeSession(
-        source,
-        ID,
-        { ...scope, actingUserId: "user-next" },
-        env,
-        { baseUrl: url, apiKey: "test", cloudUrl: "https://api.letta.com" },
-      );
-      expect(calls[2]?.actingUser).toBe("user-next");
+      await captureNativeSession(source, ID, scope, env, {
+        baseUrl: url,
+        apiKey: "test",
+        cloudUrl: "https://api.letta.com",
+      });
       await captureNativeSession(
         source,
         ID,
@@ -243,7 +231,6 @@ describe("native CLI JSONL capture", () => {
     const calls: Array<{
       url: string;
       body: Record<string, unknown>;
-      actingUser: string | undefined;
     }> = [];
     const url = await endpoint(calls);
     rememberNativeSession("claude_code", ID, scope, "https://api.letta.com");
@@ -273,7 +260,6 @@ describe("native CLI JSONL capture", () => {
     const calls: Array<{
       url: string;
       body: Record<string, unknown>;
-      actingUser: string | undefined;
     }> = [];
     let url = await endpoint(calls, true);
     rememberNativeSession("codex", ID, scope, "https://api.letta.com");
@@ -318,7 +304,6 @@ describe("native CLI JSONL capture", () => {
     const calls: Array<{
       url: string;
       body: Record<string, unknown>;
-      actingUser: string | undefined;
     }> = [];
     await endpoint(calls);
     rememberNativeSession("claude_code", ID, scope, "http://localhost:8283");

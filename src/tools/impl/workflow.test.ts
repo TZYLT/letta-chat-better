@@ -283,30 +283,19 @@ describe("Workflow tool (background launch)", () => {
     expect(queuedMessages[0]?.text).toContain('"count": 2');
   });
 
-  test("retains launch-time acting user through delayed completion", async () => {
+  test("retains the parent scope through delayed completion", async () => {
     installSpawner(gatedSpawner());
-    const result = await runWithRuntimeContext(
-      { actingUserId: "cloud-user-a" },
-      () =>
-        workflow({
-          script: SCRIPT,
-          parentScope: {
-            agentId: "agent-parent",
-            conversationId: "conv-parent",
-          },
-        }),
-    );
-    const taskId = taskIdOf(result.toolReturn);
-    expect(backgroundProcesses.get(taskId)?.runtimeScope).toMatchObject({
-      actingUserId: "cloud-user-a",
+    await workflow({
+      script: SCRIPT,
+      parentScope: {
+        agentId: "agent-parent",
+        conversationId: "conv-parent",
+      },
     });
-    runWithRuntimeContext({ actingUserId: "cloud-user-b" }, () =>
-      releaseAgents?.(),
-    );
+    runWithRuntimeContext({}, () => releaseAgents?.());
     await waitFor(() => cleanupCalls === 1);
     expect(queuedMessages).toHaveLength(1);
     expect(queuedMessages[0]).toMatchObject({
-      actingUserId: "cloud-user-a",
       agentId: "agent-parent",
       conversationId: "conv-parent",
     });

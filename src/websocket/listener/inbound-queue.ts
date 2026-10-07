@@ -22,7 +22,6 @@ export function getInboundClientMessageIds(
 export function enqueueInboundUserMessage(
   runtime: ConversationRuntime,
   incoming: IncomingMessage,
-  actingUserId?: string,
 ): boolean {
   const firstUserPayload = incoming.messages.find(
     (payload): payload is MessageCreate & { client_message_id?: string } =>
@@ -44,8 +43,6 @@ export function enqueueInboundUserMessage(
     agentId: incoming.agentId,
     conversationId: incoming.conversationId || "default",
     ...(incoming.noCoalesce ? { noCoalesce: true } : {}),
-    // Forwarded by cloud-api for sender attribution in multi-user sandboxes.
-    actingUserId,
   } as Parameters<typeof runtime.queueRuntime.enqueue>[0]);
   if (!enqueuedItem) {
     return false;

@@ -11,7 +11,6 @@ const NOW = new Date("2026-09-24T05:00:00.000Z");
 const SCOPE = {
   agentId: "agent-test",
   conversationId: "conv-current",
-  actingUserId: "user-test",
 };
 
 function payload(result: Awaited<ReturnType<typeof wake>>) {

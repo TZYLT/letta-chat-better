@@ -1,6 +1,5 @@
 import { getConversationId, getCurrentAgentId } from "@/agent/context";
 import { SYSTEM_REMINDER_OPEN } from "@/constants";
-import { getRuntimeContext } from "@/runtime-context";
 
 /**
  * Task Notification Formatting
@@ -16,7 +15,6 @@ import { getRuntimeContext } from "@/runtime-context";
 export interface NotificationScope {
   agentId: string;
   conversationId: string;
-  actingUserId?: string;
 }
 
 export interface TaskNotification {
@@ -69,7 +67,6 @@ export function resolveNotificationScope(parentScope?: {
     return {
       agentId: parentScope.agentId,
       conversationId: parentScope.conversationId || "default",
-      actingUserId: getRuntimeContext()?.actingUserId,
     };
   }
 
@@ -77,7 +74,6 @@ export function resolveNotificationScope(parentScope?: {
     return {
       agentId: getCurrentAgentId(),
       conversationId: getConversationId() ?? "default",
-      actingUserId: getRuntimeContext()?.actingUserId,
     };
   } catch {
     return undefined;

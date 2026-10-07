@@ -504,13 +504,12 @@ describe("emitProtocolV2Message connection routing", () => {
 });
 
 describe("emitDequeuedUserMessage", () => {
-  test("includes the acting user for live observers", () => {
+  test("echoes a queued user message without a caller identity", () => {
     const { runtime, socket } = createRuntime();
     const incoming = {
       type: "message",
       agentId: "agent-1",
       conversationId: "conv-1",
-      actingUserId: "cloud-user-2",
       messages: [{ role: "user", content: "hello from another person" }],
     } as IncomingMessage;
     const batch = {
@@ -521,7 +520,6 @@ describe("emitDequeuedUserMessage", () => {
           kind: "message",
           source: "user",
           content: "hello from another person",
-          actingUserId: "cloud-user-2",
           agentId: "agent-1",
           conversationId: "conv-1",
           enqueuedAt: Date.now(),
@@ -536,8 +534,9 @@ describe("emitDequeuedUserMessage", () => {
     const message = parseOnlyStreamDelta(socket);
     expect(message.delta).toMatchObject({
       message_type: "user_message",
-      created_by_id: "cloud-user-2",
+      content: "hello from another person",
     });
+    expect(message.delta).not.toHaveProperty("created_by_id");
   });
 
   test("emits cron_prompt-only turns as visible scheduled task user messages", () => {

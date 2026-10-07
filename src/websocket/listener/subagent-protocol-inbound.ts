@@ -25,8 +25,6 @@ export function isLaunchSubagentCommand(
     !isAgentRuntimeScope(c.runtime) ||
     !c.runtime.agent_id.trim() ||
     !c.runtime.conversation_id.trim() ||
-    (c.runtime.acting_user_id !== undefined &&
-      typeof c.runtime.acting_user_id !== "string") ||
     (c.tool_call_id !== undefined &&
       (typeof c.tool_call_id !== "string" || !c.tool_call_id.trim())) ||
     !c.args ||

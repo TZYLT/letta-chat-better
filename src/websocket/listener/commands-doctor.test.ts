@@ -53,7 +53,6 @@ test.each([false, true])(
         runtime: {
           agent_id: "agent-doctor-listener",
           conversation_id: "conv-doctor-listener",
-          acting_user_id: "user-requester",
         },
       },
       socket as unknown as WebSocket,
@@ -66,7 +65,6 @@ test.each([false, true])(
       expect(incoming).toMatchObject({
         agentId: "agent-doctor-listener",
         conversationId: "conv-doctor-listener",
-        actingUserId: "user-requester",
       });
       expect(JSON.stringify(incoming?.messages)).toContain("conv-incident");
       expect(JSON.stringify(incoming?.messages)).toContain("context-doctor");

@@ -6,16 +6,14 @@ import {
 } from "./conversation-enqueue";
 import { ApiRequestError, apiRequest } from "./request";
 
-test("enqueue carries the existing trusted acting-user HTTP header", async () => {
+test("enqueue sends the message without a caller identity header", async () => {
   const request: typeof apiRequest = async <T>(
     _method: string,
     _path: string,
     _body?: Record<string, unknown>,
     options = {},
   ) => {
-    expect(options).toMatchObject({
-      headers: { "X-Letta-Acting-User-Id": "user-parent" },
-    });
+    expect(options).not.toHaveProperty("headers");
     return {
       client_message_id: "cm",
       workflow_id: "wf",
@@ -28,7 +26,6 @@ test("enqueue carries the existing trusted acting-user HTTP header", async () =>
       conversationId: "conv",
       clientMessageId: "cm",
       content: "hello",
-      actingUserId: "user-parent",
     },
     undefined,
     request,
@@ -165,7 +162,6 @@ test.each([400, 404, 409, 503])(
 test("retries only a typed pre-admission shutdown rejection with the same message ID", async () => {
   const requests: Array<{
     body: Record<string, unknown>;
-    actingUser: string | null;
   }> = [];
   const server = Bun.serve({
     hostname: "127.0.0.1",
@@ -173,7 +169,6 @@ test("retries only a typed pre-admission shutdown rejection with the same messag
     async fetch(request) {
       requests.push({
         body: (await request.json()) as Record<string, unknown>,
-        actingUser: request.headers.get("X-Letta-Acting-User-Id"),
       });
       if (requests.length === 1) {
         return Response.json(
@@ -210,7 +205,6 @@ test("retries only a typed pre-admission shutdown rejection with the same messag
         conversationId: "conv-target",
         clientMessageId: "cm-stable",
         content: "hello",
-        actingUserId: "user-parent",
       },
       undefined,
       request,
@@ -218,7 +212,6 @@ test("retries only a typed pre-admission shutdown rejection with the same messag
     expect(requests).toHaveLength(2);
     expect(requests[0]).toEqual(requests[1]);
     expect(requests[0]?.body.client_message_id).toBe("cm-stable");
-    expect(requests[0]?.actingUser).toBe("user-parent");
     expect(receipt).toMatchObject({
       status: "queued",
       client_message_id: "cm-stable",

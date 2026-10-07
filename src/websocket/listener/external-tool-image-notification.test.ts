@@ -66,7 +66,6 @@ test("a slow external image reaches the original listener completion turn", asyn
         runtimeScope: {
           agentId: "agent-image",
           conversationId: "conv-image",
-          actingUserId: "human-image",
         },
       },
     );
@@ -85,7 +84,6 @@ test("a slow external image reaches the original listener completion turn", asyn
     expect(turn).toMatchObject({
       agentId: "agent-image",
       conversationId: "conv-image",
-      actingUserId: "human-image",
     });
     const message = turn.messages[0];
     if (!message || !("content" in message)) {

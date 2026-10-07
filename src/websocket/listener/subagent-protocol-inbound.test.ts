@@ -10,7 +10,6 @@ const command = {
   runtime: {
     agent_id: "agent-parent",
     conversation_id: "conv-parent",
-    acting_user_id: "user-owner",
   },
   args: {
     subagent_type: "custom",
@@ -48,7 +47,6 @@ describe("launch_subagent protocol", () => {
     { args: { ...command.args, client_message_id: null } },
     { runtime: null },
     { runtime: { agent_id: null, conversation_id: "conv-parent" } },
-    { runtime: { ...command.runtime, acting_user_id: 42 } },
     { args: null },
     { args: [] },
     { args: { ...command.args, prompt: "" } },

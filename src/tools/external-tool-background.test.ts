@@ -5,7 +5,6 @@ import { autoBackgroundExternalTool } from "./external-tool-background";
 const scope = {
   agentId: "agent-1",
   conversationId: "conv-1",
-  actingUserId: "user-1",
 };
 const listenerTool = { autoBackground: true };
 
@@ -33,7 +32,6 @@ describe("external tool auto-backgrounding", () => {
       text: string;
       agentId?: string;
       conversationId?: string;
-      actingUserId?: string;
     }> = [];
     const operation = new Promise<{ status: "success"; toolReturn: string }>(
       (resolve) => {
@@ -60,7 +58,6 @@ describe("external tool auto-backgrounding", () => {
     expect(notifications[0]).toMatchObject({
       agentId: "agent-1",
       conversationId: "conv-1",
-      actingUserId: "user-1",
     });
     expect(notifications[0]?.text).toContain("messageId");
     expect(notifications[0]?.text).toContain("123.45");

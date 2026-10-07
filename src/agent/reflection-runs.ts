@@ -3,7 +3,6 @@ import { type Backend, getBackend } from "@/backend";
 export interface DreamCommandScope {
   agentId: string;
   conversationId?: string | null;
-  actingUserId?: string;
 }
 
 /**

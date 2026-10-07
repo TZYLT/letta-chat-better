@@ -42,7 +42,6 @@ export interface ExternalCodingAgentRunOptions {
   model?: string;
   parentAgentId: string;
   parentConversationId?: string;
-  actingUserId?: string;
   resumeSessionId?: string;
   cwd?: string;
   mcpReminder?: string;
@@ -386,7 +385,6 @@ export async function runExternalCodingAgent(
     ? {
         agentId: options.parentAgentId,
         conversationId: options.parentConversationId,
-        actingUserId: options.actingUserId,
       }
     : undefined;
   const source = options.type === "claude-code" ? "claude_code" : "codex";

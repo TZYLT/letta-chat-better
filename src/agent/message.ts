@@ -10,11 +10,9 @@ import type {
   LettaStreamingResponse,
 } from "@letta-ai/letta-client/resources/agents/messages";
 import type { MessageCreateParams as ConversationMessageCreateParams } from "@letta-ai/letta-client/resources/conversations/messages";
-import { ACTING_USER_ID_ENV, ACTING_USER_ID_HEADER } from "@/agent/acting-user";
 import type { SkillSource } from "@/agent/skill-sources";
 import { type Backend, getBackend } from "@/backend";
 import { takePendingDiskSpaceReminder } from "@/reminders/disk-space";
-import { getRuntimeContext } from "@/runtime-context";
 import { trackBoundaryError } from "@/telemetry/error-reporting";
 import {
   type ClientTool,
@@ -96,7 +94,6 @@ export type StreamRequestContext = {
   conversationId: string;
   resolvedConversationId: string;
   agentId: string | null;
-  actingUserId?: string;
   requestStartedAtMs: number;
   otid?: string;
 };
@@ -267,19 +264,6 @@ export type SendMessageStreamOptions = {
    * dropped instead of failing the request.
    */
   imageFailureModesByMessageOtid?: ImageFailureModesByMessageOtid;
-  /**
-   * Cloud user id of the human who pressed "send" (multi-user
-   * sandbox scenario). When set, `sendMessageStream` echoes this on
-   * the outbound HTTP request as the `X-Letta-Acting-User-Id`
-   * header so cloud-api can re-attribute credits + rate limits to
-   * the actual sender — rather than the user whose API key is the
-   * bearer credential (i.e. whoever spawned the sandbox).
-   *
-   * Set by the listener after reading
-   * `runtime.acting_user_id` from cloud's status WS frame; absent
-   * for self-hosted / single-user / pre-channel-split flows.
-   */
-  actingUserId?: string;
 };
 
 export type SendMessageStreamRequestOptions = {
@@ -511,11 +495,6 @@ export async function sendMessageStreamWithBackend(
     }
   }
 
-  const actingUserId =
-    opts.actingUserId ??
-    executionRuntimeContext?.actingUserId ??
-    getRuntimeContext()?.actingUserId ??
-    process.env[ACTING_USER_ID_ENV];
   const extraHeaders: Record<string, string> = {};
   if (previousResponseId) {
     extraHeaders[RESPONSE_STATE_HEADER] = encodeResponseStateHeader({
@@ -534,12 +513,6 @@ export async function sendMessageStreamWithBackend(
     );
   } else if (!canUsePreviousResponseState) {
     responseStateIdsByScope.delete(responseStateScope);
-  }
-  // Echo the cloud user id back to cloud-api so it can re-attribute
-  // credits + rate limits on multi-user sandboxes. See
-  // SendMessageStreamOptions.actingUserId for full context.
-  if (actingUserId) {
-    extraHeaders[ACTING_USER_ID_HEADER] = actingUserId;
   }
 
   const messageSummary = normalizedMessages
@@ -654,7 +627,6 @@ export async function sendMessageStreamWithBackend(
     conversationId,
     resolvedConversationId,
     agentId: opts.agentId ?? null,
-    ...(actingUserId ? { actingUserId } : {}),
     requestStartedAtMs,
     otid: firstOtid,
   });

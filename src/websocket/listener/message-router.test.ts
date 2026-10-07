@@ -382,15 +382,14 @@ describe("listener message router ownership handoff", () => {
     );
   });
 
-  test("preserves the acting user on a directly-owned input and deduplicates retries", async () => {
+  test("deduplicates retries on a directly-owned input", async () => {
     const listener = createRuntime();
     const runtime = getOrCreateScopedRuntime(listener, "agent-1", "conv-1");
     const socket = new MockSocket();
     const sent: unknown[] = [];
-    let receivedActingUserId: string | undefined;
-    const processIncomingMessage = mock(async (incoming: IncomingMessage) => {
-      receivedActingUserId = incoming.actingUserId;
-    });
+    const processIncomingMessage = mock(
+      async (_incoming: IncomingMessage) => {},
+    );
     setActiveRuntime(listener);
     const handleMessage = createListenerMessageHandler({
       runtime: listener,
@@ -422,7 +421,6 @@ describe("listener message router ownership handoff", () => {
           runtime: {
             agent_id: "agent-1",
             conversation_id: "conv-1",
-            acting_user_id: "cloud-user-1",
           },
           payload: {
             kind: "create_message",
@@ -447,7 +445,6 @@ describe("listener message router ownership handoff", () => {
           runtime: {
             agent_id: "agent-1",
             conversation_id: "conv-1",
-            acting_user_id: "cloud-user-1",
           },
           payload: {
             kind: "create_message",
@@ -465,7 +462,6 @@ describe("listener message router ownership handoff", () => {
     await runtime.messageQueue;
 
     expect(processIncomingMessage).toHaveBeenCalledTimes(1);
-    expect(receivedActingUserId).toBe("cloud-user-1");
     expect(sent).toContainEqual(
       expect.objectContaining({
         type: "input_accepted",

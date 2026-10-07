@@ -1,5 +1,4 @@
 import type WebSocket from "ws";
-import { actingUserRequestOptions } from "@/agent/acting-user";
 import {
   type Backend,
   type ConversationMessageListBody,
@@ -366,10 +365,7 @@ export async function handleAgentConversationManagementCommand(
 
   if (parsed.type === "conversation_create") {
     try {
-      const conversation = await backend.createConversation(
-        parsed.body,
-        actingUserRequestOptions(parsed.acting_user_id),
-      );
+      const conversation = await backend.createConversation(parsed.body);
       safeSocketSend(
         socket,
         {
@@ -480,7 +476,6 @@ export async function handleAgentConversationManagementCommand(
           ...(typeof parsed.body?.message_id === "string"
             ? { messageId: parsed.body.message_id }
             : {}),
-          ...(actingUserRequestOptions(parsed.acting_user_id) ?? {}),
         },
       );
       safeSocketSend(

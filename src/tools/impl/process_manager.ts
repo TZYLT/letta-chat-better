@@ -39,7 +39,6 @@ export interface BackgroundProcess {
   cleanupTimer?: TimerHandle;
   runtimeScope?: BackgroundRuntimeScope;
   /** Authenticated Cloud user responsible for launching this process. */
-  actingUserId?: string;
   kind?: "monitor" | "workflow";
   description?: string;
   monitorSource?: "command" | "websocket" | "github_pull_request";
@@ -68,7 +67,6 @@ export interface BackgroundTask {
   cleanupTimer?: TimerHandle;
   runtimeScope?: BackgroundRuntimeScope;
   /** Authenticated Cloud user responsible for launching this task. */
-  actingUserId?: string;
 }
 
 export const backgroundProcesses = new Map<string, BackgroundProcess>();

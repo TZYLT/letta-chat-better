@@ -102,7 +102,6 @@ describe("subagent command context", () => {
     await runWithRuntimeContext(
       {
         agentId: "unrelated",
-        actingUserId: "unrelated",
         toolContextId: "unrelated",
       },
       async () => {
@@ -114,7 +113,6 @@ describe("subagent command context", () => {
               runtime: {
                 agent_id: parent.agentId as string,
                 conversation_id: parent.conversationId,
-                acting_user_id: `user-${i}`,
               },
               args,
             },
@@ -134,13 +132,11 @@ describe("subagent command context", () => {
       expect.objectContaining({
         agentId: "agent-a",
         conversationId: "conv-a",
-        actingUserId: "user-0",
         workingDirectory: cwdA,
       }),
       expect.objectContaining({
         agentId: "agent-b",
         conversationId: "conv-b",
-        actingUserId: "user-1",
         workingDirectory: cwdB,
       }),
     ]);

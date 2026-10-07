@@ -329,7 +329,6 @@ test("getShellEnv prefers runtime-scoped agent, conversation, and cwd", () => {
         agentId: "agent-runtime-scope",
         agentName: "Runtime Scope Agent",
         conversationId: "conv-runtime-scope",
-        actingUserId: "user-runtime-scope",
         environmentDeviceId: "device-runtime-scope",
         workingDirectory: runtimeCwd,
       },
@@ -341,7 +340,6 @@ test("getShellEnv prefers runtime-scoped agent, conversation, and cwd", () => {
     expect(env.AGENT_NAME).toBe("Runtime Scope Agent");
     expect(env.CONVERSATION_ID).toBe("conv-runtime-scope");
     expect(env.LETTA_CONVERSATION_ID).toBe("conv-runtime-scope");
-    expect(env.LETTA_ACTING_USER_ID).toBe("user-runtime-scope");
     expect(env.LETTA_RUNTIME_ENVIRONMENT_DEVICE_ID).toBe(
       "device-runtime-scope",
     );
@@ -380,7 +378,6 @@ test("getShellEnv isolates overlapping runtime scopes", async () => {
       {
         agentId: "agent-a",
         conversationId: "conv-a",
-        actingUserId: "user-a",
         workingDirectory: cwdA,
       },
       async () => {
@@ -393,7 +390,6 @@ test("getShellEnv isolates overlapping runtime scopes", async () => {
       {
         agentId: "agent-b",
         conversationId: "conv-b",
-        actingUserId: "user-b",
         workingDirectory: cwdB,
       },
       async () => {
@@ -406,11 +402,9 @@ test("getShellEnv isolates overlapping runtime scopes", async () => {
 
     expect(envA.AGENT_ID).toBe("agent-a");
     expect(envA.CONVERSATION_ID).toBe("conv-a");
-    expect(envA.LETTA_ACTING_USER_ID).toBe("user-a");
     expect(envA.USER_CWD).toBe(cwdA);
     expect(envB.AGENT_ID).toBe("agent-b");
     expect(envB.CONVERSATION_ID).toBe("conv-b");
-    expect(envB.LETTA_ACTING_USER_ID).toBe("user-b");
     expect(envB.USER_CWD).toBe(cwdB);
   } finally {
     rmSync(cwdA, { recursive: true, force: true });

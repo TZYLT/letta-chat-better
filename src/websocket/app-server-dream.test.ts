@@ -47,7 +47,6 @@ describe.each(runtimes)("/dream over real %s app-server", (runtime) => {
       method: string;
       body: unknown;
       authorization: string | null;
-      actor: string | null;
     }[] = [];
     let cutover = true;
     let configStatus = 200;
@@ -63,7 +62,6 @@ describe.each(runtimes)("/dream over real %s app-server", (runtime) => {
           method: request.method,
           body: request.method === "GET" ? null : await request.json(),
           authorization: request.headers.get("authorization"),
-          actor: request.headers.get("X-Letta-Acting-User-Id"),
         });
         if (request.method === "GET")
           return Response.json({ cutover }, { status: configStatus });
@@ -239,7 +237,6 @@ globalThis.fetch = (input, init) => {
         (request) => request.method === "GET",
       )) {
         expect(request.path).toBe("/v1/agents/agent-fixture/reflection");
-        expect(request.actor).toBe("user-fixture");
         expect(request.authorization).toBe("Bearer fixture-scoped-key");
       }
       for (const request of posts) {
@@ -248,7 +245,6 @@ globalThis.fetch = (input, init) => {
           method: "POST",
           body: { conversation_id: "conv-fixture" },
           authorization: "Bearer fixture-scoped-key",
-          actor: "user-fixture",
         });
       }
     } finally {

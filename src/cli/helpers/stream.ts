@@ -2,7 +2,6 @@ import { APIError } from "@letta-ai/letta-client/core/error";
 import type { Stream } from "@letta-ai/letta-client/core/streaming";
 import type { LettaStreamingResponse } from "@letta-ai/letta-client/resources/agents/messages";
 import type { StopReasonType } from "@letta-ai/letta-client/resources/runs/runs";
-import { actingUserRequestOptions } from "@/agent/acting-user";
 import {
   getStreamRequestContext,
   getStreamRequestStartTime,
@@ -121,7 +120,6 @@ export async function drainStream(
   seenSequenceCursor?: StreamSequenceCursor | null,
   isResumeStream?: boolean,
   skipCancelToolsOnError?: boolean,
-  actingUserId?: string,
 ): Promise<DrainResult> {
   const startTime = performance.now();
   const requestStartTime = getStreamRequestStartTime(stream) ?? startTime;
@@ -150,7 +148,6 @@ export async function drainStream(
   // read so the resume path can replay the lost tail. A server-side status
   // check avoids reconnecting an active run when it is available.
   const requestContext = getStreamRequestContext(stream);
-  const recoveryActingUserId = actingUserId ?? requestContext?.actingUserId;
   const stallReconciler = createStreamStallReconciler({
     getRunId: () => streamProcessor.lastRunId,
     getStopReason: () => streamProcessor.stopReason,
@@ -158,7 +155,6 @@ export async function drainStream(
     retrieveRunStatus: async (runId, signal) =>
       (
         await getBackend().retrieveRun(runId, {
-          ...(actingUserRequestOptions(recoveryActingUserId) ?? {}),
           signal,
         } as RunRetrieveOptions)
       ).status,
@@ -563,9 +559,6 @@ export async function drainStreamWithResume(
   const overallStartTime = performance.now();
   recordTuiPerf("stream_lifecycle:start");
   const streamRequestContext = getStreamRequestContext(stream);
-  const recoveryRequestOptions = actingUserRequestOptions(
-    streamRequestContext?.actingUserId,
-  );
   // Use the message OTID stored in the request context (set from messages[0].otid).
   // This is the real UUID OTID — distinct from the tool execution context ID
   // returned by getStreamToolContextId (which is ctx-{ts}-N, not meaningful for resume).
@@ -672,7 +665,7 @@ export async function drainStreamWithResume(
   ) {
     try {
       replayGenericError = isReplayableRun(
-        await getBackend().retrieveRun(runIdToResume, recoveryRequestOptions),
+        await getBackend().retrieveRun(runIdToResume),
       );
     } catch {
       // If status cannot be checked, keep the streamed stop reason authoritative.
@@ -746,7 +739,6 @@ export async function drainStreamWithResume(
                       batch_size: 1000,
                     } as unknown as ConversationMessageStreamBody,
                     {
-                      ...(recoveryRequestOptions ?? {}),
                       ...(resumeAbortRelay
                         ? { signal: resumeAbortRelay.signal }
                         : {}),
@@ -759,7 +751,6 @@ export async function drainStreamWithResume(
                       batch_size: 1000,
                     } as unknown as RunMessageStreamBody,
                     {
-                      ...(recoveryRequestOptions ?? {}),
                       ...(resumeAbortRelay
                         ? { signal: resumeAbortRelay.signal }
                         : {}),
@@ -782,7 +773,6 @@ export async function drainStreamWithResume(
             runIdToResume ? { runId: runIdToResume, seqId: nextSeqId } : null,
             true,
             true,
-            streamRequestContext?.actingUserId,
           );
           candidate.lastRunId ??= runIdToResume;
           candidate.lastSeqId ??= nextSeqId;
@@ -807,20 +797,14 @@ export async function drainStreamWithResume(
           originalApproval = originalApprovals[0] ?? null;
 
           if (candidate.sawStopReasonChunk && runIdToResume) {
-            const run = await backend.retrieveRun(
-              runIdToResume,
-              recoveryRequestOptions,
-            );
+            const run = await backend.retrieveRun(runIdToResume);
             if (!isReplayableRun(run)) break;
           }
         } catch (resumeError) {
           lastResumeError = resumeError;
           if (runIdToResume) {
             try {
-              const run = await backend.retrieveRun(
-                runIdToResume,
-                recoveryRequestOptions,
-              );
+              const run = await backend.retrieveRun(runIdToResume);
               if (!isReplayableRun(run)) break;
             } catch {
               // A failed status check should not hide a recoverable stream drop.

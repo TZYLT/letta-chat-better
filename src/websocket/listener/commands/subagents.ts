@@ -57,7 +57,6 @@ export async function handleLaunchSubagentCommand(
               : undefined,
             agentId: parent.agentId,
             conversationId: parent.conversationId,
-            actingUserId: command.runtime.acting_user_id,
             workingDirectory: getConversationWorkingDirectory(
               parent.listener,
               parent.agentId,

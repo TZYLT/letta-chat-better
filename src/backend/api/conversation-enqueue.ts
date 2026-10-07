@@ -1,7 +1,6 @@
 import { Stream } from "@letta-ai/letta-client/core/streaming";
 import type { MessageCreate } from "@letta-ai/letta-client/resources/agents/agents";
 import type { Message } from "@letta-ai/letta-client/resources/agents/messages";
-import { actingUserRequestOptions } from "@/agent/acting-user";
 import { getClient } from "./client";
 import { ApiRequestError, apiFetch, apiRequest } from "./request";
 
@@ -73,7 +72,6 @@ export interface EnqueueConversationInput {
   clientMessageId: string;
   content: MessageCreate["content"];
   computer?: string;
-  actingUserId?: string;
 }
 
 /** Cloud owns delivery after this request returns 202. Never retry by executing locally. */
@@ -105,7 +103,7 @@ export async function enqueueConversationMessage(
         "POST",
         `/v1/conversations/${encodeURIComponent(input.conversationId)}/messages/enqueue`,
         body,
-        { signal, ...actingUserRequestOptions(input.actingUserId) },
+        { signal },
       );
       break;
     } catch (error) {

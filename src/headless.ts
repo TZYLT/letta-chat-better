@@ -9,12 +9,10 @@ import type {
   Run,
 } from "@letta-ai/letta-client/resources/agents/messages";
 import type { StopReasonType } from "@letta-ai/letta-client/resources/runs/runs";
-import { resolveActingUserId } from "@/agent/acting-user";
 import { loadPreloadedSkills } from "@/agent/preloaded-skills";
 import { shouldLaunchThroughListener } from "@/agent/subagents/subagent-launcher";
 import { buildHeadlessSenderReminder } from "@/headless-message-sender";
 import { createHeadlessResponseState } from "@/headless-response-state";
-import { createStartupBackend } from "@/headless-startup-backend";
 import { getTerminalTelemetrySurface, telemetry } from "@/telemetry";
 import {
   trackBoundaryError,
@@ -792,7 +790,6 @@ export async function handleHeadlessCommand(
   });
   if (values["client-message-id"] !== undefined && !usesRemoteEnvironment)
     throw new Error("--client-message-id requires a Cloud input destination");
-  const startupBackend = createStartupBackend(backend, usesRemoteEnvironment);
 
   // Resolve agent (same logic as interactive mode)
   let agent: AgentState | null = null;
@@ -1050,10 +1047,10 @@ export async function handleHeadlessCommand(
         "conversations",
         `retrieve(${specifiedConversationId}) [headless conv→agent lookup]`,
       );
-      const conversation = await startupBackend.retrieveConversation(
+      const conversation = await backend.retrieveConversation(
         specifiedConversationId,
       );
-      agent = await startupBackend.retrieveAgent(conversation.agent_id, {
+      agent = await backend.retrieveAgent(conversation.agent_id, {
         include: ["agent.tools", "agent.tags"],
       });
     } catch (error) {
@@ -1070,7 +1067,7 @@ export async function handleHeadlessCommand(
   // Priority 2: Try to use --agent specified ID
   if (!agent && specifiedAgentId) {
     try {
-      agent = await startupBackend.retrieveAgent(specifiedAgentId, {
+      agent = await backend.retrieveAgent(specifiedAgentId, {
         include: ["agent.tools", "agent.tags"],
       });
     } catch (_error) {
@@ -1374,7 +1371,7 @@ export async function handleHeadlessCommand(
           "conversations",
           `retrieve(${specifiedConversationId}) [headless --conv validate]`,
         );
-        await startupBackend.retrieveConversation(specifiedConversationId);
+        await backend.retrieveConversation(specifiedConversationId);
         conversationId = specifiedConversationId;
         conversationOpenReason = "resume";
       } catch {
@@ -1399,7 +1396,7 @@ export async function handleHeadlessCommand(
     if (fromAgentId) {
       (createParams as { hidden?: boolean }).hidden = true;
     }
-    const conversation = await startupBackend.createConversation(createParams);
+    const conversation = await backend.createConversation(createParams);
     conversationId = conversation.id;
     conversationOpenReason = "new";
   } else if (isSubagent) {
@@ -1411,7 +1408,7 @@ export async function handleHeadlessCommand(
     // Default for headless: always create a new conversation to avoid
     // 409 "conversation busy" races (e.g., parent agent calling letta -p).
     // Use --conv default to explicitly target the agent's primary conversation.
-    const conversation = await startupBackend.createConversation({
+    const conversation = await backend.createConversation({
       agent_id: agent.id,
       ...conversationModel,
     });
@@ -1841,7 +1838,6 @@ export async function handleHeadlessCommand(
       scope: {
         agent_id: agent.id,
         conversation_id: conversationId,
-        acting_user_id: resolveActingUserId(),
       },
       content: contentParts,
       backend,
