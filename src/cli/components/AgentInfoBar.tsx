@@ -3,6 +3,7 @@ import Link from "ink-link";
 import { memo, useMemo } from "react";
 import stringWidth from "string-width";
 import type { ModelReasoningEffort } from "@/agent/model";
+import { isCloudServerUrl } from "@/backend/api/server-url";
 import {
   buildChatUrl,
   buildChatWebUrl,
@@ -116,7 +117,7 @@ export const AgentInfoBar = memo(function AgentInfoBar({
     return settingsManager.isAgentPinned(agentId);
   }, [agentId]);
 
-  const isCloudUser = serverUrl?.includes("api.letta.com");
+  const isCloudUser = serverUrl ? isCloudServerUrl(serverUrl) : false;
   const isLocalAgent = agentId ? isLocalAgentId(agentId) : false;
   const showCloudLinks = Boolean(isCloudUser && agentId && !isLocalAgent);
   const adeConversationUrl =

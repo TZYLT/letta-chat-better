@@ -1,5 +1,6 @@
 import { LETTA_CLOUD_API_URL } from "@/auth/oauth";
 import { type Settings, settingsManager } from "@/settings-manager";
+import { isCloudServerUrl } from "./server-url";
 
 function isLocalhostUrl(value: string | undefined): boolean {
   if (!value) return false;
@@ -76,7 +77,7 @@ export function getMemfsGitProxyRewriteConfig(
   }
 
   const memfsBaseUrl = trimBaseUrl(getMemfsServerUrl());
-  if (!memfsBaseUrl.includes("api.letta.com")) {
+  if (!isCloudServerUrl(memfsBaseUrl)) {
     return null;
   }
 

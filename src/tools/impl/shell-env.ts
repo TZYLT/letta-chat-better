@@ -19,7 +19,7 @@ import {
   resolveScopedMemoryDir,
 } from "@/agent/memory-filesystem";
 import { getDesktopAccessToken } from "@/auth/desktop-credentials";
-import { getServerUrl } from "@/backend/api/server-url";
+import { getServerUrl, isCloudServerUrl } from "@/backend/api/server-url";
 import { isLocalBackendMemfsDisabledForProcess } from "@/backend/local/paths";
 import {
   getCurrentWorkingDirectory,
@@ -251,7 +251,7 @@ function getShellMemfsGitProxyRewriteConfig(env: NodeJS.ProcessEnv): {
   }
 
   const memfsBaseUrl = trimBaseUrl(getShellMemfsBaseUrl(env));
-  if (!memfsBaseUrl.includes("api.letta.com")) {
+  if (!isCloudServerUrl(memfsBaseUrl)) {
     return null;
   }
 

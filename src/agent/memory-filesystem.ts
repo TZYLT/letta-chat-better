@@ -539,11 +539,13 @@ export async function applyMemfsFlags(
  * Whether the current server is the Letta API (or local memfs testing is enabled).
  */
 export async function isLettaCloud(): Promise<boolean> {
-  const { getServerUrl } = await import("@/backend/api/server-url");
+  const { getServerUrl, isCloudServerUrl } = await import(
+    "@/backend/api/server-url"
+  );
   const serverUrl = getServerUrl();
 
   return (
-    serverUrl.includes("api.letta.com") ||
+    isCloudServerUrl(serverUrl) ||
     process.env.LETTA_MEMFS_LOCAL === "1" ||
     process.env.LETTA_API_KEY === "local-desktop"
   );
@@ -554,10 +556,11 @@ export async function isLettaCloud(): Promise<boolean> {
  */
 export async function isLettaMemfsServer(): Promise<boolean> {
   const { getMemfsServerUrl } = await import("@/backend/api/memfs-git-proxy");
+  const { isCloudServerUrl } = await import("@/backend/api/server-url");
   const memfsServerUrl = getMemfsServerUrl();
 
   return (
-    memfsServerUrl.includes("api.letta.com") ||
+    isCloudServerUrl(memfsServerUrl) ||
     process.env.LETTA_MEMFS_LOCAL === "1" ||
     process.env.LETTA_API_KEY === "local-desktop"
   );

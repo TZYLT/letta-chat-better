@@ -1,7 +1,6 @@
 import { parseArgs } from "node:util";
-import { LETTA_CLOUD_API_URL } from "@/auth/oauth";
 import { getClient as getDefaultClient } from "@/backend/api/client";
-import { getServerUrl } from "@/backend/api/server-url";
+import { isCloudServerUrl } from "@/backend/api/server-url";
 import {
   listUnifiedMcpServers,
   listUnifiedMcpTools,
@@ -99,11 +98,9 @@ interface ToolCatalog {
  * their synced tools must not surface through tools/schema/search/call.
  */
 function defaultIsHostedLettaCloud(): boolean {
-  try {
-    return getServerUrl() === LETTA_CLOUD_API_URL;
-  } catch {
-    return !process.env.LETTA_BASE_URL;
-  }
+  // One Cloud judgement: `isCloudServerUrl` already tolerates uninitialized
+  // settings (env first, then the Cloud constant), so the old catch is gone.
+  return isCloudServerUrl();
 }
 
 export interface McpSubcommandDependencies {

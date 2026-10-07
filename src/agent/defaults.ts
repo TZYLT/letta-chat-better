@@ -7,7 +7,7 @@
 import type { AgentState } from "@letta-ai/letta-client/resources/agents/agents";
 import { ONBOARDING_ORIGIN_TAG } from "@/agent/agent-tags";
 import type { Backend } from "@/backend";
-import { getServerUrl } from "@/backend/api/server-url";
+import { isCloudServerUrl } from "@/backend/api/server-url";
 import { settingsManager } from "@/settings-manager";
 import { type CreateAgentOptions, createAgent } from "./create";
 import { parseMdxFrontmatter } from "./memory";
@@ -55,7 +55,9 @@ export const DEFAULT_AGENT_CONFIGS: Record<string, CreateAgentOptions> = {
 };
 
 function isSelfHostedServer(): boolean {
-  return !getServerUrl().includes("api.letta.com");
+  // One Cloud judgement for the whole repo lives in `server-url.ts`; it compares
+  // hostnames, so lookalikes such as `notapi.letta.com` no longer count.
+  return !isCloudServerUrl();
 }
 
 export function selectDefaultAgentModel(params: {

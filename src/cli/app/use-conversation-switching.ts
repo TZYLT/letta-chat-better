@@ -30,7 +30,7 @@ import {
   getBackend,
   isLocalBackendEnabled,
 } from "@/backend";
-import { getServerUrl } from "@/backend/api/server-url";
+import { isCloudServerUrl } from "@/backend/api/server-url";
 import type { BtwState } from "@/cli/components/BtwPane";
 import {
   type Buffers,
@@ -726,7 +726,7 @@ export function useConversationSwitching(ctx: ConversationSwitchingContext) {
         let effectiveModel = didSwitchBackend
           ? undefined
           : currentModelId || currentModelHandle || undefined;
-        const isSelfHosted = !getServerUrl().includes("api.letta.com");
+        const isSelfHosted = !isCloudServerUrl();
         if (isSelfHosted) {
           try {
             const availableHandles = (await backend.listModels())

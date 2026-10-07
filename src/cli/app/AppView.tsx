@@ -14,6 +14,7 @@ import type {
 import type { PersonalityId } from "@/agent/personality-presets";
 import type { SessionStats } from "@/agent/stats";
 import { getBackend } from "@/backend";
+import { isCloudServerUrl } from "@/backend/api/server-url";
 import type { CommandHandle } from "@/cli/commands/runner";
 import { AgentSelector } from "@/cli/components/AgentSelector";
 import { ApprovalSwitch } from "@/cli/components/ApprovalSwitch";
@@ -793,14 +794,7 @@ export function AppView(props: AppViewProps) {
                   filterProvider={modelSelectorOptions.filterProvider}
                   forceRefresh={modelSelectorOptions.forceRefresh}
                   billingTier={billingTier ?? undefined}
-                  isSelfHosted={(() => {
-                    const settings = settingsManager.getSettings();
-                    const baseURL =
-                      process.env.LETTA_BASE_URL ||
-                      settings.env?.LETTA_BASE_URL ||
-                      "https://api.letta.com";
-                    return !baseURL.includes("api.letta.com");
-                  })()}
+                  isSelfHosted={!isCloudServerUrl()}
                   localModelCatalog={
                     getBackend().capabilities.localModelCatalog
                   }
