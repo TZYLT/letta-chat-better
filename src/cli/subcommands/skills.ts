@@ -807,7 +807,7 @@ export async function deleteSkillDirectory(params: {
 
 async function loadSkillMemorySyncFn(): Promise<SkillMemorySyncFn> {
   const { syncPendingMemoryCommitsAfterTurn } = await import(
-    "@/agent/memory-git"
+    "@/agent/memory-post-turn-sync"
   );
   return syncPendingMemoryCommitsAfterTurn;
 }

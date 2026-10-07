@@ -89,7 +89,7 @@ async function awaitMemoryPushBounded(
   memoryRoot: string,
 ): Promise<void> {
   const { syncPendingMemoryCommitsAfterTurn } = await import(
-    "@/agent/memory-git"
+    "@/agent/memory-post-turn-sync"
   );
   const syncPromise = syncPendingMemoryCommitsAfterTurn(agentId, {
     memoryDir: memoryRoot,

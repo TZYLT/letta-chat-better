@@ -1054,7 +1054,7 @@ function isRecoverableMemoryPullHistoryError(error: unknown): boolean {
   );
 }
 
-async function prepareMemoryRepoForGitOps(
+export async function prepareMemoryRepoForGitOps(
   memoryDir: string,
   agentId: string,
   token: string,
@@ -1833,62 +1833,10 @@ export async function getMemoryAheadBehind(
   }
 }
 
-export async function syncPendingMemoryCommitsAfterTurn(
-  agentId: string,
-  options: { memoryDir?: string } = {},
-): Promise<MemoryPostTurnSyncResult> {
-  const { getBackend } = await import("@/backend");
-  const backend = getBackend();
-  // Local memory has no Letta remote to push to. This used to be
-  // `localMemfs && !remoteMemfs`; the second half is a constant now.
-  const localOnly = backend.capabilities.localMemfs;
-  const memoryDir = options.memoryDir ?? getScopedMemoryFilesystemRoot(agentId);
-
-  if (!existsSync(join(memoryDir, ".git"))) {
-    return {
-      status: "skipped",
-      summary: "Memory repo is not initialized.",
-      memoryDir,
-      localOnly,
-    };
-  }
-
-  const { stdout: statusOut } = await runGit(memoryDir, [
-    "status",
-    "--porcelain",
-  ]);
-  const conflictSummary = await getMemoryConflictSummary(memoryDir, statusOut);
-  if (conflictSummary) {
-    return {
-      status: "conflict",
-      summary: conflictSummary,
-      memoryDir,
-      localOnly,
-    };
-  }
-
-  if (statusOut.trim().length > 0) {
-    const changedCount = statusOut
-      .split("\n")
-      .filter((line) => line.trim().length > 0).length;
-    return {
-      status: "dirty",
-      summary: `${changedCount} uncommitted memory change(s).`,
-      memoryDir,
-      localOnly,
-    };
-  }
-
-  // Local memory has no Letta remote to push to. This used to be a check for
-  // `remoteMemfs`, which selected a remote push path; that path is gone, so a
-  // clean or dirty local repo stops here.
-  return {
-    status: "skipped",
-    summary: "Local backend MemFS has no Letta remote to push.",
-    memoryDir,
-    localOnly,
-  };
-}
+/**
+ * The post-turn publish lives in `./memory-post-turn-sync` — see that module for
+ * why it is not here (this file is at its size ratchet).
+ */
 
 /**
  * Add the git-memory-enabled tag to an agent.

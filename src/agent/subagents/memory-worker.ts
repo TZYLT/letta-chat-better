@@ -2,11 +2,9 @@ import {
   clearMemoryConflictRepair,
   completeMemoryConflictRepair,
 } from "@/agent/memory-conflict-repair";
-import {
-  type MemoryPostTurnSyncResult,
-  syncPendingMemoryCommitsAfterTurn,
-} from "@/agent/memory-git";
+import type { MemoryPostTurnSyncResult } from "@/agent/memory-git";
 import { withMemoryOperation } from "@/agent/memory-operation";
+import { syncPendingMemoryCommitsAfterTurn } from "@/agent/memory-post-turn-sync";
 import {
   buildReflectionMemoryScope,
   createReflectionMemoryWorktree,

@@ -7,6 +7,7 @@ import {
   mock,
   test,
 } from "bun:test";
+import { __testSetBackend, type Backend } from "@/backend";
 import {
   __testOverrideLoadChannelAccounts,
   __testOverrideSaveChannelAccounts,
@@ -58,6 +59,12 @@ describe("telegram channel registry", () => {
     __testOverrideSaveTargetStore(null);
     createConversation.mockReset();
     createConversation.mockResolvedValue({ id: "conv-telegram" });
+    // The channel route provisioner creates conversations through
+    // `getBackend()`, not the SDK client (see the discord registry suite).
+    __testSetBackend({
+      retrieveAgent: async () => ({}),
+      createConversation,
+    } as unknown as Backend);
   }
 
   function createInboundMessage(
@@ -232,13 +239,12 @@ describe("telegram channel registry", () => {
     await adapter.onMessage?.(createInboundMessage());
 
     expect(createConversation).toHaveBeenCalledTimes(1);
-    expect(createConversation).toHaveBeenCalledWith(
-      {
-        agent_id: "agent-1",
-        summary: "Topic in Void Cafe: hello topic",
-      },
-      undefined,
-    );
+    // The route provisioner calls `getBackend().createConversation(body)`; the
+    // deleted API backend was the one that threaded a second `options` arg.
+    expect(createConversation).toHaveBeenCalledWith({
+      agent_id: "agent-1",
+      summary: "Topic in Void Cafe: hello topic",
+    });
     expect(getRoute("telegram", "-100123", "telegram-bot", "42")).toMatchObject(
       {
         accountId: "telegram-bot",

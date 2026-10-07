@@ -7,6 +7,7 @@ import {
   mock,
   test,
 } from "bun:test";
+import { __testSetBackend, type Backend } from "@/backend";
 import {
   __testOverrideLoadChannelAccounts,
   __testOverrideSaveChannelAccounts,
@@ -196,6 +197,15 @@ describe("discord channel registry", () => {
     DiscordIntegrationClient.threadReplies.length = 0;
     createConversation.mockReset();
     createConversation.mockResolvedValue({ id: "conv-discord" });
+    // The channel route provisioner creates conversations through
+    // `getBackend()`, not the SDK client. Without this stand-in the route falls
+    // through to the local store, which has no `agent-1`, and the send fails
+    // before the behaviour under test. `retrieveAgent` resolves to no model pin,
+    // which is what the old mocked client did (it had no `agents` surface).
+    __testSetBackend({
+      retrieveAgent: async () => ({}),
+      createConversation,
+    } as unknown as Backend);
   }
 
   function createInboundMessage(
@@ -575,13 +585,12 @@ describe("discord channel registry", () => {
     );
 
     expect(createConversation).toHaveBeenCalledTimes(1);
-    expect(createConversation).toHaveBeenCalledWith(
-      {
-        agent_id: "agent-1",
-        summary: "DM with Cameron",
-      },
-      undefined,
-    );
+    // The route provisioner calls `getBackend().createConversation(body)`; the
+    // deleted API backend was the one that threaded a second `options` arg.
+    expect(createConversation).toHaveBeenCalledWith({
+      agent_id: "agent-1",
+      summary: "DM with Cameron",
+    });
     expect(getRoute("discord", "dm-1", "discord-bot")).toMatchObject({
       accountId: "discord-bot",
       chatId: "dm-1",

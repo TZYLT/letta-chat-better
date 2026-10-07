@@ -23,10 +23,9 @@ import {
   pullMemory,
   redactGitAuthInText,
   shouldConfigurePersistentMemfsCredentialHelper,
-  syncPendingMemoryCommitsAfterTurn,
 } from "@/agent/memory-git";
 import { formatGitCredentialHelperPath } from "@/agent/memory-git-windows-credentials";
-import { __testSetBackend, type Backend } from "@/backend";
+import { syncPendingMemoryCommitsAfterTurn } from "@/agent/memory-post-turn-sync";
 import {
   __testOverrideGetClient,
   getMemfsServerUrl,
@@ -42,7 +41,6 @@ const ORIGINAL_LETTA_API_KEY = process.env.LETTA_API_KEY;
 let tempDirs: string[] = [];
 
 afterEach(() => {
-  __testSetBackend(null);
   __testOverrideGetClient(null);
 
   for (const dir of tempDirs) {
@@ -610,7 +608,9 @@ describe("credential helper reset", () => {
     options: { proxy?: boolean } = {},
   ): Promise<void> {
     process.env.LETTA_BASE_URL = "https://api.letta.com";
-    delete process.env.LETTA_MEMFS_BASE_URL;
+    // The memory server is what names the credential-helper key git looks up, so
+    // the scenario has to name it: the local default is a loopback URL.
+    process.env.LETTA_MEMFS_BASE_URL = "https://api.letta.com";
     delete process.env.LETTA_DESKTOP_MODE;
     if (options.proxy) {
       process.env.LETTA_MEMFS_GIT_PROXY_BASE_URL = "http://localhost:51338";
@@ -859,17 +859,20 @@ describe("syncPendingMemoryCommitsAfterTurn", () => {
   });
 
   test("skips remote push for local backend memory repos", async () => {
-    const { repo } = makeSyncedRepo();
+    // A local memory checkout is created by `initializeLocalMemoryRepo`, which
+    // sets no remote at all — that absence, not a backend capability, is what
+    // makes this a local-only repo.
+    const repo = makeGitRepo();
+    git(repo, "config user.name Test");
+    git(repo, "config user.email test@example.com");
     commitFile(repo, "local-only.md", "local");
-    __testSetBackend({
-      capabilities: { localMemfs: true },
-    } as unknown as Backend);
 
     const result = await syncPendingMemoryCommitsAfterTurn("agent-local", {
       memoryDir: repo,
     });
 
     expect(result.status).toBe("skipped");
-    expect(git(repo, "rev-list --count @{u}..HEAD").trim()).toBe("1");
+    expect(result.localOnly).toBe(true);
+    expect(git(repo, "rev-list --count HEAD").trim()).toBe("1");
   });
 });

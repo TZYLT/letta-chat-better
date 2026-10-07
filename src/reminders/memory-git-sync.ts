@@ -6,11 +6,9 @@ import {
   syncPendingAttachedRepositoryCommitsAfterTurn,
 } from "@/agent/attached-repository-git-sync";
 import { getScopedMemoryFilesystemRoot } from "@/agent/memory-filesystem";
-import {
-  type MemoryPostTurnSyncResult,
-  syncPendingMemoryCommitsAfterTurn,
-} from "@/agent/memory-git";
+import type { MemoryPostTurnSyncResult } from "@/agent/memory-git";
 import { claimMemoryOperation } from "@/agent/memory-operation";
+import { syncPendingMemoryCommitsAfterTurn } from "@/agent/memory-post-turn-sync";
 import { isMemoryWorkerSession } from "@/agent/subagents/memory-worker-session";
 import { SYSTEM_REMINDER_CLOSE, SYSTEM_REMINDER_OPEN } from "@/constants";
 import { ensureMemoryRepair } from "@/tools/impl/memory-task-lifecycle";

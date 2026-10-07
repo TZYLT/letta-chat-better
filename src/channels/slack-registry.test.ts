@@ -7,6 +7,7 @@ import {
   mock,
   test,
 } from "bun:test";
+import { __testSetBackend, type Backend } from "@/backend";
 import {
   __testOverrideLoadChannelAccounts,
   __testOverrideSaveChannelAccounts,
@@ -57,6 +58,12 @@ describe("slack channel registry", () => {
     __testOverrideSaveTargetStore(null);
     createConversation.mockReset();
     createConversation.mockResolvedValue({ id: "conv-slack" });
+    // The channel route provisioner creates conversations through
+    // `getBackend()`, not the SDK client (see the discord registry suite).
+    __testSetBackend({
+      retrieveAgent: async () => ({}),
+      createConversation,
+    } as unknown as Backend);
   }
 
   function createInboundMessage(

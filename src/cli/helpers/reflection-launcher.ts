@@ -3,8 +3,8 @@ import {
   isLettaCloud,
 } from "@/agent/memory-filesystem";
 import { detectMemoryFormat } from "@/agent/memory-format";
-import { syncPendingMemoryCommitsAfterTurn } from "@/agent/memory-git";
 import { withMemoryOperation } from "@/agent/memory-operation";
+import { syncPendingMemoryCommitsAfterTurn } from "@/agent/memory-post-turn-sync";
 import {
   buildReflectionIntegrationMemoryScope,
   buildReflectionMemoryScope,
