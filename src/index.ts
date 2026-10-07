@@ -364,17 +364,17 @@ async function resolveConversationAcrossBackends(
   conversationId: string,
   backendLookupOrder: BackendMode[],
 ) {
-  for (const backendMode of backendLookupOrder) {
-    try {
-      const backend = getBackendForMode(backendMode);
-      const conversation = await backend.retrieveConversation(conversationId);
-      return { conversation, backendMode };
-    } catch {
-      // Conversation does not exist or this backend is unavailable; try fallback.
-    }
+  // One backend serves every mode: walking the order only retried it, and the
+  // mode it reported would reach the caller's `configureBackendMode` — the Cloud
+  // settings bucket — for a conversation the local backend had served.
+  const backendMode = backendLookupOrder[0] ?? "local";
+  try {
+    const backend = getBackendForMode(backendMode);
+    const conversation = await backend.retrieveConversation(conversationId);
+    return { conversation, backendMode };
+  } catch {
+    return null;
   }
-
-  return null;
 }
 
 type LocalStartupFallbackSession = {

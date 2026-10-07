@@ -251,10 +251,8 @@ export function AgentSelector({
 
     setDeleteLoading(true);
     try {
-      // Use the correct backend for this agent's mode
-      const backend = isLocal
-        ? getBackendForMode("local")
-        : getBackendForMode("api");
+      // One backend serves every mode; the mode only names the pin namespace.
+      const backend = getBackendForMode(isLocal ? "local" : "api");
       await backend.deleteAgent(agentId);
 
       // Reset state and refresh tabs
