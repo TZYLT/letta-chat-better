@@ -828,10 +828,10 @@ export function handleMemoryProtocolCommand(
 
         const { getBackend } = await import("@/backend");
         const backend = getBackend();
-        const memorySyncMode =
-          backend.capabilities.localMemfs && !backend.capabilities.remoteMemfs
-            ? "local"
-            : undefined;
+        // `localMemfs && !remoteMemfs` was the condition for "this backend
+        // syncs memory through a local checkout". The local in-process backend
+        // is the only backend and it always has local memfs.
+        const memorySyncMode = "local";
 
         // ── Resolve agent identity for the commit author ───────────────
         let agentName = parsed.agent_id;
@@ -1024,10 +1024,10 @@ export function handleMemoryProtocolCommand(
 
         const { getBackend } = await import("@/backend");
         const backend = getBackend();
-        const memorySyncMode =
-          backend.capabilities.localMemfs && !backend.capabilities.remoteMemfs
-            ? "local"
-            : undefined;
+        // `localMemfs && !remoteMemfs` was the condition for "this backend
+        // syncs memory through a local checkout". The local in-process backend
+        // is the only backend and it always has local memfs.
+        const memorySyncMode = "local";
 
         // ── Resolve agent identity for the commit author ───────────────
         let agentName = parsed.agent_id;

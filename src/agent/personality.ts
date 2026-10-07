@@ -10,10 +10,6 @@ import { execFile as execFileCb } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { promisify } from "node:util";
-import {
-  GIT_MEMORY_ENABLED_TAG,
-  LETTA_CODE_ORIGIN_TAG,
-} from "@/agent/agent-tags";
 import { getBackend } from "@/backend";
 import { isCloudServerUrl } from "@/backend/api/server-url";
 import { settingsManager } from "@/settings-manager";
@@ -154,40 +150,15 @@ export async function enableMemfsForCreatedAgent(params: {
   agentId: string;
   agentTags?: string[] | null;
 }): Promise<void> {
-  const { agentId, agentTags } = params;
+  const { agentId } = params;
 
   try {
-    const backend = getBackend();
-    if (!backend.capabilities.remoteMemfs) {
-      if (backend.capabilities.localMemfs) {
-        settingsManager.setMemfsEnabled(agentId, true);
-      }
-      return;
+    // The removed API backend was the only backend that served server-side
+    // memory, and tagging an agent there was how memfs got enabled. The local
+    // in-process backend owns its memory on disk, so enabling is local state.
+    if (getBackend().capabilities.localMemfs) {
+      settingsManager.setMemfsEnabled(agentId, true);
     }
-
-    const { getClient } = await import("@/backend/api/client");
-    const client = await getClient();
-    let currentTags = agentTags;
-    if (!currentTags) {
-      try {
-        const agent = await client.agents.retrieve(agentId, {
-          include: ["agent.tags"],
-        });
-        currentTags = agent.tags ?? [];
-      } catch {
-        currentTags = [];
-      }
-    }
-    const tags = Array.from(new Set([...currentTags, LETTA_CODE_ORIGIN_TAG]));
-    if (
-      !tags.includes(GIT_MEMORY_ENABLED_TAG) ||
-      !currentTags.includes(LETTA_CODE_ORIGIN_TAG)
-    ) {
-      await client.agents.update(agentId, {
-        tags: Array.from(new Set([...tags, GIT_MEMORY_ENABLED_TAG])),
-      });
-    }
-    settingsManager.setMemfsEnabled(agentId, true);
   } catch {
     // Self-hosted or memfs not available - skip silently
   }

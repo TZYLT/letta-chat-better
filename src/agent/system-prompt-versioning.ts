@@ -19,12 +19,17 @@ import {
 const SYSTEM_PROMPT_HASH_PREFIX = "sha256:";
 export const CLOUD_MANAGED_PROMPT_PRESET = "cloud-managed";
 
+/**
+ * Whether the active backend serves a Cloud-managed system prompt.
+ *
+ * This used to be `remoteMemfs && !localMemfs` — the Cloud-only `environment
+ * routing` capability was the third conjunct before it was deleted. No backend
+ * left in the product serves server-side memory, and the local in-process
+ * backend is the only one, so the answer is now a constant. The function stays
+ * so the call site keeps its shape.
+ */
 export function isCloudPromptBackend(): boolean {
-  const capabilities = getBackend().capabilities;
-  // The Cloud-only `environment routing` capability was the third conjunct.
-  // capability that went away with the API backend, and `remoteMemfs` already
-  // says "server-side memory", so it is not replaced.
-  return capabilities.remoteMemfs && !capabilities.localMemfs;
+  return false;
 }
 
 type ManagedPrompt = {
