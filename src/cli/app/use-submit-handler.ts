@@ -1441,10 +1441,7 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
             );
 
             if (!hasEnvApiKey && !hasStoredCloudAuth) {
-              cmd.finish(
-                "Already logged out. Run /login to sign in with Letta.",
-                true,
-              );
+              cmd.finish("No saved Letta credentials to clear.", true);
               return { submitted: true };
             }
 
@@ -1453,13 +1450,9 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
               conversationIdRef.current ?? "default";
             const currentAgentIsLocal = isLocalAgentId(currentAgentId);
 
-            // Revoke refresh token on server if we have one
-            if (currentSettings.refreshToken) {
-              const { revokeToken } = await import("@/auth/oauth");
-              await revokeToken(currentSettings.refreshToken);
-            }
-
-            // Clear all credentials including secrets
+            // Clear all credentials including secrets. The Cloud refresh-token
+            // revoke call that used to run first is gone: the Cloud backend is
+            // no longer reachable, so this only clears local state.
             await settingsManager.logout();
 
             // Logged out while already using a local agent → stay in place.
