@@ -37,7 +37,6 @@ import {
   configureBackendMode,
   getBackend,
   getBackendForMode,
-  isExperimentalLocalBackendEnabled,
 } from "./backend";
 import { getBillingTier } from "./backend/api/metadata";
 import { LOCAL_BACKEND_EXPERIMENTAL_ENV } from "./backend/local/paths";
@@ -1161,31 +1160,21 @@ async function main(): Promise<void> {
         // Load settings
         await settingsManager.loadLocalProjectSettings();
         const backend = getBackend();
-        const startupBackendMode = isExperimentalLocalBackendEnabled()
-          ? "local"
-          : "api";
 
         setStartupHasCloudCredentials(Boolean(settings.refreshToken || apiKey));
-        const startupModelsPromise =
-          startupBackendMode === "local"
-            ? backend.listModels()
-            : Promise.resolve([]);
-        if (startupBackendMode === "local") {
-          // Local model discovery can hit slow/unreachable provider endpoints
-          // (bounded by the discovery timeout). It is only needed for the UI
-          // availability hint, so never block disk-backed agent resume on it.
-          void startupModelsPromise
-            .then((models) => {
-              markMilestone("LOCAL_MODEL_DISCOVERY_DONE");
-              setStartupHasAvailableLocalModels(models.length > 0);
-            })
-            .catch(() => {
-              markMilestone("LOCAL_MODEL_DISCOVERY_DONE");
-              setStartupHasAvailableLocalModels(false);
-            });
-        } else {
-          setStartupHasAvailableLocalModels(true);
-        }
+        // Local model discovery can hit slow/unreachable provider endpoints
+        // (bounded by the discovery timeout). It is only needed for the UI
+        // availability hint, so never block disk-backed agent resume on it.
+        void backend
+          .listModels()
+          .then((models) => {
+            markMilestone("LOCAL_MODEL_DISCOVERY_DONE");
+            setStartupHasAvailableLocalModels(models.length > 0);
+          })
+          .catch(() => {
+            markMilestone("LOCAL_MODEL_DISCOVERY_DONE");
+            setStartupHasAvailableLocalModels(false);
+          });
 
         // Model picker availability is populated opportunistically below. Do
         // not block startup on it; fresh-agent creation can fail naturally or
@@ -1242,15 +1231,12 @@ async function main(): Promise<void> {
           const localAgentId =
             localSession?.agentId ??
             settingsManager.getLocalLastAgentId(process.cwd());
-          const globalSession = settingsManager.getGlobalLastSession();
-          const globalAgentId = globalSession?.agentId;
 
-          // Both LRU getters already filter by the active server key (which
-          // encodes the backend mode), so no extra compatibility check is
-          // needed here.
-          const preferredResumeAgentId =
-            (startupBackendMode === "local" ? localAgentId : globalAgentId) ??
-            null;
+          // The active namespace is always local, so the project-scoped local
+          // session is the resume target. A legacy Cloud global session names an
+          // agent this backend cannot retrieve, which is why the local branch
+          // never consulted it.
+          const preferredResumeAgentId = localAgentId ?? null;
 
           if (preferredResumeAgentId) {
             try {
@@ -1304,12 +1290,10 @@ async function main(): Promise<void> {
           return;
         }
 
-        // Check recent session state for the active backend.
+        // Check recent session state for the active backend. Only the
+        // project-scoped local store names a target: the legacy Cloud global
+        // session is not resumable here.
         const localAgentId = settingsManager.getLocalLastAgentId(process.cwd());
-        const globalAgentId =
-          startupBackendMode === "api"
-            ? settingsManager.getGlobalLastAgentId()
-            : null;
         const localSession = settingsManager.getLocalLastSession(process.cwd());
 
         // Validate the project target before a large pin set can flood the API.
@@ -1333,25 +1317,18 @@ async function main(): Promise<void> {
           }
         }
 
-        const pinnedAgents = await listPinnedAgentsForCurrentUser([
-          startupBackendMode,
-        ]);
+        // Walk both pin namespaces, exactly like the `--name`/`--conversation`
+        // startup lookups above: collapsing this to the active namespace drops
+        // Cloud-shaped pins the user already stored.
+        const pinnedAgents = await listPinnedAgentsForCurrentUser(
+          startupTargetLookupOrder,
+        );
         const pinnedAgentIds = pinnedAgents.map(({ agentId }) => agentId);
         const cachedAgents = new Map(
           pinnedAgents.flatMap(({ agentId, agent }) =>
             agent ? [[agentId, agent] as const] : [],
           ),
         );
-        if (globalAgentId && !cachedAgents.has(globalAgentId)) {
-          try {
-            const globalAgent = await backend.retrieveAgent(globalAgentId, {
-              include: ["agent.tags"],
-            });
-            cachedAgents.set(globalAgentId, globalAgent);
-          } catch {
-            // Continue to pinned agents or fresh-start fallback.
-          }
-        }
 
         // A single existing pin resumes directly; multiple pins open selection.
         const existingPinnedIds = pinnedAgentIds.filter((id) =>
@@ -1362,16 +1339,11 @@ async function main(): Promise<void> {
             ? (existingPinnedIds[0] ?? null)
             : null;
         const pinnedAgentExists = pinnedAgentId !== null;
-        const globalAgentExists = globalAgentId
-          ? cachedAgents.has(globalAgentId)
-          : false;
         markMilestone("STARTUP_LRU_FETCH_DONE");
 
         // Resolve the remaining fallback target.
         const fallbackSession =
-          startupBackendMode === "local" && !globalAgentExists
-            ? await getLocalBackendStartupFallbackSession(backend)
-            : null;
+          await getLocalBackendStartupFallbackSession(backend);
         const { resolveStartupTarget } = await import(
           "@/agent/resolve-startup-agent"
         );
@@ -1383,8 +1355,8 @@ async function main(): Promise<void> {
           localAgentId,
           localConversationId: localSession?.conversationId ?? null,
           localAgentExists: false,
-          globalAgentId,
-          globalAgentExists,
+          globalAgentId: null,
+          globalAgentExists: false,
           fallbackAgentId: fallbackSession?.agentId ?? null,
           fallbackConversationId: fallbackSession?.conversationId ?? null,
           forceNew: false, // forceNew short-circuited above

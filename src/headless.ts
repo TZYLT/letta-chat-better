@@ -115,6 +115,7 @@ import { installLocalBackendModEventHooks } from "./cli/mods/local-backend-mod-e
 import {
   validateConversationDefaultRequiresAgent,
   validatePrimaryStartupFlagConflicts,
+  validateRoutedDestinationFlags,
 } from "./cli/startup-flag-validation";
 import {
   buildEnvironmentLaunchResult,
@@ -788,8 +789,7 @@ export async function handleHeadlessCommand(
     computer: explicitEnvironmentSelector,
     ephemeral: values.ephemeral,
   });
-  if (values["client-message-id"] !== undefined && !usesRemoteEnvironment)
-    throw new Error("--client-message-id requires a Cloud input destination");
+  validateRoutedDestinationFlags(values, usesRemoteEnvironment);
 
   // Resolve agent (same logic as interactive mode)
   let agent: AgentState | null = null;

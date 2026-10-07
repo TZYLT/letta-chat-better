@@ -32,7 +32,3 @@ export function resolveBackendMode(): BackendMode {
 export function setConfiguredBackendMode(_mode: BackendMode): void {
   // The local backend is the only backend.
 }
-
-export function isExperimentalLocalBackendEnabled(): boolean {
-  return true;
-}

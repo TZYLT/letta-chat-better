@@ -316,7 +316,6 @@ export async function prepareListenerTurn(params: {
     externalToolScopeIds: msg.externalToolScopeIds,
     workingDirectory,
     permissionModeState,
-    skillsDirectory: listenerOptions?.skillsDirectory,
     skillSources: runtime.skillSources,
     workspaceSandbox: runtime.workspaceSandbox,
     executionSettings: runtime.executionSettings,
@@ -333,7 +332,6 @@ export async function prepareListenerTurn(params: {
     await buildClientSkillsPayload({
       ...(agentId ? { agentId } : {}),
       workingDirectory,
-      skillsDirectory: listenerOptions?.skillsDirectory,
       skillSources: runtime.skillSources,
     })
   ).availableSkills;
@@ -351,7 +349,6 @@ export async function prepareListenerTurn(params: {
     {
       ...(agentId ? { agentId } : {}),
       workingDirectory,
-      skillsDirectory: listenerOptions?.skillsDirectory,
       skillSources: runtime.skillSources,
     },
   );

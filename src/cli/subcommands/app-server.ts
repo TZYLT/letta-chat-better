@@ -3,35 +3,133 @@ import type { ChannelGatewaySupervisor } from "@/channels/gateway-supervisor";
 import { startAppServer } from "@/websocket/app-server";
 import { parseAppServerWebsocketAuthSettings } from "@/websocket/app-server-auth";
 
-function printAppServerHelp(): void {
-  console.log(
-    `Usage: letta server [--listen [url]]
+/**
+ * The documented App Server options, in display order.
+ *
+ * This table is the single source for `letta server --help`. It is deliberately
+ * separate from the parser's option list (which needs literal types), so
+ * `server.test.ts` re-parses every flag printed here: a help line that names a
+ * flag the parser rejects — the `--debug` drift — fails a test instead of
+ * reaching users.
+ */
+const APP_SERVER_OPTION_HELP: ReadonlyArray<{
+  flag: string;
+  description: string;
+}> = [
+  {
+    flag: "--listen [url]",
+    description:
+      "Accept App Server connections. If URL is omitted, binds to an available loopback port",
+  },
+  {
+    flag: "--channels <list>",
+    description: "Comma-separated channel names to enable (e.g. telegram)",
+  },
+  {
+    flag: "--install-channel-runtimes",
+    description:
+      "Install missing runtime deps for the selected channels before startup",
+  },
+  {
+    flag: "--openai-api",
+    description:
+      "Serve OpenAI-compatible /v1/models, /v1/chat/completions, and /v1/responses routes (each agent is a model)",
+  },
+  {
+    flag: "--ws-auth <mode>",
+    description:
+      "WebSocket auth for non-loopback listeners and Origin-bearing native clients: capability-token or signed-bearer-token",
+  },
+  {
+    flag: "--ws-token-file <path>",
+    description: "Absolute path to the capability-token file",
+  },
+  {
+    flag: "--ws-token-sha256 <hex>",
+    description: "Hex-encoded SHA-256 digest of the capability token",
+  },
+  {
+    flag: "--ws-shared-secret-file <path>",
+    description:
+      "Absolute path to the shared secret file for signed JWT bearer tokens",
+  },
+  {
+    flag: "--ws-issuer <issuer>",
+    description: "Expected issuer for signed JWT bearer tokens",
+  },
+  {
+    flag: "--ws-audience <audience>",
+    description: "Expected audience for signed JWT bearer tokens",
+  },
+  {
+    flag: "--ws-max-clock-skew-seconds <seconds>",
+    description: "Maximum clock skew for signed JWT bearer token validation",
+  },
+];
 
-Run the local App Server using native v2 WebSocket frames.
+const APP_SERVER_EXAMPLES: readonly string[] = [
+  "letta server",
+  "letta server --listen ws://127.0.0.1:4500",
+  "letta server --channels telegram",
+  "letta server --channels telegram --install-channel-runtimes",
+  "letta server --listen ws://0.0.0.0:4500 --ws-auth capability-token --ws-token-file /path/to/token",
+  "letta server --listen ws://0.0.0.0:4500 --ws-auth signed-bearer-token --ws-shared-secret-file /path/to/secret",
+  "letta server --listen ws://127.0.0.1:4500 --openai-api",
+];
 
-Options:
-  --listen [url]  WebSocket listen URL. Defaults to an available loopback port
-  --channels <list>  Comma-separated channel names to enable (e.g. telegram)
-  --install-channel-runtimes  Install missing runtime deps for the selected channels before startup
-  --openai-api  Serve OpenAI-compatible /v1/models, /v1/chat/completions, and /v1/responses routes (each agent is a model)
-  --ws-auth <mode>  WebSocket auth for non-loopback listeners and Origin-bearing native clients. Supported: capability-token, signed-bearer-token
-  --ws-token-file <path>  Absolute path to the capability-token file
-  --ws-token-sha256 <hex>  Hex-encoded SHA-256 digest of the capability token
-  --ws-shared-secret-file <path>  Absolute path to the shared secret file for signed JWT bearer tokens
-  --ws-issuer <issuer>  Expected issuer for signed JWT bearer tokens
-  --ws-audience <audience>  Expected audience for signed JWT bearer tokens
-  --ws-max-clock-skew-seconds <seconds>  Maximum clock skew for signed JWT bearer token validation
-  -h, --help      Show this help message
+/**
+ * The one help text for `letta server` and `letta app-server`.
+ *
+ * `server.ts` prints this rather than keeping a second copy: the copy it used to
+ * keep advertised `--debug`, which the parser below has never accepted.
+ */
+export function printAppServerHelp(): void {
+  const options = APP_SERVER_OPTION_HELP.map(
+    ({ flag, description }) => `  ${flag}  ${description}`,
+  ).join("\n");
+  const examples = APP_SERVER_EXAMPLES.join("\n  ");
+  console.log(`Usage:
+  letta server [App Server options]
+
+Run the local agent server: accept App Server connections and serve messaging
+channels. The server binds a local WebSocket endpoint; it never registers with,
+or dials out to, a remote environment service.
+
+App Server options:
+${options}
+  -h, --help  Show this help message
 
 Examples:
-  letta server
-  letta server --listen ws://127.0.0.1:4500
-  letta server --channels telegram
-  letta server --channels telegram --install-channel-runtimes
-  letta server --listen ws://0.0.0.0:4500 --ws-auth capability-token --ws-token-file /path/to/token
-  letta server --listen ws://0.0.0.0:4500 --ws-auth signed-bearer-token --ws-shared-secret-file /path/to/secret
-  letta server --listen ws://127.0.0.1:4500 --openai-api`,
-  );
+  ${examples}`);
+}
+
+function parseAppServerArgs(argv: string[]): ReturnType<typeof parseArgs> {
+  return parseArgs({
+    args: argv,
+    allowPositionals: false,
+    options: {
+      help: { type: "boolean", short: "h" },
+      listen: { type: "string" },
+      channels: { type: "string" },
+      "install-channel-runtimes": { type: "boolean" },
+      "openai-api": { type: "boolean" },
+      "ws-auth": { type: "string" },
+      "ws-token-file": { type: "string" },
+      "ws-token-sha256": { type: "string" },
+      "ws-shared-secret-file": { type: "string" },
+      "ws-issuer": { type: "string" },
+      "ws-audience": { type: "string" },
+      "ws-max-clock-skew-seconds": { type: "string" },
+    },
+  });
+}
+
+/**
+ * @internal Test seam: run the real parser over `argv`, so `server.test.ts` can
+ * assert that every flag the help prints is one this parser accepts.
+ */
+export function __testParseAppServerArgs(argv: string[]): void {
+  parseAppServerArgs(argv);
 }
 
 async function waitForShutdown(
@@ -87,24 +185,7 @@ async function exitAfterChannelFailure(
 export async function runAppServerSubcommand(argv: string[]): Promise<number> {
   let parsed: ReturnType<typeof parseArgs>;
   try {
-    parsed = parseArgs({
-      args: argv,
-      allowPositionals: false,
-      options: {
-        help: { type: "boolean", short: "h" },
-        listen: { type: "string" },
-        channels: { type: "string" },
-        "install-channel-runtimes": { type: "boolean" },
-        "openai-api": { type: "boolean" },
-        "ws-auth": { type: "string" },
-        "ws-token-file": { type: "string" },
-        "ws-token-sha256": { type: "string" },
-        "ws-shared-secret-file": { type: "string" },
-        "ws-issuer": { type: "string" },
-        "ws-audience": { type: "string" },
-        "ws-max-clock-skew-seconds": { type: "string" },
-      },
-    });
+    parsed = parseAppServerArgs(argv);
   } catch (error) {
     console.error(error instanceof Error ? `Error: ${error.message}` : error);
     return 1;

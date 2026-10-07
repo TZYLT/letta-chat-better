@@ -43,7 +43,6 @@ export interface StartListenerOptions {
   wsUrl: string;
   deviceId: string;
   connectionName: string;
-  skillsDirectory?: string;
   onConnected: (connectionId: string) => void | Promise<void>;
   onDisconnected: () => void;
   onError: (error: Error) => void;

@@ -174,7 +174,7 @@ export async function resolveEnvironmentConnectionId(
 
   if (matches.length === 0) {
     throw new Error(
-      `Computer "${trimmed}" not found. Run \`letta computers list\` to discover available computers.`,
+      `Computer "${trimmed}" not found. No environment connection on the configured server matches that connection id, id, device id, or name.`,
     );
   }
 

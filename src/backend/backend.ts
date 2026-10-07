@@ -15,7 +15,6 @@ import {
 } from "./local/paths";
 
 export type { BackendMode };
-export { isExperimentalLocalBackendEnabled } from "./backend-mode";
 
 export type APIClient = Awaited<ReturnType<typeof getClient>>;
 

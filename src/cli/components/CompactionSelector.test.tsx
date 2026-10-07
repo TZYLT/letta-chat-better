@@ -1,12 +1,8 @@
 /**
- * D-108: `/compaction` offers only what the active backend can run, and shows the
+ * D-108: `/compaction` offers only what the local backend can run, and shows the
  * retention ratio that `sliding_window` depends on.
  */
-import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import {
-  resolveBackendMode,
-  setConfiguredBackendMode,
-} from "@/backend/backend-mode";
+import { describe, expect, test } from "bun:test";
 import {
   buildCompactionModeItems,
   retentionPercentageFor,
@@ -17,61 +13,31 @@ import {
   isCompactionMode,
 } from "@/cli/helpers/compaction-mode";
 
-const ambientMode = resolveBackendMode();
-
-beforeEach(() => {
-  setConfiguredBackendMode(ambientMode);
-});
-
-afterEach(() => {
-  // The override is module-global and shared across test files in a worker.
-  setConfiguredBackendMode(ambientMode);
-});
-
 describe("availableCompactionModes", () => {
-  test("local backend offers sliding_window only", () => {
-    setConfiguredBackendMode("local");
+  test("offers sliding_window only", () => {
     expect(availableCompactionModes()).toEqual(["sliding_window"]);
-  });
-
-  test("hosted backend keeps the full set", () => {
-    setConfiguredBackendMode("api");
-    expect(availableCompactionModes()).toEqual([
-      "all",
-      "sliding_window",
-      "self_compact_all",
-      "self_compact_sliding_window",
-    ]);
   });
 });
 
 describe("assertCompactionModeForBackend", () => {
-  test("accepts sliding_window on the local backend", () => {
-    setConfiguredBackendMode("local");
+  test("accepts sliding_window", () => {
     expect(assertCompactionModeForBackend("sliding_window")).toBe(
       "sliding_window",
     );
   });
 
-  test("rejects a mode the local backend cannot run", () => {
-    setConfiguredBackendMode("local");
+  test("rejects a mode this backend cannot run", () => {
     expect(() => assertCompactionModeForBackend("all")).toThrow(
       'only runs the "sliding_window" compaction mode',
     );
     expect(() => assertCompactionModeForBackend("self_compact_all")).toThrow();
   });
 
-  test("rejects an unknown mode on any backend", () => {
-    setConfiguredBackendMode("api");
+  test("rejects an unknown mode", () => {
     expect(() => assertCompactionModeForBackend("bogus")).toThrow(
       "Unknown compaction mode",
     );
     expect(isCompactionMode("bogus")).toBe(false);
-  });
-
-  test("hosted backend still accepts all", () => {
-    setConfiguredBackendMode("api");
-    expect(assertCompactionModeForBackend("all")).toBe("all");
   });
 });
 
@@ -88,7 +54,7 @@ describe("buildCompactionModeItems", () => {
     expect(items[0]?.isCurrent).toBe(true);
   });
 
-  test("renders every mode for the hosted backend", () => {
+  test("renders every mode it is given", () => {
     const items = buildCompactionModeItems({
       modes: [
         "all",

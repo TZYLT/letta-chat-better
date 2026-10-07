@@ -19,10 +19,9 @@ recipient's conversation list.
 Letta Code keeps agent state in a local store on this machine. Agent IDs start
 with `agent-local-`.
 
-This CLI has no Cloud backend, no `computer` selector, and no teleport: there
-is no Cloud service to deliver messages on your behalf. "Local backend"
-describes where state is stored, and it is unrelated to subagents you launch
-with the Agent tool.
+This CLI has no Cloud backend and no teleport: no Cloud service delivers
+messages on your behalf. "Local backend" describes where state is stored, and it
+is unrelated to subagents you launch with the Agent tool.
 
 ## How a send reaches the recipient
 
@@ -31,8 +30,10 @@ A send runs the recipient's turn in the `letta -p` process you launched.
 With only `--agent`, the CLI chooses the launch settings and normally creates a
 new conversation.
 
-Cloud delivery is not supported by this CLI: `--no-wait` and `--computer` have no
-local equivalent, and the cross-agent send tool was removed with it.
+Cloud delivery is not supported by this CLI: a send always runs in the process
+you launched, and the cross-agent send tool was removed with the Cloud path.
+`--computer`/`--environment` only route to an environment connection the
+configured server reports, which a local-only setup has none of.
 
 The recipient learns who is asking only when the send identifies a sender:
 `--from-agent`, or the caller IDs from the agent's shell environment
@@ -50,9 +51,11 @@ environment does not inherit the current conversation as its return address.
 - **Waiting send** (`letta -p` without `--no-wait`). The process normally returns
   the recipient's final message, in `result` with JSON output. When a sender is
   identified, the recipient is told to put its answer in that message.
-- **Non-waiting send** (`letta -p --no-wait`). Not supported by this CLI:
-  acceptance and delivery were Cloud-side, and a receipt did not guarantee a
-  reply.
+- **Non-waiting send** (`letta -p --no-wait`). Only valid with a routed
+  destination (`--computer`/`--environment` or an inherited listener
+  connection); the CLI rejects it otherwise, because a local send has no
+  acceptance receipt to return. Cloud-side acceptance never guaranteed a reply,
+  so prefer the waiting send.
 
 A waiting send occupies the CLI process, not necessarily you. Run it in the
 background (your shell tool may already do this for long-running commands) and
@@ -131,14 +134,16 @@ Load the `finding-agents` skill for more search options.
 
 ## Choosing a computer
 
-Remote computers and Cloud delivery are not available in this CLI, so there is
-no `computer` selector for sends or the Agent tool.
+There is no Cloud delivery in this CLI, so a `computer` selector only resolves
+against an environment connection that the configured server reports. In a
+local-only setup nothing matches, and the send fails instead of routing.
 
 ## Gotchas
 
-- `--no-wait`, `--computer`, and `messages status` are Cloud-only; this CLI does
-  not support them, and the cross-agent send tool was removed for the same
-  reason.
+- `--no-wait` needs a routed destination and is rejected without one;
+  `--computer`/`--environment` need a matching environment connection on the
+  configured server; `messages status` does not exist. The cross-agent send tool
+  was removed with the Cloud path.
 - Do not rely on `--agent` alone to select message delivery. Add
   `--from-agent $LETTA_AGENT_ID` to deliver and identify yourself;
   pass `--conversation <id>` to reach an existing thread.

@@ -72,10 +72,10 @@ describe("subcommand router", () => {
       const exitCode = await runSubcommand(["server", "--help"]);
 
       expect(exitCode).toBe(0);
-      expect(messages.join("\n")).toContain("letta server [remote options]");
       expect(messages.join("\n")).toContain(
-        "letta server --listen [url] [App Server options]",
+        "letta server [App Server options]",
       );
+      expect(messages.join("\n")).toContain("--listen [url]");
     } finally {
       console.log = originalLog;
     }
@@ -98,10 +98,10 @@ describe("subcommand router", () => {
 
       expect(exitCode).toBe(0);
       expect(messages.join("\n")).toContain(
-        "letta server --listen [url] [App Server options]",
+        "letta server [App Server options]",
       );
       expect(warnings).toEqual([
-        "Warning: `letta app-server` is deprecated. Use `letta server --listen` instead.",
+        "Warning: `letta app-server` is deprecated. Use `letta server` instead.",
       ]);
     } finally {
       console.log = originalLog;

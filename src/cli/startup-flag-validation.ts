@@ -28,6 +28,33 @@ export function validateConversationDefaultRequiresAgent(options: {
   }
 }
 
+/**
+ * Reject the headless flags that only mean something when the message is routed
+ * to another destination.
+ *
+ * Both flags were Cloud-send options; here they are valid only with a routed
+ * environment connection (`--computer`, or an inherited listener connection).
+ * `--no-wait` used to be silently ignored for a local run once its guard was
+ * deleted with the Cloud send path, which made a "non-waiting" send look
+ * accepted while it actually waited.
+ */
+export function validateRoutedDestinationFlags(
+  values: { "client-message-id"?: string; "no-wait"?: boolean },
+  hasRoutedDestination: boolean,
+): void {
+  if (hasRoutedDestination) {
+    return;
+  }
+  if (values["client-message-id"] !== undefined) {
+    throw new Error("--client-message-id requires a routed destination");
+  }
+  if (values["no-wait"] === true) {
+    throw new Error(
+      "--no-wait requires a routed destination: pass --computer, or run inside a listener connection",
+    );
+  }
+}
+
 interface StatelessStartupOptions {
   stateless: boolean | null | undefined;
   isHeadless: boolean;

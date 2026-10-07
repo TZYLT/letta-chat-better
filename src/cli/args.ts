@@ -162,7 +162,7 @@ export const CLI_FLAG_CATALOG = {
     help: {
       argLabel: "<id>",
       description:
-        "Client identity for the initial Cloud input (not a command request_id)",
+        "Client identity for the first message sent to a routed destination (not a command request_id)",
     },
   },
   "no-wait": {
@@ -170,9 +170,9 @@ export const CLI_FLAG_CATALOG = {
     mode: "headless",
     help: {
       description:
-        "Submit a Cloud message and return its acceptance receipt without waiting for an answer",
+        "Return once the destination accepts the message instead of waiting for an answer",
       continuationLines: [
-        "Use --conversation or --agent to select the destination.",
+        "Requires --computer or an inherited listener connection.",
       ],
     },
   },
@@ -209,7 +209,7 @@ export const CLI_FLAG_CATALOG = {
     help: {
       argLabel: "<selector>",
       description:
-        "Route headless message through 'cloud' or a computer by name, device ID, or connection ID",
+        "Route the headless message to an environment connection on the configured server, by name, device ID, or connection ID",
     },
   },
   environment: { parser: { type: "string" }, mode: "headless" },
