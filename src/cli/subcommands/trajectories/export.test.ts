@@ -214,15 +214,6 @@ function seedHermesStore(path: string): void {
   db.close();
 }
 
-// These four cases drive the export through a seeded SQLite store. On Windows
-// the temporary store stays locked for the process lifetime after the read-only
-// handle is closed, so `afterEach` cannot remove the temp root and the case
-// fails on cleanup rather than on its assertions. Ruled out as the cause:
-// driver order (`node:sqlite` vs `bun:sqlite`) and `rm` retries — neither
-// changes it. The failure predates the Cloud cut, and every other export case
-// (JSONL sources, overwrite refusal, transcript files) still runs here.
-const sqliteStoreCleanupUnsupported = process.platform === "win32";
-
 describe("trajectories export", () => {
   let baseDir: string;
   let outDir: string;
@@ -235,62 +226,78 @@ describe("trajectories export", () => {
   });
 
   afterEach(async () => {
-    await rm(baseDir, { recursive: true, force: true });
+    // Housekeeping, not an assertion: on Windows the seeded SQLite store stays
+    // locked for the process lifetime (driver order and `rm` retries were both
+    // ruled out as the cause), so this removal raises EBUSY no matter how long
+    // it retries. Retry, then warn, so the cases still run and a lingering lock
+    // stays visible without reddening them. `scripts/test-home-preload.ts`
+    // tolerates the same situation for its disposable home.
+    try {
+      await rm(baseDir, {
+        recursive: true,
+        force: true,
+        maxRetries: 10,
+        retryDelay: 50,
+      });
+    } catch (error) {
+      console.warn(
+        `[trajectories-export] could not remove ${baseDir}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
   });
 
-  test.skipIf(sqliteStoreCleanupUnsupported)(
-    "exports sessions from every seeded store into one directory",
-    async () => {
-      const manifest = await runTrajectoryExport({
-        outDir,
-        sources: SEEDED_SOURCES,
-        roots,
+  test("exports sessions from every seeded store into one directory", async () => {
+    const manifest = await runTrajectoryExport({
+      outDir,
+      sources: SEEDED_SOURCES,
+      roots,
+    });
+
+    for (const source of SEEDED_SOURCES) {
+      expect(manifest.sources[source]).toEqual({
+        discovered: 1,
+        exported: 1,
       });
+    }
+    expect(manifest.errors).toEqual([]);
+    expect(manifest.sessions).toHaveLength(SEEDED_SOURCES.length);
 
-      for (const source of SEEDED_SOURCES) {
-        expect(manifest.sources[source]).toEqual({
-          discovered: 1,
-          exported: 1,
-        });
-      }
-      expect(manifest.errors).toEqual([]);
-      expect(manifest.sessions).toHaveLength(SEEDED_SOURCES.length);
-
-      for (const session of manifest.sessions) {
-        const records = JSON.parse(
-          await readFile(join(outDir, session.file), "utf-8"),
-        );
-        expect(records[0].role).toBe("meta");
-        expect(records[0].source).toBe(session.source);
-      }
-
-      const claude = manifest.sessions.find((s) => s.source === "claude-code");
-      expect(claude?.project).toBe("/workspace/project");
-      expect(claude?.toolCalls).toBe(1);
-      expect(claude?.firstUserPrompt).toBe("fix the flaky retry test");
-
-      const hermes = manifest.sessions.find((s) => s.source === "hermes");
-      expect(hermes?.id).toBe("hermes-1");
-      expect(hermes?.project).toBe("/workspace/hermes");
-
-      // Uniform chronological filenames: <startedAt>_<sessionId>.json, where
-      // sessionId is the stable hash of the source-scoped native id.
-      for (const session of manifest.sessions) {
-        expect(session.sessionId).toBe(sessionHash(session.source, session.id));
-        expect(session.file).toBe(
-          join(
-            session.source,
-            `${fileTimestamp(session.startedAt)}_${session.sessionId}.json`,
-          ),
-        );
-      }
-
-      const written = JSON.parse(
-        await readFile(join(outDir, "manifest.json"), "utf-8"),
+    for (const session of manifest.sessions) {
+      const records = JSON.parse(
+        await readFile(join(outDir, session.file), "utf-8"),
       );
-      expect(written.sessions).toHaveLength(SEEDED_SOURCES.length);
-    },
-  );
+      expect(records[0].role).toBe("meta");
+      expect(records[0].source).toBe(session.source);
+    }
+
+    const claude = manifest.sessions.find((s) => s.source === "claude-code");
+    expect(claude?.project).toBe("/workspace/project");
+    expect(claude?.toolCalls).toBe(1);
+    expect(claude?.firstUserPrompt).toBe("fix the flaky retry test");
+
+    const hermes = manifest.sessions.find((s) => s.source === "hermes");
+    expect(hermes?.id).toBe("hermes-1");
+    expect(hermes?.project).toBe("/workspace/hermes");
+
+    // Uniform chronological filenames: <startedAt>_<sessionId>.json, where
+    // sessionId is the stable hash of the source-scoped native id.
+    for (const session of manifest.sessions) {
+      expect(session.sessionId).toBe(sessionHash(session.source, session.id));
+      expect(session.file).toBe(
+        join(
+          session.source,
+          `${fileTimestamp(session.startedAt)}_${session.sessionId}.json`,
+        ),
+      );
+    }
+
+    const written = JSON.parse(
+      await readFile(join(outDir, "manifest.json"), "utf-8"),
+    );
+    expect(written.sessions).toHaveLength(SEEDED_SOURCES.length);
+  });
 
   test("letta-code sessions retain their agent and conversation ids", async () => {
     const items = await listAllTrajectories("letta-code", roots["letta-code"]);
@@ -299,36 +306,30 @@ describe("trajectories export", () => {
     ]);
   });
 
-  test.skipIf(sqliteStoreCleanupUnsupported)(
-    "filters sessions by recorded project directory",
-    async () => {
-      const manifest = await runTrajectoryExport({
-        outDir,
-        sources: SEEDED_SOURCES,
-        roots,
-        project: "/workspace/project",
-      });
-      expect(manifest.sessions.map((s) => s.source)).toEqual(["claude-code"]);
-    },
-  );
+  test("filters sessions by recorded project directory", async () => {
+    const manifest = await runTrajectoryExport({
+      outDir,
+      sources: SEEDED_SOURCES,
+      roots,
+      project: "/workspace/project",
+    });
+    expect(manifest.sessions.map((s) => s.source)).toEqual(["claude-code"]);
+  });
 
-  test.skipIf(sqliteStoreCleanupUnsupported)(
-    "records normalization failures without aborting the export",
-    async () => {
-      const brokenDir = join(roots["claude-code"] ?? "", "-broken");
-      await mkdir(brokenDir, { recursive: true });
-      await writeFile(join(brokenDir, "empty.jsonl"), "not json\n");
+  test("records normalization failures without aborting the export", async () => {
+    const brokenDir = join(roots["claude-code"] ?? "", "-broken");
+    await mkdir(brokenDir, { recursive: true });
+    await writeFile(join(brokenDir, "empty.jsonl"), "not json\n");
 
-      const manifest = await runTrajectoryExport({
-        outDir,
-        sources: SEEDED_SOURCES,
-        roots,
-      });
-      expect(manifest.errors).toHaveLength(1);
-      expect(manifest.errors[0]?.source).toBe("claude-code");
-      expect(manifest.sessions).toHaveLength(SEEDED_SOURCES.length);
-    },
-  );
+    const manifest = await runTrajectoryExport({
+      outDir,
+      sources: SEEDED_SOURCES,
+      roots,
+    });
+    expect(manifest.errors).toHaveLength(1);
+    expect(manifest.errors[0]?.source).toBe("claude-code");
+    expect(manifest.sessions).toHaveLength(SEEDED_SOURCES.length);
+  });
 
   test("includes explicit --transcript files for any supported source", async () => {
     const transcriptPath = join(baseDir, "elsewhere.jsonl");
@@ -360,24 +361,21 @@ describe("trajectories export", () => {
     );
   });
 
-  test.skipIf(sqliteStoreCleanupUnsupported)(
-    "replaces the output of a previous export",
-    async () => {
-      await runTrajectoryExport({
-        outDir,
-        sources: SEEDED_SOURCES,
-        roots,
-      });
-      const manifest = await runTrajectoryExport({
-        outDir,
-        sources: ["codex"],
-        roots,
-      });
-      expect(manifest.sessions).toHaveLength(1);
-      const entries = await readdir(outDir);
-      expect(entries.sort()).toEqual(["codex", "manifest.json"]);
-    },
-  );
+  test("replaces the output of a previous export", async () => {
+    await runTrajectoryExport({
+      outDir,
+      sources: SEEDED_SOURCES,
+      roots,
+    });
+    const manifest = await runTrajectoryExport({
+      outDir,
+      sources: ["codex"],
+      roots,
+    });
+    expect(manifest.sessions).toHaveLength(1);
+    const entries = await readdir(outDir);
+    expect(entries.sort()).toEqual(["codex", "manifest.json"]);
+  });
 });
 
 describe("listSupportedSources", () => {

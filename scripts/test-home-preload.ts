@@ -66,8 +66,26 @@ afterEach(() => {
 });
 
 if (!configuredTestHome) {
+  // The disposable home is housekeeping, not an assertion: on Windows a suite
+  // that still holds a handle under it (an open SQLite store, a socket) makes
+  // this removal fail with EBUSY, and the failure was reported as an unnamed
+  // failing test. Retry the removal, then warn instead of throwing so a leaked
+  // handle stays visible without reddening an otherwise passing suite.
   const cleanup = () => {
-    rmSync(testHome, { recursive: true, force: true });
+    try {
+      rmSync(testHome, {
+        recursive: true,
+        force: true,
+        maxRetries: 10,
+        retryDelay: 50,
+      });
+    } catch (error) {
+      console.warn(
+        `[test-home] could not remove ${testHome}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
   };
   afterAll(cleanup);
   process.once("exit", cleanup);
