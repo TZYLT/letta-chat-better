@@ -677,7 +677,7 @@ export async function launchSubagent(
   if (isExternalCodingAgent && isDeployingExisting) {
     return {
       success: false,
-      error: `${requestedType} does not accept agent_id or conversation_id at launch; use SendAgentMessage with the synthetic agent ID for follow-up work`,
+      error: `${requestedType} does not accept agent_id or conversation_id at launch; follow-up work with an existing external worker is not supported by this CLI`,
     };
   }
   if (args.mcp && !isExternalCodingAgent) {

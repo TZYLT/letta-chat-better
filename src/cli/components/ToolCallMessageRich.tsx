@@ -54,10 +54,6 @@ import {
 import { MarkdownDisplay } from "./MarkdownDisplay.js";
 import { MemoryDiffRenderer } from "./MemoryDiffRenderer.js";
 import { PlanRenderer } from "./PlanRenderer.js";
-import {
-  parseSendAgentMessageDisplay,
-  SendAgentMessageRenderer,
-} from "./SendAgentMessageRenderer";
 import { StreamingOutputDisplay } from "./StreamingOutputDisplay";
 import {
   clipStyledSpans,
@@ -149,19 +145,6 @@ export const ToolCallMessage = memo(
           return null;
         }
         // Finished Task tools render here (both success and error)
-      }
-
-      if (rawName === "SendAgentMessage") {
-        const display = parseSendAgentMessageDisplay(line);
-        if (display) {
-          return (
-            <SendAgentMessageRenderer
-              display={display}
-              phase={line.phase}
-              isStreaming={isStreaming}
-            />
-          );
-        }
       }
 
       // Apply tool name remapping

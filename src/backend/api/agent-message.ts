@@ -42,7 +42,7 @@ export function buildAgentSendReminder(
   const instruction = !noWait
     ? "The sender will only see the final message you generate (not tool calls or reasoning). Include your answer in your final response."
     : sender.conversationId
-      ? `To reply to agent ${sender.agentId}${address}, use SendAgentMessage if available. Otherwise run letta -p --agent ${sender.agentId} --conversation ${sender.conversationId} --no-wait "your reply". Ordinary assistant output is not forwarded to the sender.`
+      ? `To reply to agent ${sender.agentId}${address}, run letta -p --agent ${sender.agentId} --conversation ${sender.conversationId} --no-wait "your reply". Ordinary assistant output is not forwarded to the sender.`
       : "Ordinary assistant output is not forwarded to the sender. No return conversation was supplied.";
   return `<system-reminder>\nThis message is from agent ${sender.agentId}${address}.\n${instruction}\n</system-reminder>\n\n`;
 }
@@ -60,7 +60,7 @@ export function validateAddress(
   return value;
 }
 
-/** Shared destination lookup for CLI sends and the SendAgentMessage tool. */
+/** Shared destination lookup for CLI sends. */
 export async function resolveAgentMessageDestination(
   input: {
     agentId?: string;

@@ -200,38 +200,55 @@ describe("prepared conversation launch", () => {
     },
   );
 
-  test.each([undefined, "cloud", "conn-remote"])(
-    "threads initial client_message_id through a prepared child CLI (computer=%s)",
-    async (computer) => {
-      getBackend().capabilities.remoteMemfs = true;
-      for (const client_message_id of ["assignment:1", undefined]) {
-        const result = await runWithRuntimeContext(
-          { workingDirectory: testHome, connectionId: "conn-parent" },
-          () =>
-            launchSubagent({
-              subagent_type: "custom",
-              conversation_id: "conv-child",
-              prompt: "Worker instructions",
-              description: "Worker",
-              computer,
-              client_message_id,
-            }),
-        );
-        if (!result.success) throw new Error(result.error);
-        const args = childInputs.at(-1)?.args ?? [];
-        if (client_message_id) {
-          expect(args[args.indexOf("--client-message-id") + 1]).toBe(
+  test("threads initial client_message_id through a prepared child CLI", async () => {
+    for (const client_message_id of ["assignment:1", undefined]) {
+      const result = await runWithRuntimeContext(
+        { workingDirectory: testHome, connectionId: "conn-parent" },
+        () =>
+          launchSubagent({
+            subagent_type: "custom",
+            conversation_id: "conv-child",
+            prompt: "Worker instructions",
+            description: "Worker",
             client_message_id,
-          );
-        } else {
-          expect(args).not.toContain("--client-message-id");
-        }
-        if (computer) {
-          expect(args[args.indexOf("--computer") + 1]).toBe(computer);
-          expect(args).toContain("--no-wait");
-        }
-        await task_stop({ task_id: result.task_id });
+          }),
+      );
+      if (!result.success) throw new Error(result.error);
+      const args = childInputs.at(-1)?.args ?? [];
+      if (client_message_id) {
+        expect(args[args.indexOf("--client-message-id") + 1]).toBe(
+          client_message_id,
+        );
+      } else {
+        expect(args).not.toContain("--client-message-id");
       }
+      await task_stop({ task_id: result.task_id });
+    }
+  });
+
+  // This used to run for `computer = "cloud"` and `"conn-remote"` as well, and
+  // asserted that the flag was forwarded with `--no-wait`. Routing a subagent to
+  // a connected computer needs a Cloud backend, and no backend has one, so every
+  // named computer is now rejected before launch.
+  test.each(["cloud", "conn-remote"])(
+    "rejects a named computer before launching a prepared child CLI (computer=%s)",
+    async (computer) => {
+      const result = await runWithRuntimeContext(
+        { workingDirectory: testHome, connectionId: "conn-parent" },
+        () =>
+          launchSubagent({
+            subagent_type: "custom",
+            conversation_id: "conv-child",
+            prompt: "Worker instructions",
+            description: "Worker",
+            computer,
+          }),
+      );
+      expect(result.success).toBe(false);
+      if (result.success) throw new Error("expected the launch to be rejected");
+      expect(result.error).toContain(
+        "The computer option requires a Letta Cloud backend.",
+      );
     },
   );
 

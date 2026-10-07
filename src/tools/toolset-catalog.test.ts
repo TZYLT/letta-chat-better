@@ -69,26 +69,15 @@ test("TopicMark ships in every non-empty preset", () => {
   expect(TOOLSET_CATALOG.none.tools).not.toContain("TopicMark");
 });
 
-test("each nonempty preset exposes SendAgentMessage in the model's tool payload", async () => {
-  for (const toolsetPreference of ["letta", "default", "codex"] as const) {
-    const prepared = await prepareToolExecutionContextForResolvedTarget({
-      toolsetPreference,
-    });
-    expect(
-      prepared.preparedToolContext.clientTools.filter(
-        (tool) => tool.name === "SendAgentMessage",
-      ),
-    ).toHaveLength(1);
-  }
-});
-
+// The cross-agent send tool used to be asserted here. It required a Cloud
+// backend to send to another agent, so it was removed rather than shipped as a
+// tool that always returned an error. The presets are covered by the assertions
+// below and in the "exposes Agent" cases.
 test("none and explicit client allowlists still exclude the tool", async () => {
   const none = await prepareToolExecutionContextForResolvedTarget({
     toolsetPreference: "none",
   });
-  expect(none.preparedToolContext.loadedToolNames).not.toContain(
-    "SendAgentMessage",
-  );
+  expect(none.preparedToolContext.loadedToolNames).not.toContain("Task");
   const limited = await prepareToolExecutionContextForResolvedTarget({
     toolsetPreference: "letta",
     clientToolAllowlist: ["Read"],
@@ -102,7 +91,7 @@ test("standard and strict modes ask; explicit denial remains effective", () => {
     permissionMode.setMode(mode);
     expect(
       checkPermission(
-        "SendAgentMessage",
+        "Task",
         args,
         { allow: [], deny: [], ask: [] },
         process.cwd(),
@@ -112,9 +101,9 @@ test("standard and strict modes ask; explicit denial remains effective", () => {
   permissionMode.setMode("standard");
   expect(
     checkPermission(
-      "SendAgentMessage",
+      "Task",
       args,
-      { allow: [], deny: ["SendAgentMessage"], ask: [] },
+      { allow: [], deny: ["Task"], ask: [] },
       process.cwd(),
     ).decision,
   ).toBe("deny");

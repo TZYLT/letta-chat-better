@@ -8,7 +8,7 @@ When using the Agent tool, you must specify a subagent_type parameter to select 
 
 ## When NOT to use the Agent tool:
 
-- To send input to an agent that is already working, use SendAgentMessage when available (Cloud backend). It sends to the existing conversation without waiting for an answer or creating another local task. On the local backend, or for other ways to message an agent, load the messaging-agents skill.
+- To send input to an agent that is already working, load the messaging-agents skill. Sending to an existing conversation without waiting is not supported by this CLI.
 - If you want to read a specific file path, use the Read or Glob tool instead of the Agent tool, to find the match more quickly
 - If you are searching for a specific class definition like "class Foo", use the Glob tool instead, to find the match more quickly
 - If you are searching for code within a specific file or set of 2-3 files, use the Read tool instead of the Agent tool, to find the match more quickly
@@ -32,7 +32,7 @@ When using the Agent tool, you must specify a subagent_type parameter to select 
 
 Use `subagent_type: "claude-code"` or `subagent_type: "codex"` to start a coding worker through the corresponding locally installed CLI. These types use the same background task lifecycle and completion notifications as Letta subagents, but they do not create Letta agents or conversations. Do not combine them with `agent_id` or `conversation_id`. External coding workers always run on the current machine and do not accept the remote-machine option.
 
-The initial receipt includes a synthetic `claude_...` or `codex_...` agent ID as soon as the native session starts. Pass that ID to `SendAgentMessage` to steer active work or start one tracked follow-up turn when idle.
+The initial receipt includes a synthetic `claude_...` or `codex_...` agent ID as soon as the native session starts. That ID addresses the worker for the CLI's own bookkeeping; steering an active external worker from a tool call is not supported by this CLI.
 
 External coding agents can receive the current agent's MCP discovery metadata and use the existing `letta mcp` CLI through their shell:
 
