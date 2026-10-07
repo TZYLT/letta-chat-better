@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { spawn } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -45,44 +46,60 @@ async function runIsolatedClientScript(
     LETTA_CODE_AGENT_ROLE: "subagent",
   };
   delete env.LETTA_API_KEY;
-  delete env.LETTA_BASE_URL;
+  // The credential and refresh failure modes these scripts exercise only exist
+  // for a Letta Cloud base URL: `getClient()` skips the missing-credentials
+  // error and the token refresh entirely when the base URL is the local default.
+  // Name the Cloud URL explicitly instead of leaving it to the fallback.
+  env.LETTA_BASE_URL = "https://api.letta.com";
 
-  return new Promise((resolve, reject) => {
-    const proc = spawn("bun", ["--eval", script], {
-      cwd: projectRoot,
-      env,
+  // The script is written next to the repo instead of passed to `bun --eval`:
+  // on Windows a multi-line argument trips cmd.exe's character rules
+  // ("contains a cmd.exe special character and cannot be safely passed"),
+  // and a real file also resolves the scripts' relative `./src/...` imports
+  // the same way the eval form did.
+  const scriptPath = join(projectRoot, `.client-soft-fail-${randomUUID()}.ts`);
+  await writeFile(scriptPath, script, "utf8");
+
+  try {
+    return await new Promise((resolve, reject) => {
+      const proc = spawn("bun", [scriptPath], {
+        cwd: projectRoot,
+        env,
+      });
+
+      let stdout = "";
+      let stderr = "";
+
+      proc.stdout?.on("data", (data) => {
+        stdout += data.toString();
+      });
+
+      proc.stderr?.on("data", (data) => {
+        stderr += data.toString();
+      });
+
+      const timeout = setTimeout(() => {
+        proc.kill();
+        reject(
+          new Error(
+            `Timed out running isolated getClient test. stdout: ${stdout} stderr: ${stderr}`,
+          ),
+        );
+      }, 15000);
+
+      proc.on("close", (code) => {
+        clearTimeout(timeout);
+        resolve({ stdout, stderr, exitCode: code });
+      });
+
+      proc.on("error", (error) => {
+        clearTimeout(timeout);
+        reject(error);
+      });
     });
-
-    let stdout = "";
-    let stderr = "";
-
-    proc.stdout?.on("data", (data) => {
-      stdout += data.toString();
-    });
-
-    proc.stderr?.on("data", (data) => {
-      stderr += data.toString();
-    });
-
-    const timeout = setTimeout(() => {
-      proc.kill();
-      reject(
-        new Error(
-          `Timed out running isolated getClient test. stdout: ${stdout} stderr: ${stderr}`,
-        ),
-      );
-    }, 15000);
-
-    proc.on("close", (code) => {
-      clearTimeout(timeout);
-      resolve({ stdout, stderr, exitCode: code });
-    });
-
-    proc.on("error", (error) => {
-      clearTimeout(timeout);
-      reject(error);
-    });
-  });
+  } finally {
+    await rm(scriptPath, { force: true });
+  }
 }
 
 function parseIsolatedResult<T>(stdout: string): T {
