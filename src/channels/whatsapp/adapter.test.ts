@@ -548,38 +548,45 @@ describe("WhatsApp adapter canonical identity integration", () => {
     expect(harness.sentJids).toEqual([targetGroup]);
   });
 
-  test("attachment policy passes canonical symlink target and MIME to Baileys", async () => {
-    const store = instrumentStore(createLidStore(join(dir, "lid.json")));
-    const root = join(dir, "allowed");
-    mkdirSync(root);
-    const realFile = join(root, "song.mp3");
-    const linkPath = join(dir, "song-link.bin");
-    writeFileSync(realFile, "audio");
-    symlinkSync(realFile, linkPath);
-    const harness = makeHarness(store, async () => undefined, {
-      attachmentFilter: true,
-      attachmentAllowedRecipients: [phone("15550000014")],
-      attachmentMimeTypes: ["audio/mpeg"],
-      attachmentAllowedPaths: [root],
-    });
-    await harness.adapter.start();
+  // The case is entirely about a file symlink resolving to its canonical target.
+  // Creating one on Windows needs Developer Mode or elevation (no unprivileged
+  // equivalent exists for files — junctions only cover directories), so it skips
+  // there rather than failing on the setup.
+  test.skipIf(process.platform === "win32")(
+    "attachment policy passes canonical symlink target and MIME to Baileys",
+    async () => {
+      const store = instrumentStore(createLidStore(join(dir, "lid.json")));
+      const root = join(dir, "allowed");
+      mkdirSync(root);
+      const realFile = join(root, "song.mp3");
+      const linkPath = join(dir, "song-link.bin");
+      writeFileSync(realFile, "audio");
+      symlinkSync(realFile, linkPath);
+      const harness = makeHarness(store, async () => undefined, {
+        attachmentFilter: true,
+        attachmentAllowedRecipients: [phone("15550000014")],
+        attachmentMimeTypes: ["audio/mpeg"],
+        attachmentAllowedPaths: [root],
+      });
+      await harness.adapter.start();
 
-    await harness.adapter.sendMessage({
-      channel: "whatsapp",
-      accountId: account.accountId,
-      chatId: phone("15550000014"),
-      text: "listen",
-      mediaPath: linkPath,
-      fileName: "fake.bin",
-    });
+      await harness.adapter.sendMessage({
+        channel: "whatsapp",
+        accountId: account.accountId,
+        chatId: phone("15550000014"),
+        text: "listen",
+        mediaPath: linkPath,
+        fileName: "fake.bin",
+      });
 
-    expect(harness.sentPayloads[0]).toEqual({
-      document: { url: realpathSync(realFile) },
-      fileName: "song.mp3",
-      mimetype: "audio/mpeg",
-      caption: "listen",
-    });
-  });
+      expect(harness.sentPayloads[0]).toEqual({
+        document: { url: realpathSync(realFile) },
+        fileName: "song.mp3",
+        mimetype: "audio/mpeg",
+        caption: "listen",
+      });
+    },
+  );
 
   test("handler failure still flushes dirty observations", async () => {
     const store = instrumentStore(createLidStore(join(dir, "lid.json")));

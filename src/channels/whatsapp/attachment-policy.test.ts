@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import {
   mkdir,
   mkdtemp,
@@ -17,6 +18,29 @@ import {
 
 const directTarget = "15551234567@s.whatsapp.net";
 const groupTarget = "120363000000000000@g.us";
+
+/**
+ * Whether this platform lets the tests create a *file* symlink. Windows needs
+ * Developer Mode or elevation and reports "EPERM" otherwise, and no
+ * unprivileged equivalent exists for files (junctions only cover directories).
+ * Probed once so the symlink-specific assertions skip there instead of failing,
+ * while every non-symlink assertion still runs.
+ */
+function canCreateFileSymlinks(): boolean {
+  const dir = mkdtempSync(join(tmpdir(), "whatsapp-symlink-probe-"));
+  try {
+    const target = join(dir, "target");
+    writeFileSync(target, "probe");
+    symlinkSync(target, join(dir, "link"));
+    return true;
+  } catch {
+    return false;
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+const fileSymlinksSupported = canCreateFileSymlinks();
 
 describe("WhatsApp attachment policy", () => {
   let root: string;
@@ -177,18 +201,22 @@ describe("WhatsApp attachment policy", () => {
     const linkMedia = join(root, "link.png");
     await writeFile(siblingMedia, "sibling");
     await writeFile(outsideMedia, "secret");
-    await symlink(outsideMedia, linkMedia);
+    if (fileSymlinksSupported) {
+      await symlink(outsideMedia, linkMedia);
+    }
     try {
       expect(
         decideWhatsAppAttachmentPolicy(
           input({ recursiveDirectories: true }, { mediaPath: siblingMedia }),
         ).allowed,
       ).toBe(false);
-      expect(
-        decideWhatsAppAttachmentPolicy(
-          input({ recursiveDirectories: true }, { mediaPath: linkMedia }),
-        ).allowed,
-      ).toBe(false);
+      if (fileSymlinksSupported) {
+        expect(
+          decideWhatsAppAttachmentPolicy(
+            input({ recursiveDirectories: true }, { mediaPath: linkMedia }),
+          ).allowed,
+        ).toBe(false);
+      }
     } finally {
       await rm(sibling, { recursive: true, force: true });
     }
@@ -196,8 +224,13 @@ describe("WhatsApp attachment policy", () => {
 
   test("rejects nonexistent, non-file, broken-link and missing directories", async () => {
     const brokenLink = join(root, "broken.png");
-    await symlink(join(outside, "missing.png"), brokenLink);
-    const cases = ["/does/not/exist.png", root, brokenLink];
+    if (fileSymlinksSupported) {
+      await symlink(join(outside, "missing.png"), brokenLink);
+    }
+    const cases = ["/does/not/exist.png", root];
+    if (fileSymlinksSupported) {
+      cases.push(brokenLink);
+    }
     for (const candidate of cases) {
       expect(
         decideWhatsAppAttachmentPolicy(input({}, { mediaPath: candidate }))
@@ -217,20 +250,23 @@ describe("WhatsApp attachment policy", () => {
     ).toBe(true);
   });
 
-  test("uses canonical extension and returns canonical media path", async () => {
-    const canonicalMedia = join(root, "secret.txt");
-    const linkMedia = join(root, "alias.png");
-    await writeFile(canonicalMedia, "secret");
-    await symlink(canonicalMedia, linkMedia);
-    const decision = decideWhatsAppAttachmentPolicy(
-      input({ allowedMimeTypes: ["text/plain"] }, { mediaPath: linkMedia }),
-    );
-    const canonicalRealPath = await realpath(canonicalMedia);
-    expect(decision.allowed).toBe(true);
-    if (decision.allowed) {
-      expect(decision.mimeType).toBe("text/plain");
-      expect(await realpath(decision.mediaPath)).toBe(canonicalRealPath);
-    }
-    expect(await readlink(linkMedia)).toBe(canonicalMedia);
-  });
+  test.skipIf(!fileSymlinksSupported)(
+    "uses canonical extension and returns canonical media path",
+    async () => {
+      const canonicalMedia = join(root, "secret.txt");
+      const linkMedia = join(root, "alias.png");
+      await writeFile(canonicalMedia, "secret");
+      await symlink(canonicalMedia, linkMedia);
+      const decision = decideWhatsAppAttachmentPolicy(
+        input({ allowedMimeTypes: ["text/plain"] }, { mediaPath: linkMedia }),
+      );
+      const canonicalRealPath = await realpath(canonicalMedia);
+      expect(decision.allowed).toBe(true);
+      if (decision.allowed) {
+        expect(decision.mimeType).toBe("text/plain");
+        expect(await realpath(decision.mediaPath)).toBe(canonicalRealPath);
+      }
+      expect(await readlink(linkMedia)).toBe(canonicalMedia);
+    },
+  );
 });
