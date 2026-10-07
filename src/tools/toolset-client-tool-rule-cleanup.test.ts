@@ -1,4 +1,5 @@
 import { afterAll, beforeEach, describe, expect, mock, test } from "bun:test";
+import { __testSetBackend, type Backend } from "@/backend";
 
 const retrieveMock = mock((_agentId: string, _opts?: Record<string, unknown>) =>
   Promise.resolve({
@@ -65,9 +66,16 @@ describe("client tool rule cleanup", () => {
     retrieveMock.mockClear();
     updateMock.mockClear();
     mockGetClient.mockClear();
+    // The cleanup reads and writes the persisted rules through `getBackend()`,
+    // not the SDK client, so the client mock above no longer reaches it.
+    __testSetBackend({
+      retrieveAgent: retrieveMock,
+      updateAgent: updateMock,
+    } as unknown as Backend);
   });
 
   afterAll(() => {
+    __testSetBackend(null);
     mock.restore();
   });
 

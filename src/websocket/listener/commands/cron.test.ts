@@ -8,7 +8,6 @@ import type { SafeSocketSend } from "@/websocket/listener/commands/types";
 
 const TEST_DIR = path.join(import.meta.dir, "__cron_command_test_tmp__");
 const originalHome = process.env.LETTA_HOME;
-const originalManagedCloudRuntime = process.env.LETTA_MANAGED_CLOUD_RUNTIME;
 
 let messages: unknown[];
 const socket = {} as WebSocket;
@@ -21,7 +20,6 @@ beforeEach(() => {
   if (existsSync(TEST_DIR)) rmSync(TEST_DIR, { recursive: true });
   mkdirSync(TEST_DIR, { recursive: true });
   process.env.LETTA_HOME = TEST_DIR;
-  delete process.env.LETTA_MANAGED_CLOUD_RUNTIME;
   messages = [];
 });
 
@@ -29,11 +27,6 @@ afterEach(() => {
   if (existsSync(TEST_DIR)) rmSync(TEST_DIR, { recursive: true });
   if (originalHome) process.env.LETTA_HOME = originalHome;
   else delete process.env.LETTA_HOME;
-  if (originalManagedCloudRuntime) {
-    process.env.LETTA_MANAGED_CLOUD_RUNTIME = originalManagedCloudRuntime;
-  } else {
-    delete process.env.LETTA_MANAGED_CLOUD_RUNTIME;
-  }
 });
 
 function addRecurringTask() {
@@ -48,9 +41,7 @@ function addRecurringTask() {
   }).task;
 }
 
-test("managed Cloud sandbox rejects local schedule creation", async () => {
-  process.env.LETTA_MANAGED_CLOUD_RUNTIME = "1";
-
+test("creates a local schedule", async () => {
   await handleCronCommand(
     {
       type: "cron_add",
@@ -58,7 +49,7 @@ test("managed Cloud sandbox rejects local schedule creation", async () => {
       agent_id: "agent-1",
       conversation_id: "conv-1",
       name: "Local task",
-      description: "Must not persist in Cloud",
+      description: "Stored in the local schedule store",
       cron: "*/5 * * * *",
       timezone: "UTC",
       recurring: true,
@@ -68,14 +59,15 @@ test("managed Cloud sandbox rejects local schedule creation", async () => {
     safeSocketSend,
   );
 
-  expect(messages).toEqual([
+  // The handler also emits the updated schedule list, so match the response
+  // rather than requiring it to be the only message.
+  expect(messages).toContainEqual(
     expect.objectContaining({
       type: "cron_add_response",
       request_id: "add-1",
-      success: false,
-      error: expect.stringContaining("managed Cloud sandbox"),
+      success: true,
     }),
-  ]);
+  );
 });
 
 describe("cron pause and resume commands", () => {
