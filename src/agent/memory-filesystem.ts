@@ -196,16 +196,11 @@ export function stampRootMemoryOnCreateBody<T extends MemfsCreateBodyLike>(
 export async function prepareRawCreateAgentBodyForMemfs<
   T extends MemfsCreateBodyLike,
 >(body: T): Promise<T> {
-  const { getBackend } = await import("@/backend");
-  const backend = getBackend();
-  if (backend.capabilities.localMemfs) return body;
-  if (!backend.capabilities.remoteMemfs) return body;
-  if (!(await isLettaCloud())) return body;
-
-  const { GIT_MEMORY_ENABLED_TAG } = await import("@/agent/agent-tags");
-  return stampRootMemoryOnCreateBody(
-    stampMemfsTagOnCreateBody(body, GIT_MEMORY_ENABLED_TAG),
-  );
+  // The stamping below existed for a backend whose server owned memory: the tag
+  // told the server to seed a v2 repository. The local backend stamps in
+  // `LocalBackend.createAgent()` instead, and no other backend can serve memory,
+  // so the body always passes through untouched.
+  return body;
 }
 
 export async function hydrateMemfsSettingFromAgent(
@@ -460,8 +455,6 @@ export interface ApplyMemfsFlagsResult {
   action: "enabled" | "unchanged";
   /** Path to the memory directory (when enabled) */
   memoryDir?: string;
-  /** Summary from git pull (when pullOnExistingRepo is true and repo already existed) */
-  pullSummary?: string;
 }
 
 export interface ApplyMemfsFlagsOptions {
@@ -532,88 +525,14 @@ export async function applyMemfsFlags(
     return { action: "enabled", memoryDir };
   }
 
-  if (!backend.capabilities.remoteMemfs) {
-    if (memfsFlag) {
-      throw new Error("MemFS is not supported by the active backend.");
-    }
-    return { action: "unchanged" };
+  // The remote implementation below this point — memfs-server validation, tag
+  // reconciliation, clone/pull, prompt recompile and secret fetch — only ran for
+  // a backend with `remoteMemfs`. No backend has one now, so it is gone. A
+  // backend without local memfs cannot host memory at all.
+  if (memfsFlag) {
+    throw new Error("MemFS is not supported by the active backend.");
   }
-
-  // LCD proxies normal API traffic through localhost, while MemFS git sync can
-  // still target api.letta.com through getMemfsServerUrl().
-  if (memfsFlag && !(await isLettaMemfsServer())) {
-    throw new Error(await getMemfsSyncUnavailableMessage());
-  }
-
-  const localMemfsEnabled = settingsManager.isMemfsEnabled(agentId);
-  const { GIT_MEMORY_ENABLED_TAG } = await import("@/agent/agent-tags");
-  const shouldAutoEnableFromTag =
-    !memfsFlag &&
-    !localMemfsEnabled &&
-    Boolean(options?.agentTags?.includes(GIT_MEMORY_ENABLED_TAG));
-  const enabling = Boolean(memfsFlag || shouldAutoEnableFromTag);
-
-  // 2. Reconcile system prompt first, then persist local memfs setting.
-  if (enabling) {
-    if (!options?.skipPromptUpdate) {
-      const { updateAgentSystemPromptMemfs } = await import("@/agent/modify");
-      const promptUpdate = await updateAgentSystemPromptMemfs(agentId);
-      if (!promptUpdate.success) {
-        throw new Error(promptUpdate.message);
-      }
-    }
-    settingsManager.setMemfsEnabled(agentId, true);
-  }
-
-  const isEnabled = enabling || localMemfsEnabled;
-
-  // 3. Add git tag + clone/pull repo.
-  let pullSummary: string | undefined;
-  if (isEnabled) {
-    const { addGitMemoryTag, isGitRepo, cloneMemoryRepo, pullMemory } =
-      await import("@/agent/memory-git");
-    await addGitMemoryTag(
-      agentId,
-      options?.agentTags ? { tags: options.agentTags } : undefined,
-    );
-    if (!isGitRepo(agentId)) {
-      await cloneMemoryRepo(agentId);
-    } else if (options?.pullOnExistingRepo) {
-      const result = await pullMemory(agentId);
-      pullSummary = result.summary;
-    } else {
-      installMemoryGitHooks(getScopedMemoryFilesystemRoot(agentId));
-    }
-
-    await seedDefaultPersonalityFiles(
-      agentId,
-      getScopedMemoryFilesystemRoot(agentId),
-      "remote",
-      options?.agentTags,
-    );
-
-    if (enabling && !options?.skipPromptUpdate) {
-      // Compile after enabling the git-memory tag so Cloud can select the
-      // inherited prompt for the agent's new memory mode.
-      const { getClient } = await import("@/backend/api/client");
-      const client = await getClient();
-      await client.agents.recompile(agentId, { update_timestamp: false });
-    }
-
-    // Fetch secrets from the server so they're available for $SECRET_NAME substitution.
-    const { initSecretsFromServer } = await import("@/utils/secrets-store");
-    try {
-      await initSecretsFromServer(agentId);
-    } catch {
-      // Non-fatal: secrets substitution won't work but agent can still run.
-    }
-  }
-
-  return {
-    action: enabling ? "enabled" : "unchanged",
-    memoryDir: isEnabled ? getScopedMemoryFilesystemRoot(agentId) : undefined,
-    pullSummary,
-  };
+  return { action: "unchanged" };
 }
 
 /**
@@ -630,15 +549,6 @@ export async function isLettaCloud(): Promise<boolean> {
   );
 }
 
-function getServerHostLabel(serverUrl: string): string {
-  const trimmed = serverUrl.trim();
-  try {
-    return new URL(trimmed).host || trimmed;
-  } catch {
-    return trimmed.replace(/^https?:\/\//, "").replace(/\/+$/, "") || trimmed;
-  }
-}
-
 /**
  * Whether the MemFS sync endpoint is backed by the Letta API.
  */
@@ -653,18 +563,14 @@ export async function isLettaMemfsServer(): Promise<boolean> {
   );
 }
 
-async function getMemfsSyncUnavailableMessage(): Promise<string> {
-  const { getMemfsServerUrl } = await import("@/backend/api/memfs-git-proxy");
-  const memfsServerUrl = getMemfsServerUrl();
-  return `MemFS sync failed (expected api.letta.com, got ${getServerHostLabel(memfsServerUrl)})`;
-}
-
 /**
- * Enable memfs for a newly created agent if on the Letta API.
- * Non-fatal: logs a warning on failure. Skips on self-hosted.
+ * Enable memfs for a newly created agent when the server owns the memory.
  *
- * Skips the system prompt update since callers are expected to create
- * the agent with the correct memory mode upfront.
+ * This used to run only for a `remoteMemfs` backend on the Letta API, then call
+ * `applyMemfsFlags` to tag the agent and clone its server-side repository. No
+ * backend serves remote memory now, and a local backend enables memfs as part of
+ * creating the agent, so there is nothing left to do. The function stays so the
+ * post-create call sites keep their shape.
  */
 export interface EnableMemfsIfCloudOptions {
   backend?: Backend;
@@ -672,22 +578,8 @@ export interface EnableMemfsIfCloudOptions {
 }
 
 export async function enableMemfsIfCloud(
-  agentId: string,
-  options: EnableMemfsIfCloudOptions = {},
+  _agentId: string,
+  _options: EnableMemfsIfCloudOptions = {},
 ): Promise<void> {
-  const resolvedBackend =
-    options.backend ?? (await import("@/backend")).getBackend();
-  if (!resolvedBackend.capabilities.remoteMemfs) return;
-  if (!(await isLettaCloud())) return;
-
-  try {
-    await applyMemfsFlags(agentId, true, {
-      agentTags: options.agentTags ?? undefined,
-      skipPromptUpdate: true,
-    });
-  } catch (error) {
-    console.warn(
-      `Warning: Could not enable memfs for new agent: ${error instanceof Error ? error.message : String(error)}`,
-    );
-  }
+  // Intentionally empty: see the doc comment above.
 }
