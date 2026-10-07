@@ -92,23 +92,23 @@ export function AgentSelector({
 
   // Compute visible tabs — Local tab only shown when there are local agents
   const visibleTabs = useMemo(
-    () =>
-      getVisibleAgentSelectorTabs({ showNewTab, hasLocalAgents, hasCloudAuth }),
-    [hasCloudAuth, hasLocalAgents, showNewTab],
+    () => getVisibleAgentSelectorTabs({ showNewTab, hasLocalAgents }),
+    [hasLocalAgents, showNewTab],
   );
 
   const [activeTab, setActiveTab] = useState<AgentSelectorTabId>("pinned");
 
-  // If active tab is no longer visible (e.g. local tab hidden after deleting all local agents), fall back
+  // If active tab is no longer visible (e.g. local tab hidden after deleting all
+  // local agents, or a tab the selector never offers), fall back to Pinned.
   useEffect(() => {
     if (activeTab === "local" && !hasLocalAgents) {
-      setActiveTab("cloud");
-    } else if (activeTab === "shared" && hasCloudAuth !== true) {
-      setActiveTab("cloud");
+      setActiveTab("pinned");
+    } else if (activeTab === "shared" || activeTab === "cloud") {
+      setActiveTab("pinned");
     } else if (activeTab === "new" && !showNewTab) {
       setActiveTab("pinned");
     }
-  }, [activeTab, hasCloudAuth, hasLocalAgents, showNewTab]);
+  }, [activeTab, hasLocalAgents, showNewTab]);
 
   // Pinned tab state
   const [pinnedAgents, setPinnedAgents] = useState<PinnedAgentData[]>([]);

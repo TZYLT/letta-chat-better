@@ -42,18 +42,17 @@ describe("agent selector shortcuts", () => {
     ).toBe("api");
   });
 
-  test("includes a shared-with-me tab", () => {
+  // The Cloud and Shared tab *definitions* stay for the label/empty-state
+  // records, but neither is ever offered: both list agents that live in Letta
+  // Cloud, which this build has no backend for.
+  test("defines the shared-with-me tab but never offers it", () => {
     expect(AGENT_SELECTOR_TABS.map((tab) => tab.id)).toContain("shared");
-  });
-
-  test("hides the shared-with-me tab without cloud auth", () => {
-    const visibleTabs = getVisibleAgentSelectorTabs({
-      showNewTab: true,
-      hasLocalAgents: true,
-      hasCloudAuth: false,
-    });
-
-    expect(visibleTabs.map((tab) => tab.id)).not.toContain("shared");
+    expect(
+      getVisibleAgentSelectorTabs({
+        showNewTab: true,
+        hasLocalAgents: true,
+      }).map((tab) => tab.id),
+    ).not.toContain("shared");
   });
 
   test("keeps one spacer after tab descriptions", () => {

@@ -1,10 +1,6 @@
 import type { AgentState } from "@letta-ai/letta-client/resources/agents/agents";
 import { type AgentBackendMode, isLocalAgentId } from "@/agent/agent-id";
-import {
-  getAgentTags,
-  getCurrentCloudFavoriteTag,
-  LOCAL_DESKTOP_FAVORITE_TAG,
-} from "@/agent/favorites";
+import { getAgentTags, LOCAL_DESKTOP_FAVORITE_TAG } from "@/agent/favorites";
 import { getBackendForMode } from "@/backend/backend";
 import { settingsManager } from "@/settings-manager";
 import { listLocalAgentsFromDisk } from "./local-agent-listing";
@@ -15,8 +11,6 @@ export interface PinnedAgentData {
   error: string | null;
   backendMode: AgentBackendMode;
 }
-
-const PINNED_AGENT_LIMIT = 100;
 
 export function getPinnedAgentBackendMode(agentId: string): AgentBackendMode {
   return isLocalAgentId(agentId) ? "local" : "api";
@@ -35,23 +29,11 @@ export function hasCloudCredentials(): boolean {
 }
 
 async function listCloudFavoriteAgents(): Promise<AgentState[]> {
-  if (!hasCloudCredentials()) return [];
-  try {
-    const favoriteTag = await getCurrentCloudFavoriteTag();
-    if (!favoriteTag) return [];
-    const page = await getBackendForMode("api").listAgents({
-      limit: PINNED_AGENT_LIMIT,
-      include: ["agent.blocks"],
-      order: "desc",
-      order_by: "last_run_completion",
-      tags: [favoriteTag],
-    } as never);
-    return Array.isArray(page)
-      ? page
-      : ((page as { items?: AgentState[] }).items ?? []);
-  } catch {
-    return [];
-  }
+  // Cloud favorites were listed from `getBackendForMode("api").listAgents()`,
+  // which is now an alias for the local backend: with migrated credentials it
+  // would list *local* agents under a Cloud label. There is no Cloud backend to
+  // list from, so this stays empty.
+  return [];
 }
 
 async function retrieveLegacyPin(

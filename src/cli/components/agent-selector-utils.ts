@@ -27,7 +27,6 @@ export interface AgentSelectorTabDefinition {
 export interface AgentSelectorVisibleTabsOptions {
   showNewTab: boolean;
   hasLocalAgents: boolean;
-  hasCloudAuth: boolean | null;
 }
 
 export type AgentSelectorTabId =
@@ -67,15 +66,26 @@ export const AGENT_SELECTOR_TAB_EMPTY_STATES: Record<
   new: "",
 };
 
+/**
+ * Tabs the selector may show.
+ *
+ * The Cloud and Shared tabs are never offered: both list agents that live in
+ * Letta Cloud (`getClient().agents.list()` against `api.letta.com`), which this
+ * build has no backend for. Leaving them visible made the selector query the
+ * configured server — by default `http://localhost:8283` — for agents that
+ * cannot be listed, and their login affordance (`onLogin`) has no caller.
+ * Legacy Cloud-shaped *pins* stay reachable through the Pinned tab, which walks
+ * both pin namespaces.
+ */
 export function getVisibleAgentSelectorTabs({
   showNewTab,
   hasLocalAgents,
-  hasCloudAuth,
 }: AgentSelectorVisibleTabsOptions): AgentSelectorTabDefinition[] {
   return AGENT_SELECTOR_TABS.filter(
     (tab) =>
       (showNewTab || tab.id !== "new") &&
-      (tab.id !== "shared" || hasCloudAuth === true) &&
+      tab.id !== "cloud" &&
+      tab.id !== "shared" &&
       (tab.id !== "local" || hasLocalAgents),
   );
 }
