@@ -149,6 +149,11 @@ async function runBidirectionalReflectionScenario(): Promise<BidirectionalReflec
       cliEntry,
       "--backend",
       "local",
+      // A bare local environment has no discoverable catalog and startup fails
+      // closed with "Model catalog is unavailable." (the Cloud fallback that used
+      // to supply one is gone), so the fixture names the deterministic model.
+      "--model",
+      "local/default",
       "--new-agent",
       "--input-format",
       "stream-json",
