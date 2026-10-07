@@ -22,11 +22,6 @@ export type ReflectionThresholdFeedbackOptions = {
   model?: string | null;
 };
 
-async function resolveFeedbackApiKey(): Promise<string | undefined> {
-  const settings = await settingsManager.getSettingsWithSecureTokens();
-  return process.env.LETTA_API_KEY || settings.env?.LETTA_API_KEY;
-}
-
 function getFeedbackDeviceId(): string {
   try {
     const deviceId = settingsManager.getOrCreateDeviceId().trim();
@@ -106,8 +101,7 @@ export function maybeSendReflectionThresholdFeedback(
   const agentId = options.reflectionSubagentId ?? options.parentAgentId;
 
   void (async () => {
-    const apiKey = await resolveFeedbackApiKey();
-    await submitFeedbackMetadata(apiKey, getFeedbackDeviceId(), {
+    await submitFeedbackMetadata(getFeedbackDeviceId(), {
       message:
         `[REFLECTION THRESHOLD ALERT] ${stepCountText} step / ` +
         `${durationMinutesText} minute reflection is ${thresholdDescription} ` +

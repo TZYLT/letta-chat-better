@@ -13,6 +13,7 @@ import { resolvePlaceholders } from "@/cli/helpers/paste-registry";
 import { getDeviceType, getLocalTime } from "@/cli/helpers/session-context";
 import { settingsManager } from "@/settings-manager";
 import { telemetry } from "@/telemetry";
+import { localFeedbackLogPath } from "@/telemetry/local-feedback-log";
 import { debugLogFile } from "@/utils/debug";
 import { getVersion } from "@/version";
 import type { ActiveOverlay, CommandStarter } from "./types";
@@ -60,77 +61,71 @@ export function useFeedbackHandler(ctx: FeedbackHandlerContext) {
           const resolvedMessage = resolvePlaceholders(message);
 
           cmd.update({
-            output: "Sending feedback...",
+            output: "Saving feedback...",
             phase: "running",
           });
 
           const settings = settingsManager.getSettings();
-          const apiKey =
-            process.env.LETTA_API_KEY || settings.env?.LETTA_API_KEY;
 
-          // Only send anonymized, safe settings for debugging
+          // Only record anonymized, safe settings for debugging
           const {
             env: _env,
             refreshToken: _refreshToken,
             ...safeSettings
           } = settings;
 
-          await submitFeedbackMetadata(
-            apiKey,
-            settingsManager.getOrCreateDeviceId(),
-            {
-              message: resolvedMessage,
-              feature: "letta-code",
-              submission_source: "slash_command",
-              client_type: getFeedbackClientType(),
-              agent_id: agentId,
-              session_id: telemetry.getSessionId(),
-              run_id: lastRunIdRef.current ?? undefined,
-              version: getVersion(),
-              platform: process.platform,
-              settings: JSON.stringify(safeSettings),
-              // System info
-              local_time: getLocalTime(),
-              device_type: getDeviceType(),
-              cwd: process.cwd(),
-              // Session stats
-              ...(() => {
-                const stats = sessionStatsRef.current?.getSnapshot();
-                if (!stats) return {};
-                return {
-                  total_api_ms: stats.totalApiMs,
-                  total_wall_ms: stats.totalWallMs,
-                  step_count: stats.usage.stepCount,
-                  prompt_tokens: stats.usage.promptTokens,
-                  completion_tokens: stats.usage.completionTokens,
-                  total_tokens: stats.usage.totalTokens,
-                  cached_input_tokens: stats.usage.cachedInputTokens,
-                  cache_write_tokens: stats.usage.cacheWriteTokens,
-                  reasoning_tokens: stats.usage.reasoningTokens,
-                  context_tokens: stats.usage.contextTokens,
-                };
-              })(),
-              // Agent info
-              agent_name: agentName ?? undefined,
-              agent_description: agentDescription ?? undefined,
-              model: currentModelId ?? undefined,
-              // Account info
-              billing_tier: billingTier ?? undefined,
-              server_version: telemetry.getServerVersion() ?? undefined,
-              // Recent chunk log for diagnostics
-              recent_chunks: chunkLog.getEntries(),
-              // Debug log tail for diagnostics
-              debug_log_tail: debugLogFile.getTail(),
-            },
-          );
+          await submitFeedbackMetadata(settingsManager.getOrCreateDeviceId(), {
+            message: resolvedMessage,
+            feature: "letta-code",
+            submission_source: "slash_command",
+            client_type: getFeedbackClientType(),
+            agent_id: agentId,
+            session_id: telemetry.getSessionId(),
+            run_id: lastRunIdRef.current ?? undefined,
+            version: getVersion(),
+            platform: process.platform,
+            settings: JSON.stringify(safeSettings),
+            // System info
+            local_time: getLocalTime(),
+            device_type: getDeviceType(),
+            cwd: process.cwd(),
+            // Session stats
+            ...(() => {
+              const stats = sessionStatsRef.current?.getSnapshot();
+              if (!stats) return {};
+              return {
+                total_api_ms: stats.totalApiMs,
+                total_wall_ms: stats.totalWallMs,
+                step_count: stats.usage.stepCount,
+                prompt_tokens: stats.usage.promptTokens,
+                completion_tokens: stats.usage.completionTokens,
+                total_tokens: stats.usage.totalTokens,
+                cached_input_tokens: stats.usage.cachedInputTokens,
+                cache_write_tokens: stats.usage.cacheWriteTokens,
+                reasoning_tokens: stats.usage.reasoningTokens,
+                context_tokens: stats.usage.contextTokens,
+              };
+            })(),
+            // Agent info
+            agent_name: agentName ?? undefined,
+            agent_description: agentDescription ?? undefined,
+            model: currentModelId ?? undefined,
+            // Account info
+            billing_tier: billingTier ?? undefined,
+            server_version: telemetry.getServerVersion() ?? undefined,
+            // Recent chunk log for diagnostics
+            recent_chunks: chunkLog.getEntries(),
+            // Debug log tail for diagnostics
+            debug_log_tail: debugLogFile.getTail(),
+          });
 
           cmd.finish(
-            "Feedback submitted! To chat with the Letta dev team live, join our Discord (https://discord.gg/letta).",
+            `Feedback saved to ${localFeedbackLogPath()}. It is not sent anywhere: this build has no Cloud backend, so attach the file to an issue if you want it seen.`,
             true,
           );
         } catch (error) {
           const errorDetails = formatErrorDetails(error, agentId);
-          cmd.fail(`Failed to send feedback: ${errorDetails}`);
+          cmd.fail(`Failed to save feedback: ${errorDetails}`);
         }
       });
     },

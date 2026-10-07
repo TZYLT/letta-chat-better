@@ -6,27 +6,13 @@
  * error survives is this file. Diagnostics stay available with zero network
  * egress.
  *
- * Disk usage is bounded the same way the remote session log bounds it: the
- * active file rotates into a numbered archive once it passes
- * `MAX_BOUNDARY_LOG_BYTES`, and the oldest archive beyond
- * `MAX_BOUNDARY_LOG_FILES` is deleted. Without the size cap, a long-running
- * session that keeps hitting one boundary error would grow a single file until
- * the disk fills.
- *
- * Every write is best-effort by design: callers sit on error paths that must
- * not throw, and a diagnostic must never mask the failure it reports.
+ * The size-bounded write itself lives in `./jsonl-log`, shared with the local
+ * feedback sink; see that module for the rotation contract.
  */
 
-import {
-  appendFileSync,
-  existsSync,
-  mkdirSync,
-  renameSync,
-  statSync,
-  unlinkSync,
-} from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { createJsonlLog } from "./jsonl-log";
 
 const BOUNDARY_LOG_DIR = join(homedir(), ".letta", "logs");
 const BOUNDARY_LOG_BASENAME = "boundary-errors";
@@ -35,6 +21,13 @@ const BOUNDARY_LOG_BASENAME = "boundary-errors";
 export const MAX_BOUNDARY_LOG_BYTES = 10 * 1024 * 1024;
 /** Retained files, active file included: worst case 10 files x 10 MB. */
 export const MAX_BOUNDARY_LOG_FILES = 10;
+
+const boundaryLog = createJsonlLog({
+  basename: BOUNDARY_LOG_BASENAME,
+  defaultDir: BOUNDARY_LOG_DIR,
+  maxBytes: MAX_BOUNDARY_LOG_BYTES,
+  maxFiles: MAX_BOUNDARY_LOG_FILES,
+});
 
 export interface BoundaryErrorEntry {
   errorType: string;
@@ -67,19 +60,11 @@ export interface BoundaryErrorLogOptions {
   maxFiles?: number;
 }
 
-function activePath(dir: string): string {
-  return join(dir, `${BOUNDARY_LOG_BASENAME}.jsonl`);
-}
-
-function archivePath(dir: string, index: number): string {
-  return join(dir, `${BOUNDARY_LOG_BASENAME}.${index}.jsonl`);
-}
-
 /** Absolute path of the file this module appends to. */
 export function boundaryErrorLogPath(
   options: BoundaryErrorLogOptions = {},
 ): string {
-  return activePath(options.dir ?? BOUNDARY_LOG_DIR);
+  return boundaryLog.path(options);
 }
 
 /**
@@ -89,54 +74,5 @@ export function appendBoundaryError(
   entry: BoundaryErrorEntry,
   options: BoundaryErrorLogOptions = {},
 ): void {
-  const line = `${JSON.stringify({ ts: new Date().toISOString(), ...entry })}\n`;
-  try {
-    const dir = options.dir ?? BOUNDARY_LOG_DIR;
-    ensureDir(dir);
-    rotateIfNeeded(
-      dir,
-      options.maxBytes ?? MAX_BOUNDARY_LOG_BYTES,
-      options.maxFiles ?? MAX_BOUNDARY_LOG_FILES,
-    );
-    appendFileSync(activePath(dir), line, { encoding: "utf8" });
-  } catch {
-    // Best-effort: never surface a logging failure to the caller.
-  }
-}
-
-function rotateIfNeeded(dir: string, maxBytes: number, maxFiles: number): void {
-  const active = activePath(dir);
-  let size: number;
-  try {
-    size = statSync(active).size;
-  } catch {
-    return; // Nothing written yet.
-  }
-  if (size < maxBytes) {
-    return;
-  }
-
-  if (maxFiles < 2) {
-    unlinkSync(active);
-    return;
-  }
-
-  // Shift archives up, dropping the oldest, then start a fresh active file.
-  const oldest = archivePath(dir, maxFiles - 1);
-  if (existsSync(oldest)) {
-    unlinkSync(oldest);
-  }
-  for (let index = maxFiles - 2; index >= 1; index -= 1) {
-    const from = archivePath(dir, index);
-    if (existsSync(from)) {
-      renameSync(from, archivePath(dir, index + 1));
-    }
-  }
-  renameSync(active, archivePath(dir, 1));
-}
-
-function ensureDir(dir: string): void {
-  if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true });
-  }
+  boundaryLog.append({ ts: new Date().toISOString(), ...entry }, options);
 }

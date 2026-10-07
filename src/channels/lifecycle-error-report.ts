@@ -83,10 +83,7 @@ export async function submitChannelLifecycleErrorReport(
     return;
   }
 
-  const settings = settingsManager.getSettings();
-  const apiKey = process.env.LETTA_API_KEY || settings.env?.LETTA_API_KEY;
   await submitFeedbackMetadata(
-    apiKey,
     settingsManager.getOrCreateDeviceId(),
     buildChannelLifecycleErrorReportPayload(report),
   );

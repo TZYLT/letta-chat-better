@@ -1,6 +1,5 @@
-import { LETTA_CLOUD_API_URL } from "@/auth/oauth";
-import { isLoopbackUrl } from "@/utils/url";
-import { apiRequest, getApiRequestConfig } from "./request";
+import { appendLocalFeedback } from "@/telemetry/local-feedback-log";
+import { apiRequest } from "./request";
 
 export interface BalanceMetadata {
   total_balance: number;
@@ -53,39 +52,20 @@ export async function getBillingTier(): Promise<string | null> {
   }
 }
 
-function isDesktopListenerRuntime(): boolean {
-  return process.env.LETTA_DESKTOP_MODE === "1";
-}
-
-async function getMetadataRequestConfig(
-  apiKey: string | undefined,
-): Promise<{ baseUrl: string; apiKey: string }> {
-  if (
-    !isDesktopListenerRuntime() ||
-    process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL === "1"
-  ) {
-    return { baseUrl: LETTA_CLOUD_API_URL, apiKey: apiKey ?? "" };
-  }
-
-  const config = await getApiRequestConfig();
-
-  if (isLoopbackUrl(config.baseUrl)) {
-    return config;
-  }
-
-  return { baseUrl: LETTA_CLOUD_API_URL, apiKey: apiKey ?? "" };
-}
-
+/**
+ * Record a feedback submission locally.
+ *
+ * This used to POST to `https://api.letta.com/v1/metadata/feedback` unless a
+ * Desktop runtime had a loopback server configured. There is no Cloud backend
+ * any more, so the submission is written to
+ * `~/.letta/logs/feedback.jsonl` instead: the report still survives on disk for
+ * the user to attach to an issue, and nothing leaves the machine.
+ *
+ * Stays async so the call sites keep their shape.
+ */
 export async function submitFeedbackMetadata(
-  apiKey: string | undefined,
   deviceId: string,
   payload: Record<string, unknown>,
 ): Promise<void> {
-  const config = await getMetadataRequestConfig(apiKey);
-  await apiRequest<void>("POST", "/v1/metadata/feedback", payload, {
-    ...config,
-    headers: {
-      "X-Letta-Code-Device-ID": deviceId,
-    },
-  });
+  appendLocalFeedback({ device_id: deviceId, ...payload });
 }

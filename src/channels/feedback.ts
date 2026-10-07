@@ -104,13 +104,7 @@ export async function submitChannelFeedback(
     return;
   }
 
-  const settings = settingsManager.getSettings();
-  const apiKey = process.env.LETTA_API_KEY || settings.env?.LETTA_API_KEY;
-  await submitFeedbackMetadata(
-    apiKey,
-    settingsManager.getOrCreateDeviceId(),
-    payload,
-  );
+  await submitFeedbackMetadata(settingsManager.getOrCreateDeviceId(), payload);
 }
 
 export async function handleChannelFeedbackCommand(params: {
