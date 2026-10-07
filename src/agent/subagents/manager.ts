@@ -885,8 +885,8 @@ async function spawnSubagentInContext(
       : undefined);
   config = formatConfig;
 
-  // Subagents run the parent conversation's model. A harness caller (reflection
-  // arena) may pin an exact handle instead; nothing resolves or substitutes one.
+  // Subagents run the parent conversation's model. A harness caller may pin an
+  // exact handle instead; nothing resolves or substitutes one.
   // An existing agent always keeps its own model.
   const model = isDeployingExisting
     ? null

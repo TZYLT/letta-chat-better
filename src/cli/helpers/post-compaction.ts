@@ -1,8 +1,7 @@
 /**
  * The tail every `/compact` surface runs after a *successful* compaction.
  *
- * The TUI and the websocket listener each own their own reflection wiring (the TUI
- * can run the arena experiment, the listener has its own subagent launcher) and
+ * The TUI and the websocket listener each own their own reflection wiring and
  * their own description regeneration, so those arrive as callbacks. What is shared
  * is the ordering and the failure rule: the reminder state has to know the context
  * changed before the next turn is built, a reflection is best-effort, and a

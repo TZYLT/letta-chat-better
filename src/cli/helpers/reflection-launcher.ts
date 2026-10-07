@@ -123,15 +123,6 @@ export function getReflectionLaunchSkippedMessage(
   }
 }
 
-export function drainReflectionTelemetry(): void {
-  telemetry.drain().catch((error) => {
-    debugWarn(
-      "telemetry",
-      `Failed to flush reflection telemetry: ${error instanceof Error ? error.message : String(error)}`,
-    );
-  });
-}
-
 export interface ReflectionFeedbackContext {
   parentAgentName?: string | null;
   parentAgentDescription?: string | null;
@@ -183,7 +174,6 @@ export function emitReflectionRunStart(params: {
     endMessageId: params.endMessageId,
     model: params.model,
   });
-  drainReflectionTelemetry();
 }
 
 export function emitReflectionRunEnd(params: {
@@ -206,7 +196,6 @@ export function emitReflectionRunEnd(params: {
     durationMs: params.durationMs,
     model: params.model,
   });
-  drainReflectionTelemetry();
   maybeSendReflectionThresholdFeedback({
     parentAgentId: params.parentAgentId,
     parentAgentName: params.feedbackContext?.parentAgentName,
@@ -682,7 +671,6 @@ export async function finalizeReflectionMemoryWorktreeLaunch(params: {
       commit_count: integration.commitCount,
       model: params.model ?? undefined,
     });
-    drainReflectionTelemetry();
   }
 
   const completionMessage = await handleMemorySubagentCompletion({

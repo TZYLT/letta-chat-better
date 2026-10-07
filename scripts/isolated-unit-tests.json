@@ -145,8 +145,7 @@
     {
       "path": "src/cli/reflection-worktree-completion.test.ts",
       "timeoutMs": 15000,
-      "env": { "LETTA_CODE_TELEM": "1" },
-      "reason": "Exercises reflection worktree cleanup telemetry with real Git processes and the shared telemetry singleton."
+      "reason": "Runs real Git processes against a temporary memory repository to verify reflection worktree completion, merge, and cleanup outcomes outside the shared worker."
     },
     {
       "path": "src/cli/helpers/reflection-launcher.test.ts",

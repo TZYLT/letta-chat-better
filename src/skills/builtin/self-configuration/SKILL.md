@@ -269,7 +269,7 @@ path.
 | `topicNudgeTurns` | Unmarked user turns before the one-shot topic reminder (global only; default 50, `0` = off) |
 | `topicSoftPressureRatio` | Advisory context-pressure share of the window; `0` disables the advisory tier (global only; default 0.7) |
 | `topicBoundaryRewindTurns` | User turns a topic boundary rewinds from its marker anchor (global only; default 2, range 0–3) |
-| `preferredBackendMode` | Startup backend preference, `api` or `local` |
+| `preferredBackendMode` | Legacy startup backend preference; the local backend is the only one, so it selects nothing |
 | `channelCredentialsStore` | Channel token storage, `file`, `keyring`, or `auto` |
 | `reflectionTrigger` / `reflectionStepCount` | Default reflection cadence |
 | `reflectionMerge` / `reflectionMergeInstructions` | Reflection change integration policy |

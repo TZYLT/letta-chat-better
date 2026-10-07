@@ -17,7 +17,6 @@ import {
 let tempDir: string;
 let memoryDir: string;
 const originalDoNotTrack = process.env.DO_NOT_TRACK;
-const originalLettaCodeTelem = process.env.LETTA_CODE_TELEM;
 
 const GIT_ENV = {
   ...process.env,
@@ -78,11 +77,6 @@ afterEach(() => {
     delete process.env.DO_NOT_TRACK;
   } else {
     process.env.DO_NOT_TRACK = originalDoNotTrack;
-  }
-  if (originalLettaCodeTelem === undefined) {
-    delete process.env.LETTA_CODE_TELEM;
-  } else {
-    process.env.LETTA_CODE_TELEM = originalLettaCodeTelem;
   }
   rmSync(tempDir, { recursive: true, force: true });
 });
