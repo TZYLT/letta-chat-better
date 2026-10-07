@@ -33,7 +33,6 @@ export interface ListenerTestClient {
  * capability surface rather than the local backend's.
  */
 const API_BACKEND_CAPABILITIES: Backend["capabilities"] = {
-  remoteMemfs: true,
   promptRecompile: true,
   localModelCatalog: false,
   localMemfs: false,

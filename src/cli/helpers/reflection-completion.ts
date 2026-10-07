@@ -1,5 +1,3 @@
-import { isLettaCloud } from "@/agent/memory-filesystem";
-import { getBackend } from "@/backend";
 import {
   updateCloudReflectionConfig,
   updateCloudReflectionConversationProgress,
@@ -28,13 +26,14 @@ function logCloudSyncWarning(message: string): void {
   debugWarn("memory", message);
 }
 
+/**
+ * Reflection state is synced to a Letta Cloud server, which was the only
+ * backend that stored it. The predicate is now a constant, so the sync below is
+ * inert in production; the injected `isCloud` dependency still lets tests
+ * exercise the Cloud protocol.
+ */
 async function isCloudReflectionAgent(): Promise<boolean> {
-  const backend = getBackend();
-  return (
-    backend.capabilities.remoteMemfs &&
-    !backend.capabilities.localMemfs &&
-    (await isLettaCloud())
-  );
+  return false;
 }
 
 export async function syncReflectionCompletionToCloud(

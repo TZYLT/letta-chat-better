@@ -47,7 +47,7 @@ beforeAll(async () => {
   await settingsManager.reset();
   await settingsManager.initialize();
   __testSetBackend({
-    capabilities: { remoteMemfs: true, localMemfs: false },
+    capabilities: { localMemfs: false },
     listConversationMessages: async () => ({ getPaginatedItems: () => [] }),
   } as unknown as Backend);
   globalThis.fetch = (async (input) => {

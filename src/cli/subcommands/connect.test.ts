@@ -7,7 +7,8 @@ import { runConnectSubcommand } from "@/cli/subcommands/connect";
 function setProviderTarget(target: "api" | "local") {
   __testSetBackend({
     capabilities: {
-      remoteMemfs: target === "api",
+      // `remoteMemfs` used to distinguish the two targets and is gone; the
+      // remaining flags still describe an API-ish versus local-ish backend.
       promptRecompile: target === "api",
       localModelCatalog: target === "local",
       localMemfs: target === "local",

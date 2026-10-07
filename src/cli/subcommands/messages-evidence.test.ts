@@ -36,7 +36,6 @@ const backend = {
     promptRecompile: false,
     localModelCatalog: false,
     localMemfs: false,
-    remoteMemfs: true,
   },
 };
 const message = {

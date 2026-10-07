@@ -802,17 +802,14 @@ export async function updateAgentSystemPrompt(
       memoryMode,
     );
 
-    const { isLettaCloud } = await import("@/agent/memory-filesystem");
-    const useCloudDefault =
-      systemPromptId === "default" &&
-      backend.capabilities.remoteMemfs &&
-      !backend.capabilities.localMemfs &&
-      (await isLettaCloud());
+    // A Letta Cloud server owned the default `default` prompt, so this used to
+    // send `null` for it. No backend is a Cloud server any more, so the bundled
+    // prompt is always sent.
     debugLog("modify", "systemPromptContent: %s", systemPromptContent);
 
     const updateResult = await updateAgentSystemPromptRaw(
       agentId,
-      useCloudDefault ? null : systemPromptContent,
+      systemPromptContent,
     );
     if (!updateResult.success) {
       return {
@@ -824,9 +821,7 @@ export async function updateAgentSystemPrompt(
 
     // Persist preset for known presets; clear stale preset for subagent/unknown
     if (settingsManager.isReady) {
-      if (useCloudDefault) {
-        settingsManager.clearSystemPromptPreset(agentId);
-      } else if (isKnownPreset(systemPromptId)) {
+      if (isKnownPreset(systemPromptId)) {
         recordManagedSystemPrompt(
           agentId,
           systemPromptId,
@@ -902,21 +897,9 @@ export async function updateAgentSystemPromptMemfs(
         message: "Backend default system prompt follows memory mode",
       };
     }
-    const { reconcileCloudPromptForMemoryMode } = await import(
-      "@/agent/cloud-managed-system-prompt"
-    );
-    const cloudPromptResult = await reconcileCloudPromptForMemoryMode({
-      agent,
-      memoryMode: newMode,
-      storedPreset,
-      storedHash,
-    });
-    if (cloudPromptResult) {
-      return {
-        success: true,
-        message: cloudPromptResult,
-      };
-    }
+    // A Letta Cloud server could own the default prompt, so this used to ask
+    // `reconcileCloudPromptForMemoryMode` whether to hand ownership back. No
+    // backend is a Cloud server any more, so the local prompt is always rebuilt.
 
     let nextSystemPrompt: string;
     if (storedPreset && isKnownPreset(storedPreset)) {

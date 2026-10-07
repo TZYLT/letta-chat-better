@@ -1,6 +1,5 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import type { BackendCapabilities } from "@/backend/backend";
 import type {
   AttachedAgentRepository,
   listAttachedAgentRepositories,
@@ -30,9 +29,8 @@ export interface RepositoriesPostTurnSyncResult {
 }
 
 export interface SyncPendingAttachedRepositoriesAfterTurnDependencies {
-  backend?: {
-    capabilities: Pick<BackendCapabilities, "remoteMemfs">;
-  };
+  /** Kept for callers that still pass a backend; the sync no longer reads it. */
+  backend?: unknown;
   listRepositories?: typeof listAttachedAgentRepositories;
 }
 

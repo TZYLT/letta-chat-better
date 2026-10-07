@@ -196,7 +196,7 @@ describe("syncPendingAttachedRepositoryCommitsAfterTurn", () => {
       "agent-local-test",
       {
         backend: {
-          capabilities: { remoteMemfs: false },
+          capabilities: {},
         },
         listRepositories: async () => {
           repositoryDiscoveryRan = true;

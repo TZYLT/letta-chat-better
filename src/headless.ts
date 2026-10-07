@@ -118,7 +118,6 @@ import {
   validateConversationDefaultRequiresAgent,
   validatePrimaryStartupFlagConflicts,
 } from "./cli/startup-flag-validation";
-import { tryCloudHeadlessSend } from "./headless-cloud-send";
 import {
   buildEnvironmentLaunchResult,
   buildEnvironmentResponseMetadata,
@@ -759,16 +758,10 @@ export async function handleHeadlessCommand(
   prepareHeadlessEphemeralBackend(Boolean(values.ephemeral));
   const backend = getBackend();
   markMilestone("HEADLESS_CLIENT_READY");
-  const sendExitCode = await tryCloudHeadlessSend(
-    values,
-    prompt,
-    backend,
-    isAgentLaunch,
-    {
-      writeStdout: writeFinalHeadlessStdout,
-    },
-  );
-  if (sendExitCode !== undefined) return flushAndExit(sendExitCode);
+  // Cloud message delivery used to run here: `tryCloudHeadlessSend` enqueued the
+  // prompt on a listener in another environment and waited for its reply. That
+  // needed a Cloud backend, and none is left, so headless startup always
+  // continues into local execution below.
   // Check for --resume flag (interactive only)
   if (values.resume) {
     trackHeadlessBoundaryError(
@@ -792,7 +785,7 @@ export async function handleHeadlessCommand(
   const inheritedListenerConnectionId = process.env[LISTENER_CONNECTION_ENV];
   const usesRemoteEnvironment = shouldLaunchThroughListener({
     launchProfile,
-    cloudBackend: backend.capabilities.remoteMemfs, // was environment routing
+    cloudBackend: false, // no backend is a Cloud backend any more
     connectionId: inheritedListenerConnectionId,
     computer: explicitEnvironmentSelector,
     ephemeral: values.ephemeral,

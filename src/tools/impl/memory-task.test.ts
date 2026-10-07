@@ -62,7 +62,7 @@ test("memory delegates immediately, exports the originating conversation and lau
   });
   const exports: string[] = [];
   __testSetBackend({
-    capabilities: { localMemfs: true, remoteMemfs: false },
+    capabilities: { localMemfs: true },
     listConversationMessages: async (conversationId: string) => {
       exports.push(conversationId);
       startExport();
@@ -179,7 +179,7 @@ test("a failed transcript export terminates the silent task with an inspectable 
   process.env.HOME = home;
   await settingsManager.initialize();
   __testSetBackend({
-    capabilities: { localMemfs: true, remoteMemfs: false },
+    capabilities: { localMemfs: true },
     listConversationMessages: async () => {
       throw new Error("Transcript unavailable");
     },

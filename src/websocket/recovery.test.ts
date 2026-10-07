@@ -3,7 +3,6 @@ import { __testSetBackend, type Backend } from "@/backend";
 import { isRetriablePostStopError } from "@/websocket/listener/recovery";
 
 const capabilities = {
-  remoteMemfs: false,
   promptRecompile: false,
   localModelCatalog: true,
   localMemfs: false,

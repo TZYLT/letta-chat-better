@@ -104,7 +104,6 @@ test("completed listener turn cleanup pushes an attached shared-memory commit", 
 
   __testSetBackend({
     capabilities: {
-      remoteMemfs: true,
       localMemfs: false,
     },
   } as unknown as Backend);

@@ -17,7 +17,6 @@ import { drainTurnStreamWithEmission } from "./turn-stream";
 import type { StartListenerOptions } from "./types";
 
 const capabilities = {
-  remoteMemfs: false,
   promptRecompile: false,
   localModelCatalog: true,
   localMemfs: false,

@@ -10,7 +10,6 @@ import { drainStreamWithResume } from "@/cli/helpers/stream";
 import type { StreamResumePolicy } from "@/cli/helpers/stream-resume";
 
 const capabilities = {
-  remoteMemfs: false,
   promptRecompile: false,
   localModelCatalog: true,
   localMemfs: false,

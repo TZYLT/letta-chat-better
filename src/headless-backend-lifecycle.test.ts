@@ -103,17 +103,17 @@ describe("headless backend lifecycle wiring", () => {
     expect(section).not.toContain("client.agents.");
   });
 
-  test("memfs flag application skips remote operations for local backends", () => {
+  // This used to locate the `!backend.capabilities.remoteMemfs` guard inside
+  // `applyMemfsFlags` and assert that the remote operations came after it. The
+  // guard and everything behind it are gone, so the remote-only helpers are no
+  // longer referenced at all. (`cloneMemoryRepo` stays: `ensureLocalMemfsCheckout`
+  // still pulls a pre-existing remote-backed checkout into a local one.)
+  test("memfs flag application no longer references the remote helpers", () => {
     const source = readSource("./agent/memory-filesystem.ts");
 
-    const capabilityGuardIndex = source.indexOf(
-      "!backend.capabilities.remoteMemfs",
-    );
-    const promptUpdateIndex = source.indexOf("updateAgentSystemPromptMemfs");
-    const tagAddIndex = source.indexOf("addGitMemoryTag");
-
-    expect(capabilityGuardIndex).toBeGreaterThan(-1);
-    expect(promptUpdateIndex).toBeGreaterThan(capabilityGuardIndex);
-    expect(tagAddIndex).toBeGreaterThan(capabilityGuardIndex);
+    expect(source).not.toContain("updateAgentSystemPromptMemfs");
+    expect(source).not.toContain("addGitMemoryTag");
+    expect(source).not.toContain("getMemfsSyncUnavailableMessage");
+    expect(source).not.toContain("MemFS sync failed");
   });
 });

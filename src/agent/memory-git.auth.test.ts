@@ -858,7 +858,7 @@ describe("syncPendingMemoryCommitsAfterTurn", () => {
     const { repo } = makeSyncedRepo();
     commitFile(repo, "local-only.md", "local");
     __testSetBackend({
-      capabilities: { localMemfs: true, remoteMemfs: false },
+      capabilities: { localMemfs: true },
     } as unknown as Backend);
 
     const result = await syncPendingMemoryCommitsAfterTurn("agent-local", {

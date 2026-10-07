@@ -4,7 +4,6 @@ import { __testSetBackend, type Backend } from "@/backend";
 import { isRetriableError } from "@/cli/app/retry";
 
 const capabilities = {
-  remoteMemfs: false,
   promptRecompile: false,
   localModelCatalog: true,
   localMemfs: false,

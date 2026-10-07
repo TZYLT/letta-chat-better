@@ -34,7 +34,7 @@ beforeEach(() => {
   git("add", "note.md");
   git("commit", "-m", "initial");
   __testSetBackend({
-    capabilities: { localMemfs: true, remoteMemfs: false },
+    capabilities: { localMemfs: true },
   } as unknown as Backend);
 });
 afterEach(() => {

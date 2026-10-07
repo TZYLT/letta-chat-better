@@ -123,8 +123,14 @@ export interface ConversationResumeTail {
   messages: Message[];
 }
 
+/**
+ * What the active backend can do.
+ *
+ * `remoteMemfs` used to say "memory is served by a remote host". The only
+ * backend that answered true was the deleted API backend, so the flag is gone
+ * rather than left as a constant `false`.
+ */
 export interface BackendCapabilities {
-  remoteMemfs: boolean;
   promptRecompile: boolean;
   localModelCatalog: boolean;
   localMemfs: boolean;
