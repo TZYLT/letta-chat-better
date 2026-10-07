@@ -270,8 +270,12 @@ export const CLI_FLAG_CATALOG = {
     mode: "headless",
     help: {
       argLabel: "<m>",
+      // The policy used to choose between a blocking, background, or skipped
+      // startup git pull against a remote memory server. Memory is on local disk
+      // now, so there is no startup pull to schedule; the flag stays accepted so
+      // existing headless invocations keep working.
       description:
-        "Startup memfs pull policy for headless mode: blocking, background, or skip",
+        "Accepted for compatibility; no startup memory pull is scheduled locally",
     },
   },
   "no-skills": {
