@@ -1,4 +1,3 @@
-import { getBackend } from "@/backend";
 import type { JsonSchema } from "./model-facing-tool";
 
 const COMPUTER_SECTION_HEADING = "## Running on Another Computer";
@@ -50,19 +49,9 @@ export async function resolveBackendSpecificToolAssets(
     return { description, inputSchema };
   }
   // Task used to advertise `computer` only when the backend could route work to
-  // another environment (a Cloud-only capability).
-  // The server-backed capability that replaces it is `remoteMemfs`, which is
-  // false for the local in-process backend (the only backend left), so the
-  // option is stripped.
-  let computerRouting = false;
-  try {
-    computerRouting = getBackend().capabilities.remoteMemfs;
-  } catch {
-    computerRouting = false;
-  }
-  if (computerRouting) {
-    return { description, inputSchema };
-  }
+  // another environment. That was a Cloud-only capability, then briefly keyed
+  // off `remoteMemfs`; no backend left in the product can route to a computer,
+  // so the option is always stripped.
   return {
     description: stripComputerFromTaskDescription(description),
     inputSchema: stripComputerFromTaskSchema(inputSchema),

@@ -768,19 +768,14 @@ export async function launchSubagent(
         error: "Memory workers must run on the current machine; omit computer.",
       };
     }
-    let computerRouting = false;
-    try {
-      computerRouting = getBackend().capabilities.remoteMemfs;
-    } catch {
-      computerRouting = false;
-    }
-    if (!computerRouting) {
-      return {
-        success: false,
-        error:
-          "The computer option requires a Letta Cloud backend. This backend has no connected computers; omit the computer field to run the subagent on the current machine.",
-      };
-    }
+    // Routing to a connected computer was a Cloud-only capability. No backend
+    // left in the product has connected computers, so this is now the only
+    // outcome.
+    return {
+      success: false,
+      error:
+        "The computer option requires a Letta Cloud backend. This backend has no connected computers; omit the computer field to run the subagent on the current machine.",
+    };
   }
 
   let effectiveAgentId = args.agent_id;

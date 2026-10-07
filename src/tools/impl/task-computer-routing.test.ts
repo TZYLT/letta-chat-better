@@ -42,7 +42,6 @@ mock.module("@/agent/subagents", () => ({
   }),
 }));
 
-let receivedEnvironment: string | undefined;
 const spawn = mock(
   (
     ...[
@@ -60,10 +59,9 @@ const spawn = mock(
       _parentConversationId,
       _memoryScope,
       _systemPromptOverride,
-      environment,
+      _environment,
     ]: Parameters<typeof spawnSubagent>
   ) => {
-    receivedEnvironment = environment;
     updateSubagent(subagentId, {
       agentId: "agent-routing-child",
       agentURL: "https://example.invalid/agent-routing-child",
@@ -80,18 +78,14 @@ const forkConversation = mock(async () => {
   throw new Error("Unexpected fork of parent conversation");
 });
 const retrieveAgent = mock(async () => ({ model: "anthropic/test-model" }));
-const capabilities = { remoteMemfs: true };
 let scratchpad: string;
 let previousScratchpad: string | undefined;
 
 beforeEach(() => {
   spawn.mockClear();
-  receivedEnvironment = undefined;
   forkConversation.mockClear();
   retrieveAgent.mockClear();
-  capabilities.remoteMemfs = true;
   __testSetBackend({
-    capabilities,
     forkConversation,
     retrieveAgent,
   } as unknown as Backend);
@@ -125,23 +119,16 @@ const launchArgs = {
 };
 
 describe("task computer routing", () => {
-  test("forwards a whitespace-padded selector trimmed to the child", async () => {
-    const result = await task({ ...launchArgs, computer: " \t office-mac \n" });
-
-    expect(result).toContain("Task running in background with task ID:");
-    expect(spawn).toHaveBeenCalledTimes(1);
-    expect(receivedEnvironment).toBe("office-mac");
-    expect(backgroundTasks.size).toBe(1);
-  });
-
+  // A padded selector used to be trimmed and forwarded to a connected computer.
+  // No backend has connected computers now, so the same input is rejected —
+  // and it must be rejected before anything is spawned or forked.
   test.each(["general-purpose", "fork"])(
-    "rejects a non-routing backend before spawning or forking %s",
+    "rejects a named computer before spawning or forking %s",
     async (subagent_type) => {
-      capabilities.remoteMemfs = false;
       const result = await task({
         ...launchArgs,
         subagent_type,
-        computer: " office-mac ",
+        computer: " \t office-mac \n",
       });
 
       expect(result).toContain(
@@ -155,40 +142,32 @@ describe("task computer routing", () => {
     },
   );
 
-  test.each([true, false])(
-    "rejects remote memory workers before launch (routing=%s)",
-    async (routing) => {
-      capabilities.remoteMemfs = routing;
+  test("rejects remote memory workers before launch", async () => {
+    const result = await task({
+      ...launchArgs,
+      subagent_type: "memory",
+      computer: " office-mac ",
+    });
+    expect(result).toContain("Memory workers must run on the current machine");
+    expect(spawn).not.toHaveBeenCalled();
+    expect(forkConversation).not.toHaveBeenCalled();
+    expect(retrieveAgent).not.toHaveBeenCalled();
+    expect(backgroundTasks.size).toBe(0);
+  });
+
+  // An omitted or blank `computer` is "run on the current machine", which is the
+  // only remaining destination.
+  test.each([undefined, "", " \t\n "])(
+    "keeps the default computer for %j",
+    async (computer) => {
       const result = await task({
         ...launchArgs,
-        subagent_type: "memory",
-        computer: " office-mac ",
+        ...(computer === undefined ? {} : { computer }),
       });
-      expect(result).toContain(
-        "Memory workers must run on the current machine",
-      );
-      expect(spawn).not.toHaveBeenCalled();
-      expect(forkConversation).not.toHaveBeenCalled();
-      expect(retrieveAgent).not.toHaveBeenCalled();
-      expect(backgroundTasks.size).toBe(0);
+
+      expect(result).toContain("Task running in background with task ID:");
+      expect(spawn).toHaveBeenCalledTimes(1);
+      expect(backgroundTasks.size).toBe(1);
     },
   );
-
-  for (const remoteMemfs of [true, false]) {
-    test.each([undefined, "", " \t\n "])(
-      `keeps the default computer for %j (routing=${remoteMemfs})`,
-      async (computer) => {
-        capabilities.remoteMemfs = remoteMemfs;
-        const result = await task({
-          ...launchArgs,
-          ...(computer === undefined ? {} : { computer }),
-        });
-
-        expect(result).toContain("Task running in background with task ID:");
-        expect(spawn).toHaveBeenCalledTimes(1);
-        expect(receivedEnvironment).toBeUndefined();
-        expect(backgroundTasks.size).toBe(1);
-      },
-    );
-  }
 });
