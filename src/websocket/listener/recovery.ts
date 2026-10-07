@@ -49,7 +49,6 @@ import {
   emitLoopErrorNotice,
   getTranscriptLoopErrorMessage,
 } from "./recoverable-notices";
-import { canRecoverConversation } from "./recovery-ownership";
 import {
   clearRecoveredApprovalState,
   hasInterruptedCacheForScope,
@@ -400,7 +399,7 @@ type RecoveredContinuationOptions = {
  * interrupted turn now: send the stale denials as this conversation's next
  * turn so the model can re-issue the work, instead of parking them until a
  * user message happens to arrive. Returns false when the recovered state is
- * not in that shape or another owner holds the conversation.
+ * not in that shape or the conversation already has a local turn owner.
  */
 export async function startRecoveredApprovalContinuation(
   runtime: ConversationRuntime,
@@ -419,17 +418,6 @@ export async function startRecoveredApprovalContinuation(
   if (runtime.turnLifecycle.kind !== "idle") {
     return false;
   }
-  if (!(await canRecoverConversation(runtime))) {
-    if (runtime.recoveredApprovalState === recovered) {
-      clearRecoveredApprovalState(runtime);
-    }
-    return false;
-  }
-  if (
-    runtime.turnLifecycle.kind !== "idle" ||
-    runtime.recoveredApprovalState !== recovered
-  )
-    return false;
   const scope = {
     agent_id: recovered.agentId,
     conversation_id: recovered.conversationId,

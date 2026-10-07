@@ -432,30 +432,6 @@ describe("recoverApprovalStateForSync restart recovery", () => {
     expect(recoveryCalls).toBe(1);
   });
 
-  test("deferred ownership lookup retries on the next recovering sync without a timer", async () => {
-    const runtime = createScopedRuntime();
-    const transport = connectRuntime(runtime);
-    let calls = 0;
-    const recover = async () => {
-      calls += 1;
-      return calls === 1 ? "deferred" : undefined;
-    };
-    await replaySyncStateForRuntime(
-      runtime.listener,
-      transport as never,
-      scope,
-      { recoverApprovals: true, recoverApprovalStateForSync: recover },
-    );
-    expect(calls).toBe(1);
-    await replaySyncStateForRuntime(
-      runtime.listener,
-      transport as never,
-      scope,
-      { recoverApprovals: true, recoverApprovalStateForSync: recover },
-    );
-    expect(calls).toBe(2);
-  });
-
   test("mixed batch stages stale denials for every interrupted call", async () => {
     const runtime = createScopedRuntime();
 

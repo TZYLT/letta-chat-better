@@ -13,7 +13,6 @@ import {
   STALE_APPROVAL_RECOVERY_DENIAL_REASON,
 } from "@/agent/turn-recovery-policy";
 import { getBackend } from "@/backend";
-import { canRecoverConversation } from "./recovery-ownership";
 import {
   clearRecoveredApprovalState,
   hasInterruptedCacheForScope,
@@ -43,7 +42,7 @@ export async function recoverApprovalStateForSync(
      */
     resumeInterruptedTurn?: boolean;
   } = {},
-): Promise<"deferred" | undefined> {
+): Promise<void> {
   const resolvedDeps = {
     getBackend,
     getResumeDataFromBackend,
@@ -70,11 +69,6 @@ export async function recoverApprovalStateForSync(
   if (runtime.pendingApprovalResolvers.size > 0 && sameActiveScope) {
     clearRecoveredApprovalState(runtime);
     return;
-  }
-
-  if (!(await canRecoverConversation(runtime))) {
-    clearRecoveredApprovalState(runtime);
-    return "deferred";
   }
 
   const backend = resolvedDeps.getBackend();
@@ -114,7 +108,6 @@ export async function recoverApprovalStateForSync(
 
   // Re-check liveness after the backend awaits: a turn or live approval that
   // started meanwhile owns this conversation's approval state.
-  if (!(await canRecoverConversation(runtime))) return "deferred";
   if (
     hasInterruptedCacheForScope(runtime.listener, scope) ||
     (sameActiveScope &&

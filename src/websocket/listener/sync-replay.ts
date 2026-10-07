@@ -68,8 +68,8 @@ export async function replaySyncStateForRuntime(
   // pending approvals: nothing waits on a human, so try to finish the
   // interrupted turn. (An observer's sync parked those denials for this
   // listener's next user message instead and never reaches this state.) The
-  // shared recovery entry verifies ownership before acquiring the local turn
-  // lease; sync must not start a competing turn.
+  // shared recovery entry refuses to acquire the local turn lease while
+  // another turn owns the conversation; sync must not start a competing turn.
   if (
     syncScopedRuntime.recoveredApprovalState &&
     (syncScopedRuntime.recoveredApprovalState.autoDecisions?.length ?? 0) > 0
