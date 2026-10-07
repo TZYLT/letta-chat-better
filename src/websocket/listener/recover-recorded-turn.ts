@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { getResumeDataFromBackend } from "@/agent/check-approval";
 import { getBackend } from "@/backend";
-import { getTeleportStatus } from "@/backend/api/environments";
 import { debugWarn } from "@/utils/debug";
 import { getOrCreateProcessTransport } from "./connection";
 import { getOrCreateScopedRuntime } from "./conversation-runtime";
@@ -43,7 +42,6 @@ export async function recoverRecordedTurns(
     canRecover: typeof canRecoverConversation;
     processTurn: typeof handleIncomingMessage;
     setCwd: typeof setConversationWorkingDirectory;
-    teleportStatus: typeof getTeleportStatus;
   }> = {},
 ): Promise<void> {
   if (
@@ -77,23 +75,6 @@ export async function recoverRecordedTurns(
         continue;
       }
       try {
-        if (record.teleportId) {
-          const teleport = await (deps.teleportStatus ?? getTeleportStatus)(
-            record.agentId,
-            record.conversationId,
-            record.teleportId,
-          );
-          if (!unchanged()) continue;
-          if (teleport.status === "completed") {
-            store.remove(record.agentId, record.conversationId);
-          } else if (teleport.status === "failed") {
-            store.write({ ...record, teleportId: undefined });
-            deferred = true;
-          } else {
-            deferred = true;
-          }
-          continue;
-        }
         const backend = deps.backend ?? getBackend();
         const agent = await backend.retrieveAgent(record.agentId);
         const pending = (

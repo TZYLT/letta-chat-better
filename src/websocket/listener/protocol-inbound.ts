@@ -142,10 +142,6 @@ import {
   isStringArray,
 } from "./protocol-validation";
 import { isRuntimeStartCommand } from "./runtime-start-validation";
-import {
-  isTeleportContinuePayload,
-  parseTeleportCommand,
-} from "./teleport-protocol-inbound";
 import type { InvalidInputCommand, ParsedServerMessage } from "./types";
 
 export type ServerLifecycleMessage = {
@@ -200,11 +196,6 @@ function isInputCommand(value: unknown): value is InputCommand {
   if (payload.kind === "approval_response") {
     return isValidApprovalResponseBody(payload);
   }
-  if (payload.kind === "teleport_continue")
-    return (
-      isAgentRuntimeScope(candidate.runtime) &&
-      isTeleportContinuePayload(payload)
-    );
   return false;
 }
 
@@ -323,16 +314,6 @@ function getInvalidInputReason(value: unknown): {
         runtime: candidate.runtime,
         reason:
           "Protocol violation: input.kind=approval_response requires payload.request_id and either payload.decision or payload.error",
-      };
-    }
-    return null;
-  }
-  if (payload.kind === "teleport_continue") {
-    if (!isTeleportContinuePayload(payload)) {
-      return {
-        runtime: candidate.runtime,
-        reason:
-          "Protocol violation: input.kind=teleport_continue requires teleport_id, source, and optional continuation.approvals[]",
       };
     }
     return null;
@@ -1942,8 +1923,6 @@ export function parseServerMessage(
     if (legacyInput) {
       return legacyInput;
     }
-    const teleportCommand = parseTeleportCommand(parsed);
-    if (teleportCommand) return teleportCommand;
     if (
       isInputCommand(parsed) ||
       isChangeDeviceStateCommand(parsed) ||

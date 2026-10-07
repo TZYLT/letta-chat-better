@@ -69,8 +69,7 @@ export async function replaySyncStateForRuntime(
   // interrupted turn. (An observer's sync parked those denials for this
   // listener's next user message instead and never reaches this state.) The
   // shared recovery entry verifies ownership before acquiring the local turn
-  // lease; sync must not start a competing turn during either side of a
-  // teleport.
+  // lease; sync must not start a competing turn.
   if (
     syncScopedRuntime.recoveredApprovalState &&
     (syncScopedRuntime.recoveredApprovalState.autoDecisions?.length ?? 0) > 0

@@ -29,7 +29,6 @@ import type {
   LoopStatus,
   RuntimeScope,
   StopReasonType,
-  TeleportContinuation,
   WsProtocolCommand,
 } from "@/types/protocol_v2";
 import type {
@@ -135,19 +134,6 @@ export interface PendingExternalToolCall {
   timeout: ReturnType<typeof setTimeout>;
 }
 
-export type PendingTeleport = {
-  teleportId: string;
-  connectionId: ListenerConnectionId;
-  agentId: string;
-  conversationId: string;
-  requestedAt: number;
-  drainAcceptedInputs: boolean;
-  activeTurn: boolean;
-  readyAt?: number;
-  error?: string;
-  continuation?: TeleportContinuation;
-};
-
 export interface ModeChangePayload {
   mode: "standard" | "acceptEdits" | "unrestricted" | "strict";
 }
@@ -205,13 +191,6 @@ export type ConversationRuntime = {
   acceptedInputDispositions: Map<string, "started" | "queued">;
   pendingApprovalResolvers: Map<string, PendingApprovalResolver>;
   recoveredApprovalState: RecoveredApprovalState | null;
-  /**
-   * Teleport whose `teleport_continue` this scope is waiting for, set by the
-   * cloud's destination `runtime_start`. While it is set (and not expired),
-   * sync recovery leaves the source's pending approvals to the continuation.
-   */
-  expectedTeleportId: string | null;
-  expectedTeleportExpiresAt: number | null;
   readonly lastStopReason: StopReasonType | null;
   lastTerminalLoopErrorMessage: string | null;
   lastTerminalLoopErrorRunId: string | null;
@@ -384,8 +363,6 @@ export type ListenerRuntime = {
   /** Agent IDs whose cached secrets are stale and must re-fetch on the next hydration call. */
   secretsDirtyAgents: Set<string>;
   pendingExternalToolCalls: Map<string, PendingExternalToolCall>;
-  /** Source handoffs retained briefly so a failed destination can resume. */
-  pendingTeleports?: Map<string, PendingTeleport>;
   /**
    * Agent metadata warmups for listen-mode reminders. The cached promise is
    * reused while the listener stays connected so first-turn reminders can join

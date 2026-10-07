@@ -42,36 +42,6 @@ test("one recovered long-running turn does not block another conversation", asyn
   }
 });
 
-test("a successful teleport receipt retires saved work without sending results", async () => {
-  const directory = mkdtempSync(join(tmpdir(), "recorded-teleport-"));
-  const store = createInterruptedTurnStore(directory);
-  const listener = createRuntime();
-  listener.connectionId = "conn-replacement";
-  try {
-    store.write({
-      agentId: "agent-1",
-      conversationId: "conv-1",
-      runId: "run-1",
-      toolCallIds: ["call-1"],
-      results: [],
-      requestOtid: "request-1",
-      workingDirectory: "/project",
-      teleportId: "teleport-1",
-    });
-    await recoverRecordedTurns(listener, {
-      store,
-      canRecover: async () => true,
-      teleportStatus: (async () => ({ status: "completed" })) as never,
-      processTurn: async () => {
-        throw new Error("must not resume transferred work");
-      },
-    });
-    expect(store.read("agent-1", "conv-1")).toBeNull();
-  } finally {
-    rmSync(directory, { recursive: true, force: true });
-  }
-});
-
 import { createInterruptedTurnStore } from "./interrupted-turn-record";
 import { createRuntime } from "./lifecycle";
 import { recoverRecordedTurns } from "./recover-recorded-turn";

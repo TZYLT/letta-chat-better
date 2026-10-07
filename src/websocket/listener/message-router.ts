@@ -34,10 +34,7 @@ import { handleRuntimeStartProtocolCommand } from "./commands/runtime-start";
 import { handleSecretsCommand } from "./commands/secrets";
 import { handleSettingsProtocolCommand } from "./commands/settings";
 import { handleSkillAgentProtocolCommand } from "./commands/skills-agents";
-import {
-  getOrCreateProcessTransport,
-  subscribeListenerConnection,
-} from "./connection";
+import { subscribeListenerConnection } from "./connection";
 import { getBootWorkingDirectory } from "./cwd";
 import {
   handleExternalToolCallResponseCommand,
@@ -69,15 +66,6 @@ import {
 import { emitLoopErrorNotice } from "./recoverable-notices";
 import { getActiveRuntime, safeEmitWsEvent } from "./runtime";
 import { validateResponseFormat } from "./structured-output";
-import {
-  buildTeleportContinuationMessages,
-  clearExpectedInboundTeleport,
-  clearPriorReadyTeleports,
-  handleTeleportFailure,
-  handleTeleportProbe,
-  handleTeleportRequest,
-  isRuntimeTeleportPending,
-} from "./teleport";
 import type { ListenerTransport } from "./transport";
 import { handleIncomingMessage } from "./turn";
 import type {
@@ -312,33 +300,6 @@ export function createListenerMessageHandler(
       ) {
         return;
       }
-      if (parsed.type === "teleport_probe") {
-        handleTeleportProbe(parsed, socket, safeSocketSend);
-        return;
-      }
-
-      if (parsed.type === "teleport_request") {
-        handleTeleportRequest({
-          listener: runtime,
-          command: parsed,
-          connectionId,
-        });
-        return;
-      }
-
-      if (parsed.type === "teleport_failed") {
-        handleTeleportFailure({
-          listener: runtime,
-          command: parsed,
-          socket,
-          onStatusChange: opts.onStatusChange,
-          getOrCreateScopedRuntime,
-          runDetachedListenerTask,
-          processIncomingMessage,
-        });
-        return;
-      }
-
       if (parsed.type === "external_tool_call_response") {
         handleExternalToolCallResponseCommand(runtime, connectionId, parsed);
         return;
@@ -454,69 +415,6 @@ export function createListenerMessageHandler(
           acknowledgeInput(false, "Runtime is no longer active");
           return;
         }
-        if (parsed.payload.kind === "teleport_continue") {
-          const teleportAgentId = parsed.runtime.agent_id;
-          if (!teleportAgentId) {
-            acknowledgeInput(
-              false,
-              "Teleport requires an agent-backed runtime",
-            );
-            return;
-          }
-          const teleportId = parsed.payload.teleport_id;
-          clearPriorReadyTeleports({
-            listener: runtime,
-            agentId: teleportAgentId,
-            conversationId: parsed.runtime.conversation_id,
-            currentTeleportId: teleportId,
-          });
-          const scopedRuntime = getOrCreateScopedRuntime(
-            runtime,
-            parsed.runtime.agent_id,
-            parsed.runtime.conversation_id,
-          );
-          // The continuation this scope's runtime_start announced has arrived;
-          // sync recovery may act on its own again from here.
-          clearExpectedInboundTeleport(scopedRuntime);
-          const acceptedKey = `teleport:${teleportId}`;
-          const previousDisposition =
-            scopedRuntime.acceptedInputDispositions.get(acceptedKey);
-          if (previousDisposition) {
-            acknowledgeInput(true, undefined, previousDisposition);
-            return;
-          }
-          const approvals = parsed.payload.continuation?.approvals;
-          const clientPreferences = parsed.payload.client_preferences;
-          if (scopedRuntime.isProcessing) {
-            acknowledgeInput(
-              false,
-              "Destination runtime is already processing",
-            );
-            return;
-          }
-          scopedRuntime.acceptedInputDispositions.set(acceptedKey, "started");
-          acknowledgeInput(true, undefined, "started");
-          runDetachedListenerTask("teleport_continue", async () => {
-            await processIncomingMessage(
-              {
-                type: "message",
-                connectionId,
-                agentId: teleportAgentId,
-                conversationId: parsed.runtime.conversation_id,
-                clientPreferences,
-                messages: buildTeleportContinuationMessages({
-                  teleportId,
-                  approvals,
-                }),
-              },
-              getOrCreateProcessTransport(runtime),
-              scopedRuntime,
-              opts.onStatusChange,
-              connectionId,
-            );
-          });
-          return;
-        }
         if (parsed.payload.kind === "approval_response") {
           const handled = await handleApprovalResponseInput(runtime, {
             runtime: parsed.runtime,
@@ -613,16 +511,6 @@ export function createListenerMessageHandler(
           );
           if (acceptedDisposition) {
             acknowledgeInput(true, undefined, acceptedDisposition);
-            return;
-          }
-          if (
-            isRuntimeTeleportPending(
-              runtime,
-              scopedRuntime.agentId,
-              scopedRuntime.conversationId,
-            )
-          ) {
-            acknowledgeInput(false, "Conversation is switching computers");
             return;
           }
           if (

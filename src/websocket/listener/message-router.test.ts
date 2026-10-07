@@ -59,7 +59,7 @@ describe("listener message router ownership handoff", () => {
     setActiveRuntime(null);
   });
 
-  test("teleport_continue transport follows a replacement WebSocket", async () => {
+  test("a direct turn's transport follows a replacement WebSocket", async () => {
     const listener = createRuntime();
     const runtime = getOrCreateScopedRuntime(listener, "agent-1", "conv-1");
     const opts = makeListenerOptions();
@@ -116,7 +116,6 @@ describe("listener message router ownership handoff", () => {
         },
         processIncomingMessage: async (incoming, transport, conversation) => {
           expect(incoming.messages).toEqual([
-            expect.objectContaining({ type: "approval" }),
             expect.objectContaining({ role: "user" }),
           ]);
           expect(conversation).toBe(runtime);
@@ -128,29 +127,18 @@ describe("listener message router ownership handoff", () => {
         Buffer.from(
           JSON.stringify({
             type: "input",
-            request_id: "teleport-initial",
+            request_id: "direct-initial",
             runtime: scope,
             payload: {
-              kind: "teleport_continue",
-              teleport_id: "teleport-reconnect",
-              source: { device_id: "source", connection_name: "Source" },
-              continuation: {
-                approvals: [
-                  {
-                    type: "tool",
-                    tool_call_id: "call-on-source",
-                    status: "success",
-                    tool_return: "source finished",
-                  },
-                ],
-              },
+              kind: "create_message",
+              messages: [{ role: "user", content: "start the turn" }],
             },
           }),
         ),
       );
       await waitFor(() => transports.length === 1);
       const transport = transports[0];
-      if (!transport) throw new Error("Teleport turn did not start");
+      if (!transport) throw new Error("Turn did not start");
       expect(isListenerTransportOpen(transport)).toBe(true);
       const closed = once(original.socket, "close");
       original.socket.terminate();

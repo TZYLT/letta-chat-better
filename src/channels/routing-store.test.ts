@@ -20,7 +20,6 @@ import {
   readRoutes,
 } from "./routing";
 import { writeChannelRoutesToDisk } from "./routing-store";
-import { getLocalChannelTeleportError } from "./teleport-guard";
 import type { ChannelRoute } from "./types";
 
 const route: ChannelRoute = {
@@ -82,14 +81,6 @@ describe("routing persistence", () => {
     },
   );
 
-  test("teleport is blocked before any cache load on an upgraded install", () => {
-    fs.writeFileSync(legacy, legacyText);
-    expect(getLocalChannelTeleportError(route)).toContain(
-      "Teleport is blocked",
-    );
-    expect(getAllRoutes()).toEqual([]);
-  });
-
   test.each(["EACCES", "EROFS", "EPERM", "ENOTSUP"])(
     "migration failure %s preserves readable routes and can be retried",
     (code) => {
@@ -101,9 +92,6 @@ describe("routing persistence", () => {
       loadRoutes("telegram");
       expect(getRoute("telegram", route.chatId)?.conversationId).toBe(
         route.conversationId,
-      );
-      expect(getLocalChannelTeleportError(route)).toContain(
-        "Teleport is blocked",
       );
       expect(fs.readFileSync(legacy, "utf8")).toBe(legacyText);
       expect(fs.existsSync(current)).toBe(false);

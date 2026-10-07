@@ -54,7 +54,6 @@ import { normalizeCwdAgentId } from "./scope";
 import { markAwaitingAcceptedApprovalContinuationRunId } from "./send";
 import { injectQueuedSkillContent } from "./skill-injection";
 import { emitStreamRecoveryStatusDeltas } from "./stream-recovery-status";
-import * as tp from "./teleport";
 import type { ListenerTransport } from "./transport";
 import { handleApprovalStop } from "./turn-approval";
 import { runListenerTurnCleanup } from "./turn-cleanup";
@@ -111,7 +110,6 @@ export async function handleIncomingMessage(
     );
   } finally {
     notifyTurnFinished(msg);
-    tp.finishPendingTeleport(runtime);
   }
 }
 
@@ -364,20 +362,6 @@ async function handleIncomingMessageInner(
         break;
       }
       if (stopReason === "end_turn") {
-        const pendingTeleport = agentId
-          ? tp.claimPendingTeleportAtBoundary({
-              listener: runtime.listener,
-              agentId,
-              conversationId,
-              activeTurn: true,
-            })
-          : null;
-        if (pendingTeleport) {
-          noteFinalization(
-            tp.finishTeleport(runtime, turnLease, pendingTeleport),
-          );
-          return;
-        }
         const transcriptLines = toLines(buffers);
         const completion = await completeSuccessfulListenerTurn({
           runtime,
@@ -811,11 +795,6 @@ async function handleIncomingMessageInner(
       lastApprovalContinuationAccepted =
         approvalResult.lastApprovalContinuationAccepted;
 
-      if (approvalResult.kind === "teleport") {
-        const pending = approvalResult.pendingTeleport;
-        noteFinalization(tp.finishTeleport(runtime, turnLease, pending));
-        return;
-      }
       if (approvalResult.kind === "interrupted") {
         if (runtime.turnLifecycle.isCurrent(turnLease)) {
           populateInterruptQueue(runtime, {

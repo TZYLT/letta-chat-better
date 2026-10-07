@@ -52,10 +52,11 @@ test("keeps the bundled browser-use skill environment-neutral", async () => {
   ]) {
     expect(content).not.toContain(cloudOnly);
   }
-  // Local machines: recommend installing Chrome or teleporting, never download.
+  // Local machines: recommend installing Chrome or switching computers,
+  // never download.
   expect(content).toContain("Install Chrome on the current computer");
   expect(content).toContain(
-    "Teleport the conversation back to its Cloud sandbox",
+    "Retry the task from a computer that already has a browser installed",
   );
   expect(content).not.toContain("@puppeteer/browsers install");
 });

@@ -33,23 +33,15 @@ afterEach(async () => {
   else process.env.HOME = originalHome;
 });
 
-function parsePreferences(
-  kind: "create_message" | "teleport_continue",
-  preferences: unknown,
-) {
+function parsePreferences(preferences: unknown) {
   return parseServerMessage(
     Buffer.from(
       JSON.stringify({
         type: "input",
         runtime: { agent_id: "agent-a", conversation_id: "conv-a" },
         payload: {
-          ...(kind === "create_message"
-            ? { kind, messages: [{ role: "user", content: "hello" }] }
-            : {
-                kind,
-                teleport_id: "teleport-1",
-                source: { device_id: "device-1", connection_name: "Laptop" },
-              }),
+          kind: "create_message",
+          messages: [{ role: "user", content: "hello" }],
           client_preferences: preferences,
         },
       }),
@@ -58,41 +50,42 @@ function parsePreferences(
 }
 
 describe("client preferences wire protocol", () => {
-  for (const kind of ["create_message", "teleport_continue"] as const) {
-    test(`${kind} accepts snapshots, aliases, explicit clear, and omission`, () => {
-      for (const preferences of [
-        undefined,
-        {},
-        { toolset: { include: [] } },
-        { toolset: { include: ["AskUserQuestion", "Task", "Agent", "Read"] } },
-      ]) {
-        const parsed = parsePreferences(kind, preferences);
-        expect(parsed).toMatchObject({ type: "input", payload: { kind } });
-        if (preferences !== undefined) {
-          expect(parsed).toMatchObject({
-            payload: { client_preferences: preferences },
-          });
-        }
-      }
-    });
-
-    test(`${kind} rejects invalid preference objects and unknown tools`, () => {
-      for (const preferences of [
-        null,
-        [],
-        { unknown: true },
-        { toolset: { include: ["Read"], exclude: ["Bash"] } },
-        { toolset: { include: ["unknown-client-tool"] } },
-        { toolset: { include: [false] } },
-        { toolset: { include: "Read" } },
-        { toolset: {} },
-      ]) {
-        expect(parsePreferences(kind, preferences)).toMatchObject({
-          type: "__invalid_input",
+  test("create_message accepts snapshots, aliases, explicit clear, and omission", () => {
+    for (const preferences of [
+      undefined,
+      {},
+      { toolset: { include: [] } },
+      { toolset: { include: ["AskUserQuestion", "Task", "Agent", "Read"] } },
+    ]) {
+      const parsed = parsePreferences(preferences);
+      expect(parsed).toMatchObject({
+        type: "input",
+        payload: { kind: "create_message" },
+      });
+      if (preferences !== undefined) {
+        expect(parsed).toMatchObject({
+          payload: { client_preferences: preferences },
         });
       }
-    });
-  }
+    }
+  });
+
+  test("create_message rejects invalid preference objects and unknown tools", () => {
+    for (const preferences of [
+      null,
+      [],
+      { unknown: true },
+      { toolset: { include: ["Read"], exclude: ["Bash"] } },
+      { toolset: { include: ["unknown-client-tool"] } },
+      { toolset: { include: [false] } },
+      { toolset: { include: "Read" } },
+      { toolset: {} },
+    ]) {
+      expect(parsePreferences(preferences)).toMatchObject({
+        type: "__invalid_input",
+      });
+    }
+  });
 });
 
 function message(

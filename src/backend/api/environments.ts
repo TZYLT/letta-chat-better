@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { apiRequest } from "./request";
 
 export interface EnvironmentMetadata {
@@ -143,7 +142,7 @@ export async function resolveDesktopEnvironmentConnectionId(
   }
   if (matches.length > 1) {
     throw new Error(
-      `Multiple Desktop computers are online. Run \`letta teleport list\` and choose one by name, device ID, or connection ID. Matched: ${matches.map(describeEnvironment).join(", ")}`,
+      `Multiple Desktop computers are online. Choose one by name, device ID, or connection ID. Matched: ${matches.map(describeEnvironment).join(", ")}`,
     );
   }
 
@@ -251,59 +250,5 @@ export async function resolveAgentSandboxConnectionId(
 
   throw new Error(
     `Timed out waiting for cloud sandbox ${sandbox.connectionName} to register${lastError instanceof Error ? `: ${lastError.message}` : ""}`,
-  );
-}
-
-export type TeleportStatus =
-  | "waiting_for_source"
-  | "starting_destination"
-  | "completed"
-  | "failed";
-
-export interface TeleportResponse {
-  id: string;
-  agentId: string;
-  conversationId: string;
-  sourceConnectionId: string;
-  targetConnectionId: string;
-  targetDeviceId: string;
-  targetConnectionName: string;
-  status: TeleportStatus;
-  error: string | null;
-  createdAt: number;
-  updatedAt: number;
-}
-
-export function getTeleportStatus(
-  agentId: string,
-  conversationId: string,
-  teleportId: string,
-  request: typeof apiRequest = apiRequest,
-): Promise<TeleportResponse> {
-  return request<TeleportResponse>(
-    "GET",
-    `/v1/environments/runtimes/${encodeURIComponent(agentId)}/${encodeURIComponent(conversationId)}/teleports/${encodeURIComponent(teleportId)}`,
-    undefined,
-    { signal: AbortSignal.timeout(5000) },
-  );
-}
-
-/**
- * Submit a teleport request to Cloud. Returns immediately after the 202
- * acceptance — the harness owns polling/yield after this returns.
- */
-export async function teleportToEnvironment(
-  agentId: string,
-  conversationId: string,
-  targetConnectionId: string,
-  request: typeof apiRequest = apiRequest,
-): Promise<TeleportResponse> {
-  return request<TeleportResponse>(
-    "POST",
-    `/v1/environments/runtimes/${encodeURIComponent(agentId)}/${encodeURIComponent(conversationId)}/teleport`,
-    {
-      targetConnectionId,
-      idempotencyKey: randomUUID(),
-    },
   );
 }

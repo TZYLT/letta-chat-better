@@ -24,7 +24,6 @@ export type ListenerStateWritePhase =
 /** Local execution evidence, never populated by observing another runtime. */
 export interface InterruptedTurnRecord {
   revision?: string;
-  teleportId?: string;
   agentId: string;
   conversationId: string;
   runId: string | null;

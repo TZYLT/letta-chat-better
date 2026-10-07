@@ -88,8 +88,7 @@ Tell the user that browser use requires Chrome or another Chromium-based
 browser and recommend either:
 
 1. Install Chrome on the current computer, then retry the browser task.
-2. Teleport the conversation back to its Cloud sandbox, where a
-   browser is already installed.
+2. Retry the task from a computer that already has a browser installed.
 
 Wait for the user to choose. Do not silently replace the browser task with
 plain HTTP or claim browser automation succeeded.

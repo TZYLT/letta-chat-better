@@ -21,10 +21,7 @@ import {
 import { LocalBackend } from "@/backend/local";
 import { settingsManager } from "@/settings-manager";
 import { isolateAmbientLettaTestEnv } from "@/test-utils/test-process-env";
-import type {
-  TeleportReadyMessage,
-  WsProtocolMessage,
-} from "@/types/app-server-protocol";
+import type { WsProtocolMessage } from "@/types/app-server-protocol";
 import { type AppServerHandle, startAppServer } from "./app-server";
 
 const questions = [
@@ -259,112 +256,6 @@ test.each(["answered", "dismissed"] as const)(
       expect(transcript).toContain("I continued working without an answer.");
       expect(transcript).toContain("ask-user-question-response");
       expect(transcript).toContain(`User ${status} your questions.`);
-
-      const sourceClient = client;
-      const readyPromise = new Promise<TeleportReadyMessage>(
-        (resolve, reject) => {
-          const timer = setTimeout(() => {
-            unsubscribe();
-            reject(new Error("Teleport did not become ready"));
-          }, 15_000);
-          const unsubscribe = sourceClient.onMessage((frame) => {
-            if (frame.type !== "teleport_ready") return;
-            clearTimeout(timer);
-            unsubscribe();
-            resolve(frame);
-          });
-        },
-      );
-      client.send({
-        type: "teleport_request",
-        request_id: "transfer-preferences",
-        teleport_id: "transfer-preferences",
-        runtime: { ...runtime, agent_id: agent.id },
-        target: {
-          connection_id: "destination",
-          device_id: "destination",
-          connection_name: "Destination",
-        },
-      });
-      const ready = await readyPromise;
-      expect(ready.success).toBe(true);
-      expect(ready.client_preferences).toEqual({
-        toolset: { include: ["AskUserQuestion"] },
-      });
-
-      // Restart the listener with no local defaults, as on a fresh destination.
-      // Only the wire snapshot below can restore this conversation's opt-in.
-      client.close();
-      await server.close();
-      settingsManager.setClientPreferences(
-        agent.id,
-        runtime.conversation_id,
-        {},
-      );
-      server = await startAppServer({ listen: "ws://127.0.0.1:0" });
-      client = await new AppServerClient({
-        url: server.controlUrl,
-        WebSocket: WebSocket as unknown as AppServerSocketConstructor,
-      }).connect();
-      const destination = await client.runtimeStart({
-        agent_id: agent.id,
-        conversation_id: runtime.conversation_id,
-        skill_sources: [],
-        recover_approvals: false,
-        wait_for_replay: true,
-        teleport_id: ready.teleport_id,
-      });
-      expect(destination.success).toBe(true);
-      expect(destination.runtime).toEqual(runtime);
-      const transferred = waitForTurn(client);
-      client.input({
-        runtime,
-        payload: {
-          kind: "teleport_continue",
-          teleport_id: ready.teleport_id,
-          source: { device_id: "source", connection_name: "Source" },
-          client_preferences: ready.client_preferences,
-        },
-      });
-      await transferred;
-      expect(inputs).toHaveLength(6);
-      expect(serializedClientTools(inputs[5])).toBe(firstTools);
-      expect(
-        settingsManager.getClientPreferences(agent.id, runtime.conversation_id),
-      ).toEqual(ready.client_preferences);
-
-      const cleared = waitForTurn(client);
-      client.input({
-        runtime,
-        payload: {
-          kind: "teleport_continue",
-          teleport_id: "clear-preferences",
-          source: { device_id: "source", connection_name: "Source" },
-          client_preferences: {},
-        },
-      });
-      await cleared;
-      expect(inputs).toHaveLength(7);
-      const clearedTools = serializedClientTools(inputs[6]);
-      expect(clearedTools).not.toContain('"name":"AskUserQuestion"');
-      expect(clearedTools).not.toBe(firstTools);
-      expect(
-        settingsManager.getClientPreferences(agent.id, runtime.conversation_id),
-      ).toEqual({});
-
-      const inheritedClear = waitForTurn(client);
-      client.input({
-        runtime,
-        payload: {
-          kind: "create_message",
-          messages: [
-            { role: "user", content: "Continue without UI defaults." },
-          ],
-        },
-      });
-      await inheritedClear;
-      expect(inputs).toHaveLength(8);
-      expect(serializedClientTools(inputs[7])).toBe(clearedTools);
     } finally {
       client?.close();
       await server?.close();

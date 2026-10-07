@@ -85,7 +85,6 @@ import type {
 
 export type * from "./subagent-protocol";
 
-import type * as TeleportProtocol from "./teleport-protocol";
 import type {
   ToolsetName,
   ToolsetOption,
@@ -102,7 +101,6 @@ export type * from "./runtime-scope";
 export type * from "./runtime-start-protocol";
 export type * from "./schedule-protocol";
 export type * from "./task-control-protocol";
-export type * from "./teleport-protocol";
 export type * from "./toolset-protocol";
 
 export type ExperimentId =
@@ -647,8 +645,7 @@ export type InputApprovalResponsePayload = {
 } & ApprovalResponseBody;
 export type InputPayload =
   | InputCreateMessagePayload
-  | InputApprovalResponsePayload
-  | TeleportProtocol.InputTeleportContinuePayload;
+  | InputApprovalResponsePayload;
 
 export interface InputCommand {
   type: "input";
@@ -2345,7 +2342,6 @@ export type WsProtocolCommand =
   | import("./queue-update-protocol").ResumeQueueCommand
   | SyncCommand
   | RuntimeStartCommand
-  | TeleportProtocol.TeleportProtocolCommand
   | RuntimeExternalToolsUpdateCommand
   | ExternalToolCallResponseCommand
   | TerminalSpawnCommand
@@ -2435,7 +2431,6 @@ export type WsProtocolCommandType = WsProtocolCommand["type"];
 export type WsProtocolMessage =
   | ControlRequest
   | InputAcceptedResponseMessage
-  | TeleportProtocol.TeleportProtocolMessage
   | ExecuteCommandResponseMessage
   | DeviceStatusUpdateMessage
   | LoopStatusUpdateMessage
