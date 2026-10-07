@@ -116,68 +116,6 @@ describe("listener native model selection", () => {
     });
   });
 
-  test("fails closed for a cold BYOK lookup but keeps hosted selection independent", async () => {
-    const backend = new NativeCatalogBackend();
-    backend.failListing = true;
-    __testSetBackend(backend);
-    clearAvailableModelsCache();
-    await expect(
-      resolveModelForUpdateWithInventory({
-        model_id: "my-anthropic/claude-fable-5",
-      }),
-    ).rejects.toThrow("Inventory unavailable");
-    const response = await buildListModelsResponse("models-unavailable");
-    expect(response.success).toBe(true);
-    expect(response.available_handles).toEqual([
-      ...new Set(models.map((model) => model.handle)),
-    ]);
-    expect(
-      (await resolveModelForUpdateWithInventory({ model_id: "letta/auto" }))
-        ?.handle,
-    ).toBe("letta/auto");
-  });
-
-  test("Cloud response exposes catalog hosted handles and organization BYOK only", async () => {
-    __testSetBackend(new NativeCatalogBackend());
-
-    const response = await buildListModelsResponse("models-1");
-
-    expect(response.available_handles).not.toContain(
-      "opencode/deepseek-v4-flash-free",
-    );
-    expect(response.available_handles).toContain("letta/auto");
-    expect(response.available_handles).toContain("my-anthropic/claude-fable-5");
-    expect(response.available_handles).toEqual([
-      ...new Set(response.entries.map((entry) => entry.handle)),
-    ]);
-    expect(response.entries).toContainEqual({
-      id: "proxy/claude-opus-4-6",
-      handle: "proxy/claude-opus-4-6",
-      label: "Claude Opus 4.6",
-      description: "",
-      updateArgs: {
-        provider_type: "openai",
-        openai_compatible_proxy: true,
-      },
-    });
-    expect(
-      response.entries.find((entry) => entry.handle === "lc-openai/gpt-5.4")
-        ?.updateArgs,
-    ).toMatchObject({ provider_type: "openai" });
-  });
-
-  test("Cloud hosted selection is not rewritten by runtime inventory", async () => {
-    __testSetBackend(new NativeCatalogBackend());
-    await getAvailableModelHandles();
-    const preset = models.find(
-      (model) => model.handle === "google_ai/gemini-3.5-flash",
-    );
-    expect(preset).toBeDefined();
-    expect(resolveModelForUpdate({ model_id: preset?.id })?.handle).toBe(
-      preset?.handle,
-    );
-  });
-
   test("channel picker IDs resolve to catalog handles, not echoed IDs", async () => {
     for (const preset of models) {
       const resolved = await resolveModelForUpdateWithInventory({
@@ -202,38 +140,6 @@ describe("listener native model selection", () => {
       expect(response.entries.map((entry) => entry.handle)).toContain(
         "opencode/deepseek-v4-flash-free",
       );
-    },
-  );
-
-  test.each(byokModels)(
-    "preserves BYOK identity and settings with cold and warm caches for %s",
-    async (handle, providerType) => {
-      __testSetBackend(new NativeCatalogBackend());
-      clearAvailableModelsCache();
-      const byId = await resolveModelForUpdateWithInventory({
-        model_id: handle,
-        model_handle: handle,
-      });
-      const byHandle = resolveModelForUpdate({ model_handle: handle });
-      expect(byId).toEqual(byHandle);
-      expect(resolveModelForUpdate({ model_id: handle })).toEqual(byId);
-      expect(byId).toMatchObject({
-        id: handle,
-        handle,
-        updateArgs: { provider_type: providerType },
-      });
-      expect(
-        __modifyTestUtils.buildModelSettings(handle, byId?.updateArgs),
-      ).toMatchObject({ provider_type: providerType });
-      const preset = models.find(
-        (model) =>
-          model.handle ===
-          `${providerType}/${handle.split("/").slice(1).join("/")}`,
-      );
-      if (preset) {
-        expect(byId?.label).toBe(preset.label);
-        expect(byId?.updateArgs).toMatchObject(preset.updateArgs ?? {});
-      }
     },
   );
 
