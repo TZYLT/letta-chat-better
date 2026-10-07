@@ -11,28 +11,22 @@ import {
 } from "@/agent/create";
 import { buildSystemPrompt } from "@/agent/prompt-assets";
 
-const remoteMemfsBackend = { localMemfs: false, remoteMemfs: true } as const;
-const localMemfsBackend = { localMemfs: true, remoteMemfs: false } as const;
+const localMemfsBackend = { localMemfs: true } as const;
+const noMemfsBackend = { localMemfs: false } as const;
 
 function countTags(tags: string[], tag: string): number {
   return tags.filter((candidate) => candidate === tag).length;
 }
 
+// These cases used to be driven by `{ localMemfs: false, remoteMemfs: true }`
+// plus `isLettaCloud`, which modelled the removed API backend. That
+// configuration cannot be constructed any more, so every case now starts from a
+// backend that has local memfs (or none at all).
 describe("created agent MemFS defaults", () => {
-  test("defaults to remote MemFS on Letta Cloud", () => {
-    expect(
-      resolveCreatedAgentMemfsConfig({
-        capabilities: remoteMemfsBackend,
-        isLettaCloud: true,
-      }),
-    ).toEqual({ enableMemfs: true, memoryPromptMode: "root-memfs" });
-  });
-
   test("defaults fresh local agents to the root MemFS layout", () => {
     expect(
       resolveCreatedAgentMemfsConfig({
         capabilities: localMemfsBackend,
-        isLettaCloud: false,
       }),
     ).toEqual({ enableMemfs: true, memoryPromptMode: "root-memfs" });
   });
@@ -42,36 +36,23 @@ describe("created agent MemFS defaults", () => {
       resolveCreatedAgentMemfsConfig({
         capabilities: localMemfsBackend,
         requestedMemoryPromptMode: "local-memfs",
-        isLettaCloud: false,
       }),
     ).toEqual({ enableMemfs: true, memoryPromptMode: "root-memfs" });
   });
 
-  test("maps an explicit memfs request to the root layout on Letta Cloud", () => {
+  test("maps an explicit memfs request to the root layout", () => {
     expect(
       resolveCreatedAgentMemfsConfig({
-        capabilities: remoteMemfsBackend,
+        capabilities: localMemfsBackend,
         requestedMemoryPromptMode: "memfs",
-        isLettaCloud: true,
       }),
     ).toEqual({ enableMemfs: true, memoryPromptMode: "root-memfs" });
   });
 
-  test("keeps an explicit memfs request on self-hosted servers", () => {
+  test("subagents are stateless: no MemFS", () => {
     expect(
       resolveCreatedAgentMemfsConfig({
-        capabilities: remoteMemfsBackend,
-        requestedMemoryPromptMode: "memfs",
-        isLettaCloud: false,
-      }),
-    ).toEqual({ enableMemfs: true, memoryPromptMode: "memfs" });
-  });
-
-  test("subagents are stateless: no MemFS even on Letta Cloud", () => {
-    expect(
-      resolveCreatedAgentMemfsConfig({
-        capabilities: remoteMemfsBackend,
-        isLettaCloud: true,
+        capabilities: localMemfsBackend,
         isSubagent: true,
       }),
     ).toEqual({ enableMemfs: false, memoryPromptMode: "standard" });
@@ -80,65 +61,66 @@ describe("created agent MemFS defaults", () => {
   test("ignores standard memory prompt mode for regular agents (no opt-out)", () => {
     expect(
       resolveCreatedAgentMemfsConfig({
-        capabilities: remoteMemfsBackend,
+        capabilities: localMemfsBackend,
         requestedMemoryPromptMode: "standard",
-        isLettaCloud: true,
       }),
     ).toEqual({ enableMemfs: true, memoryPromptMode: "root-memfs" });
   });
 
-  test("self-hosted servers without memfs support stay standard", () => {
+  test("a backend without memfs support stays standard", () => {
+    expect(
+      resolveCreatedAgentMemfsConfig({ capabilities: noMemfsBackend }),
+    ).toEqual({ enableMemfs: false, memoryPromptMode: "standard" });
+  });
+
+  test("an explicit memfs request enables git-backed memory without local memfs", () => {
     expect(
       resolveCreatedAgentMemfsConfig({
-        capabilities: remoteMemfsBackend,
-        isLettaCloud: false,
+        capabilities: noMemfsBackend,
+        requestedMemoryPromptMode: "memfs",
       }),
-    ).toEqual({ enableMemfs: false, memoryPromptMode: "standard" });
+    ).toEqual({ enableMemfs: true, memoryPromptMode: "memfs" });
   });
 });
 
 describe("created agent system prompt defaults", () => {
-  test("delegates the default prompt to Letta Cloud", async () => {
+  // This case used to assert `isLettaCloud: true` delegated to the server by
+  // resolving `null`. The bundled default is always built here now.
+  test("builds the bundled default prompt", async () => {
     await expect(
       resolveCreatedAgentSystemPrompt({
-        isLettaCloud: true,
         memoryPromptMode: "memfs",
       }),
-    ).resolves.toBeNull();
+    ).resolves.toBe(buildSystemPrompt("default", "memfs"));
     await expect(
       resolveCreatedAgentSystemPrompt({
-        isLettaCloud: true,
         systemPromptPreset: "default",
         memoryPromptMode: "memfs",
       }),
-    ).resolves.toBeNull();
+    ).resolves.toBe(buildSystemPrompt("default", "memfs"));
   });
 
-  test("keeps explicit and non-Cloud prompts client-owned", async () => {
+  test("keeps explicit and named prompts client-owned", async () => {
     await expect(
       resolveCreatedAgentSystemPrompt({
-        isLettaCloud: true,
         systemPromptCustom: "Custom prompt",
         memoryPromptMode: "memfs",
       }),
     ).resolves.toBe("Custom prompt");
     await expect(
       resolveCreatedAgentSystemPrompt({
-        isLettaCloud: true,
         systemPromptCustom: "",
         memoryPromptMode: "memfs",
       }),
     ).resolves.toBe("");
     await expect(
       resolveCreatedAgentSystemPrompt({
-        isLettaCloud: true,
         systemPromptPreset: "letta",
         memoryPromptMode: "memfs",
       }),
     ).resolves.toBe(buildSystemPrompt("letta", "memfs"));
     await expect(
       resolveCreatedAgentSystemPrompt({
-        isLettaCloud: false,
         memoryPromptMode: "standard",
       }),
     ).resolves.toBe(buildSystemPrompt("default", "standard"));

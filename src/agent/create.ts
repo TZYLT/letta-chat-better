@@ -3,7 +3,7 @@
  **/
 
 import type { AgentState } from "@letta-ai/letta-client/resources/agents/agents";
-import { type BackendCapabilities, getBackend } from "@/backend";
+import { getBackend } from "@/backend";
 import { apiRequest, getApiRequestConfig } from "@/backend/api/request";
 import { settingsManager } from "@/settings-manager";
 import { SUBAGENT_NAME_ENV } from "@/utils/subagent-launch-marker";
@@ -115,15 +115,9 @@ export async function createAgentWithBaseToolsRecovery(
   }
 }
 
-type MemfsCreateCapabilities = Pick<
-  BackendCapabilities,
-  "localMemfs" | "remoteMemfs"
->;
-
 export interface CreatedAgentMemfsConfigOptions {
-  capabilities: MemfsCreateCapabilities;
+  capabilities: { localMemfs: boolean };
   requestedMemoryPromptMode?: MemoryPromptMode;
-  isLettaCloud: boolean;
   /**
    * Subagents are ephemeral and deliberately stateless — they never get
    * memfs. This is the ONLY supported way to create a non-memfs agent on a
@@ -138,23 +132,24 @@ export interface CreatedAgentMemfsConfig {
 }
 
 export interface CreatedAgentSystemPromptOptions {
-  isLettaCloud: boolean;
   systemPromptPreset?: string;
   systemPromptCustom?: string;
   memoryPromptMode: MemoryPromptMode;
 }
 
+/**
+ * Resolve the system prompt for a newly created agent.
+ *
+ * A Letta Cloud server owned the default prompt, so this used to take
+ * `isLettaCloud` and return `null` to let the server supply it when no preset
+ * was given. No backend is a Letta Cloud server any more, so the bundled
+ * default is always built here.
+ */
 export async function resolveCreatedAgentSystemPrompt(
   options: CreatedAgentSystemPromptOptions,
 ): Promise<string | null> {
   if (options.systemPromptCustom !== undefined) {
     return options.systemPromptCustom;
-  }
-  if (
-    options.isLettaCloud &&
-    (!options.systemPromptPreset || options.systemPromptPreset === "default")
-  ) {
-    return null;
   }
   return resolveAndBuildSystemPrompt(
     options.systemPromptPreset,
@@ -165,32 +160,23 @@ export async function resolveCreatedAgentSystemPrompt(
 export function resolveCreatedAgentMemfsConfig(
   options: CreatedAgentMemfsConfigOptions,
 ): CreatedAgentMemfsConfig {
-  // MemFS is unavailable only when the backend can't support it:
-  // self-hosted servers have no memfs git endpoint.
+  // MemFS is unavailable only when the backend can't support it: self-hosted
+  // servers have no memfs git endpoint. A backend with `remoteMemfs` could
+  // supply one when the server was Letta Cloud; no such backend exists now.
   const supported =
     options.capabilities.localMemfs ||
-    (options.capabilities.remoteMemfs && options.isLettaCloud) ||
     options.requestedMemoryPromptMode === "memfs" ||
     options.requestedMemoryPromptMode === "root-memfs" ||
     options.requestedMemoryPromptMode === "local-memfs";
   const enableMemfs = options.isSubagent ? false : supported;
-  const requestedMemoryPromptMode =
-    options.requestedMemoryPromptMode !== "standard"
-      ? options.requestedMemoryPromptMode
-      : undefined;
-  // New Letta Cloud and embedded-local agents are born on the MemFS v2 root
-  // layout. An explicit legacy memory mode still means "use git-backed
-  // memory" at creation, not "create another legacy-layout agent".
-  // Self-hosted API servers keep the caller's explicit mode.
+  // Embedded-local agents are born on the MemFS v2 root layout. An explicit
+  // legacy memory mode still means "use git-backed memory" at creation, not
+  // "create another legacy-layout agent".
   const memoryPromptMode = !enableMemfs
     ? "standard"
     : options.capabilities.localMemfs
       ? "root-memfs"
-      : options.isLettaCloud
-        ? requestedMemoryPromptMode === "local-memfs"
-          ? "local-memfs"
-          : "root-memfs"
-        : (requestedMemoryPromptMode ?? "memfs");
+      : (options.requestedMemoryPromptMode ?? "memfs");
 
   return { enableMemfs, memoryPromptMode };
 }
@@ -278,16 +264,9 @@ export async function createAgent(
   }
 
   const backend = getBackend();
-  const isLettaCloud =
-    backend.capabilities.remoteMemfs && !backend.capabilities.localMemfs
-      ? await import("./memory-filesystem").then((module) =>
-          module.isLettaCloud(),
-        )
-      : false;
   const memfsConfig = resolveCreatedAgentMemfsConfig({
     capabilities: backend.capabilities,
     requestedMemoryPromptMode: options.memoryPromptMode,
-    isLettaCloud,
     isSubagent,
   });
 
@@ -366,11 +345,9 @@ export async function createAgent(
     (modelUpdateArgs?.context_window as number | undefined) ??
     (await getModelContextWindow(modelHandle));
 
-  // Letta Cloud owns its default prompt. Local and self-hosted backends still
-  // receive the bundled default so their existing behavior remains unchanged.
+  // The bundled default prompt is always built here.
   const memMode: MemoryPromptMode = memfsConfig.memoryPromptMode;
   const systemPromptContent = await resolveCreatedAgentSystemPrompt({
-    isLettaCloud,
     systemPromptPreset: options.systemPromptPreset,
     systemPromptCustom: options.systemPromptCustom,
     memoryPromptMode: memMode,
@@ -387,7 +364,6 @@ export async function createAgent(
     description: agentDescription,
     model: modelHandle,
     system: systemPromptContent,
-    isLettaCloud,
     memoryPromptMode: memMode,
     memoryBlocks:
       filteredMemoryBlocks.length > 0 ? filteredMemoryBlocks : undefined,
