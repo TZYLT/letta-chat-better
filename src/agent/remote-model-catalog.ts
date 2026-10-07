@@ -16,7 +16,6 @@ import {
   getAvailableModelHandles,
 } from "@/agent/available-models";
 import { type CatalogModel, models } from "@/agent/model-catalog";
-import { LETTA_CLOUD_API_URL } from "@/auth/oauth";
 import { debugLog } from "@/utils/debug";
 
 const CACHE_SCHEMA_VERSION = 1;
@@ -304,13 +303,6 @@ async function refreshRuntimeModelCatalog(
   }
 }
 
-function isCloudCatalogSource(source: string): boolean {
-  return (
-    normalizeCatalogSource(source) ===
-    normalizeCatalogSource(LETTA_CLOUD_API_URL)
-  );
-}
-
 /**
  * Refresh the live model catalog.
  *
@@ -330,15 +322,6 @@ export async function refreshModelCatalog(options?: {
 /** Initialize the local runtime catalog. */
 export async function initializeModelCatalog(): Promise<void> {
   await refreshModelCatalog();
-}
-
-/** Fail only when Cloud has neither a valid cache nor a reachable catalog. */
-export function requireModelCatalog(baseUrl = LETTA_CLOUD_API_URL): void {
-  if (isCloudCatalogSource(baseUrl) && models.length === 0) {
-    throw new Error(
-      "Model catalog is unavailable. GET /v1/models/catalog failed and no valid cache exists. Restore network access and retry.",
-    );
-  }
 }
 
 /** Fire-and-forget catalog warmup (startup path). */

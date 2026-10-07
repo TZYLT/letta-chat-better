@@ -143,7 +143,7 @@ interface ModelSelectorProps {
   forceRefresh?: boolean;
   /** User's billing tier (kept for compatibility and future gating logic) */
   billingTier?: string;
-  /** Whether connected to a self-hosted server (not api.letta.com) */
+  /** Whether connected to a self-hosted server instead of Letta Cloud */
   isSelfHosted?: boolean;
   /** Whether the active backend provides a local-only model catalog */
   localModelCatalog?: boolean;

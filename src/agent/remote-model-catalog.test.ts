@@ -8,7 +8,6 @@ import {
   __testResetRemoteModelCatalog,
   applyCatalogModels,
   initializeModelCatalog,
-  requireModelCatalog,
   toCatalogModel,
   toRuntimeCatalogModels,
 } from "@/agent/remote-model-catalog";
@@ -190,12 +189,6 @@ describe("applyCatalogModels", () => {
 });
 
 describe("refreshModelCatalog", () => {
-  test("fails clearly when API mode has no endpoint or cached catalog", () => {
-    expect(requireModelCatalog).toThrow(
-      "GET /v1/models/catalog failed and no valid cache exists",
-    );
-  });
-
   test("accepts a valid cached API catalog when the endpoint is unavailable", () => {
     expect(
       applyCatalogModels([
@@ -208,7 +201,6 @@ describe("refreshModelCatalog", () => {
         },
       ]),
     ).toBe(true);
-    expect(requireModelCatalog).not.toThrow();
   });
 
   test("local startup uses runtime inventory without requesting the Cloud catalog", async () => {
@@ -231,7 +223,6 @@ describe("refreshModelCatalog", () => {
     await expect(initializeModelCatalog()).resolves.toBeUndefined();
     expect(fetchMock).not.toHaveBeenCalled();
     expect(resolveModel("haiku")).toBe("anthropic/claude-haiku-4-5");
-    expect(() => requireModelCatalog("http://localhost:8283")).not.toThrow();
   });
 
   test("projects runtime metadata without requiring a managed default", () => {

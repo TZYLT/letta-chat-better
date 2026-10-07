@@ -104,7 +104,9 @@ def get_base_url() -> str:
         return base_url.rstrip("/")
     settings = get_letta_settings()
     env_settings = settings.get("env", {})
-    return env_settings.get("LETTA_BASE_URL", "https://api.letta.com").rstrip("/")
+    # Cloud is not a default anywhere (see src/backend/api/server-url.ts):
+    # a local install targets the self-hosted server on its documented port.
+    return env_settings.get("LETTA_BASE_URL", "http://localhost:8283").rstrip("/")
 
 
 # =============================================================================

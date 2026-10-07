@@ -1,6 +1,6 @@
 /**
- * Git operations for agent memory. The remote defaults to api.letta.com;
- * Desktop may proxy transport through localhost but never persists that URL.
+ * Git operations for agent memory. The remote defaults to the configured MemFS
+ * server (local when none is set); Desktop's proxy is transport-only.
  */
 
 import { execFile as execFileCb } from "node:child_process";
@@ -686,7 +686,7 @@ export async function runGitWithRetry(
  * Configure a local credential helper in the repo's .git/config
  * so plain `git push` / `git pull` work without auth prefixes.
  * Skipped in Desktop proxy transport mode because the listener only has a
- * local session token; persisting that token under api.letta.com would break
+ * local session token; persisting that token under the Cloud key would break
  * normal CLI/TUI sessions that share the same memory repo.
  *
  * On Windows, we write a batch script because the bash-style inline
