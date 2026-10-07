@@ -12,7 +12,6 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { LETTA_CHAT_API_KEYS_URL } from "@/cli/helpers/app-urls";
 import { createIsolatedCliTestEnv } from "@/test-utils/test-process-env";
 
 /**
@@ -292,23 +291,19 @@ describe("Startup Flow - Smoke", () => {
     expect(result.stderr).not.toContain("cannot be used with");
     expect(
       result.stderr.includes("NonExistentAgent999") ||
-        result.stderr.includes("Missing LETTA_API_KEY"),
+        result.stderr.includes("Model catalog is unavailable."),
     ).toBe(true);
   });
 
-  test("--new-agent headless parses and reaches credential check", async () => {
+  test("--new-agent headless parses and proceeds to startup", async () => {
     const result = await runCli(["--new-agent", "-p", "Say OK"], {
       expectExit: 1,
     });
-    expect(result.stderr).toContain("Missing LETTA_API_KEY");
-    expect(result.stderr).toContain(
-      `Get an API key at ${LETTA_CHAT_API_KEYS_URL}`,
-    );
-    expect(result.stderr).not.toContain("https://app.letta.com/api-keys");
+    expect(result.stderr).toContain("Model catalog is unavailable.");
     expect(result.stderr).not.toContain("No recent session found");
   });
 
-  test("unknown positional with non-TTY stdin rejects before headless credential path", async () => {
+  test("unknown positional with non-TTY stdin rejects before headless startup", async () => {
     const result = await runCli(["whoami"], { expectExit: 1 });
     expect(result.stderr).toContain(
       'Error: Unknown command or argument "whoami"',
@@ -316,12 +311,15 @@ describe("Startup Flow - Smoke", () => {
     expect(result.stderr).toContain(
       "Run 'letta --help' for usage information.",
     );
-    expect(result.stderr).not.toContain("Missing LETTA_API_KEY");
+    expect(result.stderr).not.toContain("Model catalog is unavailable.");
   });
 
   test("stdin-only non-TTY startup still uses the headless path", async () => {
     const result = await runCli([], { expectExit: 1 });
-    expect(result.stderr).toContain("Missing LETTA_API_KEY");
+    // With no prompt on non-TTY stdin the headless path reports the missing
+    // prompt. It no longer stops earlier on a Cloud credential check, so this
+    // is the first thing that fails.
+    expect(result.stderr).toContain("Error: No prompt provided");
     expect(result.stderr).not.toContain("Unknown command or argument");
   });
 
@@ -332,7 +330,7 @@ describe("Startup Flow - Smoke", () => {
         expectExit: 1,
       },
     );
-    expect(result.stderr).toContain("Missing LETTA_API_KEY");
+    expect(result.stderr).toContain("Model catalog is unavailable.");
     expect(result.stderr).not.toContain("Invalid toolset");
   });
 
@@ -341,7 +339,7 @@ describe("Startup Flow - Smoke", () => {
       ["--new-agent", "--toolset", "letta", "-p", "Say OK"],
       { expectExit: 1 },
     );
-    expect(result.stderr).toContain("Missing LETTA_API_KEY");
+    expect(result.stderr).toContain("Model catalog is unavailable.");
     expect(result.stderr).not.toContain("Invalid toolset");
   });
 
@@ -351,7 +349,7 @@ describe("Startup Flow - Smoke", () => {
         ["--new-agent", "--toolset", toolset, "-p", "Say OK"],
         { expectExit: 1 },
       );
-      expect(result.stderr).toContain("Missing LETTA_API_KEY");
+      expect(result.stderr).toContain("Model catalog is unavailable.");
       expect(result.stderr).not.toContain("Invalid toolset");
     }
   });
@@ -363,7 +361,7 @@ describe("Startup Flow - Smoke", () => {
         expectExit: 1,
       },
     );
-    expect(result.stderr).toContain("Missing LETTA_API_KEY");
+    expect(result.stderr).toContain("Model catalog is unavailable.");
     expect(result.stderr).not.toContain("Unknown option '--memfs-startup'");
   });
 
@@ -372,7 +370,10 @@ describe("Startup Flow - Smoke", () => {
       ["--agent", "agent-123", "--new", "--stateless", "-p", "Say OK"],
       { expectExit: 1 },
     );
-    expect(result.stderr).toContain("Missing LETTA_API_KEY");
+    // The flags parsed and startup looked the agent up; the isolated HOME has
+    // no such agent, which is what stops it now that the Cloud credential gate
+    // is gone.
+    expect(result.stderr).toContain("Agent agent-123 not found");
     expect(result.stderr).not.toContain("Unknown option '--stateless'");
     expect(result.stderr).not.toContain("--stateless requires");
   });
@@ -404,7 +405,9 @@ describe("Startup Flow - Smoke", () => {
     const result = await runCli(["-p", "Say OK", "-C", "conv-123"], {
       expectExit: 1,
     });
-    expect(result.stderr).toContain("Missing LETTA_API_KEY");
+    // `-C` was accepted (no "Unknown option") and startup looked the
+    // conversation up; it does not exist in the isolated HOME.
+    expect(result.stderr).toContain("Conversation conv-123 not found");
     expect(result.stderr).not.toContain("Unknown option '-C'");
   });
 
@@ -420,7 +423,7 @@ describe("Startup Flow - Smoke", () => {
         expectExit: 1,
       });
       expect(result.stderr).toContain(`Unknown option '${flag}'`);
-      expect(result.stderr).not.toContain("Missing LETTA_API_KEY");
+      expect(result.stderr).not.toContain("Model catalog is unavailable.");
     },
     // Let the subprocess deadline fire before Bun's, with time for home cleanup.
     CLI_TIMEOUT_MS + 5_000,
@@ -439,7 +442,7 @@ describe("Startup Flow - Smoke", () => {
       ],
       { expectExit: 1 },
     );
-    expect(result.stderr).toContain("Missing LETTA_API_KEY");
+    expect(result.stderr).toContain("Model catalog is unavailable.");
     expect(result.stderr).not.toContain("Unknown option '--max-turns'");
     expect(result.stderr).not.toContain("Unknown option '--pre-load-skills'");
   });

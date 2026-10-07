@@ -10,7 +10,6 @@ import { runModelSubcommand } from "./model";
 import { runModsSubcommand } from "./mods";
 import { runSecretSubcommand } from "./secret";
 import { asLegacyAppServerCommand, runServerSubcommand } from "./server";
-import { runSetupSubcommand } from "./setup";
 import { runInstallSubcommand, runSkillsSubcommand } from "./skills";
 import { runStepsSubcommand } from "./steps";
 import { runTrajectoriesSubcommand } from "./trajectories";
@@ -84,8 +83,6 @@ export async function runSubcommand(argv: string[]): Promise<number | null> {
       return runServerSubcommand(rest);
     case "connect":
       return runConnectSubcommand(rest);
-    case "setup":
-      return runSetupSubcommand(rest);
     case "install":
       return runInstallSubcommand(rest);
     case "skills":

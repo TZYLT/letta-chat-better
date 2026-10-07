@@ -1,6 +1,5 @@
 /**
  * Profile selection flow - runs before main app starts
- * Similar pattern to auth/setup.ts
  */
 
 import type { AgentState } from "@letta-ai/letta-client/resources/agents/agents";
