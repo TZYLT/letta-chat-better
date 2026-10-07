@@ -265,7 +265,15 @@ describe("unit-test impact planning", () => {
       git("-c", "core.hooksPath=", "commit", "-m", "feature");
       const branchHead = git("rev-parse", "HEAD");
       git("checkout", "main");
-      git("-c", "core.hooksPath=", "merge", "--no-ff", "feature", "-m", "merge");
+      git(
+        "-c",
+        "core.hooksPath=",
+        "merge",
+        "--no-ff",
+        "feature",
+        "-m",
+        "merge",
+      );
       const headSha = git("rev-parse", "HEAD");
       git("clone", "--depth=2", pathToFileURL(directory).href, checkout);
       writeFileSync(
@@ -348,8 +356,12 @@ describe("current repository impact graph", () => {
   });
 
   test("literal calls through source-reader helpers are direct dependencies", () => {
+    // This used to assert `src/auth/setup-ui.tsx`, which the Cloud-login removal
+    // deleted along with the test that read it. `clear-messages-command.test.ts`
+    // reads the listener commands module by literal URL and no cli file imports
+    // it, so its presence here can only come from the literal scan.
     expect(impactIndex.familyDependencies.get("cli")).toContain(
-      "src/auth/setup-ui.tsx",
+      "src/websocket/listener/commands.ts",
     );
     expect(impactIndex.familyDependencies.get("tools")).toContain(
       "src/websocket/listener/turn.ts",

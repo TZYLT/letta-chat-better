@@ -1,4 +1,5 @@
 import { afterEach, expect, test } from "bun:test";
+import { spawnSync } from "node:child_process";
 import {
   chmodSync,
   mkdirSync,
@@ -22,6 +23,14 @@ const addPermissionScript = join(
   "add_permission.py",
 );
 const tempDirs: string[] = [];
+
+/**
+ * Every case here runs the shipped `add_permission.py`. Without a real `python3`
+ * on PATH (Windows resolves the name to a Microsoft Store stub that exits
+ * non-zero) the suite can only report a spawn failure, so skip instead.
+ */
+const pythonAvailable =
+  spawnSync("python3", ["--version"], { stdio: "ignore" }).status === 0;
 
 function expectPathSuffix(value: unknown, suffixParts: string[]): void {
   expect(typeof value).toBe("string");
@@ -78,110 +87,122 @@ afterEach(() => {
   }
 });
 
-test("add_permission refuses user-scope writes without confirmation", async () => {
-  const root = makeTempDir("self-config-add-permission-user-");
-  const homeDir = join(root, "home");
-  const settingsPath = join(homeDir, ".letta", "settings.json");
-  writeJson(settingsPath, { permissions: { allow: [] } });
-  const before = readFileSync(settingsPath, "utf8");
+test.skipIf(!pythonAvailable)(
+  "add_permission refuses user-scope writes without confirmation",
+  async () => {
+    const root = makeTempDir("self-config-add-permission-user-");
+    const homeDir = join(root, "home");
+    const settingsPath = join(homeDir, ".letta", "settings.json");
+    writeJson(settingsPath, { permissions: { allow: [] } });
+    const before = readFileSync(settingsPath, "utf8");
 
-  const result = await runAddPermission(
-    ["--rule", "Bash(git status:*)", "--type", "allow", "--scope", "user"],
-    { HOME: homeDir },
-  );
+    const result = await runAddPermission(
+      ["--rule", "Bash(git status:*)", "--type", "allow", "--scope", "user"],
+      { HOME: homeDir },
+    );
 
-  expect(result.stdout).toBe("");
-  expect(result.exitCode).toBe(1);
-  expect(result.stderr).toContain("--confirm-user-scope");
-  expect(readFileSync(settingsPath, "utf8")).toBe(before);
-});
+    expect(result.stdout).toBe("");
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain("--confirm-user-scope");
+    expect(readFileSync(settingsPath, "utf8")).toBe(before);
+  },
+);
 
-test("add_permission preserves malformed JSON byte-for-byte", async () => {
-  const root = makeTempDir("self-config-add-permission-malformed-");
-  const cwd = join(root, "project");
-  const settingsPath = join(cwd, ".letta", "settings.json");
-  const malformed = '{"permissions": {"allow": [}\n';
-  mkdirSync(join(cwd, ".letta"), { recursive: true });
-  writeFileSync(settingsPath, malformed, "utf8");
+test.skipIf(!pythonAvailable)(
+  "add_permission preserves malformed JSON byte-for-byte",
+  async () => {
+    const root = makeTempDir("self-config-add-permission-malformed-");
+    const cwd = join(root, "project");
+    const settingsPath = join(cwd, ".letta", "settings.json");
+    const malformed = '{"permissions": {"allow": [}\n';
+    mkdirSync(join(cwd, ".letta"), { recursive: true });
+    writeFileSync(settingsPath, malformed, "utf8");
 
-  const result = await runAddPermission([
-    "--rule",
-    "Read(src/**)",
-    "--type",
-    "allow",
-    "--scope",
-    "project",
-    "--cwd",
-    cwd,
-  ]);
-
-  expect(result.stdout).toBe("");
-  expect(result.exitCode).toBe(1);
-  expect(result.stderr).toContain("Malformed JSON");
-  expect(readFileSync(settingsPath, "utf8")).toBe(malformed);
-});
-
-test("add_permission dry run does not require user confirmation or write", async () => {
-  const root = makeTempDir("self-config-add-permission-dry-run-");
-  const homeDir = join(root, "home");
-  const settingsPath = join(homeDir, ".letta", "settings.json");
-
-  const result = await runAddPermission(
-    [
+    const result = await runAddPermission([
       "--rule",
-      "Bash(git diff:*)",
+      "Read(src/**)",
       "--type",
       "allow",
       "--scope",
-      "user",
-      "--dry-run",
-    ],
-    { HOME: homeDir },
-  );
+      "project",
+      "--cwd",
+      cwd,
+    ]);
 
-  expect(result.stderr).toBe("");
-  expect(result.exitCode).toBe(0);
-  const output = JSON.parse(result.stdout);
-  expect(output).toMatchObject({
-    scope: "user",
-    type: "allow",
-    rule: "Bash(git diff:*)",
-    would_add: true,
-  });
-  expectPathSuffix(output.path, [
-    basename(root),
-    "home",
-    ".letta",
-    "settings.json",
-  ]);
-  expect(() => readFileSync(settingsPath, "utf8")).toThrow();
-});
+    expect(result.stdout).toBe("");
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain("Malformed JSON");
+    expect(readFileSync(settingsPath, "utf8")).toBe(malformed);
+  },
+);
 
-test("add_permission confirmed user write succeeds and preserves file mode", async () => {
-  const root = makeTempDir("self-config-add-permission-confirmed-");
-  const homeDir = join(root, "home");
-  const settingsPath = join(homeDir, ".letta", "settings.json");
-  writeJson(settingsPath, { permissions: { allow: [] } });
-  chmodSync(settingsPath, 0o640);
-  const beforeMode = statSync(settingsPath).mode & 0o777;
+test.skipIf(!pythonAvailable)(
+  "add_permission dry run does not require user confirmation or write",
+  async () => {
+    const root = makeTempDir("self-config-add-permission-dry-run-");
+    const homeDir = join(root, "home");
+    const settingsPath = join(homeDir, ".letta", "settings.json");
 
-  const result = await runAddPermission(
-    [
-      "--rule",
-      "Bash(git diff:*)",
-      "--type",
-      "allow",
-      "--scope",
-      "user",
-      "--confirm-user-scope",
-    ],
-    { HOME: homeDir },
-  );
+    const result = await runAddPermission(
+      [
+        "--rule",
+        "Bash(git diff:*)",
+        "--type",
+        "allow",
+        "--scope",
+        "user",
+        "--dry-run",
+      ],
+      { HOME: homeDir },
+    );
 
-  expect(result.stderr).toBe("");
-  expect(result.exitCode).toBe(0);
-  expect(JSON.parse(readFileSync(settingsPath, "utf8"))).toEqual({
-    permissions: { allow: ["Bash(git diff:*)"] },
-  });
-  expect(statSync(settingsPath).mode & 0o777).toBe(beforeMode);
-});
+    expect(result.stderr).toBe("");
+    expect(result.exitCode).toBe(0);
+    const output = JSON.parse(result.stdout);
+    expect(output).toMatchObject({
+      scope: "user",
+      type: "allow",
+      rule: "Bash(git diff:*)",
+      would_add: true,
+    });
+    expectPathSuffix(output.path, [
+      basename(root),
+      "home",
+      ".letta",
+      "settings.json",
+    ]);
+    expect(() => readFileSync(settingsPath, "utf8")).toThrow();
+  },
+);
+
+test.skipIf(!pythonAvailable)(
+  "add_permission confirmed user write succeeds and preserves file mode",
+  async () => {
+    const root = makeTempDir("self-config-add-permission-confirmed-");
+    const homeDir = join(root, "home");
+    const settingsPath = join(homeDir, ".letta", "settings.json");
+    writeJson(settingsPath, { permissions: { allow: [] } });
+    chmodSync(settingsPath, 0o640);
+    const beforeMode = statSync(settingsPath).mode & 0o777;
+
+    const result = await runAddPermission(
+      [
+        "--rule",
+        "Bash(git diff:*)",
+        "--type",
+        "allow",
+        "--scope",
+        "user",
+        "--confirm-user-scope",
+      ],
+      { HOME: homeDir },
+    );
+
+    expect(result.stderr).toBe("");
+    expect(result.exitCode).toBe(0);
+    expect(JSON.parse(readFileSync(settingsPath, "utf8"))).toEqual({
+      permissions: { allow: ["Bash(git diff:*)"] },
+    });
+    expect(statSync(settingsPath).mode & 0o777).toBe(beforeMode);
+  },
+);

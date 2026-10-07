@@ -25,19 +25,19 @@ afterAll(() => {
 });
 
 describe("warmMessageSearchCache", () => {
-  test("posts the new internal search cache-warm request shape", async () => {
+  // The warm request targets the Cloud tpuf search cache. The only backend has
+  // no such cache, so the helper must return its no-op without posting
+  // anything — asserting the *absence* of the request is the point of the case
+  // now. `backend/message-search.test.ts` covers the same short-circuit at the
+  // backend seam.
+  test("does not post a cache-warm request on the local backend", async () => {
     const response = await warmMessageSearchCache();
 
-    expect(warmSearchCacheMock).toHaveBeenCalledTimes(1);
-    const [body] = warmSearchCacheMock.mock.calls[0] ?? [];
-    expect(body).toEqual({
-      collection: "messages",
-      scope: {},
-    });
+    expect(warmSearchCacheMock).not.toHaveBeenCalled();
     expect(response).toEqual({
       collection: "messages",
-      status: "ACCEPTED",
-      warmed: true,
+      status: "local-backend-noop",
+      warmed: false,
     });
   });
 });
