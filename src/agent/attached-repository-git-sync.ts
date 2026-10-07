@@ -1,9 +1,10 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import type {
-  AttachedAgentRepository,
+import {
+  type AttachedAgentRepository,
   listAttachedAgentRepositories,
 } from "./attached-repositories";
+import { getAuthToken, isMemfsRemoteConfigured } from "./memory-auth";
 import {
   getMemoryAheadBehind,
   getMemoryConflictSummary,
@@ -254,12 +255,56 @@ export function syncPendingAttachedRepositoryCommits(
 }
 
 export async function syncPendingAttachedRepositoryCommitsAfterTurn(
-  _agentId: string,
-  _dependencies: SyncPendingAttachedRepositoriesAfterTurnDependencies = {},
+  agentId: string,
+  dependencies: SyncPendingAttachedRepositoriesAfterTurnDependencies = {},
 ): Promise<RepositoriesPostTurnSyncResult> {
-  // Attached shared-memory repositories were pushed to a Letta remote, which
-  // required a backend with `remoteMemfs`. No backend has one now, so there is
-  // nothing to sync and no remote to sync it to. The function stays so the
-  // post-turn sync fan-out keeps its shape.
-  return { results: [] };
+  // The gate used to read `capabilities.remoteMemfs`, which became a constant
+  // once the local backend was the only backend, so this returned an empty
+  // result for every run and attached shared-memory repositories were never
+  // pushed. What actually decides is whether memory is served by a remote at
+  // all: with no MemFS base URL configured the URL helper points at the local
+  // default and every push would be reported as a failure, so a purely local
+  // checkout stays empty.
+  if (!isMemfsRemoteConfigured()) {
+    return { results: [] };
+  }
+
+  const listRepositories =
+    dependencies.listRepositories ?? listAttachedAgentRepositories;
+  const repositories = await listRepositories(agentId);
+  if (repositories.length === 0) {
+    return { results: [] };
+  }
+
+  const token = await getAuthToken();
+  const settledResults = await Promise.allSettled(
+    repositories.map((repository) =>
+      syncPendingAttachedRepositoryCommits({
+        agentId,
+        repository,
+        token,
+        // The repository's own remote decides now; a mount that cannot reach one
+        // reports the failure itself instead of being skipped here.
+        remoteSupported: true,
+        localOnly: false,
+      }),
+    ),
+  );
+
+  return {
+    results: settledResults.map((result, index) => {
+      if (result.status === "fulfilled") return result.value;
+      const repository = repositories[index];
+      return {
+        name: repository?.name ?? "unknown",
+        path: repository ? getRepositoryMountDir(agentId, repository.name) : "",
+        permissions: repository?.permissions ?? "unknown",
+        status: "push_failed",
+        summary:
+          result.reason instanceof Error
+            ? result.reason.message
+            : String(result.reason),
+      };
+    }),
+  };
 }

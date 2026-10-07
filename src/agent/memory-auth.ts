@@ -44,8 +44,14 @@ export async function getAuthToken(): Promise<string> {
   return client.apiKey ?? "";
 }
 
-/** Whether memory is served by something other than the local checkout. */
-function isMemfsRemoteConfigured(): boolean {
+/**
+ * Whether memory is served by something other than the local checkout — a
+ * Desktop proxy transport or an explicitly configured MemFS base URL.
+ *
+ * Shared with the attached-repository sync, which must not try to push to the
+ * local default URL when no MemFS server is configured.
+ */
+export function isMemfsRemoteConfigured(): boolean {
   if (getMemfsGitProxyRewriteConfig() !== null) {
     return true;
   }
