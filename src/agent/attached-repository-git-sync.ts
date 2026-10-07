@@ -1,12 +1,10 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { getBackend } from "@/backend";
 import type { BackendCapabilities } from "@/backend/backend";
-import {
-  type AttachedAgentRepository,
+import type {
+  AttachedAgentRepository,
   listAttachedAgentRepositories,
 } from "./attached-repositories";
-import { getAuthToken } from "./memory-auth";
 import {
   getMemoryAheadBehind,
   getMemoryConflictSummary,
@@ -258,48 +256,12 @@ export function syncPendingAttachedRepositoryCommits(
 }
 
 export async function syncPendingAttachedRepositoryCommitsAfterTurn(
-  agentId: string,
-  dependencies: SyncPendingAttachedRepositoriesAfterTurnDependencies = {},
+  _agentId: string,
+  _dependencies: SyncPendingAttachedRepositoriesAfterTurnDependencies = {},
 ): Promise<RepositoriesPostTurnSyncResult> {
-  const backend = dependencies.backend ?? getBackend();
-  if (!backend.capabilities.remoteMemfs) {
-    return { results: [] };
-  }
-
-  const listRepositories =
-    dependencies.listRepositories ?? listAttachedAgentRepositories;
-  const repositories = await listRepositories(agentId);
-  if (repositories.length === 0) {
-    return { results: [] };
-  }
-
-  const token = await getAuthToken();
-  const settledResults = await Promise.allSettled(
-    repositories.map((repository) =>
-      syncPendingAttachedRepositoryCommits({
-        agentId,
-        repository,
-        token,
-        remoteSupported: backend.capabilities.remoteMemfs,
-        localOnly: false,
-      }),
-    ),
-  );
-
-  return {
-    results: settledResults.map((result, index) => {
-      if (result.status === "fulfilled") return result.value;
-      const repository = repositories[index];
-      return {
-        name: repository?.name ?? "unknown",
-        path: repository ? getRepositoryMountDir(agentId, repository.name) : "",
-        permissions: repository?.permissions ?? "unknown",
-        status: "push_failed",
-        summary:
-          result.reason instanceof Error
-            ? result.reason.message
-            : String(result.reason),
-      };
-    }),
-  };
+  // Attached shared-memory repositories were pushed to a Letta remote, which
+  // required a backend with `remoteMemfs`. No backend has one now, so there is
+  // nothing to sync and no remote to sync it to. The function stays so the
+  // post-turn sync fan-out keeps its shape.
+  return { results: [] };
 }
