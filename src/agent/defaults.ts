@@ -80,6 +80,14 @@ export function selectDefaultAgentModel(params: {
     return resolvedPreferred;
   }
 
+  // An empty availability list is not a veto. A bare local store, or a dev
+  // executor with no provider configured, reports no models; dropping the
+  // caller's explicit choice there leaves agent creation with no model at all,
+  // which then fails on the catalog lookup instead of using what was asked for.
+  if (handles.size === 0) {
+    return resolvedPreferred;
+  }
+
   if (resolvedPreferred && handles.has(resolvedPreferred)) {
     return resolvedPreferred;
   }

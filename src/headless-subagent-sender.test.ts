@@ -57,6 +57,10 @@ test("new, existing and forked child CLI launches persist the sender as a separa
           "--tools=",
           "--no-skills",
           "--no-system-info-reminder",
+          // The deterministic executor needs no provider, so there is no
+          // catalog to pick a default from: name the local default explicitly.
+          "--model",
+          "local/default",
           "--output-format",
           "json",
         ],

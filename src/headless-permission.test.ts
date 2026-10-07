@@ -5,9 +5,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { LETTA_CLOUD_API_URL } from "@/auth/oauth";
 import { waitForHeadlessPermissionResponse } from "@/headless-permission";
-import runtimeModelCatalog from "@/test-utils/fixtures/runtime-model-catalog.json";
 import { createIsolatedCliTestEnv } from "@/test-utils/test-process-env";
 
 const childProcesses = new Set<ChildProcessWithoutNullStreams>();
@@ -185,21 +183,14 @@ async function runDenyLifecycleScenario(): Promise<HeadlessEvent[]> {
   const tempRoot = await mkdtemp(join(tmpdir(), "letta-deny-interrupt-"));
   tempRoots.push(tempRoot);
   const homeDir = join(tempRoot, "home");
-  const cacheDir = join(homeDir, ".letta", "cache");
-  mkdirSync(cacheDir, { recursive: true });
+  mkdirSync(join(homeDir, ".letta"), { recursive: true });
   writeFileSync(
     join(homeDir, ".letta", "settings.json"),
     JSON.stringify({ permissions: { alwaysAsk: ["Bash"] } }),
   );
-  writeFileSync(
-    join(cacheDir, "model-catalog.json"),
-    JSON.stringify({
-      schemaVersion: 1,
-      source: LETTA_CLOUD_API_URL,
-      fetchedAt: Date.now(),
-      models: runtimeModelCatalog.models,
-    }),
-  );
+  // A persisted `~/.letta/cache/model-catalog.json` used to seed the catalog
+  // here. That cache went away with the Cloud catalog endpoint, and the dev
+  // backend projects no models, so the child names the local default instead.
 
   const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
   const child = spawn(
@@ -213,6 +204,8 @@ async function runDenyLifecycleScenario(): Promise<HeadlessEvent[]> {
       "--dev-backend",
       "fake-headless-tool-call",
       "--new-agent",
+      "--model",
+      "local/default",
       "--input-format",
       "stream-json",
       "--output-format",

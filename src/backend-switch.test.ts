@@ -148,6 +148,9 @@ describe("headless backend switches", () => {
           "--max-turns",
           "1",
           "--no-skills",
+          // The local store has no models to pick a default from.
+          "--model",
+          "local/default",
         ],
         {
           LETTA_LOCAL_BACKEND_EXPERIMENTAL: "true",
@@ -155,13 +158,14 @@ describe("headless backend switches", () => {
         },
       );
 
-      // Without AGENT_ID there is nothing to infer; behavior is unchanged
-      // from before ambient inference existed.
+      // Without AGENT_ID there is nothing to infer; behavior is unchanged from
+      // before ambient inference existed. Routing then resolves the selector
+      // against the configured server, which exposes no environments endpoint
+      // here — the point is that it never falls back to an inferred agent.
+      expect(result.exitCode).toBe(1);
       expect(result.stdout).not.toContain("should-not-run");
       expect(result.stderr).not.toContain("inferred from the AGENT_ID");
-      expect(result.stderr).toContain(
-        "Computer routing requires the Cloud backend",
-      );
+      expect(result.stderr).toContain("/v1/environments");
     } finally {
       await rm(storageDir, { recursive: true, force: true });
     }
