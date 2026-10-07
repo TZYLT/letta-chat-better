@@ -235,7 +235,7 @@ test("patch headers and symlinked file destinations wait for the actual checkout
   const real = join(root, "real");
   const alias = join(root, "alias");
   await mkdir(real);
-  await symlink(real, alias);
+  await symlink(real, alias, process.platform === "win32" ? "junction" : "dir");
   const checkout = join(real, "shared");
   let release!: () => void;
   const barrier = new Promise<void>((resolve) => {

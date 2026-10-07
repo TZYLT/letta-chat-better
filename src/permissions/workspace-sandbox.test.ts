@@ -123,7 +123,11 @@ test("allows own writes and broad reads but denies peer access", () => {
 test("follows symlinks before allowing a write", () => {
   const dirs = fixture();
   const link = join(dirs.root, "peer-link");
-  symlinkSync(dirs.peer, link);
+  symlinkSync(
+    dirs.peer,
+    link,
+    process.platform === "win32" ? "junction" : "dir",
+  );
   try {
     expect(
       evaluateWorkspaceSandboxGuard(

@@ -106,7 +106,11 @@ describe("ClientSkillsWatcher", () => {
     const linkedSkills = join(tempRoot, "repository-skills");
     await mkdir(skillsRoot, { recursive: true });
     await mkdir(linkedSkills, { recursive: true });
-    await symlink(linkedSkills, join(skillsRoot, "repository"));
+    await symlink(
+      linkedSkills,
+      join(skillsRoot, "repository"),
+      process.platform === "win32" ? "junction" : "dir",
+    );
     const onChange = mock(() => {});
     const { calls, watchFunction } = createWatchHarness();
     const watcher = new ClientSkillsWatcher(onChange, watchFunction);

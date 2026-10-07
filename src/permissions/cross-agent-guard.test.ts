@@ -647,7 +647,11 @@ describe("symlink-escape (realpath classification of in-process file tools)", ()
     const projectDir = join(home, "project");
     mkdirSync(projectDir, { recursive: true });
     const link = join(projectDir, "link");
-    symlinkSync(otherMem, link);
+    symlinkSync(
+      otherMem,
+      link,
+      process.platform === "win32" ? "junction" : "dir",
+    );
 
     const targets = extractTargetAgentPaths(
       "Read",
@@ -666,7 +670,11 @@ describe("symlink-escape (realpath classification of in-process file tools)", ()
     const otherMem = agentMemory(home, "agent-other");
     mkdirSync(otherMem, { recursive: true });
     const link = join(home, "link-to-other");
-    symlinkSync(otherMem, link);
+    symlinkSync(
+      otherMem,
+      link,
+      process.platform === "win32" ? "junction" : "dir",
+    );
 
     const targets = extractTargetAgentPaths(
       "Write",
@@ -690,7 +698,11 @@ describe("symlink-escape (realpath classification of in-process file tools)", ()
     // The hole that a lexical-only check (or a realpath check skipped when the
     // lexical path already looks like self) would miss.
     const sneaky = join(selfMem, "sneaky");
-    symlinkSync(otherMem, sneaky);
+    symlinkSync(
+      otherMem,
+      sneaky,
+      process.platform === "win32" ? "junction" : "dir",
+    );
 
     const targets = extractTargetAgentPaths(
       "Read",
@@ -711,7 +723,11 @@ describe("symlink-escape (realpath classification of in-process file tools)", ()
     mkdirSync(otherMem, { recursive: true });
     writeFileSync(join(otherMem, "secret.md"), "TOPSECRET");
     const link = join(home, "escape");
-    symlinkSync(otherMem, link);
+    symlinkSync(
+      otherMem,
+      link,
+      process.platform === "win32" ? "junction" : "dir",
+    );
 
     const result = evaluateCrossAgentGuard(
       "Read",

@@ -38,7 +38,8 @@ test("canonicalizeRoot resolves a symlinked directory to its real path", () => {
   const target = join(base, "real");
   mkdirSync(target);
   const link = join(base, "link");
-  symlinkSync(target, link);
+  // A junction needs no elevated privilege on Windows; a plain symlink does.
+  symlinkSync(target, link, process.platform === "win32" ? "junction" : "dir");
 
   expect(canonicalizeRoot(link)).toBe(canonicalizeRoot(target));
 });
@@ -48,7 +49,8 @@ test("canonicalizeRoot resolves through a symlink for a not-yet-existing leaf", 
   const target = join(base, "real");
   mkdirSync(target);
   const link = join(base, "link");
-  symlinkSync(target, link);
+  // A junction needs no elevated privilege on Windows; a plain symlink does.
+  symlinkSync(target, link, process.platform === "win32" ? "junction" : "dir");
 
   // The file doesn't exist yet (create case) but the symlinked parent does.
   expect(canonicalizeRoot(join(link, "child.txt"))).toBe(
