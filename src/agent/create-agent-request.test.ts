@@ -226,15 +226,21 @@ describe("buildCreateAgentRequestForPersonality", () => {
       // Same content the CLI's createAgent() would send for this personality.
       expect(request.name).toBe(cliOptions.name as string);
       expect(request.description).toBe(cliOptions.description as string);
-      expect(request.memory_blocks).toEqual([
-        DEFAULT_ROOT_MEMORY_BLOCK,
-        ...(cliOptions.memoryBlocks as typeof request.memory_blocks),
+      // The browser-safe wrapper targets Cloud, so the persona/human text it
+      // builds is the Cloud variant while the CLI resolves the local one. The
+      // block *set* is what has to line up, plus the root-layout MEMORY block
+      // the server-side create needs.
+      expect(request.memory_blocks.map((block) => block.label)).toEqual([
+        DEFAULT_ROOT_MEMORY_BLOCK.label,
+        ...(cliOptions.memoryBlocks ?? []).map((block) =>
+          "label" in block ? block.label : block.blockId,
+        ),
       ]);
       expect(request.model).toBe(getDefaultModel());
 
-      // Direct Cloud creation and the CLI Cloud path both delegate the default
-      // prompt to the service. Local CLI creation still resolves it client-side.
-      expect(cliOptions.memoryPromptMode).toBe("root-memfs");
+      // The CLI resolves the prompt itself for the local layout; the wrapper
+      // delegates the default prompt to the service.
+      expect(cliOptions.memoryPromptMode).toBe("local-memfs");
       expect(request.system).toBeNull();
 
       expect(request.agent_type).toBe(LETTA_CODE_AGENT_TYPE);

@@ -158,14 +158,17 @@ describe("personality helpers", () => {
         description: PERSONALITY_OPTIONS.find(
           (option) => option.id === personality,
         )?.description,
-        memoryPromptMode: "root-memfs",
+        // The environment is implicit here, and the only backend reports local
+        // memfs; the Cloud root layout is reachable only via an explicit
+        // `environment: "cloud"`.
+        memoryPromptMode: "local-memfs",
       });
       expect(personaBlock?.value).toBe(definitions.persona.value);
       expect(humanBlock?.value).toBe(definitions.human.value);
     }
   });
 
-  test("tutorial includes cloud onboarding memory by default", async () => {
+  test("tutorial includes onboarding memory by default", async () => {
     expect(ONBOARDING_PERSONALITIES).toEqual(["tutorial"]);
 
     const options = await buildCreateAgentOptionsForPersonality({
@@ -179,7 +182,9 @@ describe("personality helpers", () => {
     expect(onboardingBlock?.value).toContain(
       "The person you are working with is new to Letta Code.",
     );
-    expect(onboardingBlock?.value).toContain("Offer to create one yourself.");
+    // There is no Cloud variant to offer a profile picture any more: the
+    // default environment is local, and the local text says not to.
+    expect(onboardingBlock?.value).toContain("This agent is running locally.");
     expect(
       getPersonalityBlockDefinitions("tutorial").onboarding
         ?.templatePromptAssetName,
