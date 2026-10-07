@@ -16,7 +16,7 @@ import {
 import stringWidth from "string-width";
 import type { ModelReasoningEffort } from "@/agent/model";
 import type { getSubagentLifecycleSnapshot } from "@/agent/subagent-state";
-import { LETTA_CLOUD_API_URL } from "@/auth/oauth";
+import { getServerUrl } from "@/backend/api/server-url";
 import { appendInputHistory } from "@/cli/components/input-history";
 import { shouldRenderDefaultStatuslineRenderer } from "@/cli/display/statusline/default-renderer-activation";
 import { truncateToWidth } from "@/cli/display/statusline/formatting";
@@ -55,7 +55,6 @@ import {
 import type { PermissionMode } from "@/permissions/mode";
 import { permissionMode } from "@/permissions/mode";
 import { OPENAI_CODEX_PROVIDER_NAME } from "@/providers/openai-codex-provider";
-import { settingsManager } from "@/settings-manager";
 import type { QueuedMessage } from "@/utils/message-queue-bridge";
 import { colors } from "./colors";
 import { InputAssist } from "./InputAssist";
@@ -1257,12 +1256,9 @@ export function Input({
     };
   }, []);
 
-  // Get server URL (same logic as client.ts)
-  const settings = settingsManager.getSettings();
-  const serverUrl =
-    process.env.LETTA_BASE_URL ||
-    settings.env?.LETTA_BASE_URL ||
-    LETTA_CLOUD_API_URL;
+  // The bar only asks whether this is a Cloud server; never re-derive the
+  // env/settings fallback chain here.
+  const serverUrl = getServerUrl();
 
   // Handle profile confirmation: Enter confirms, any other key cancels
   // When onEscapeCancel is provided, TextInput is unfocused so we handle all keys here
