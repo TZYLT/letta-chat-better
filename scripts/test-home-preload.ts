@@ -50,6 +50,14 @@ process.env.USERPROFILE = testHome;
 process.env.LETTA_TEST_SECRETS_SERVICE_PREFIX = `letta-code-test-${process.pid}-${basename(testHome)}`;
 process.env.LETTA_CODE_TELEM ??= "0";
 
+// Managed tools (ripgrep for the Glob/Grep tools) are bootstrapped into
+// `<home>/.letta/bin`. This home is disposable, so leaving the tools directory
+// inside it means every test run re-downloads ripgrep from GitHub — which times
+// out under a parallel run and makes the Glob/Grep suites fail for reasons that
+// have nothing to do with the code under test. Point the tools directory at a
+// stable cache so one successful bootstrap is reused.
+process.env.LETTA_CODE_TOOLS_DIR ??= join(os.tmpdir(), "letta-code-test-tools");
+
 // Bun resolves os.homedir() before preloads run. Patch the shared built-in
 // module so both ESM and CommonJS consumers use the disposable home. This is a
 // direct module update rather than a Bun test mock, so mock.restore() in an
