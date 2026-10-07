@@ -203,7 +203,7 @@ describe("prepared conversation launch", () => {
   test.each([undefined, "cloud", "conn-remote"])(
     "threads initial client_message_id through a prepared child CLI (computer=%s)",
     async (computer) => {
-      getBackend().capabilities.environmentRouting = true;
+      getBackend().capabilities.remoteMemfs = true;
       for (const client_message_id of ["assignment:1", undefined]) {
         const result = await runWithRuntimeContext(
           { workingDirectory: testHome, connectionId: "conn-parent" },

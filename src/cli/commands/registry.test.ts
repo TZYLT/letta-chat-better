@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { setCurrentAgentId } from "@/agent/context";
 import { commands, executeCommand } from "@/cli/commands/registry";
 import {
@@ -8,28 +8,22 @@ import {
   toggleSystemReminderDisplay,
 } from "@/cli/components/transcript-display-state";
 import {
-  __testOverrideSecretsBackend,
+  __testOverrideLocalSecretStorage,
   clearSecretsCache,
 } from "@/utils/secrets-store";
 
-const AGENT_ID = "agent-registry-secret-command";
+const AGENT_ID = "agent-local-registry-secret-command";
 
-const listAgentSecretsMock = mock((_agentId: string) =>
-  Promise.resolve([] as Array<{ key: string; value: string }>),
-);
-
-const updateAgentMock = mock(
-  (_agentId: string, _body: unknown, _options?: unknown) =>
-    Promise.resolve({ id: AGENT_ID }),
-);
-
-const capabilities = {
-  remoteMemfs: true,
-  serverSecrets: true,
-  promptRecompile: true,
-  localModelCatalog: false,
-  localMemfs: false,
-};
+function installLocalSecretStorage(values = new Map<string, string>()) {
+  __testOverrideLocalSecretStorage({
+    delete: async (name) => values.delete(name),
+    get: async (name) => values.get(name) ?? null,
+    set: async (name, value) => {
+      values.set(name, value);
+    },
+  });
+  return values;
+}
 
 describe("removed AgentFile commands", () => {
   test.each(["/export", "/download"])(
@@ -72,22 +66,14 @@ describe("context management has no restore entry", () => {
 
 describe("command registry", () => {
   beforeEach(() => {
-    listAgentSecretsMock.mockReset();
-    updateAgentMock.mockReset();
-    listAgentSecretsMock.mockResolvedValue([]);
-    updateAgentMock.mockResolvedValue({ id: AGENT_ID });
+    installLocalSecretStorage();
     setCurrentAgentId(AGENT_ID);
     setSystemRemindersVisible(false);
     clearSecretsCache(AGENT_ID);
-    __testOverrideSecretsBackend({
-      capabilities,
-      listAgentSecrets: listAgentSecretsMock,
-      updateAgent: updateAgentMock,
-    });
   });
 
   afterEach(() => {
-    __testOverrideSecretsBackend(null);
+    __testOverrideLocalSecretStorage(null);
     clearSecretsCache(AGENT_ID);
     setCurrentAgentId(null);
     setSystemRemindersVisible(false);
@@ -103,10 +89,6 @@ describe("command registry", () => {
       output: "Secret '$REGISTRY_TOKEN' set.",
       refreshSecretsInfo: true,
     });
-
-    listAgentSecretsMock.mockResolvedValueOnce([
-      { key: "REGISTRY_TOKEN", value: "registry-value" },
-    ]);
 
     const unsetResult = await executeCommand("/secret unset registry_token");
 

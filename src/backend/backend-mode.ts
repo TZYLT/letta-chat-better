@@ -1,40 +1,36 @@
 /**
- * Single source of truth for the active backend mode.
+ * Backend selection is no longer a runtime choice: the local in-process backend
+ * is the only backend, and this module is the single place that says so.
  *
- * Kept in its own leaf module so the mode state + resolver don't sit among
- * `backend.ts`'s backend-class imports, and so the mode can be read without
- * pulling in the full backend module. The runtime override set via
- * `setConfiguredBackendMode` takes precedence; otherwise we fall back to the
- * experimental local-backend env flag.
+ * `BackendMode` deliberately stays two-valued. It is still used to classify
+ * *legacy Cloud* agent ids and the settings buckets they namespace (`agent-…`
+ * that is not `agent-local-…`, `serverKeyForBackendMode`) — that classification
+ * is orthogonal to which backend process runs, and deleting the second value
+ * would silently re-key an existing user's pins. Do not read it as "which
+ * backend should run"; read `resolveBackendMode()`, which is a constant.
  *
- * Note: settings namespacing intentionally does NOT read this — it stays on the
- * env-based predicate (`isLocalBackendEnvEnabled`) so it isn't coupled to this
- * mutable global, which leaks across test files.
+ * Note: settings namespacing intentionally does NOT read `resolveBackendMode()`.
+ * It stays on the env-based predicate (`isLocalBackendEnvEnabled`) so that making
+ * the backend non-configurable cannot flip an existing user's settings bucket key
+ * from `api.letta.com` to `local:<dir>` and appear to lose their settings.
  */
-import { isLocalBackendEnvEnabled } from "./local/paths";
-
 export type BackendMode = "api" | "local";
 
-let configuredBackendMode: BackendMode | null = null;
-
-/**
- * Resolve the active backend mode: an explicit runtime override if one was set,
- * otherwise the experimental local-backend env flag.
- */
+/** The only backend mode: the local in-process backend. */
 export function resolveBackendMode(): BackendMode {
-  return (
-    configuredBackendMode ?? (isLocalBackendEnvEnabled() ? "local" : "api")
-  );
+  return "local";
 }
 
 /**
- * Set the active backend mode override. Callers that also need to swap the live
- * backend instance should use `configureBackendMode` from `@/backend` instead.
+ * Retained so mode-threading callers keep compiling. There is no longer a mode
+ * to configure, and this deliberately does NOT write
+ * `LETTA_LOCAL_BACKEND_EXPERIMENTAL`: that variable is frozen as the
+ * settings-bucket predicate (`isLocalBackendEnvEnabled`).
  */
-export function setConfiguredBackendMode(mode: BackendMode): void {
-  configuredBackendMode = mode;
+export function setConfiguredBackendMode(_mode: BackendMode): void {
+  // The local backend is the only backend.
 }
 
 export function isExperimentalLocalBackendEnabled(): boolean {
-  return resolveBackendMode() === "local";
+  return true;
 }

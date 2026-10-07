@@ -18,7 +18,6 @@ import type { StartListenerOptions } from "./types";
 
 const capabilities = {
   remoteMemfs: false,
-  serverSecrets: false,
   promptRecompile: false,
   localModelCatalog: true,
   localMemfs: false,

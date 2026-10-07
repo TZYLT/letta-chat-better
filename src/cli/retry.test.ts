@@ -5,7 +5,6 @@ import { isRetriableError } from "@/cli/app/retry";
 
 const capabilities = {
   remoteMemfs: false,
-  serverSecrets: false,
   promptRecompile: false,
   localModelCatalog: true,
   localMemfs: false,

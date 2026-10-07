@@ -19,8 +19,6 @@ import {
 } from "@/agent/reasoning-effort-label";
 import { refreshModelCatalog } from "@/agent/remote-model-catalog";
 import { getBackend } from "@/backend";
-import { isCloudServerUrl } from "@/backend/api/server-url";
-import { resolveBackendMode } from "@/backend/backend-mode";
 import {
   buildByokProviderAliases,
   buildOpenAICompatibleProxyProviderNames,
@@ -252,11 +250,11 @@ function resolveModelForUpdateBase(
           ? payload.model_handle
           : null;
       const providerType = inferProviderTypeFromRegistryHandle(byId.handle);
+      // The local in-process backend is the only backend, so a picker ID always
+      // resolves against the local inventory (Cloud mode used to skip this).
       const availableModel = explicitHandle
         ? availableModels.find((model) => model.handle === explicitHandle)
-        : resolveBackendMode() === "api" && isCloudServerUrl()
-          ? undefined
-          : findAvailableModelForPreset(byId.handle, availableModels);
+        : findAvailableModelForPreset(byId.handle, availableModels);
       const availableUpdateArgs = availableModelUpdateArgs(availableModel);
       const updateArgs =
         byId.updateArgs || availableUpdateArgs
@@ -338,19 +336,10 @@ function resolveModelForUpdateBase(
 export async function resolveModelForUpdateWithInventory(
   payload: UpdateModelPayload,
 ): Promise<ResolvedModelForUpdate | null> {
-  const handle = payload.model_handle ?? payload.model_id;
   // A first-contact /model <BYOK handle>, or a click after a listener restart,
-  // has not necessarily listed models. Load its provider identity before
-  // constructing settings; hosted catalog selections need no inventory probe.
-  if (
-    resolveBackendMode() === "api" &&
-    isCloudServerUrl() &&
-    handle?.includes("/") &&
-    !models.some((model) => model.handle === handle) &&
-    !getCachedAvailableModels()?.some((model) => model.handle === handle)
-  ) {
-    await getAvailableModelHandles();
-  }
+  // has not necessarily listed models. The Cloud-mode inventory probe that used
+  // to run here is gone with the API backend; the local catalog always resolves
+  // from the local inventory.
   return resolveModelForUpdate(payload);
 }
 
@@ -684,7 +673,8 @@ export async function buildListModelsResponse(
   requestId: string,
   options: { forceRefresh?: boolean } = {},
 ): Promise<ListModelsResponseMessage> {
-  const cloud = resolveBackendMode() === "api" && isCloudServerUrl();
+  // The local in-process backend is the only backend: the Cloud catalog mode
+  // (hosted rows, preset gating, per-handle inventory override) is gone.
   const [handlesResult, providersResult] = await Promise.allSettled([
     // User-initiated refreshes bypass the availability cache: within the
     // cache TTL a stale snapshot would otherwise make every "Refresh model
@@ -708,7 +698,7 @@ export async function buildListModelsResponse(
     buildOpenAICompatibleProxyProviderNames(providers);
   const entries = buildListModelsEntries(
     handlesResult.status === "fulfilled" ? handlesResult.value.models : [],
-    { cloud },
+    { cloud: false },
   ).map((entry) => {
     const providerName = entry.handle.split("/")[0];
     if (
@@ -728,10 +718,8 @@ export async function buildListModelsResponse(
   });
 
   // Channel clients use this list as selectable inventory, not just a hint.
-  // In Cloud mode it must not reintroduce legacy hosted rows or gate presets.
-  const availableHandles: string[] | null = cloud
-    ? [...new Set(entries.map((entry) => entry.handle))]
-    : handlesResult.status === "fulfilled"
+  const availableHandles: string[] | null =
+    handlesResult.status === "fulfilled"
       ? [...handlesResult.value.handles]
       : null;
 

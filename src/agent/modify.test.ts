@@ -137,7 +137,6 @@ describe("Cloud-managed prompt memory mode", () => {
       capabilities: {
         remoteMemfs: true,
         localMemfs: false,
-        environmentRouting: true,
       },
       retrieveAgent: async () => ({
         id: agentId,
@@ -166,7 +165,6 @@ describe("Cloud-managed prompt memory mode", () => {
       capabilities: {
         remoteMemfs: true,
         localMemfs: false,
-        environmentRouting: true,
       },
       retrieveAgent: async () => ({
         id: agentId,
@@ -191,7 +189,7 @@ describe("Cloud-managed prompt memory mode", () => {
     process.env.LETTA_CODE_PRESERVE_CLOUD_SYSTEM_PROMPT = "1";
     const updateAgent = mock(() => Promise.resolve());
     __testSetBackend({
-      capabilities: { remoteMemfs: true, environmentRouting: true },
+      capabilities: { remoteMemfs: true },
       retrieveAgent: async () => ({
         id: agentId,
         system: buildSystemPrompt("default", "memfs"),

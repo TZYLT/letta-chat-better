@@ -768,13 +768,13 @@ export async function launchSubagent(
         error: "Memory workers must run on the current machine; omit computer.",
       };
     }
-    let environmentRouting = false;
+    let computerRouting = false;
     try {
-      environmentRouting = getBackend().capabilities.environmentRouting;
+      computerRouting = getBackend().capabilities.remoteMemfs;
     } catch {
-      environmentRouting = false;
+      computerRouting = false;
     }
-    if (!environmentRouting) {
+    if (!computerRouting) {
       return {
         success: false,
         error:

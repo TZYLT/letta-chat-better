@@ -30,11 +30,12 @@ import { settingsManager } from "@/settings-manager";
 import { queueSkillContent } from "@/tools/impl/skill-content-registry";
 import { clearTools, loadSpecificTools } from "@/tools/manager";
 import {
-  __testOverrideSecretsBackend,
+  __testOverrideLocalSecretStorage,
   clearSecretsCache,
 } from "@/utils/secrets-store";
 import { handleSecretsCommand } from "@/websocket/listener/commands/secrets";
 import { enqueueInboundUserMessage } from "@/websocket/listener/inbound-queue";
+import { installListenerTestBackend } from "@/websocket/listener/listener-test-backend";
 import { shouldProcessInboundMessageDirectly } from "@/websocket/listener/queue";
 import { startRecoveredApprovalContinuation } from "@/websocket/listener/recovery";
 import { clearConversationRuntimeState } from "@/websocket/listener/runtime";
@@ -277,9 +278,6 @@ mock.module("../cli/helpers/stream", () => ({
 
 mock.module("../backend/api/client", () => ({
   getClient: getClientMock,
-  getServerUrl: () => "https://example.test",
-  clearLastSDKDiagnostic: () => {},
-  consumeLastSDKDiagnostic: () => null,
 }));
 
 mock.module("../cli/helpers/approval-classification", () => ({
@@ -293,6 +291,8 @@ mock.module("../agent/approval-execution", () => ({
 mock.module("../agent/approval-recovery", () => ({
   fetchRunErrorDetail: fetchRunErrorDetailMock,
 }));
+
+installListenerTestBackend(await getClientMock());
 
 const listenClientModule = await import("@/websocket/listen-client");
 const { createListenerModAdapter } = await import(
@@ -459,7 +459,7 @@ describe("listen-client multi-worker concurrency", () => {
       originalGetSettings;
     (settingsManager as typeof settingsManager).getLocalProjectSettings =
       originalGetLocalProjectSettings;
-    __testOverrideSecretsBackend(null);
+    __testOverrideLocalSecretStorage(null);
     clearSecretsCache("agent-secret-payload");
     clearTools();
   });
@@ -2053,16 +2053,12 @@ describe("listen-client multi-worker concurrency", () => {
     const conversationId = "conv-secret-payload";
     const { listener, runtime } = createRuntime(agentId, conversationId);
     const socket = new MockSocket();
-    let serverSecrets: Record<string, string> = {};
-    __testOverrideSecretsBackend({
-      capabilities: { serverSecrets: true },
-      listAgentSecrets: async () =>
-        Object.entries(serverSecrets).map(([key, value]) => ({
-          key,
-          value,
-        })),
-      updateAgent: async (_agentId, body) => {
-        serverSecrets = { ...body.secrets };
+    const storedSecrets = new Map<string, string>();
+    __testOverrideLocalSecretStorage({
+      delete: async (name) => storedSecrets.delete(name),
+      get: async (name) => storedSecrets.get(name) ?? null,
+      set: async (name, value) => {
+        storedSecrets.set(name, value);
       },
     });
 

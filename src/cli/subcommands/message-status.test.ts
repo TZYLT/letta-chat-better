@@ -4,7 +4,7 @@ import { readMessageStatus } from "./message-status";
 
 test("status works without a local task and does not equate idle with successful delivery", async () => {
   const backend = {
-    capabilities: { environmentRouting: true },
+    capabilities: { remoteMemfs: true },
     retrieveConversation: async () => ({ agent_id: "agent-target" }),
   } as unknown as Backend;
   const result = await readMessageStatus("conv-target", undefined, backend, {

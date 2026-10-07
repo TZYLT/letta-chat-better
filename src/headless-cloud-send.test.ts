@@ -80,7 +80,7 @@ function fixture() {
   const stderr: string[] = [];
   const submissions: EnqueueConversationInput[] = [];
   const backend = {
-    capabilities: { environmentRouting: true },
+    capabilities: { remoteMemfs: true },
     retrieveConversation: async () => ({
       id: "conv-target",
       agent_id: "agent-target",

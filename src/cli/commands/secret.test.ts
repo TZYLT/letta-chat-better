@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -10,7 +10,6 @@ import {
 } from "@/tools/secret-substitution";
 import {
   __testOverrideLocalSecretStorage,
-  __testOverrideSecretsBackend,
   applySecretBatch,
   clearSecretsCache,
   loadSecrets,
@@ -18,24 +17,9 @@ import {
   setSecretOnServer,
 } from "@/utils/secrets-store";
 
-const AGENT_ID = "agent-secret-command";
 const ORIGINAL_SKIP_KEYCHAIN_CHECK = process.env.LETTA_SKIP_KEYCHAIN_CHECK;
 const ORIGINAL_LOCAL_BACKEND_DIR = process.env.LETTA_LOCAL_BACKEND_DIR;
 const tempDirs: string[] = [];
-
-const retrieveAgentMock = mock((_agentId: string, _options?: unknown) =>
-  Promise.resolve({
-    secrets: [] as Array<{ key: string; value: string }>,
-  }),
-);
-const listAgentSecretsMock = mock((_agentId: string) =>
-  Promise.resolve([] as Array<{ key: string; value: string }>),
-);
-
-const updateAgentMock = mock(
-  (_agentId: string, _body: unknown, _options?: unknown) =>
-    Promise.resolve({ id: AGENT_ID }),
-);
 
 function resetEnv(key: string, value: string | undefined): void {
   if (value === undefined) {
@@ -56,34 +40,13 @@ function installLocalSecretStorage(values = new Map<string, string>()) {
   return values;
 }
 
-const capabilities = {
-  remoteMemfs: true,
-  serverSecrets: true,
-  promptRecompile: true,
-  localModelCatalog: false,
-  localMemfs: false,
-};
-
 describe("/secret command", () => {
   beforeEach(() => {
-    retrieveAgentMock.mockReset();
-    listAgentSecretsMock.mockReset();
-    updateAgentMock.mockReset();
-    retrieveAgentMock.mockResolvedValue({ secrets: [] });
-    listAgentSecretsMock.mockResolvedValue([]);
-    updateAgentMock.mockResolvedValue({ id: AGENT_ID });
-    setCurrentAgentId(AGENT_ID);
-    clearSecretsCache(AGENT_ID);
-    __testOverrideSecretsBackend({
-      capabilities,
-      listAgentSecrets: listAgentSecretsMock,
-      retrieveAgent: retrieveAgentMock,
-      updateAgent: updateAgentMock,
-    });
+    setCurrentAgentId(null);
+    clearSecretsCache(null);
   });
 
   afterEach(() => {
-    __testOverrideSecretsBackend(null);
     __testOverrideLocalSecretStorage(null);
     setCurrentAgentId(null);
     clearSecretsCache(null);
@@ -94,53 +57,12 @@ describe("/secret command", () => {
     }
   });
 
-  test("list refreshes server secrets instead of trusting an empty local cache", async () => {
-    listAgentSecretsMock.mockResolvedValueOnce([
-      { key: "CLOUDFLARE_API_TOKEN", value: "cf-token" },
-    ]);
-
-    const result = await handleSecretCommand(["list"]);
-
-    expect(listAgentSecretsMock).toHaveBeenCalledWith(AGENT_ID);
-    expect(retrieveAgentMock).not.toHaveBeenCalled();
-    expect(result.output).toContain("Available secrets (1):");
-    expect(result.output).toContain("$CLOUDFLARE_API_TOKEN");
-    expect(result.output).not.toContain("No secrets stored");
-    expect(loadSecrets(AGENT_ID)).toEqual({
-      CLOUDFLARE_API_TOKEN: "cf-token",
-    });
-  });
-
-  test("set refreshes before patching so existing server secrets are preserved", async () => {
-    listAgentSecretsMock.mockResolvedValueOnce([
-      { key: "CLOUDFLARE_API_TOKEN", value: "cf-token" },
-    ]);
-
-    const result = await handleSecretCommand(["set", "new_token", "new-value"]);
-
-    expect(result.output).toBe("Secret '$NEW_TOKEN' set.");
-    expect(result.refreshSecretsInfo).toBe(true);
-    expect(updateAgentMock).toHaveBeenCalledWith(AGENT_ID, {
-      secrets: {
-        CLOUDFLARE_API_TOKEN: "cf-token",
-        NEW_TOKEN: "new-value",
-      },
-    });
-  });
-
-  test("unset refreshes before checking whether the secret exists", async () => {
-    listAgentSecretsMock.mockResolvedValueOnce([
-      { key: "CLOUDFLARE_API_TOKEN", value: "cf-token" },
-    ]);
-
-    const result = await handleSecretCommand(["unset", "CLOUDFLARE_API_TOKEN"]);
-
-    expect(result.output).toBe("Secret '$CLOUDFLARE_API_TOKEN' unset.");
-    expect(result.refreshSecretsInfo).toBe(true);
-    expect(updateAgentMock).toHaveBeenCalledWith(AGENT_ID, { secrets: {} });
-  });
-
   test("unchanged or invalid commands do not request a secrets reminder refresh", async () => {
+    const agentId = "agent-local-secret-invalid";
+    installLocalSecretStorage();
+    setCurrentAgentId(agentId);
+    clearSecretsCache(agentId);
+
     const invalidSet = await handleSecretCommand(["set", "1bad", "value"]);
     const missingValue = await handleSecretCommand(["set", "TOKEN"]);
     const missingUnset = await handleSecretCommand(["unset", "MISSING_TOKEN"]);
@@ -164,7 +86,6 @@ describe("/secret command", () => {
 
     expect(setResult.output).toBe("Secret '$EXA_API_KEY' set.");
     expect(setResult.refreshSecretsInfo).toBe(true);
-    expect(updateAgentMock).not.toHaveBeenCalled();
     expect(loadSecrets(localAgentId)).toEqual({
       EXA_API_KEY: "local-secret-value",
     });

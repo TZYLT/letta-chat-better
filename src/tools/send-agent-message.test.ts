@@ -76,7 +76,7 @@ test.each(computers)("HTTP send: computer %j", async (computer) => {
   ).mockImplementation(async () => settingsManager.getSettings());
   const lookups: unknown[] = [];
   __testSetBackend({
-    capabilities: { environmentRouting: true },
+    capabilities: { remoteMemfs: true },
     retrieveConversation: async (id: string, options: unknown) => {
       lookups.push(options);
       return {

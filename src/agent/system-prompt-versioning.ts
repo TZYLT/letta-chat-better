@@ -21,11 +21,10 @@ export const CLOUD_MANAGED_PROMPT_PRESET = "cloud-managed";
 
 export function isCloudPromptBackend(): boolean {
   const capabilities = getBackend().capabilities;
-  return (
-    capabilities.remoteMemfs &&
-    !capabilities.localMemfs &&
-    capabilities.environmentRouting
-  );
+  // The Cloud-only `environment routing` capability was the third conjunct.
+  // capability that went away with the API backend, and `remoteMemfs` already
+  // says "server-side memory", so it is not replaced.
+  return capabilities.remoteMemfs && !capabilities.localMemfs;
 }
 
 type ManagedPrompt = {

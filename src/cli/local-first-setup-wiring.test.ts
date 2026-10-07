@@ -148,22 +148,14 @@ describe("cloud-default setup wiring", () => {
     expect(source).toContain('preferredBackendMode: "api"');
   });
 
-  test("backend and setup subcommands expose default backend controls", () => {
+  test("setup subcommand exposes default backend controls", () => {
     const router = readSource("./subcommands/router.ts");
-    const backendCommand = readSource("./subcommands/backend.ts");
     const setupCommand = readSource("./subcommands/setup.ts");
 
-    expect(router).toContain('case "backend"');
+    // `letta backend [cloud|local]` was the Cloud/api-backend selector and was
+    // deleted with the API backend; only setup remains.
+    expect(router).not.toContain('case "backend"');
     expect(router).toContain('case "setup"');
-    expect(backendCommand).toContain("letta backend cloud");
-    expect(backendCommand).toContain("letta backend local");
-    expect(backendCommand).toContain(
-      'settingsManager.getSettings().preferredBackendMode ?? "api"',
-    );
-    expect(backendCommand).not.toContain("Proceed locally selected");
-    expect(backendCommand).toContain(
-      "settingsManager.updateSettings({ preferredBackendMode: backendMode })",
-    );
     expect(setupCommand).toContain("await runSetup()");
   });
 });

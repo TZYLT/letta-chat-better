@@ -80,7 +80,7 @@ const forkConversation = mock(async () => {
   throw new Error("Unexpected fork of parent conversation");
 });
 const retrieveAgent = mock(async () => ({ model: "anthropic/test-model" }));
-const capabilities = { environmentRouting: true };
+const capabilities = { remoteMemfs: true };
 let scratchpad: string;
 let previousScratchpad: string | undefined;
 
@@ -89,7 +89,7 @@ beforeEach(() => {
   receivedEnvironment = undefined;
   forkConversation.mockClear();
   retrieveAgent.mockClear();
-  capabilities.environmentRouting = true;
+  capabilities.remoteMemfs = true;
   __testSetBackend({
     capabilities,
     forkConversation,
@@ -137,7 +137,7 @@ describe("task computer routing", () => {
   test.each(["general-purpose", "fork"])(
     "rejects a non-routing backend before spawning or forking %s",
     async (subagent_type) => {
-      capabilities.environmentRouting = false;
+      capabilities.remoteMemfs = false;
       const result = await task({
         ...launchArgs,
         subagent_type,
@@ -158,7 +158,7 @@ describe("task computer routing", () => {
   test.each([true, false])(
     "rejects remote memory workers before launch (routing=%s)",
     async (routing) => {
-      capabilities.environmentRouting = routing;
+      capabilities.remoteMemfs = routing;
       const result = await task({
         ...launchArgs,
         subagent_type: "memory",
@@ -174,11 +174,11 @@ describe("task computer routing", () => {
     },
   );
 
-  for (const environmentRouting of [true, false]) {
+  for (const remoteMemfs of [true, false]) {
     test.each([undefined, "", " \t\n "])(
-      `keeps the default computer for %j (routing=${environmentRouting})`,
+      `keeps the default computer for %j (routing=${remoteMemfs})`,
       async (computer) => {
-        capabilities.environmentRouting = environmentRouting;
+        capabilities.remoteMemfs = remoteMemfs;
         const result = await task({
           ...launchArgs,
           ...(computer === undefined ? {} : { computer }),

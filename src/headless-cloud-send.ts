@@ -110,21 +110,18 @@ export async function tryCloudHeadlessSend(
   if (
     !shouldEnqueueCloudSend(
       values,
-      backend.capabilities.environmentRouting,
+      // The Cloud-only `environment routing` capability was what this gate read.
+      // server-backed capability that replaces it is `remoteMemfs`, which is
+      // false for the local in-process backend (the only backend left).
+      backend.capabilities.remoteMemfs,
       isAgentLaunch,
     )
   ) {
-    // An Agent process launch aimed at a computer submits through the
-    // listener-launch path, which honors --no-wait by exiting with the
-    // enqueue receipt. Every other non-Cloud destination executes locally
-    // and has nothing to hand back early.
-    const agentLaunchTargetsComputer =
-      isAgentLaunch &&
-      backend.capabilities.environmentRouting &&
-      (values.computer !== undefined ||
-        values.environment !== undefined ||
-        values.env !== undefined);
-    if (values["no-wait"] && !agentLaunchTargetsComputer)
+    // An Agent process launch aimed at a computer used to submit through the
+    // listener-launch path. With no environment routing that path is gone, so
+    // only the local-execution case remains: `--no-wait` has nothing to hand
+    // back early.
+    if (values["no-wait"])
       throw new Error(
         "--no-wait requires a Cloud message destination; it is not supported for local execution or same-computer Agent process launches.",
       );

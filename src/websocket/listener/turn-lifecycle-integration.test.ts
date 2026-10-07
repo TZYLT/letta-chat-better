@@ -8,7 +8,7 @@ import {
   setCurrentAgentId,
 } from "@/agent/context";
 import { sendMessageStreamWithBackend } from "@/agent/message";
-import { APIBackend } from "@/backend";
+import type { Backend } from "@/backend";
 import {
   prepareToolExecutionContextForSpecificTools,
   releaseToolExecutionContext,
@@ -25,6 +25,28 @@ import type { ListenerTransport } from "./transport";
 import { handleApprovalStop } from "./turn-approval";
 import { releaseListenerTurnContext } from "./turn-context";
 import type { TurnLease } from "./turn-lifecycle";
+
+/**
+ * `sendMessageStreamWithBackend` needs a backend, and these tests only need its
+ * message-stream transport (a real HTTP round trip to the mock SSE server in the
+ * test). The API backend class that used to provide it was deleted with the
+ * Cloud backend, so the one method the transport needs lives here.
+ */
+function createTestStreamBackend(client: Letta): Backend {
+  const backend = {
+    async createConversationMessageStream(
+      conversationId: string,
+      body: Parameters<Backend["createConversationMessageStream"]>[1],
+      options?: Parameters<Backend["createConversationMessageStream"]>[2],
+    ) {
+      const { data } = await client.conversations.messages
+        .create(conversationId, body, options)
+        .withResponse();
+      return data;
+    },
+  };
+  return backend as unknown as Backend;
+}
 
 function createOpenTransport(sentPayloads: string[] = []): ListenerTransport {
   return {
@@ -340,12 +362,13 @@ describe("listener turn lifecycle integration", () => {
           );
         },
       });
-      const client = new Letta({
-        apiKey: "test-key",
-        baseURL: server.url.toString(),
-        maxRetries: 0,
-      });
-      const backend = new APIBackend({ getClient: async () => client });
+      const backend = createTestStreamBackend(
+        new Letta({
+          apiKey: "test-key",
+          baseURL: server.url.toString(),
+          maxRetries: 0,
+        }),
+      );
       const preparedToolContext =
         await prepareToolExecutionContextForSpecificTools([]);
 

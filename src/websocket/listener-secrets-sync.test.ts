@@ -1,8 +1,8 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import type WebSocket from "ws";
 import { createSharedReminderState } from "@/reminders/state";
 import {
-  __testOverrideSecretsBackend,
+  __testOverrideLocalSecretStorage,
   __testSeedSecretsCache,
   clearSecretsCache,
   loadSecrets,
@@ -15,63 +15,112 @@ import {
   invalidateSecretsCacheForAgent,
 } from "@/websocket/listener/secrets-sync";
 
-const retrieveMock = mock((_agentId: string) =>
-  Promise.resolve({ secrets: [] as Array<{ key: string; value: string }> }),
-);
+const AGENT_ID = "agent-listener-secret";
+const INDEX_NAME = `agent:${AGENT_ID}:secrets:index`;
+const valueName = (key: string): string => `agent:${AGENT_ID}:secrets:${key}`;
 
-describe("listener secrets sync", () => {
-  beforeEach(() => {
-    retrieveMock.mockReset();
-    retrieveMock.mockResolvedValue({ secrets: [] });
-    __testOverrideSecretsBackend({
-      capabilities: { serverSecrets: true },
-      listAgentSecrets: async (agentId) =>
-        (await retrieveMock(agentId)).secrets,
-      updateAgent: async () => ({}),
-    });
-    // Use a short freshness window for deterministic tests.
-    __testSetFreshnessMs(500);
-    clearSecretsCache("agent-listener-secret");
+/**
+ * Agent secrets live in the local secret store now (the server-backed store went
+ * away with the API backend). This in-memory store plays the role the mocked
+ * server fetch used to: it holds the source values and counts how many times a
+ * hydrating read reached it, which is what the freshness/coalescing assertions
+ * are really about.
+ */
+function installSourceStore() {
+  const values = new Map<string, string>();
+  let reads = 0;
+  let holdNextIndexRead = false;
+  let held: { resolve: () => void } | null = null;
+
+  __testOverrideLocalSecretStorage({
+    delete: async (name) => values.delete(name),
+    get: async (name) => {
+      if (name !== INDEX_NAME) return values.get(name) ?? null;
+      reads += 1;
+      if (!holdNextIndexRead) return values.get(name) ?? null;
+      holdNextIndexRead = false;
+      // Snapshot now: the test may mutate the source while this read is held.
+      const snapshot = values.get(name) ?? null;
+      return await new Promise<string | null>((resolve) => {
+        held = {
+          resolve: () => {
+            held = null;
+            resolve(snapshot);
+          },
+        };
+      });
+    },
+    set: async (name, value) => {
+      values.set(name, value);
+    },
   });
 
-  afterEach(() => {
-    __testOverrideSecretsBackend(null);
-    __testSetFreshnessMs(null);
-    clearSecretsCache("agent-listener-secret");
+  return {
+    values,
+    get readCount(): number {
+      return reads;
+    },
+    isReadHeld(): boolean {
+      return held !== null;
+    },
+    setSource(secrets: Record<string, string>): void {
+      const names = Object.keys(secrets);
+      values.set(INDEX_NAME, JSON.stringify(names));
+      for (const [key, value] of Object.entries(secrets)) {
+        values.set(valueName(key), value);
+      }
+    },
+    holdNextRead(): void {
+      holdNextIndexRead = true;
+    },
+    releaseHeldRead(): void {
+      held?.resolve();
+    },
+  };
+}
+
+describe("listener secrets sync", () => {
+  let source: ReturnType<typeof installSourceStore>;
+
+  beforeEach(() => {
+    source = installSourceStore();
+    // Use a short freshness window for deterministic tests.
+    __testSetFreshnessMs(500);
+    clearSecretsCache(AGENT_ID);
     clearSecretsCache("agent-other-secret");
   });
 
-  test("hydrates the agent-scoped secrets cache from the server", async () => {
-    retrieveMock.mockResolvedValueOnce({
-      secrets: [{ key: "WS_SECRET_TOKEN", value: "listenersecret" }],
-    });
+  afterEach(() => {
+    __testOverrideLocalSecretStorage(null);
+    __testSetFreshnessMs(null);
+    clearSecretsCache(AGENT_ID);
+    clearSecretsCache("agent-other-secret");
+  });
+
+  test("hydrates the agent-scoped secrets cache from local storage", async () => {
+    source.setSource({ WS_SECRET_TOKEN: "listenersecret" });
     const listener = __listenClientTestUtils.createListenerRuntime();
 
-    await ensureSecretsHydratedForAgent(listener, "agent-listener-secret");
+    await ensureSecretsHydratedForAgent(listener, AGENT_ID);
 
-    expect(retrieveMock).toHaveBeenCalledWith("agent-listener-secret");
-    expect(loadSecrets("agent-listener-secret")).toEqual({
+    expect(source.readCount).toBe(1);
+    expect(loadSecrets(AGENT_ID)).toEqual({
       WS_SECRET_TOKEN: "listenersecret",
     });
   });
 
   test("returns cached secrets within the freshness window (cache hit)", async () => {
-    retrieveMock
-      .mockResolvedValueOnce({
-        secrets: [{ key: "WS_SECRET_TOKEN", value: "first" }],
-      })
-      .mockResolvedValueOnce({
-        secrets: [{ key: "WS_SECRET_TOKEN", value: "second" }],
-      });
+    source.setSource({ WS_SECRET_TOKEN: "first" });
     const listener = __listenClientTestUtils.createListenerRuntime();
 
-    await ensureSecretsHydratedForAgent(listener, "agent-listener-secret");
-    // Second call within the freshness window should be a cache hit.
-    await ensureSecretsHydratedForAgent(listener, "agent-listener-secret");
+    await ensureSecretsHydratedForAgent(listener, AGENT_ID);
+    // A second source value that the cache-hit path must never read.
+    source.setSource({ WS_SECRET_TOKEN: "second" });
+    await ensureSecretsHydratedForAgent(listener, AGENT_ID);
 
-    // Only one server fetch — the second call hit the cache.
-    expect(retrieveMock).toHaveBeenCalledTimes(1);
-    expect(loadSecrets("agent-listener-secret")).toEqual({
+    // Only one source read — the second call hit the cache.
+    expect(source.readCount).toBe(1);
+    expect(loadSecrets(AGENT_ID)).toEqual({
       WS_SECRET_TOKEN: "first",
     });
   });
@@ -79,147 +128,98 @@ describe("listener secrets sync", () => {
   test("re-fetches after the freshness window expires", async () => {
     // Use a very short freshness window so it expires immediately.
     __testSetFreshnessMs(1);
-
-    retrieveMock
-      .mockResolvedValueOnce({
-        secrets: [{ key: "WS_SECRET_TOKEN", value: "first" }],
-      })
-      .mockResolvedValueOnce({
-        secrets: [{ key: "WS_SECRET_TOKEN", value: "second" }],
-      });
+    source.setSource({ WS_SECRET_TOKEN: "first" });
     const listener = __listenClientTestUtils.createListenerRuntime();
 
-    await ensureSecretsHydratedForAgent(listener, "agent-listener-secret");
+    await ensureSecretsHydratedForAgent(listener, AGENT_ID);
     // Wait for the freshness window to expire.
     await new Promise((resolve) => setTimeout(resolve, 10));
-    await ensureSecretsHydratedForAgent(listener, "agent-listener-secret");
+    source.setSource({ WS_SECRET_TOKEN: "second" });
+    await ensureSecretsHydratedForAgent(listener, AGENT_ID);
 
-    expect(retrieveMock).toHaveBeenCalledTimes(2);
-    expect(loadSecrets("agent-listener-secret")).toEqual({
+    expect(source.readCount).toBe(2);
+    expect(loadSecrets(AGENT_ID)).toEqual({
       WS_SECRET_TOKEN: "second",
     });
   });
 
   test("coalesces concurrent refreshes for the same agent", async () => {
-    let resolveRetrieve:
-      | ((value: { secrets: Array<{ key: string; value: string }> }) => void)
-      | undefined;
-    retrieveMock.mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
-          resolveRetrieve = resolve;
-        }),
-    );
+    source.setSource({ WS_SECRET_TOKEN: "coalesced" });
+    source.holdNextRead();
     const listener = __listenClientTestUtils.createListenerRuntime();
 
-    const first = ensureSecretsHydratedForAgent(
-      listener,
-      "agent-listener-secret",
-    );
-    const second = ensureSecretsHydratedForAgent(
-      listener,
-      "agent-listener-secret",
-    );
+    const first = ensureSecretsHydratedForAgent(listener, AGENT_ID);
+    const second = ensureSecretsHydratedForAgent(listener, AGENT_ID);
 
-    for (let i = 0; i < 10 && !resolveRetrieve; i += 1) {
+    for (let i = 0; i < 10 && !source.isReadHeld(); i += 1) {
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
-    expect(resolveRetrieve).toBeDefined();
-    resolveRetrieve?.({
-      secrets: [{ key: "WS_SECRET_TOKEN", value: "coalesced" }],
-    });
+    expect(source.isReadHeld()).toBe(true);
+    source.releaseHeldRead();
     await Promise.all([first, second]);
 
-    expect(retrieveMock).toHaveBeenCalledTimes(1);
-    expect(loadSecrets("agent-listener-secret")).toEqual({
+    expect(source.readCount).toBe(1);
+    expect(loadSecrets(AGENT_ID)).toEqual({
       WS_SECRET_TOKEN: "coalesced",
     });
   });
 
   test("invalidation during in-flight refresh forces a follow-up fetch", async () => {
-    let resolveFirst:
-      | ((value: { secrets: Array<{ key: string; value: string }> }) => void)
-      | undefined;
-    retrieveMock
-      .mockImplementationOnce(
-        () =>
-          new Promise((resolve) => {
-            resolveFirst = resolve;
-          }),
-      )
-      .mockResolvedValueOnce({
-        secrets: [{ key: "WS_SECRET_TOKEN", value: "updated" }],
-      });
+    source.setSource({ WS_SECRET_TOKEN: "stale" });
+    source.holdNextRead();
     const listener = __listenClientTestUtils.createListenerRuntime();
 
-    const first = ensureSecretsHydratedForAgent(
-      listener,
-      "agent-listener-secret",
-    );
-    for (let i = 0; i < 10 && !resolveFirst; i += 1) {
+    const first = ensureSecretsHydratedForAgent(listener, AGENT_ID);
+    for (let i = 0; i < 10 && !source.isReadHeld(); i += 1) {
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
-    expect(resolveFirst).toBeDefined();
+    expect(source.isReadHeld()).toBe(true);
 
-    invalidateSecretsCacheForAgent(listener, "agent-listener-secret");
-    const second = ensureSecretsHydratedForAgent(
-      listener,
-      "agent-listener-secret",
-    );
+    invalidateSecretsCacheForAgent(listener, AGENT_ID);
+    source.setSource({ WS_SECRET_TOKEN: "updated" });
+    const second = ensureSecretsHydratedForAgent(listener, AGENT_ID);
 
-    resolveFirst?.({
-      secrets: [{ key: "WS_SECRET_TOKEN", value: "stale" }],
-    });
+    // The held read still resolves with the stale snapshot it captured.
+    source.releaseHeldRead();
     await Promise.all([first, second]);
 
-    expect(retrieveMock).toHaveBeenCalledTimes(2);
-    expect(loadSecrets("agent-listener-secret")).toEqual({
+    expect(source.readCount).toBe(2);
+    expect(loadSecrets(AGENT_ID)).toEqual({
       WS_SECRET_TOKEN: "updated",
     });
   });
 
   test("invalidation forces re-fetch even within the freshness window", async () => {
-    retrieveMock
-      .mockResolvedValueOnce({
-        secrets: [{ key: "WS_SECRET_TOKEN", value: "first" }],
-      })
-      .mockResolvedValueOnce({
-        secrets: [{ key: "WS_SECRET_TOKEN", value: "updated" }],
-      });
+    source.setSource({ WS_SECRET_TOKEN: "first" });
     const listener = __listenClientTestUtils.createListenerRuntime();
 
-    await ensureSecretsHydratedForAgent(listener, "agent-listener-secret");
-    expect(retrieveMock).toHaveBeenCalledTimes(1);
+    await ensureSecretsHydratedForAgent(listener, AGENT_ID);
+    expect(source.readCount).toBe(1);
 
     // Simulate a GUI secret mutation invalidating the cache.
-    invalidateSecretsCacheForAgent(listener, "agent-listener-secret");
+    invalidateSecretsCacheForAgent(listener, AGENT_ID);
+    source.setSource({ WS_SECRET_TOKEN: "updated" });
 
     // Next call should re-fetch even though the freshness window hasn't expired.
-    await ensureSecretsHydratedForAgent(listener, "agent-listener-secret");
-    expect(retrieveMock).toHaveBeenCalledTimes(2);
-    expect(loadSecrets("agent-listener-secret")).toEqual({
+    await ensureSecretsHydratedForAgent(listener, AGENT_ID);
+    expect(source.readCount).toBe(2);
+    expect(loadSecrets(AGENT_ID)).toEqual({
       WS_SECRET_TOKEN: "updated",
     });
   });
 
   test("secret_apply schedules fresh secrets reminders for existing conversations", async () => {
-    __testSeedSecretsCache("agent-listener-secret", {
+    __testSeedSecretsCache(AGENT_ID, {
       WS_SECRET_TOKEN: "first",
     });
-    const updateAgentMock = mock(() => Promise.resolve({}));
-    __testOverrideSecretsBackend({
-      capabilities: { serverSecrets: true },
-      listAgentSecrets: async (agentId) =>
-        (await retrieveMock(agentId)).secrets,
-      updateAgent: updateAgentMock,
-    });
+    source.setSource({ WS_SECRET_TOKEN: "first" });
     const listener = __listenClientTestUtils.createListenerRuntime();
     const state = createSharedReminderState();
     state.hasSentSecretsInfo = true;
     const otherAgentState = createSharedReminderState();
     otherAgentState.hasSentSecretsInfo = true;
     listener.reminderStateByConversation.set(
-      "agent:agent-listener-secret::conversation:conv-a",
+      `agent:${AGENT_ID}::conversation:conv-a`,
       state,
     );
     listener.reminderStateByConversation.set(
@@ -233,7 +233,7 @@ describe("listener secrets sync", () => {
       {
         type: "secret_apply",
         request_id: "req-secret-apply",
-        agent_id: "agent-listener-secret",
+        agent_id: AGENT_ID,
         set: { WS_SECRET_TOKEN: "updated" },
         unset: [],
       },
@@ -253,10 +253,8 @@ describe("listener secrets sync", () => {
     expect(handled).toBe(true);
     await Promise.all(tasks);
 
-    expect(updateAgentMock).toHaveBeenCalledWith("agent-listener-secret", {
-      secrets: { WS_SECRET_TOKEN: "updated" },
-    });
-    expect(listener.secretsDirtyAgents.has("agent-listener-secret")).toBe(true);
+    expect(source.values.get(valueName("WS_SECRET_TOKEN"))).toBe("updated");
+    expect(listener.secretsDirtyAgents.has(AGENT_ID)).toBe(true);
     expect(state.hasSentSecretsInfo).toBe(false);
     expect(state.pendingSecretsInfoRefresh).toBe(true);
     expect(otherAgentState.hasSentSecretsInfo).toBe(true);
@@ -272,49 +270,39 @@ describe("listener secrets sync", () => {
   });
 
   test("approval reuse: same-turn call after preflight hits cache", async () => {
-    retrieveMock.mockResolvedValueOnce({
-      secrets: [{ key: "WS_SECRET_TOKEN", value: "preflight" }],
-    });
+    source.setSource({ WS_SECRET_TOKEN: "preflight" });
     const listener = __listenClientTestUtils.createListenerRuntime();
 
     // Simulate the turn preflight hydration.
-    await ensureSecretsHydratedForAgent(listener, "agent-listener-secret");
+    await ensureSecretsHydratedForAgent(listener, AGENT_ID);
 
     // Simulate the approval execution path calling again in the same turn.
-    await ensureSecretsHydratedForAgent(listener, "agent-listener-secret");
+    await ensureSecretsHydratedForAgent(listener, AGENT_ID);
 
-    // Only one server fetch — the approval path reused the cached hydration.
-    expect(retrieveMock).toHaveBeenCalledTimes(1);
-    expect(loadSecrets("agent-listener-secret")).toEqual({
+    // Only one source read — the approval path reused the cached hydration.
+    expect(source.readCount).toBe(1);
+    expect(loadSecrets(AGENT_ID)).toEqual({
       WS_SECRET_TOKEN: "preflight",
     });
   });
 
   test("invalidation clears dirty flag after successful re-fetch", async () => {
-    retrieveMock
-      .mockResolvedValueOnce({
-        secrets: [{ key: "WS_SECRET_TOKEN", value: "first" }],
-      })
-      .mockResolvedValueOnce({
-        secrets: [{ key: "WS_SECRET_TOKEN", value: "second" }],
-      })
-      .mockResolvedValueOnce({
-        secrets: [{ key: "WS_SECRET_TOKEN", value: "third" }],
-      });
+    source.setSource({ WS_SECRET_TOKEN: "first" });
     const listener = __listenClientTestUtils.createListenerRuntime();
 
     // First hydration.
-    await ensureSecretsHydratedForAgent(listener, "agent-listener-secret");
-    expect(retrieveMock).toHaveBeenCalledTimes(1);
+    await ensureSecretsHydratedForAgent(listener, AGENT_ID);
+    expect(source.readCount).toBe(1);
 
     // Invalidate and re-fetch.
-    invalidateSecretsCacheForAgent(listener, "agent-listener-secret");
-    await ensureSecretsHydratedForAgent(listener, "agent-listener-secret");
-    expect(retrieveMock).toHaveBeenCalledTimes(2);
+    invalidateSecretsCacheForAgent(listener, AGENT_ID);
+    source.setSource({ WS_SECRET_TOKEN: "second" });
+    await ensureSecretsHydratedForAgent(listener, AGENT_ID);
+    expect(source.readCount).toBe(2);
 
     // After re-fetch, the dirty flag is cleared and the cache is fresh again.
     // A third call within the freshness window should be a cache hit.
-    await ensureSecretsHydratedForAgent(listener, "agent-listener-secret");
-    expect(retrieveMock).toHaveBeenCalledTimes(2); // no new fetch
+    await ensureSecretsHydratedForAgent(listener, AGENT_ID);
+    expect(source.readCount).toBe(2); // no new fetch
   });
 });

@@ -42,9 +42,21 @@ import {
   prepareToolExecutionContextForScope,
 } from "@/tools/toolset";
 import {
-  __testOverrideSecretsBackend,
+  __testOverrideLocalSecretStorage,
   clearSecretsCache,
+  setSecretOnServer,
 } from "@/utils/secrets-store";
+
+function installLocalSecretStorage(values = new Map<string, string>()) {
+  __testOverrideLocalSecretStorage({
+    delete: async (name) => values.delete(name),
+    get: async (name) => values.get(name) ?? null,
+    set: async (name, value) => {
+      values.set(name, value);
+    },
+  });
+  return values;
+}
 
 function asText(
   toolReturn: Awaited<ReturnType<typeof executeTool>>["toolReturn"],
@@ -91,7 +103,7 @@ describe("tool execution context snapshot", () => {
     clearModPermissions();
     clearModTools();
     toolFilter.reset();
-    __testOverrideSecretsBackend(null);
+    __testOverrideLocalSecretStorage(null);
     clearSecretsCache(null);
     delete process.env.TAVILY_API_KEY;
     __testSetBackend(null);
@@ -667,16 +679,13 @@ describe("tool execution context snapshot", () => {
 
   test("exposes agent-scoped secrets to mod tools", async () => {
     process.env.TAVILY_API_KEY = "env-secret-value";
-    const retrieveCalls: string[] = [];
+    installLocalSecretStorage();
+    await setSecretOnServer(
+      "TAVILY_API_KEY",
+      "agent-secret-value",
+      "agent-secret-a",
+    );
     let seenSecret = "";
-    __testOverrideSecretsBackend({
-      capabilities: { serverSecrets: true },
-      listAgentSecrets: async (agentId) => {
-        retrieveCalls.push(agentId);
-        return [{ key: "TAVILY_API_KEY", value: "agent-secret-value" }];
-      },
-      updateAgent: async () => ({}),
-    });
 
     const controller = new AbortController();
     registerModTool({
@@ -707,18 +716,13 @@ describe("tool execution context snapshot", () => {
     );
 
     expect(seenSecret).toBe("agent-secret-value");
-    expect(retrieveCalls).toEqual(["agent-secret-a"]);
     expect(result.status).toBe("success");
     expect(asText(result.toolReturn)).toBe("secret:TAVILY_API_KEY=<REDACTED>");
   });
 
   test("mod tool env fallback secrets are invocation-redacted", async () => {
     process.env.TAVILY_API_KEY = "env-secret-value";
-    __testOverrideSecretsBackend({
-      capabilities: { serverSecrets: true },
-      listAgentSecrets: async () => [],
-      updateAgent: async () => ({}),
-    });
+    installLocalSecretStorage();
     const chunks: Array<{ chunk: string; stream: string }> = [];
 
     const controller = new AbortController();
@@ -774,11 +778,7 @@ describe("tool execution context snapshot", () => {
 
   test("mod tool thrown errors are redacted after ctx.secret", async () => {
     process.env.TAVILY_API_KEY = "throw-secret-value";
-    __testOverrideSecretsBackend({
-      capabilities: { serverSecrets: true },
-      listAgentSecrets: async () => [],
-      updateAgent: async () => ({}),
-    });
+    installLocalSecretStorage();
     const diagnostics: ModDiagnostic[] = [];
 
     const controller = new AbortController();

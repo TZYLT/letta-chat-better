@@ -4,7 +4,6 @@ import { isRetriablePostStopError } from "@/websocket/listener/recovery";
 
 const capabilities = {
   remoteMemfs: false,
-  serverSecrets: false,
   promptRecompile: false,
   localModelCatalog: true,
   localMemfs: false,

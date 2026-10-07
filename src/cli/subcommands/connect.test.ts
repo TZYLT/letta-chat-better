@@ -8,7 +8,6 @@ function setProviderTarget(target: "api" | "local") {
   __testSetBackend({
     capabilities: {
       remoteMemfs: target === "api",
-      serverSecrets: target === "api",
       promptRecompile: target === "api",
       localModelCatalog: target === "local",
       localMemfs: target === "local",

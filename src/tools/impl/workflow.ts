@@ -21,7 +21,6 @@ import { getConversationId, getCurrentAgentId } from "@/agent/context";
 import { resolveModel } from "@/agent/model-catalog";
 import { getPrimaryAgentModelHandle } from "@/agent/subagents/subagent-model";
 import { getBackend } from "@/backend";
-import { resolveBackendMode } from "@/backend/backend-mode";
 import { getCurrentWorkingDirectory } from "@/runtime-context";
 import {
   finishWorkflowExecution,
@@ -164,39 +163,38 @@ export async function createSdkSpawnerHandle(
       );
     }
   }
-  const backendMode = resolveBackendMode();
+  // The local in-process backend is the only backend, so the parent settings
+  // snapshot below is always taken and the SDK client is always local.
   let parentModelSettings: Record<string, unknown> | undefined;
   let parentContextWindowLimit: number | null | undefined;
-  if (backendMode === "local") {
-    setStage("snapshotting local parent settings");
-    const conversationId =
-      args.parentScope?.conversationId ?? getConversationId();
-    const source =
-      conversationId && conversationId !== "default"
-        ? await getBackend().retrieveConversation(conversationId)
-        : await getBackend().retrieveAgent(parentAgentId);
-    const record = source as unknown as Record<string, unknown>;
-    if (
-      record.model_settings &&
-      typeof record.model_settings === "object" &&
-      !Array.isArray(record.model_settings)
-    ) {
-      parentModelSettings = { ...record.model_settings } as Record<
-        string,
-        unknown
-      >;
-    }
-    if (
-      typeof record.context_window_limit === "number" ||
-      record.context_window_limit === null
-    ) {
-      parentContextWindowLimit = record.context_window_limit;
-    }
+  setStage("snapshotting local parent settings");
+  const conversationId =
+    args.parentScope?.conversationId ?? getConversationId();
+  const source =
+    conversationId && conversationId !== "default"
+      ? await getBackend().retrieveConversation(conversationId)
+      : await getBackend().retrieveAgent(parentAgentId);
+  const record = source as unknown as Record<string, unknown>;
+  if (
+    record.model_settings &&
+    typeof record.model_settings === "object" &&
+    !Array.isArray(record.model_settings)
+  ) {
+    parentModelSettings = { ...record.model_settings } as Record<
+      string,
+      unknown
+    >;
+  }
+  if (
+    typeof record.context_window_limit === "number" ||
+    record.context_window_limit === null
+  ) {
+    parentContextWindowLimit = record.context_window_limit;
   }
   setStage("loading Agent SDK");
   const sdk = await loadAgentSdk();
   setStage("creating SDK client and spawner");
-  const client = sdk.createLocalClient(backendMode);
+  const client = sdk.createLocalClient("local");
   let spawner: SubagentSpawner;
   try {
     spawner = createSdkSpawner(client, {
@@ -206,7 +204,9 @@ export async function createSdkSpawnerHandle(
       allowedTools: args.allowedTools ?? [...DEFAULT_ALLOWED_TOOLS],
       cwd: getCurrentWorkingDirectory(),
       supportsAgentFreeResume: sdk.supportsAgentFreeResume,
-      verifyPersistedRuns: backendMode === "api",
+      // Persisted-run verification was an API-backend requirement; the local
+      // client owns its runs.
+      verifyPersistedRuns: false,
       ...(parentModelSettings ? { parentModelSettings } : {}),
       ...(parentContextWindowLimit !== undefined
         ? { parentContextWindowLimit }

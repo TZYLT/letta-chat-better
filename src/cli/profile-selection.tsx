@@ -222,9 +222,8 @@ function ProfileSelectionUI({
   const hasMore = options.length > MAX_DISPLAY;
   const totalItems = displayOptions.length + 1 + (hasMore && !showAll ? 1 : 0);
 
-  // Model selection - filter out legacy models and apply search
-  const allServerModels =
-    serverModelsForNewAgent?.filter((h) => h !== "letta/letta-free") ?? [];
+  // Model selection - apply search
+  const allServerModels = serverModelsForNewAgent ?? [];
   const showModelSearch = allServerModels.length > MODEL_SEARCH_THRESHOLD;
   const filteredModels = modelSearchQuery
     ? allServerModels.filter((h) =>

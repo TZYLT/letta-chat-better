@@ -9,11 +9,6 @@ import { OPENAI_COMPATIBLE_PROXY_UPDATE_ARG } from "@/utils/openai-endpoint";
 
 const CHATGPT_OAUTH_BASE_PROVIDER = "openai-codex";
 const CHATGPT_LABEL_SUFFIX_PATTERN = /\s+\(ChatGPT\)$/;
-const API_GATED_MODEL_HANDLES = new Set([
-  "letta/auto",
-  "letta/auto-fast",
-  "letta/glm",
-]);
 
 export type UiModel = {
   id: string;
@@ -179,13 +174,13 @@ export function filterModelsByAvailabilityForSelector<
 >(
   typedModels: T[],
   availableHandles: Set<string> | null,
-  allApiHandles: string[],
+  _allApiHandles: string[],
 ): T[] {
+  // With no availability data every typed model is shown. The Cloud-hosted
+  // `letta/*` handles and their API-gated allowlist were removed with the API
+  // backend, so there is no longer a set that needs an explicit presence check.
   if (availableHandles === null) {
-    return typedModels.filter((model) => {
-      if (!API_GATED_MODEL_HANDLES.has(model.handle)) return true;
-      return allApiHandles.includes(model.handle);
-    });
+    return typedModels;
   }
 
   return typedModels.filter((model) => availableHandles.has(model.handle));

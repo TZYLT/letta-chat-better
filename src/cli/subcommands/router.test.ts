@@ -161,7 +161,6 @@ describe("subcommand router", () => {
     expect(subcommandNeedsEarlyBackendMode("models")).toBe(true);
     expect(subcommandNeedsEarlyBackendMode("mods")).toBe(true);
     expect(subcommandNeedsEarlyBackendMode("version")).toBe(false);
-    expect(subcommandNeedsEarlyBackendMode("backend")).toBe(false);
     expect(subcommandNeedsEarlyBackendMode(undefined)).toBe(false);
   });
 });

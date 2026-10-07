@@ -11,7 +11,6 @@ import type { StreamResumePolicy } from "@/cli/helpers/stream-resume";
 
 const capabilities = {
   remoteMemfs: false,
-  serverSecrets: false,
   promptRecompile: false,
   localModelCatalog: true,
   localMemfs: false,

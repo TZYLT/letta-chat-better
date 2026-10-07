@@ -49,13 +49,18 @@ export async function resolveBackendSpecificToolAssets(
   if (name !== "Task") {
     return { description, inputSchema };
   }
-  let environmentRouting = false;
+  // Task used to advertise `computer` only when the backend could route work to
+  // another environment (a Cloud-only capability).
+  // The server-backed capability that replaces it is `remoteMemfs`, which is
+  // false for the local in-process backend (the only backend left), so the
+  // option is stripped.
+  let computerRouting = false;
   try {
-    environmentRouting = getBackend().capabilities.environmentRouting;
+    computerRouting = getBackend().capabilities.remoteMemfs;
   } catch {
-    environmentRouting = false;
+    computerRouting = false;
   }
-  if (environmentRouting) {
+  if (computerRouting) {
     return { description, inputSchema };
   }
   return {

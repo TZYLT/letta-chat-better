@@ -25,8 +25,10 @@ export async function reconcileCloudPromptForMemoryMode(input: {
       settingsManager.setSystemPromptCustom(agent.id);
     return "Custom system prompt left unchanged for memory mode";
   }
+  // `remoteMemfs` is the server-backed capability that replaces the deleted
+  // Cloud-only environment-routing bit this preservation request used to read.
   if (
-    backend.capabilities.environmentRouting &&
+    backend.capabilities.remoteMemfs &&
     process.env.LETTA_CODE_PRESERVE_CLOUD_SYSTEM_PROMPT === "1"
   ) {
     return "Cloud system prompt preservation requested";

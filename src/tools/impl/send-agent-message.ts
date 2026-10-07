@@ -195,7 +195,10 @@ export async function send_agent_message(
     }
 
     const backend = deps.backend ?? getBackend();
-    if (!backend.capabilities.environmentRouting) {
+    // The Cloud-only `environment routing` capability was checked here. The
+    // server-backed `remoteMemfs` replaces it; it is false for the local
+    // in-process backend, which is the only backend left.
+    if (!backend.capabilities.remoteMemfs) {
       throw new Error("SendAgentMessage requires a Cloud backend.");
     }
     const computer = normalizeAgentMessageComputer(args.computer);

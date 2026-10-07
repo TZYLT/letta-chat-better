@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
+import { __testSetBackend, type Backend } from "@/backend";
 import TaskDescriptionRaw from "./descriptions/Task.md";
 import type { JsonSchema } from "./model-facing-tool";
 import TaskSchema from "./schemas/Task.json";
@@ -54,7 +55,7 @@ describe("stripComputerFromTaskDescription", () => {
 });
 
 describe("task() computer guard", () => {
-  test("task.ts rejects computer args before spawning when the backend lacks environmentRouting", async () => {
+  test("task.ts rejects computer args before spawning when the backend lacks remoteMemfs", async () => {
     const source = await Bun.file(
       new URL("./impl/task.ts", import.meta.url),
     ).text();
@@ -69,7 +70,7 @@ describe("task() computer guard", () => {
     expect(guardIndex).toBeGreaterThan(-1);
     expect(spawnIndex).toBeGreaterThan(-1);
     expect(guardIndex).toBeLessThan(spawnIndex);
-    expect(source).toContain("capabilities.environmentRouting");
+    expect(source).toContain("capabilities.remoteMemfs");
   });
 });
 
@@ -100,8 +101,12 @@ describe("resolveBackendSpecificToolAssets Task dispatch", () => {
     );
   });
 
-  test("keeps computer for the Cloud server", async () => {
-    process.env.LETTA_BASE_URL = "https://api.letta.com";
+  test("keeps computer for a server-backed backend", async () => {
+    // The Cloud API backend that used to make this true is gone; a backend that
+    // still reports server-side memory is what keeps the option now.
+    __testSetBackend({
+      capabilities: { remoteMemfs: true },
+    } as unknown as Backend);
     const { resolveBackendSpecificToolAssets } = await import(
       "./task-tool-assets"
     );
@@ -112,5 +117,6 @@ describe("resolveBackendSpecificToolAssets Task dispatch", () => {
     );
     expect(resolved.inputSchema.properties?.computer).toBeDefined();
     expect(resolved.description).toContain("## Running on Another Computer");
+    __testSetBackend(null);
   });
 });

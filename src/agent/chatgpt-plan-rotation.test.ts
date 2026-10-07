@@ -1,5 +1,4 @@
 import { describe, expect, test } from "bun:test";
-import Letta from "@letta-ai/letta-client";
 import { clearAvailableModelsCache } from "@/agent/available-models";
 import {
   formatPlanRotationNotice,
@@ -10,7 +9,7 @@ import {
   parseChatGPTUsageLimitDetail,
   selectChatGPTQuotaFailoverHandle,
 } from "@/agent/turn-recovery-policy";
-import { __testSetBackend, APIBackend } from "@/backend";
+import { __testSetBackend } from "@/backend";
 import type { ChatGPTUsageSnapshot } from "@/providers/chatgpt-usage-service";
 
 const FULL_DETAIL =
@@ -18,114 +17,6 @@ const FULL_DETAIL =
 
 const PRIMARY_HANDLE = "chatgpt-caren/gpt-5.2";
 const SIBLING_HANDLE = "chatgpt-jin/gpt-5.2";
-
-describe("quota-aware plan rotation over HTTP", () => {
-  for (const outcome of [
-    "available",
-    "all exhausted",
-    "unavailable",
-    "cancelled",
-  ] as const) {
-    test(`${outcome}: checks quota before updating only the active conversation`, async () => {
-      const conversations = new Map([
-        ["conv-first", PRIMARY_HANDLE],
-        ["conv-second", PRIMARY_HANDLE],
-      ]);
-      const checked: string[] = [];
-      const updates: string[] = [];
-      const controller = new AbortController();
-      const server = Bun.serve({
-        port: 0,
-        fetch(req) {
-          const url = new URL(req.url);
-          const path = url.pathname.replace(/\/$/, "");
-          if (path === "/v1/models") {
-            return Response.json(
-              [PRIMARY_HANDLE, SIBLING_HANDLE, "chatgpt-third/gpt-5.2"].map(
-                (handle) => ({
-                  handle,
-                  provider_type: "chatgpt_oauth",
-                  provider_category: "byok",
-                  max_context_window: 128_000,
-                }),
-              ),
-            );
-          }
-          if (path === "/v1/providers/chatgpt-usage") {
-            const provider = url.searchParams.get("provider_name") ?? "";
-            checked.push(provider);
-            if (outcome === "cancelled") controller.abort();
-            if (outcome === "unavailable")
-              return new Response("unavailable", { status: 503 });
-            return Response.json({
-              providerName: provider,
-              fetchedAt: new Date().toISOString(),
-              limitReached:
-                outcome === "all exhausted" ||
-                (outcome === "available" && checked.length === 1),
-            });
-          }
-          const id = path.split("/").at(-1) ?? "";
-          if (path === "/v1/agents/agent-rotation") {
-            return Response.json({
-              id,
-              model: PRIMARY_HANDLE,
-              llm_config: { context_window: 272_000 },
-            });
-          }
-          if (path.startsWith("/v1/conversations/") && conversations.has(id)) {
-            if (req.method === "PATCH") {
-              return req.json().then((body) => {
-                const model = (body as { model: string }).model;
-                updates.push(model);
-                conversations.set(id, model);
-                return Response.json({ id, model });
-              });
-            }
-            return Response.json({ id, model: conversations.get(id) });
-          }
-          return new Response("unexpected route", { status: 404 });
-        },
-      });
-      const client = new Letta({
-        apiKey: "test-key",
-        baseURL: server.url.toString(),
-        maxRetries: 0,
-      });
-      __testSetBackend(new APIBackend({ getClient: async () => client }));
-      clearAvailableModelsCache();
-      try {
-        const result = await rotateChatGPTPlanOnQuotaLimit({
-          agentId: "agent-rotation",
-          conversationId: "conv-first",
-          currentHandle: PRIMARY_HANDLE,
-          error: { error_code: "usage_limit_reached" },
-          exhaustedProviders: new Set(),
-          signal: controller.signal,
-        });
-        if (outcome === "available") {
-          expect(checked).toHaveLength(2);
-          expect(result?.toProvider).toBe(checked[1]);
-          expect(updates).toEqual([`${checked[1]}/gpt-5.2`]);
-        } else if (outcome === "unavailable") {
-          expect(checked).toHaveLength(1);
-          expect(result?.toProvider).toBe(checked[0]);
-          expect(updates).toHaveLength(1);
-        } else {
-          expect(checked).toHaveLength(outcome.startsWith("cancelled") ? 1 : 2);
-          expect(result).toBeNull();
-          expect(updates).toEqual([]);
-          expect(conversations.get("conv-first")).toBe(PRIMARY_HANDLE);
-        }
-        expect(conversations.get("conv-second")).toBe(PRIMARY_HANDLE);
-      } finally {
-        server.stop(true);
-        clearAvailableModelsCache();
-        __testSetBackend(null);
-      }
-    });
-  }
-});
 
 describe("plan-wide quota evidence", () => {
   const now = Date.now();

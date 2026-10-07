@@ -42,23 +42,12 @@ describe("ModelSelector availability gating", () => {
     expect(result.map((m) => m.handle)).not.toContain("letta/auto");
   });
 
-  test("fallback mode hides API-gated Letta models unless explicitly present in allApiHandles", () => {
-    const hiddenResult = filterModelsByAvailabilityForSelector(MODELS, null, [
+  test("fallback mode returns every typed model when no availability data exists", () => {
+    const result = filterModelsByAvailabilityForSelector(MODELS, null, [
       "anthropic/claude-sonnet-4-6",
     ]);
-    expect(hiddenResult.map((m) => m.handle)).not.toContain("letta/auto");
-    expect(hiddenResult.map((m) => m.handle)).not.toContain("letta/glm");
-    expect(hiddenResult.map((m) => m.handle)).toContain(
-      "anthropic/claude-sonnet-4-6",
-    );
 
-    const shownResult = filterModelsByAvailabilityForSelector(MODELS, null, [
-      "letta/auto",
-      "letta/glm",
-      "anthropic/claude-sonnet-4-6",
-    ]);
-    expect(shownResult.map((m) => m.handle)).toContain("letta/auto");
-    expect(shownResult.map((m) => m.handle)).toContain("letta/glm");
+    expect(result.map((m) => m.handle)).toEqual(MODELS.map((m) => m.handle));
   });
 
   test("includes the Kimi K3 preset only when the API catalog exposes its handle", () => {

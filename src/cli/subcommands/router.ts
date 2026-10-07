@@ -1,5 +1,4 @@
 import { runAgentsSubcommand } from "./agents";
-import { runBackendSubcommand } from "./backend";
 import { runChannelsSubcommand } from "./channels";
 import { runConnectSubcommand } from "./connect";
 import { runCronSubcommand } from "./cron";
@@ -85,8 +84,6 @@ export async function runSubcommand(argv: string[]): Promise<number | null> {
       return runServerSubcommand(rest);
     case "connect":
       return runConnectSubcommand(rest);
-    case "backend":
-      return runBackendSubcommand(rest);
     case "setup":
       return runSetupSubcommand(rest);
     case "install":

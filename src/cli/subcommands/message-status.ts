@@ -10,7 +10,10 @@ export async function readMessageStatus(
   backend: Pick<Backend, "capabilities" | "retrieveConversation">,
   deps = { getAgentRuntimeStatus, getLatestConversationSuperRun },
 ): Promise<object> {
-  if (!backend.capabilities.environmentRouting)
+  // The Cloud-only `environment routing` capability was read here; locally
+  // has no runtime-status or super-run API, so cloud-ness is expressed by
+  // `remoteMemfs` (which is false for every backend left in the product).
+  if (!backend.capabilities.remoteMemfs)
     throw new Error(
       "Message status is only available for Cloud conversations.",
     );

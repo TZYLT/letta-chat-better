@@ -1,16 +1,20 @@
 /**
  * Agent-scoped secret storage for Letta Code.
- * Cloud agent secrets are stored on the Letta server. Local agent secrets are
- * stored in the operating system credential manager when available, with a
- * local-backend file fallback for Node production. Both paths hydrate the same
- * in-memory cache for fast $SECRET_NAME substitution.
+ *
+ * Every agent is local now: the API (Cloud) backend that used to own
+ * server-side agent secrets is gone, so the optional backend secret-list method
+ * has no implementer and the server-side branches here are provably dead.
+ * Secrets live in the operating system credential manager when available, with
+ * a local-backend file fallback for Node production. Both paths hydrate the
+ * same in-memory cache for fast $SECRET_NAME substitution.
+ *
+ * The `…Server` function names are kept for now to avoid an identifier-only
+ * rename across the WS handlers and command layer.
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { isLocalAgentId } from "@/agent/agent-id";
 import { getCurrentAgentId } from "@/agent/context";
-import { getBackend } from "@/backend";
 import { getLocalBackendStorageDir } from "@/backend/local/paths";
 import {
   deleteSecretValue,
@@ -19,35 +23,13 @@ import {
   setSecretValue,
 } from "@/utils/secrets";
 
-type SecretsBackend = {
-  capabilities: { serverSecrets: boolean };
-  listAgentSecrets: (
-    agentId: string,
-  ) => Promise<Array<{ key?: string; value?: string }>>;
-  retrieveAgent?: (
-    agentId: string,
-    options?: { include?: string[] },
-  ) => Promise<{ secrets?: Array<{ key?: string; value?: string }> | null }>;
-  updateAgent: (
-    agentId: string,
-    body: { secrets: Record<string, string> },
-  ) => Promise<unknown>;
-};
-
 type LocalSecretStorage = {
   delete: (name: string) => Promise<boolean>;
   get: (name: string, label: string) => Promise<string | null>;
   set: (name: string, value: string) => Promise<void>;
 };
 
-let testBackendOverride: SecretsBackend | null = null;
 let testLocalSecretStorageOverride: LocalSecretStorage | null = null;
-
-export function __testOverrideSecretsBackend(
-  backend: SecretsBackend | null,
-): void {
-  testBackendOverride = backend;
-}
 
 export function __testOverrideLocalSecretStorage(
   storage: LocalSecretStorage | null,
@@ -60,10 +42,6 @@ export function __testSeedSecretsCache(
   secrets: Record<string, string>,
 ): void {
   setCache(agentId, secrets);
-}
-
-function getSecretsBackend(): SecretsBackend {
-  return testBackendOverride ?? (getBackend() as SecretsBackend);
 }
 
 const FILE_BACKED_LOCAL_SECRETS_PATH = join(
@@ -362,32 +340,11 @@ function resolveSecretsAgentId(explicitAgentId?: string): string | null {
 }
 
 /**
- * Initialize the agent-scoped secrets cache. Cloud agents fetch from the
- * server. Local agents read from OS secure storage through Bun.secrets.
+ * Initialize the agent-scoped secrets cache. Every agent is local now, so this
+ * always reads the OS secure storage / local-backend file fallback.
  */
 export async function initSecretsFromServer(agentId: string): Promise<void> {
-  if (isLocalAgentId(agentId)) {
-    setCache(agentId, await loadLocalAgentSecrets(agentId));
-    return;
-  }
-
-  const backend = getSecretsBackend();
-  if (!backend.capabilities.serverSecrets) {
-    setCache(agentId, {});
-    return;
-  }
-  const agentSecrets = await backend.listAgentSecrets(agentId);
-
-  const secrets: Record<string, string> = {};
-  if (Array.isArray(agentSecrets)) {
-    for (const env of agentSecrets) {
-      if (env.key && env.value) {
-        secrets[env.key] = env.value;
-      }
-    }
-  }
-
-  setCache(agentId, secrets);
+  setCache(agentId, await loadLocalAgentSecrets(agentId));
 }
 
 /**
@@ -428,9 +385,8 @@ export async function refreshAndListSecrets(
 }
 
 /**
- * Apply a batch of secret mutations. Cloud agents use a single server PATCH;
- * local agents update OS secure storage and the local key index. Used by the
- * modal's `secret_apply` WS handler.
+ * Apply a batch of secret mutations to local storage. Used by the modal's
+ * `secret_apply` WS handler.
  *
  * @returns sorted final secret name list after the apply
  */
@@ -446,29 +402,7 @@ export async function applySecretBatch(
     throw new Error("No agent context set. Agent ID is required.");
   }
 
-  const normalized = normalizeSecretMutations(options);
-
-  if (isLocalAgentId(agentId)) {
-    return applyLocalSecretBatch(agentId, normalized);
-  }
-
-  const backend = getSecretsBackend();
-  if (!backend.capabilities.serverSecrets) {
-    throw new Error("Agent secrets are not supported by this backend yet");
-  }
-
-  const next: Record<string, string> = { ...loadSecrets(agentId) };
-  for (const [key, value] of Object.entries(normalized.set)) {
-    next[key] = value;
-  }
-  for (const key of normalized.unset) {
-    delete next[key];
-  }
-
-  await backend.updateAgent(agentId, { secrets: next });
-  setCache(agentId, next);
-
-  return Object.keys(next).sort();
+  return applyLocalSecretBatch(agentId, normalizeSecretMutations(options));
 }
 
 /**
@@ -484,28 +418,7 @@ export async function setSecretOnServer(
     throw new Error("No agent context set. Agent ID is required.");
   }
 
-  const normalizedKey = normalizeSecretKey(key);
-
-  if (isLocalAgentId(agentId)) {
-    await setLocalAgentSecret(agentId, normalizedKey, value);
-    return;
-  }
-
-  const backend = getSecretsBackend();
-  if (!backend.capabilities.serverSecrets) {
-    throw new Error("Agent secrets are not supported by this backend yet");
-  }
-
-  await initSecretsFromServer(agentId);
-
-  // Update cache first
-  const secrets = { ...loadSecrets(agentId) };
-  secrets[normalizedKey] = value;
-
-  // PATCH replaces entire map
-  await backend.updateAgent(agentId, { secrets });
-
-  setCache(agentId, secrets);
+  await setLocalAgentSecret(agentId, normalizeSecretKey(key), value);
 }
 
 /**
@@ -521,31 +434,7 @@ export async function deleteSecretOnServer(
     throw new Error("No agent context set. Agent ID is required.");
   }
 
-  const normalizedKey = normalizeSecretKey(key);
-
-  if (isLocalAgentId(agentId)) {
-    return deleteLocalAgentSecret(agentId, normalizedKey);
-  }
-
-  const backend = getSecretsBackend();
-  if (!backend.capabilities.serverSecrets) {
-    throw new Error("Agent secrets are not supported by this backend yet");
-  }
-
-  await initSecretsFromServer(agentId);
-
-  const secrets = { ...loadSecrets(agentId) };
-
-  if (!(normalizedKey in secrets)) {
-    return false;
-  }
-
-  delete secrets[normalizedKey];
-
-  await backend.updateAgent(agentId, { secrets });
-
-  setCache(agentId, secrets);
-  return true;
+  return deleteLocalAgentSecret(agentId, normalizeSecretKey(key));
 }
 
 /**

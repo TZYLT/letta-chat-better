@@ -189,28 +189,30 @@ describe("shared CLI arg schema", () => {
     expect(parsed.values["no-mods"]).toBe(true);
   });
 
-  test("normalizes cloud backend mode and preserves the api compatibility alias", () => {
+  test("rejects the retired cloud and api backend modes", () => {
     expect(parseBackendModeFlag(undefined)).toBeUndefined();
-    expect(parseBackendModeFlag("cloud")).toBe("api");
-    expect(parseBackendModeFlag("api")).toBe("api");
     expect(parseBackendModeFlag("local")).toBe("local");
+    expect(() => parseBackendModeFlag("cloud")).toThrow(
+      "--backend cloud is no longer supported",
+    );
+    expect(() => parseBackendModeFlag("api")).toThrow(
+      "--backend api is no longer supported",
+    );
     expect(() => parseBackendModeFlag("server")).toThrow(
       'Invalid --backend value "server"',
     );
   });
 
-  test("extracts and normalizes backend flags before routing subcommands", () => {
+  test("extracts the backend flag before routing subcommands and rejects retired modes", () => {
     expect(
       extractBackendFlag(["--backend", "local", "connect", "help"]),
     ).toEqual({ backend: "local", args: ["connect", "help"] });
-    expect(extractBackendFlag(["connect", "help", "--backend=cloud"])).toEqual({
-      backend: "api",
-      args: ["connect", "help"],
-    });
-    expect(extractBackendFlag(["connect", "help", "--backend=api"])).toEqual({
-      backend: "api",
-      args: ["connect", "help"],
-    });
+    expect(() =>
+      extractBackendFlag(["connect", "help", "--backend=cloud"]),
+    ).toThrow("--backend cloud is no longer supported");
+    expect(() => extractBackendFlag(["--backend", "api", "connect"])).toThrow(
+      "--backend api is no longer supported",
+    );
     expect(() => extractBackendFlag(["--backend"])).toThrow(
       "Missing value for --backend",
     );

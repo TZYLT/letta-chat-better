@@ -34,12 +34,10 @@ const backend = {
   listAgentMessages,
   retrieveConversation,
   capabilities: {
-    remoteMemfs: false,
-    serverSecrets: false,
     promptRecompile: false,
     localModelCatalog: false,
     localMemfs: false,
-    environmentRouting: true,
+    remoteMemfs: true,
   },
 };
 const message = {
@@ -126,7 +124,7 @@ test("status rejects a backend without environment routing before retrieval", as
         initializeSettings: async () => {},
         getBackend: () => ({
           ...backend,
-          capabilities: { ...backend.capabilities, environmentRouting: false },
+          capabilities: { ...backend.capabilities, remoteMemfs: false },
         }),
       },
     );

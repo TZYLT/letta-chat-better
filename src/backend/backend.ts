@@ -1,45 +1,20 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
-import { APIConnectionError } from "@letta-ai/letta-client/core/error";
 import type { Message } from "@letta-ai/letta-client/resources/agents/messages";
-import {
-  type ChatGPTUsageSnapshot,
-  normalizeCloudChatGPTUsageResponse,
-} from "@/providers/chatgpt-usage-service";
 import type { getClient } from "./api/client";
 import type {
   ForkConversationOptions,
   forkConversation as forkConversationRequest,
 } from "./api/conversations";
-import {
-  type CloudReflectionConfig,
-  retrieveCloudReflectionConfig,
-} from "./api/reflection";
-import {
-  postReflectionRun,
-  REFLECTION_UNSUPPORTED,
-  type ReflectionRunReceipt,
-  type ReflectionRunRequest,
-} from "./api/reflection-runs";
-import { isCloudServerUrl } from "./api/server-url";
-import {
-  type BackendMode,
-  resolveBackendMode,
-  setConfiguredBackendMode,
-} from "./backend-mode";
+import { type BackendMode, setConfiguredBackendMode } from "./backend-mode";
 import { LocalBackend } from "./local/local-backend";
-import {
-  getLocalBackendStorageDir as getLocalBackendStorageDirFromPaths,
-  LOCAL_BACKEND_EXPERIMENTAL_ENV,
-} from "./local/paths";
+import { getLocalBackendStorageDir as getLocalBackendStorageDirFromPaths } from "./local/paths";
 
 export type { BackendMode };
 export { isExperimentalLocalBackendEnabled } from "./backend-mode";
 
 export type APIClient = Awaited<ReturnType<typeof getClient>>;
-type GetAPIClient = typeof getClient;
-type ForkConversation = typeof forkConversationRequest;
 
 export type ConversationMessageCreateParams = Parameters<
   APIClient["conversations"]["messages"]["create"]
@@ -116,24 +91,6 @@ export type ConversationMessageListBody = ConversationMessageListParams[1];
 export type ConversationMessageListOptions = ConversationMessageListParams[2];
 export const DEFAULT_CONVERSATION_MESSAGE_ORDER = "desc";
 
-function toApiConversationMessageListBody(
-  body?: ConversationMessageListBody,
-): ConversationMessageListBody | undefined {
-  const order = body?.order ?? DEFAULT_CONVERSATION_MESSAGE_ORDER;
-  if (!body || order !== "desc" || (!body.before && !body.after)) {
-    return body;
-  }
-
-  // The Backend contract uses chronological cursors: before always means older
-  // and after always means newer. The API interprets them relative to sort order,
-  // so descending requests need their cursor keys swapped at this boundary.
-  return {
-    ...body,
-    before: body.after,
-    after: body.before,
-  };
-}
-
 export type ConversationMessageCompactParams = Parameters<
   APIClient["conversations"]["messages"]["compact"]
 >;
@@ -168,21 +125,9 @@ export interface ConversationResumeTail {
 
 export interface BackendCapabilities {
   remoteMemfs: boolean;
-  serverSecrets: boolean;
   promptRecompile: boolean;
   localModelCatalog: boolean;
   localMemfs: boolean;
-  /**
-   * Whether subagent turns can be routed to other computers (connected
-   * environments / Cloud sandboxes). Cloud-only: the environments API does
-   * not exist on local or self-hosted backends.
-   */
-  environmentRouting: boolean;
-}
-
-export interface AgentSecret {
-  key: string;
-  value: string;
 }
 
 export interface Backend {
@@ -207,22 +152,6 @@ export interface Backend {
     body: AgentUpdateBody,
     options?: AgentUpdateOptions,
   ): Promise<Awaited<ReturnType<APIClient["agents"]["update"]>>>;
-
-  /** Null means a known non-Cloud API server; lookup errors must propagate. */
-  retrieveReflectionConfig?(
-    agentId: string,
-    options?: { headers: Record<string, string> },
-  ): Promise<CloudReflectionConfig | null>;
-
-  /** Cloud admission only; unsupported backends must not run local reflection. */
-  enqueueReflectionRun?(
-    agentId: string,
-    request: ReflectionRunRequest,
-    options?: { headers: Record<string, string> },
-  ): Promise<ReflectionRunReceipt>;
-
-  /** Optional until every backend supports server-backed agent secrets. */
-  listAgentSecrets?(agentId: string): Promise<AgentSecret[]>;
 
   createAgent(
     body: AgentCreateBody,
@@ -312,11 +241,6 @@ export interface Backend {
     options?: ModelsListOptions,
   ): Promise<Awaited<ReturnType<APIClient["models"]["list"]>>>;
 
-  readChatGPTUsage?(
-    providerName: string,
-    signal?: AbortSignal,
-  ): Promise<ChatGPTUsageSnapshot | null>;
-
   createConversationMessageStream(
     conversationId: string,
     body: ConversationMessageCreateBody,
@@ -366,341 +290,6 @@ export interface Backend {
   getLocalStorageDir?(): string | undefined;
 }
 
-interface APIBackendDeps {
-  getClient?: GetAPIClient;
-  forkConversation?: ForkConversation;
-}
-
-export class APIBackend implements Backend {
-  get capabilities(): BackendCapabilities {
-    return {
-      remoteMemfs: true,
-      serverSecrets: true,
-      promptRecompile: true,
-      localModelCatalog: false,
-      localMemfs: false,
-      // Environment routing only exists on Letta Cloud; an APIBackend pointed
-      // at a self-hosted or remote app server has no environments API.
-      environmentRouting: isCloudServerUrl(),
-    };
-  }
-
-  private readonly getApiClientOverride?: GetAPIClient;
-  private readonly forkConversationOverride?: ForkConversation;
-  private readonly retrieveAgentInflightByKey = new Map<
-    string,
-    Promise<Awaited<ReturnType<APIClient["agents"]["retrieve"]>>>
-  >();
-
-  constructor(deps: APIBackendDeps = {}) {
-    this.getApiClientOverride = deps.getClient;
-    this.forkConversationOverride = deps.forkConversation;
-  }
-
-  private async getClient(): Promise<APIClient> {
-    if (this.getApiClientOverride) {
-      return this.getApiClientOverride();
-    }
-    const { getClient: resolveClient } = await import("@/backend/api/client");
-    return resolveClient();
-  }
-
-  async retrieveAgent(agentId: string, options?: AgentRetrieveOptions) {
-    const client = await this.getClient();
-    if (options !== undefined) {
-      return client.agents.retrieve(agentId, options);
-    }
-
-    const inflight = this.retrieveAgentInflightByKey.get(agentId);
-    if (inflight) return inflight;
-
-    const request = client.agents.retrieve(agentId, undefined);
-    this.retrieveAgentInflightByKey.set(agentId, request);
-    request.then(
-      () => {
-        if (this.retrieveAgentInflightByKey.get(agentId) === request) {
-          this.retrieveAgentInflightByKey.delete(agentId);
-        }
-      },
-      () => {
-        if (this.retrieveAgentInflightByKey.get(agentId) === request) {
-          this.retrieveAgentInflightByKey.delete(agentId);
-        }
-      },
-    );
-    return request;
-  }
-
-  async retrieveReflectionConfig(
-    agentId: string,
-    options?: { headers: Record<string, string> },
-  ): Promise<CloudReflectionConfig | null> {
-    if (!isCloudServerUrl()) return null;
-    const headers = options ? { ...options.headers } : undefined;
-    const client = await this.getClient();
-    const config = await retrieveCloudReflectionConfig(
-      agentId,
-      (_method, path) => client.get(path, { headers, maxRetries: 0 }),
-    );
-    if (!config || typeof config.cutover !== "boolean") {
-      throw new Error(
-        "Unable to determine reflection ownership: missing cutover configuration.",
-      );
-    }
-    return config;
-  }
-
-  async enqueueReflectionRun(
-    agentId: string,
-    request: ReflectionRunRequest,
-    options?: { headers: Record<string, string> },
-  ): Promise<ReflectionRunReceipt> {
-    if (!isCloudServerUrl()) throw new Error(REFLECTION_UNSUPPORTED);
-    const body = { ...request };
-    const headers = options ? { headers: { ...options.headers } } : undefined;
-    const client = await this.getClient();
-    return postReflectionRun(client, agentId, body, headers);
-  }
-
-  async listAgentSecrets(agentId: string): Promise<AgentSecret[]> {
-    const client = await this.getClient();
-    return client.get<AgentSecret[]>(
-      `/v1/agents/${encodeURIComponent(agentId)}/secrets`,
-    );
-  }
-
-  async listAgents(body?: AgentListBody) {
-    const client = await this.getClient();
-    return client.agents.list(body);
-  }
-
-  async deleteAgent(agentId: string, options?: AgentDeleteOptions) {
-    const client = await this.getClient();
-    return client.agents.delete(agentId, options);
-  }
-
-  async updateAgent(
-    agentId: string,
-    body: AgentUpdateBody,
-    options?: AgentUpdateOptions,
-  ) {
-    const client = await this.getClient();
-    return client.agents.update(agentId, body, options);
-  }
-
-  async createAgent(body: AgentCreateBody, options?: AgentCreateOptions) {
-    const client = await this.getClient();
-    return client.agents.create(body, options);
-  }
-
-  async retrieveConversation(
-    conversationId: string,
-    options?: ConversationRetrieveOptions,
-  ) {
-    const client = await this.getClient();
-    return client.conversations.retrieve(conversationId, options);
-  }
-
-  async listConversations(body?: ConversationListBody) {
-    const client = await this.getClient();
-    return client.conversations.list(body);
-  }
-
-  async createConversation(
-    body: ConversationCreateBody,
-    options?: ConversationCreateOptions,
-  ) {
-    const client = await this.getClient();
-    return client.conversations.create(body, options);
-  }
-
-  async deleteConversation(conversationId: string) {
-    const client = await this.getClient();
-    return client.conversations.delete(conversationId);
-  }
-
-  async updateConversation(
-    conversationId: string,
-    body: ConversationUpdateBody,
-    options?: ConversationUpdateOptions,
-  ) {
-    const client = await this.getClient();
-    return client.conversations.update(conversationId, body, options);
-  }
-
-  async recompileConversation(
-    conversationId: string,
-    body?: ConversationRecompileBody,
-    options?: ConversationRecompileOptions,
-  ) {
-    const client = await this.getClient();
-    return client.conversations.recompile(conversationId, body, options);
-  }
-
-  async listConversationMessages(
-    conversationId: string,
-    body?: ConversationMessageListBody,
-    options?: ConversationMessageListOptions,
-  ) {
-    const client = await this.getClient();
-    return client.conversations.messages.list(
-      conversationId,
-      toApiConversationMessageListBody(body),
-      options,
-    );
-  }
-
-  async compactConversationMessages(
-    conversationId: string,
-    body?: ConversationMessageCompactBody,
-    options?: ConversationMessageCompactOptions,
-  ) {
-    const client = await this.getClient();
-    return client.conversations.messages.compact(conversationId, body, options);
-  }
-
-  async listAgentMessages(
-    agentId: string,
-    body?: AgentMessageListBody,
-    options?: AgentMessageListOptions,
-  ) {
-    const client = await this.getClient();
-    return client.agents.messages.list(agentId, body, options);
-  }
-
-  async retrieveMessage(messageId: string, options?: MessageRetrieveOptions) {
-    const client = await this.getClient();
-    return client.messages.retrieve(messageId, options);
-  }
-
-  async getConversationResumeTail(
-    agentId: string,
-    conversationId: string,
-    options: ConversationResumeTailOptions,
-  ): Promise<ConversationResumeTail> {
-    const body = {
-      limit: options.limit,
-      order: "desc",
-      include_return_message_types: options.includeReturnMessageTypes,
-    };
-
-    if (conversationId && conversationId !== "default") {
-      const [conversation, page] = await Promise.all([
-        this.retrieveConversation(conversationId),
-        this.listConversationMessages(
-          conversationId,
-          body as ConversationMessageListBody,
-        ),
-      ]);
-      return { conversation, messages: page.getPaginatedItems() };
-    }
-
-    const page = await this.listAgentMessages(agentId, {
-      ...body,
-      conversation_id: "default",
-    } as AgentMessageListBody);
-    return { messages: page.getPaginatedItems() };
-  }
-
-  async listModels(options?: ModelsListOptions) {
-    const client = await this.getClient();
-    return client.models.list(options);
-  }
-
-  async readChatGPTUsage(providerName: string, signal?: AbortSignal) {
-    const client = await this.getClient();
-    // Use the same credentials/server as model selection. Do not reuse the
-    // provider selector's name-only cache across authenticated projects.
-    const raw = await client.get<unknown>("/v1/providers/chatgpt-usage", {
-      query: { provider_name: providerName },
-      signal,
-      timeout: 3_000,
-      maxRetries: 0,
-    });
-    return normalizeCloudChatGPTUsageResponse({ raw, providerName });
-  }
-
-  async createConversationMessageStream(
-    conversationId: string,
-    body: ConversationMessageCreateBody,
-    options?: ConversationMessageCreateOptions,
-  ) {
-    const client = await this.getClient();
-    const { data: stream, response } = await client.conversations.messages
-      .create(conversationId, body, options)
-      .withResponse();
-    const contentType = response.headers.get("content-type") ?? "";
-    if (
-      contentType.split(";")[0]?.trim().toLowerCase() !== "text/event-stream"
-    ) {
-      // A gateway can return HTTP 200 HTML while the API is down. Reject it
-      // before callers try to resume a run that never accepted this request.
-      stream.controller.abort();
-      throw new APIConnectionError({
-        message: `Connection error: expected text/event-stream, received ${contentType || "no content type"} (HTTP ${response.status}).`,
-      });
-    }
-    return stream;
-  }
-
-  async streamConversationMessages(
-    conversationId: string,
-    body: ConversationMessageStreamBody,
-    options?: ConversationMessageStreamOptions,
-  ) {
-    const client = await this.getClient();
-    return client.conversations.messages.stream(conversationId, body, options);
-  }
-
-  async cancelConversation(conversationIdOrAgentId: string) {
-    const client = await this.getClient();
-    return client.conversations.cancel(conversationIdOrAgentId);
-  }
-
-  async cancelRun(agentId: string, runId: string) {
-    const client = await this.getClient();
-    return client.agents.messages.cancel(agentId, { run_ids: [runId] });
-  }
-
-  async cancelConversationRun(
-    _conversationId: string,
-    _runId?: string | null,
-  ): Promise<Awaited<ReturnType<APIClient["agents"]["messages"]["cancel"]>>> {
-    // The public conversations cancellation route cannot scope by run ID. Do
-    // not add a retrieve round-trip here: a run with agent_id:null still has no
-    // agent cancellation route, and waiting on that request would hold the
-    // listener's cancellation fence without making cancellation safer.
-    throw new Error(
-      "API backend does not support exact cancellation for conversations with agent_id:null",
-    );
-  }
-
-  async retrieveRun(runId: string, options?: RunRetrieveOptions) {
-    const client = await this.getClient();
-    return client.runs.retrieve(runId, options);
-  }
-
-  async streamRunMessages(
-    runId: string,
-    body: RunMessageStreamBody,
-    options?: RunMessageStreamOptions,
-  ) {
-    const client = await this.getClient();
-    return client.runs.messages.stream(runId, body, options);
-  }
-
-  async forkConversation(
-    conversationId: string,
-    options?: ForkConversationOptions,
-  ) {
-    if (this.forkConversationOverride) {
-      return this.forkConversationOverride(conversationId, options);
-    }
-    const { forkConversation } = await import("@/backend/api/conversations");
-    return forkConversation(conversationId, options);
-  }
-}
-
 export function getLocalBackendStorageDir(homeDir = homedir()): string {
   return getLocalBackendStorageDirFromPaths(homeDir);
 }
@@ -724,12 +313,8 @@ function createExperimentalLocalBackend(): Backend {
   });
 }
 
-function createBackendForMode(mode: BackendMode): Backend {
-  return mode === "local" ? createExperimentalLocalBackend() : new APIBackend();
-}
-
 function createInitialBackend(): Backend {
-  return createBackendForMode(resolveBackendMode());
+  return createExperimentalLocalBackend();
 }
 
 let backend: Backend | null = null;
@@ -744,32 +329,34 @@ export function getBackend(): Backend {
  *
  * A caller that only has to *classify* the environment — the tool-declaration
  * gate, for instance — must not force the process-level backend into existence
- * merely to ask whether it is local. `resolveBackendMode()` answers the
- * configured mode without a backend at all.
+ * merely to ask whether it is local. The local backend is the only backend, so
+ * an absent instance is still classified as local by the caller.
  */
 export function peekBackend(): Backend | null {
   return backend;
 }
 
 /**
- * Get a backend instance for a specific mode without switching the global backend.
- * Useful for cross-backend operations like retrieving pinned agents from the other backend.
+ * Get a backend instance for a specific mode without switching the global
+ * backend. There is only one backend, so this is now an alias for creating a
+ * local one; the mode argument is kept for callers that still thread it.
  */
-export function getBackendForMode(mode: BackendMode): Backend {
-  return createBackendForMode(mode);
+export function getBackendForMode(_mode: BackendMode): Backend {
+  return createExperimentalLocalBackend();
 }
 
-export function configureBackendMode(mode: BackendMode): void {
-  setConfiguredBackendMode(mode);
-  process.env[LOCAL_BACKEND_EXPERIMENTAL_ENV] = mode === "local" ? "1" : "0";
-  backend = createBackendForMode(mode);
+/**
+ * Point the process at the local backend. There is no longer a second backend
+ * to switch to, so the mode argument is ignored and no environment variable is
+ * written: `LETTA_LOCAL_BACKEND_EXPERIMENTAL` is frozen as the settings-bucket
+ * predicate and must not be flipped by backend selection.
+ */
+export function configureBackendMode(_mode: BackendMode): void {
+  setConfiguredBackendMode(_mode);
+  backend = createExperimentalLocalBackend();
 }
 
 export function configureEphemeralLocalBackend(): void {
-  if (resolveBackendMode() !== "local") {
-    throw new Error("Ephemeral local backend requires local backend mode");
-  }
-
   const stateStorageDir = mkdtempSync(
     join(tmpdir(), "letta-code-ephemeral-local-"),
   );
@@ -785,7 +372,7 @@ export function configureEphemeralLocalBackend(): void {
 }
 
 export function isLocalBackendEnabled(): boolean {
-  return resolveBackendMode() === "local";
+  return true;
 }
 
 function devBackendStoreOptions() {

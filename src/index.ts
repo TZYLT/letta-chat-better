@@ -1350,10 +1350,9 @@ async function main(): Promise<void> {
     const [failedAgentMessage, setFailedAgentMessage] = useState<string | null>(
       null,
     );
-    // For custom API backends: available model handles from server and user's selection
-    const [availableServerModels, setAvailableServerModels] = useState<
-      string[]
-    >([]);
+    // The custom-API backend went away with the API backend, so the custom-API
+    // model inventory is permanently empty and nothing prefetches into it.
+    const availableServerModels: string[] = [];
     const [selectedServerModel, setSelectedServerModel] = useState<
       string | null
     >(null);
@@ -1361,12 +1360,8 @@ async function main(): Promise<void> {
       selectedServerModelReasoningEffort,
       setSelectedServerModelReasoningEffort,
     ] = useState<ModelReasoningSelection | undefined>(undefined);
-    const [customApiDefaultModel, setCustomApiDefaultModel] = useState<
-      string | null
-    >(null);
-    const [customApiBaseUrl, setCustomApiBaseUrl] = useState<string | null>(
-      null,
-    );
+    const customApiDefaultModel: string | null = null;
+    const customApiBaseUrl: string | null = null;
 
     // Release notes to display (checked once on mount)
     const [releaseNotes, setReleaseNotes] = useState<string | null>(null);
@@ -1465,15 +1460,6 @@ async function main(): Promise<void> {
           ? "local"
           : "api";
 
-        // For custom API backends, available-model discovery can require a
-        // slow network/API round trip. It is only used to improve the fresh
-        // "create agent" model picker, so keep it off the startup decision path.
-        const baseURL =
-          process.env.LETTA_BASE_URL ||
-          settings.env?.LETTA_BASE_URL ||
-          LETTA_CLOUD_API_URL;
-        const isCustomApiBackend =
-          startupBackendMode !== "local" && !baseURL.includes("api.letta.com");
         setStartupHasCloudCredentials(Boolean(settings.refreshToken || apiKey));
         const startupModelsPromise =
           startupBackendMode === "local"
@@ -1500,34 +1486,6 @@ async function main(): Promise<void> {
         // not block startup on it; fresh-agent creation can fail naturally or
         // be retried with an explicit model.
         const needsModelPicker = false;
-
-        if (isCustomApiBackend) {
-          setCustomApiBaseUrl(baseURL);
-          const modelPrefetchTimer = setTimeout(() => {
-            void import("@/agent/model")
-              .then(({ getDefaultModel }) => {
-                const defaultModel = getDefaultModel();
-                setCustomApiDefaultModel(defaultModel);
-                return backend.listModels().then((modelsList) => {
-                  markMilestone("CUSTOM_API_MODEL_PREFETCH_DONE");
-                  const handles = modelsList
-                    .map((m) => m.handle)
-                    .filter((h): h is string => typeof h === "string");
-
-                  // Only show the custom-API model picker helper when the
-                  // default model is unavailable, but never wait on this before
-                  // deciding whether to resume/select/create.
-                  if (!handles.includes(defaultModel)) {
-                    setAvailableServerModels(handles);
-                  }
-                });
-              })
-              .catch(() => {
-                // Ignore errors - will fail naturally during agent creation if needed.
-              });
-          }, 1000);
-          modelPrefetchTimer.unref?.();
-        }
 
         // =====================================================================
         // TOP-LEVEL PATH: --conversation <id>

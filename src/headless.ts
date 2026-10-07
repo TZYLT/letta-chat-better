@@ -792,7 +792,7 @@ export async function handleHeadlessCommand(
   const inheritedListenerConnectionId = process.env[LISTENER_CONNECTION_ENV];
   const usesRemoteEnvironment = shouldLaunchThroughListener({
     launchProfile,
-    cloudBackend: backend.capabilities.environmentRouting,
+    cloudBackend: backend.capabilities.remoteMemfs, // was environment routing
     connectionId: inheritedListenerConnectionId,
     computer: explicitEnvironmentSelector,
     ephemeral: values.ephemeral,
@@ -1123,7 +1123,7 @@ export async function handleHeadlessCommand(
     }
   }
 
-  if (usesRemoteEnvironment && !backend.capabilities.environmentRouting)
+  if (usesRemoteEnvironment && !backend.capabilities.remoteMemfs)
     throw new Error("Computer routing requires the Cloud backend");
 
   if (!agent && ephemeralFlag) {
@@ -1952,21 +1952,21 @@ export async function handleHeadlessCommand(
   if (usesRemoteEnvironment) {
     const environmentSelector = explicitEnvironmentSelector ?? "";
     const useCloudSandbox = isCloudEnvironmentSelector(environmentSelector);
-    const environmentRouting = environmentSelector
+    const replyEnvironment = environmentSelector
       ? useCloudSandbox
         ? await resolveAgentSandboxConnectionId(agent.id, { conversationId })
         : await resolveEnvironmentConnectionId(environmentSelector)
       : null;
     const connectionId =
-      environmentRouting?.connectionId ?? inheritedListenerConnectionId;
+      replyEnvironment?.connectionId ?? inheritedListenerConnectionId;
     if (!connectionId)
       throw new Error("No listener connection was resolved for this launch");
-    const responseEnvironment: ReplyEnvironmentMetadata = environmentRouting
+    const responseEnvironment: ReplyEnvironmentMetadata = replyEnvironment
       ? buildEnvironmentResponseMetadata({
           source: useCloudSandbox ? "cloud-sandbox" : "explicit",
           input: environmentSelector,
           connectionId,
-          environment: environmentRouting.environment,
+          environment: replyEnvironment.environment,
         })
       : { source: "same-environment" };
     const launchParams: Parameters<typeof launchListenerConversation>[0] = {

@@ -14,7 +14,6 @@
  * found" instead of a reasoned refusal.
  */
 import { peekBackend } from "@/backend";
-import { resolveBackendMode } from "@/backend/backend-mode";
 import { LocalBackend } from "@/backend/local/local-backend";
 import {
   shouldIncludeTopicMarking,
@@ -37,15 +36,14 @@ export function filterWorktreeTools(toolNames: ToolName[]): ToolName[] {
  * add a tool that cannot do anything.
  *
  * The check deliberately does not *create* a backend: this runs while a payload is
- * being built, so an already-created backend is classified directly and an absent
- * one falls back to the configured mode (L-12).
+ * being built, so an already-created backend is classified directly, and an
+ * absent one falls back to the configured mode — which is always local now, so
+ * it counts as local (L-12).
  */
 export function shouldDeclareTopicMarkingTool(): boolean {
   if (!shouldIncludeTopicMarking()) return false;
   const existing = peekBackend();
-  return existing
-    ? existing instanceof LocalBackend
-    : resolveBackendMode() === "local";
+  return !existing || existing instanceof LocalBackend;
 }
 
 /** Remove the marker tool from a declared registry, not from execution. */

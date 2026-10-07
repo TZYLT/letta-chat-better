@@ -127,7 +127,7 @@ export const CLI_FLAG_CATALOG = {
     mode: "both",
     help: {
       argLabel: "<mode>",
-      description: 'Backend mode: "cloud" or "local"',
+      description: 'Backend mode: "local"',
     },
   },
   tools: { parser: { type: "string" }, mode: "both" },
@@ -427,15 +427,22 @@ export function parseCliArgs(args: string[], strict: boolean) {
 
 export type ParsedCliArgs = ReturnType<typeof parseCliArgs>;
 
+/**
+ * Resolve the `--backend` flag. The local in-process backend is the only
+ * backend, so a Cloud/API request must fail loudly instead of silently running
+ * local: `configureBackendMode` cannot honor it any more.
+ */
 export function parseBackendModeFlag(
   value: string | undefined,
 ): CliBackendMode | undefined {
   if (value === undefined) return undefined;
-  if (value === "cloud" || value === "api") return "api";
   if (value === "local") return "local";
-  throw new Error(
-    `Invalid --backend value "${value}". Expected "cloud" or "local".`,
-  );
+  if (value === "cloud" || value === "api") {
+    throw new Error(
+      `--backend ${value} is no longer supported: Letta Code only runs the local backend. Use --backend local, or omit the flag.`,
+    );
+  }
+  throw new Error(`Invalid --backend value "${value}". Expected "local".`);
 }
 
 export function extractBackendFlag(args: string[]): {
@@ -451,9 +458,7 @@ export function extractBackendFlag(args: string[]): {
     if (arg === "--backend") {
       const value = args[index + 1];
       if (value === undefined) {
-        throw new Error(
-          'Missing value for --backend. Expected "cloud" or "local".',
-        );
+        throw new Error('Missing value for --backend. Expected "local".');
       }
       backend = parseBackendModeFlag(value);
       index += 1;

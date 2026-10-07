@@ -20,6 +20,7 @@ import {
 } from "@/agent/turn-recovery-policy";
 import { getBackend } from "@/backend";
 import type { ChatGPTUsageSnapshot } from "@/providers/chatgpt-usage-service";
+import { readChatGPTUsage } from "@/providers/chatgpt-usage-service";
 import { isRecord } from "@/utils/type-guards";
 
 /** Maximum plan swaps per turn, enforced by each consumer. */
@@ -235,8 +236,6 @@ export async function rotateChatGPTPlanOnQuotaLimit(params: {
   // Check candidates before changing the model, not by spending a swap/run on
   // each exhausted plan. Failed usage reads leave the old fallback available.
   const excludedProviders = new Set(exhaustedProviders);
-  const timeout = AbortSignal.timeout(3_000);
-  const usageSignal = signal ? AbortSignal.any([signal, timeout]) : timeout;
   let toHandle: string | null = null;
   while (!signal?.aborted) {
     toHandle = selectChatGPTQuotaFailoverHandle({
@@ -249,8 +248,16 @@ export async function rotateChatGPTPlanOnQuotaLimit(params: {
     if (!provider) return null;
     let usage: ChatGPTUsageSnapshot | null = null;
     try {
-      usage =
-        (await getBackend().readChatGPTUsage?.(provider, usageSignal)) ?? null;
+      // `Backend.readChatGPTUsage` was the Cloud proxy for this endpoint and
+      // went away with the API backend. Read the same snapshot straight from
+      // the connected ChatGPT OAuth provider: that is a BYOK account the user
+      // owns, not a Letta Cloud service.
+      const read = await readChatGPTUsage({
+        providerName: provider,
+        target: "local",
+        timeoutMs: 3_000,
+      });
+      usage = read.success ? read.usage : null;
     } catch {
       // Unsupported servers and unavailable usage are not proof of exhaustion.
     }

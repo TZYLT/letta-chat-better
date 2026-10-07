@@ -16,7 +16,7 @@ function fixture(targetTags: readonly string[] = []) {
   const created: unknown[] = [];
   const tracked: TrackChildSendInput[] = [];
   const backend = {
-    capabilities: { environmentRouting: true },
+    capabilities: { remoteMemfs: true },
     retrieveAgent: async (id: string, options?: AgentRetrieveOptions) => ({
       id,
       name: "Hayt",
@@ -108,7 +108,7 @@ test.each([false, true])(
 
 test("resumes an external coding-agent session without the Cloud backend", async () => {
   const f = fixture();
-  f.backend.capabilities.environmentRouting = false;
+  f.backend.capabilities.remoteMemfs = false;
   const launches: unknown[] = [];
   const result = await runWithRuntimeContext(caller, () =>
     send_agent_message(
@@ -568,12 +568,12 @@ test("a typed pre-admission shutdown 503 is a failed submission, not unknown acc
 
 test("local backend and cancellation do not dispatch or fall back to execution", async () => {
   const f = fixture();
-  f.backend.capabilities.environmentRouting = false;
+  f.backend.capabilities.remoteMemfs = false;
   expect(
     (await runWithRuntimeContext(caller, () => send_agent_message(message, f)))
       .status,
   ).toBe("error");
-  f.backend.capabilities.environmentRouting = true;
+  f.backend.capabilities.remoteMemfs = true;
   const controller = new AbortController();
   controller.abort();
   expect(

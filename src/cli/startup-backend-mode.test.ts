@@ -169,36 +169,17 @@ describe("startup picker backend selection", () => {
     );
   });
 
-  test("a failed local migration does not continue into Cloud retrieval", async () => {
-    configureBackendMode("api");
+  // The Cloud fallbacks these tests used to pin (`configureBackendMode("api")`
+  // rollback, "switches back to Cloud") were the api-backend selector and went
+  // away with the API backend. The local in-process backend is the only backend,
+  // so the picker always reports ready and the mode stays local.
+  test("keeps the local backend for every startup pin", async () => {
+    configureBackendMode("local");
     const selected = await switchBackendForSelectedStartupAgent(
       "agent-local-unavailable",
       async () => false,
     );
-    expect(selected).toBe(false);
-    expect(resolveBackendMode()).toBe("api");
-  });
-
-  test("an unexpected local backend failure rolls back to Cloud", async () => {
-    configureBackendMode("api");
-    await expect(
-      switchBackendForSelectedStartupAgent("agent-local-broken", async () => {
-        configureBackendMode("local");
-        throw new Error("Local storage unavailable");
-      }),
-    ).rejects.toThrow("Local storage unavailable");
-    expect(resolveBackendMode()).toBe("api");
-  });
-
-  test("Cloud pin switches back from an active local backend", async () => {
-    configureBackendMode("local");
-    const selected = await switchBackendForSelectedStartupAgent(
-      "agent-cloud-pin",
-      async () => {
-        throw new Error("Local selection must not run");
-      },
-    );
     expect(selected).toBe(true);
-    expect(resolveBackendMode()).toBe("api");
+    expect(resolveBackendMode()).toBe("local");
   });
 });

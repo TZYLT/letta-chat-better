@@ -665,17 +665,14 @@ export function ModelSelector({
   // Discoverable local endpoint providers (Ollama, LM Studio, llama.cpp) may
   // not have preset entries, so include their live-discovered
   // handles here instead of hiding them until the user switches to "All".
-  // Filter out letta/letta-free legacy model
   const serverRecommendedModels = useMemo(() => {
     if (!backendModelCatalog || availableHandles === undefined) return [];
-    let available = allApiHandles
-      .filter((handle) => handle !== "letta/letta-free")
-      .flatMap((handle) =>
-        modelsForBackendHandle(
-          handle,
-          includeUnknownBackendHandleInRecommended(handle),
-        ),
-      );
+    let available = allApiHandles.flatMap((handle) =>
+      modelsForBackendHandle(
+        handle,
+        includeUnknownBackendHandleInRecommended(handle),
+      ),
+    );
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       available = available.filter(
@@ -707,11 +704,9 @@ export function ModelSelector({
   ]);
 
   // Server-all models: ALL handles from the server (for self-hosted)
-  // Filter out letta/letta-free legacy model
   const serverAllModels = useMemo(() => {
     if (!backendModelCatalog) return [];
-    const handles = allApiHandles.filter((h) => h !== "letta/letta-free");
-    return handles;
+    return allApiHandles;
   }, [backendModelCatalog, allApiHandles]);
 
   const serverAllModelRows = useMemo(() => {

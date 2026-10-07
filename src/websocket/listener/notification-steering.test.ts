@@ -6,7 +6,7 @@ import { Letta } from "@letta-ai/letta-client";
 import { WebSocketServer } from "ws";
 import { ACTING_USER_ID_HEADER } from "@/agent/acting-user";
 import { sendMessageStreamWithBackend } from "@/agent/message";
-import { APIBackend } from "@/backend";
+import type { Backend } from "@/backend";
 import { runWithRuntimeContext } from "@/runtime-context";
 import { __clearExecSessionsForTests } from "@/tools/impl/exec-command";
 import { backgroundProcesses } from "@/tools/impl/process_manager";
@@ -27,6 +27,28 @@ import {
 import { setActiveRuntime } from "./runtime";
 import { LocalListenerTransport } from "./transport";
 import { handleApprovalStop } from "./turn-approval";
+
+/**
+ * `sendMessageStreamWithBackend` needs a backend, and these tests only need its
+ * message-stream transport (a real HTTP round trip to the mock SSE server in the
+ * test). The API backend class that used to provide it was deleted with the
+ * Cloud backend, so the one method the transport needs lives here.
+ */
+function createTestStreamBackend(client: Letta): Backend {
+  const backend = {
+    async createConversationMessageStream(
+      conversationId: string,
+      body: Parameters<Backend["createConversationMessageStream"]>[1],
+      options?: Parameters<Backend["createConversationMessageStream"]>[2],
+    ) {
+      const { data } = await client.conversations.messages
+        .create(conversationId, body, options)
+        .withResponse();
+      return data;
+    },
+  };
+  return backend as unknown as Backend;
+}
 
 async function waitFor(predicate: () => boolean): Promise<void> {
   const deadline = Date.now() + 5_000;
@@ -137,14 +159,13 @@ for (const producer of [
           );
         },
       });
-      const backend = new APIBackend({
-        getClient: async () =>
-          new Letta({
-            apiKey: "test-key",
-            baseURL: server.url.toString(),
-            maxRetries: 0,
-          }),
-      });
+      const backend = createTestStreamBackend(
+        new Letta({
+          apiKey: "test-key",
+          baseURL: server.url.toString(),
+          maxRetries: 0,
+        }),
+      );
       const wsServer =
         producer === "WebSocket" ? new WebSocketServer({ port: 0 }) : undefined;
       try {
