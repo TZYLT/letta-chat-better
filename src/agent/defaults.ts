@@ -177,14 +177,12 @@ export async function ensureDefaultAgents(
 
   try {
     // Pre-determine memfs mode so the agent is created with the correct prompt.
-    const { isLettaCloud } = await import("@/agent/memory-filesystem");
-    const willAutoEnableMemfs =
-      backend.capabilities.remoteMemfs && (await isLettaCloud());
+    // Auto-enabling memory on a Cloud agent needed `remoteMemfs && isLettaCloud()`;
+    // the removed API backend was the only backend that could satisfy it, so the
+    // only mode left to choose is the local one.
     const memoryPromptMode = backend.capabilities.localMemfs
       ? "local-memfs"
-      : willAutoEnableMemfs
-        ? "memfs"
-        : undefined;
+      : undefined;
 
     const model = await resolveDefaultAgentModel(
       backend,

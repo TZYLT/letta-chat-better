@@ -2477,8 +2477,7 @@ export function useConversationLoop(ctx: ConversationLoopContext) {
             if (!cancelled) {
               const backendCapabilities = getBackend().capabilities;
               const retryFromPersistedLocalState =
-                backendCapabilities.localModelCatalog &&
-                !backendCapabilities.remoteMemfs;
+                backendCapabilities.localModelCatalog;
               // Local already appended the turn input before the failed run.
               // Continue from persisted conversation state instead of duplicating
               // user/approval messages into the retry run.
