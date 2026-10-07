@@ -20,7 +20,10 @@ import {
 import { getAgentContextOverview } from "@/backend/api/agents";
 import { getClient } from "@/backend/api/client";
 import { apiRequest } from "@/backend/api/request";
-import { getServerUrl } from "@/backend/api/server-url";
+import {
+  DEFAULT_LOCAL_SERVER_URL,
+  getServerUrl,
+} from "@/backend/api/server-url";
 import {
   applyContextUsageSnapshot,
   type ContextUsageSnapshot,
@@ -349,7 +352,7 @@ async function collectMemoryData(
   try {
     serverUrl = getServerUrl();
   } catch {
-    serverUrl = process.env.LETTA_BASE_URL || "https://api.letta.com";
+    serverUrl = process.env.LETTA_BASE_URL || DEFAULT_LOCAL_SERVER_URL;
   }
 
   // Fetch agent info and context breakdown (best-effort, parallel)

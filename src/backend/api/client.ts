@@ -11,6 +11,7 @@ import { trackBoundaryError } from "@/telemetry/error-reporting";
 import { isDebugEnabled } from "@/utils/debug";
 import { createTimingFetch, isTimingsEnabled } from "@/utils/timing";
 import packageJson from "../../../package.json";
+import { DEFAULT_LOCAL_SERVER_URL } from "./server-url";
 
 const SDK_DIAGNOSTIC_MAX_LEN = 400;
 const SDK_DIAGNOSTIC_MAX_LINES = 4;
@@ -240,7 +241,7 @@ export async function getClient() {
   const baseURL =
     process.env.LETTA_BASE_URL ||
     settings.env?.LETTA_BASE_URL ||
-    LETTA_CLOUD_API_URL;
+    DEFAULT_LOCAL_SERVER_URL;
 
   if (!apiKey && baseURL === LETTA_CLOUD_API_URL) {
     console.error("Missing LETTA_API_KEY");

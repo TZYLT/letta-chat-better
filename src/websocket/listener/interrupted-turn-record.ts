@@ -11,7 +11,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import type { ApprovalResult } from "@/agent/approval-execution";
 import { STALE_APPROVAL_RECOVERY_DENIAL_REASON } from "@/agent/turn-recovery-policy";
-import { getServerUrl } from "@/backend/api/server-url";
+import { LETTA_CLOUD_API_URL } from "@/auth/oauth";
 import { reportListenerStateWriteFailure } from "@/telemetry/error-reporting";
 import { debugWarn } from "@/utils/debug";
 import type { ConversationRuntime } from "./types";
@@ -34,12 +34,24 @@ export interface InterruptedTurnRecord {
   workingDirectory: string;
 }
 
+/**
+ * Listener-state directory namespace.
+ *
+ * Frozen to the value this hash input had before the URL default moved to the
+ * local server (④-9). The directory name must stay stable so records written by
+ * an older build remain recoverable; it is a namespace, not a request target.
+ */
+const LISTENER_STATE_NAMESPACE = LETTA_CLOUD_API_URL;
+
 export function createInterruptedTurnStore(
   directory = join(
     homedir(),
     ".letta",
     "listener-state",
-    createHash("sha256").update(getServerUrl()).digest("hex").slice(0, 24),
+    createHash("sha256")
+      .update(LISTENER_STATE_NAMESPACE)
+      .digest("hex")
+      .slice(0, 24),
   ),
 ) {
   function path(agentId: string, conversationId: string) {

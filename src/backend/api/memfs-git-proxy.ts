@@ -1,6 +1,5 @@
-import { LETTA_CLOUD_API_URL } from "@/auth/oauth";
 import { type Settings, settingsManager } from "@/settings-manager";
-import { isCloudServerUrl } from "./server-url";
+import { DEFAULT_LOCAL_SERVER_URL, isCloudServerUrl } from "./server-url";
 
 function isLocalhostUrl(value: string | undefined): boolean {
   if (!value) return false;
@@ -36,7 +35,7 @@ function trimBaseUrl(value: string): string {
 
 /**
  * Get the current Letta memfs server URL from environment or settings.
- * Falls back to Letta Cloud when no memfs-specific URL is set.
+ * Falls back to the local server when no memfs-specific URL is set.
  *
  * Intentionally ignores LETTA_BASE_URL: Desktop sets LETTA_BASE_URL to an
  * ephemeral localhost proxy port, but MemFS git config/settings must stay
@@ -57,7 +56,7 @@ export function getMemfsServerUrl(): string {
     return configuredMemfsUrl;
   }
 
-  return LETTA_CLOUD_API_URL;
+  return DEFAULT_LOCAL_SERVER_URL;
 }
 
 /**

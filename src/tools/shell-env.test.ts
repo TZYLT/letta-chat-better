@@ -685,7 +685,7 @@ test("getShellEnv injects transient MemFS git proxy config for Desktop Bash comm
   const env = withTemporaryEnv(
     {
       LETTA_BASE_URL: "http://localhost:57294",
-      LETTA_MEMFS_BASE_URL: undefined,
+      LETTA_MEMFS_BASE_URL: "https://api.letta.com",
       LETTA_MEMFS_GIT_PROXY_BASE_URL: "http://localhost:57294",
       GIT_CONFIG_COUNT: undefined,
       GIT_CONFIG_KEY_0: undefined,
@@ -708,7 +708,7 @@ test("getShellEnv injects transient MemFS git proxy config for Desktop Bash comm
 test("getShellEnv appends MemFS git proxy config without clobbering existing git config env", () => {
   const env = withTemporaryEnv(
     {
-      LETTA_MEMFS_BASE_URL: undefined,
+      LETTA_MEMFS_BASE_URL: "https://api.letta.com",
       LETTA_MEMFS_GIT_PROXY_BASE_URL: "http://localhost:57294",
       GIT_CONFIG_COUNT: "1",
       GIT_CONFIG_KEY_0: "safe.directory",
@@ -732,7 +732,7 @@ test("getShellEnv injects hosted MemFS git header for Bash git commands", () => 
   const env = withTemporaryEnv(
     {
       LETTA_MEMFS_BACKEND: "hosted",
-      LETTA_MEMFS_BASE_URL: undefined,
+      LETTA_MEMFS_BASE_URL: "https://api.letta.com",
       LETTA_MEMFS_GIT_PROXY_BASE_URL: undefined,
       GIT_CONFIG_COUNT: undefined,
       GIT_CONFIG_KEY_0: undefined,
@@ -752,7 +752,7 @@ test("getShellEnv injects hosted MemFS git header for Desktop proxy git commands
   const env = withTemporaryEnv(
     {
       LETTA_MEMFS_BACKEND: "hosted",
-      LETTA_MEMFS_BASE_URL: undefined,
+      LETTA_MEMFS_BASE_URL: "https://api.letta.com",
       LETTA_MEMFS_GIT_PROXY_BASE_URL: "http://localhost:57294",
       GIT_CONFIG_COUNT: undefined,
       GIT_CONFIG_KEY_0: undefined,

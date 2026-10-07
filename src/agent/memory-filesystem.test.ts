@@ -256,13 +256,13 @@ describe("labelFromRelativePath", () => {
 });
 
 describe("MemFS endpoint validation", () => {
-  test("allows LCD API proxy when MemFS sync defaults to api.letta.com", async () => {
+  test("treats the local default as a non-server MemFS endpoint", async () => {
     process.env.LETTA_BASE_URL = "http://localhost:54085";
     delete process.env.LETTA_MEMFS_BASE_URL;
     delete process.env.LETTA_MEMFS_LOCAL;
     process.env.LETTA_API_KEY = "desktop-session-token";
 
-    expect(await isLettaMemfsServer()).toBe(true);
+    expect(await isLettaMemfsServer()).toBe(false);
   });
 
   test("rejects explicit non-Letta MemFS sync endpoints by default", async () => {

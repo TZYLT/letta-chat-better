@@ -1,5 +1,8 @@
 import { getServerHealth } from "./backend/api/health";
-import { getServerUrl, isCloudServerUrl } from "./backend/api/server-url";
+import {
+  getConfiguredServerUrl,
+  isCloudServerUrl,
+} from "./backend/api/server-url";
 import { isVersionBelow } from "./utils/version";
 
 const MINIMUM_DOCKER_VERSION = "0.16.6";
@@ -9,10 +12,11 @@ const MINIMUM_DOCKER_VERSION = "0.16.6";
  * For self-hosted users only - warns if version is outdated
  */
 export async function startDockerVersionCheck(): Promise<void> {
-  const baseURL = getServerUrl();
-
-  // Only check for self-hosted servers
-  if (isCloudServerUrl(baseURL)) {
+  // Only for a server the user actually configured: the built-in local
+  // default is not a self-hosted install to version-check, and probing it
+  // would burn a startup timeout on every run.
+  const baseURL = getConfiguredServerUrl();
+  if (!baseURL || isCloudServerUrl(baseURL)) {
     return;
   }
 
