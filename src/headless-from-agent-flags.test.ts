@@ -4,8 +4,18 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { createIsolatedCliTestEnv } from "@/test-utils/test-process-env";
 
+/**
+ * Headless startup rejects `--from-agent` without a destination, and rejects it
+ * alongside `--new-agent`, before any conversation is created.
+ *
+ * These two cases are what remains of the former cloud-recipient startup suite:
+ * that suite asserted the Cloud delivery path selected by `--computer` /
+ * `--environment` / `--env`, which no longer exists now that the local
+ * in-process backend is the only backend. The `--from-agent` guard itself is
+ * still enforced in `src/headless.ts` and is still reachable in local mode.
+ */
 async function runStartup(args: string[]) {
-  const home = await mkdtemp(join(tmpdir(), "letta-cloud-startup-"));
+  const home = await mkdtemp(join(tmpdir(), "letta-from-agent-flags-"));
   const requestLog = join(home, "requests.jsonl");
   try {
     await mkdir(join(home, ".letta"));
@@ -26,7 +36,7 @@ async function runStartup(args: string[]) {
         "-p",
         "startup target check",
         "--backend",
-        "api",
+        "local",
         ...args,
       ],
       {
@@ -68,79 +78,6 @@ async function runStartup(args: string[]) {
     await rm(home, { recursive: true, force: true });
   }
 }
-
-test.each(
-  ["--computer", "--environment", "--env"].flatMap((selector) =>
-    ["--name", "-n"].map((nameFlag) => ({ selector, nameFlag })),
-  ),
-)(
-  "startup resolves the named recipient before Cloud delivery: %j",
-  async ({ selector, nameFlag }) => {
-    const result = await runStartup([
-      nameFlag,
-      "nAmEd ReCiPiEnT",
-      selector,
-      "My laptop",
-      "--no-wait",
-      "--output-format",
-      "json",
-    ]);
-    expect(result.stderr).not.toContain("Choose a destination");
-    expect(result.code, result.stderr).toBe(0);
-    const receipt = JSON.parse(result.stdout);
-    expect(receipt.agent_id).toBe("agent-named-target");
-    const send = result.requests.find((request) =>
-      request.path.endsWith("/messages/enqueue"),
-    );
-    expect(JSON.parse(send?.body ?? "{}")).toMatchObject({
-      agent_id: "agent-named-target",
-      computer: "My laptop",
-    });
-    expect(
-      result.requests.some(
-        (request) => request.path === "/v1/agents/agent-named-target",
-      ),
-    ).toBe(true);
-  },
-  25_000,
-);
-
-test.each([
-  { flag: "--model", value: "test-model" },
-  { flag: "--tools", value: "Read" },
-  { flag: "--allowedTools", value: "Read" },
-  { flag: "--disallowedTools", value: "Bash" },
-  { flag: "--permission-mode", value: "strict" },
-])(
-  "startup rejects unsupported recipient restrictions before submission: %j",
-  async ({ flag, value }) => {
-    const result = await runStartup([
-      "--name",
-      "Named Recipient",
-      "--computer",
-      "My laptop",
-      "--no-wait",
-      "--output-format",
-      "json",
-      flag,
-      value,
-    ]);
-    expect(result.code, result.stderr).toBe(1);
-    expect(JSON.parse(result.stdout)).toMatchObject({
-      status: "submission_failed",
-    });
-    expect(JSON.parse(result.stdout).error).toContain(
-      `${flag} configures local execution`,
-    );
-    expect(
-      result.requests.filter(
-        (request) =>
-          request.method === "POST" && request.path.includes("/conversations"),
-      ),
-    ).toEqual([]);
-  },
-  25_000,
-);
 
 test.each([
   {
