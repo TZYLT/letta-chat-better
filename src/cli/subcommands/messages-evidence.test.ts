@@ -5,7 +5,6 @@ import { join } from "node:path";
 import { Letta } from "@letta-ai/letta-client";
 import { ArrayPage } from "@letta-ai/letta-client/core/pagination";
 import type { Backend } from "@/backend";
-import { readMessageStatus } from "./message-status";
 import { runMessagesSubcommand } from "./messages";
 
 type Page = Awaited<ReturnType<Backend["listConversationMessages"]>>;
@@ -74,71 +73,9 @@ async function run(action: string, args: string[]) {
   return JSON.parse(stdout[0] ?? "");
 }
 
-test("status resolves the conversation through the injected backend", async () => {
-  const getAgentRuntimeStatus = mock(async () => ({
-    agent_id: "agent-target",
-    snapshot_at: 0,
-    statuses: [],
-  }));
-  const getLatestConversationSuperRun = mock(async () => ({
-    id: "sr-latest",
-    status: "COM",
-    completed_at: "2026-09-01T12:00:00Z",
-    errored_at: null,
-    cancelled_at: null,
-  }));
-  const code = await runMessagesSubcommand(
-    ["status", "--conversation", "conv-target"],
-    {
-      initializeSettings: async () => {},
-      getBackend: () => backend,
-      readMessageStatus: (conversationId, agentId, statusBackend) =>
-        readMessageStatus(conversationId, agentId, statusBackend, {
-          getAgentRuntimeStatus,
-          getLatestConversationSuperRun,
-        }),
-    },
-  );
-  expect(code).toBe(0);
-  expect(retrieveConversation).toHaveBeenCalledWith("conv-target");
-  expect(getAgentRuntimeStatus).toHaveBeenCalledWith("agent-target", [
-    "conv-target",
-  ]);
-  expect(getLatestConversationSuperRun).toHaveBeenCalledWith("conv-target");
-  expect(JSON.parse(stdout[0] ?? "")).toMatchObject({
-    agent_id: "agent-target",
-    conversation_id: "conv-target",
-    runtime_status: null,
-    latest_super_run: { id: "sr-latest", status: "COM" },
-  });
-  expect(listAgentMessages).not.toHaveBeenCalled();
-  expect(listConversationMessages).not.toHaveBeenCalled();
-});
-
-test("status rejects a backend without environment routing before retrieval", async () => {
-  const errorSpy = spyOn(console, "error").mockImplementation(() => {});
-  try {
-    const code = await runMessagesSubcommand(
-      ["status", "--conversation", "conv-target"],
-      {
-        initializeSettings: async () => {},
-        getBackend: () => ({
-          ...backend,
-          capabilities: { ...backend.capabilities, remoteMemfs: false },
-        }),
-      },
-    );
-    expect(code).toBe(1);
-    expect(errorSpy).toHaveBeenCalledWith(
-      "Message status is only available for Cloud conversations.",
-    );
-    expect(retrieveConversation).not.toHaveBeenCalled();
-    expect(stdout).toEqual([]);
-  } finally {
-    errorSpy.mockRestore();
-  }
-});
-
+// The `status` action is gone. It resolved runtime state and super-run IDs from
+// a Cloud conversation, so `readMessageStatus` threw for every backend that is
+// left; the subcommand, its module and its two cases were removed together.
 test.each(["default", "conv-target"])(
   "includes failed-step messages and preserves correlation IDs for %s",
   async (conversation) => {
