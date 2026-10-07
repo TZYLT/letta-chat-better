@@ -244,6 +244,10 @@ function buildStartupCommandHints(options: {
   isPinned: boolean;
   isLocalBackend: boolean;
   hasMessages: boolean;
+  /**
+   * Retained in the signature so the startup hint `useEffect` dependency lists
+   * keep their shape; the hint that used it pointed at `/login`, which is gone.
+   */
   hasCloudCredentials: boolean;
   hasAvailableLocalModels: boolean;
 }): string[] {
@@ -252,7 +256,7 @@ function buildStartupCommandHints(options: {
     isPinned,
     isLocalBackend,
     hasMessages,
-    hasCloudCredentials,
+    hasCloudCredentials: _hasCloudCredentials,
     hasAvailableLocalModels,
   } = options;
 
@@ -291,10 +295,6 @@ function buildStartupCommandHints(options: {
       "→ **/rename**    name your agent",
       "→ **/init**      initialize your agent's memory",
     );
-  }
-
-  if (!hasCloudCredentials) {
-    onboardingHints.push("→ **/login**     sign in with Letta");
   }
 
   const dedupedHints: string[] = [];

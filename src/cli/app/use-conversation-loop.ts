@@ -105,7 +105,6 @@ import { formatPermissionDenial } from "@/permissions/format-denial";
 import type { PermissionMode } from "@/permissions/mode";
 import { permissionMode } from "@/permissions/mode";
 import type { QueueRuntime } from "@/queue/queue-runtime";
-import { settingsManager } from "@/settings-manager";
 import { telemetry } from "@/telemetry";
 import { replaceClientPreferences } from "@/tools/client-preferences";
 import { analyzeToolApproval, type ToolExecutionResult } from "@/tools/manager";
@@ -397,14 +396,6 @@ export function useConversationLoop(ctx: ConversationLoopContext) {
         return false;
       }
 
-      const currentSettings =
-        await settingsManager.getSettingsWithSecureTokens();
-      const hasCloudAuth = Boolean(
-        process.env.LETTA_API_KEY ||
-          currentSettings.refreshToken ||
-          currentSettings.env?.LETTA_API_KEY,
-      );
-
       setThinkingMessage(getRandomThinkingVerb());
       await sleep(250);
 
@@ -419,7 +410,7 @@ export function useConversationLoop(ctx: ConversationLoopContext) {
       refreshDerived();
 
       const chunks = splitSyntheticAssistantResponse(
-        buildLocalNoModelResponse(hasCloudAuth),
+        buildLocalNoModelResponse(),
       );
       for (const chunk of chunks) {
         if (abortControllerRef.current?.signal.aborted) {

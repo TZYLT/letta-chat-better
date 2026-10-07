@@ -5,18 +5,13 @@ import {
 } from "@/cli/helpers/local-no-model-response";
 
 describe("local no-model synthetic response", () => {
-  test("logged-out copy includes /login guidance", () => {
-    const message = buildLocalNoModelResponse(false);
+  test("points at /connect and an env key, and nothing else", () => {
+    const message = buildLocalNoModelResponse();
     expect(message).toContain("/connect");
     expect(message).toContain("export OPENAI_API_KEY=...");
-    expect(message).toContain("/login");
-  });
-
-  test("logged-in copy omits /login guidance", () => {
-    const message = buildLocalNoModelResponse(true);
-    expect(message).toContain("/connect");
-    expect(message).toContain("models available through Letta Cloud");
+    // `/login` is gone, so no copy may still send the user there.
     expect(message).not.toContain("/login");
+    expect(message).not.toContain("Letta Cloud");
   });
 
   test("synthetic streaming chunks preserve line breaks", () => {

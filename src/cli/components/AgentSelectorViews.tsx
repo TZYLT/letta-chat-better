@@ -4,34 +4,11 @@ import { colors } from "./colors";
 import { OverlayShell } from "./OverlayShell";
 import { Text } from "./Text";
 
-interface CloudLoginPromptProps {
-  loginCommand: string;
-}
-
 interface AgentDeleteConfirmOverlayProps {
   command: string;
   displayName: string;
   input: string;
   loading: boolean;
-}
-
-export function CloudLoginPrompt({
-  loginCommand,
-}: CloudLoginPromptProps): ReactElement {
-  return (
-    <Box flexDirection="column" paddingLeft={2}>
-      <Text dimColor>Sign in with Letta to see your agents here.</Text>
-      <Box height={1} />
-      <Box flexDirection="column">
-        <Text
-          color={colors.selector.itemHighlighted}
-        >{`> ${loginCommand}`}</Text>
-        <Box paddingLeft={2}>
-          <Text dimColor>Sign in with Letta</Text>
-        </Box>
-      </Box>
-    </Box>
-  );
 }
 
 export function AgentDeleteConfirmOverlay({

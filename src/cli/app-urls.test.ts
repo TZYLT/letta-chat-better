@@ -9,7 +9,6 @@ import {
   buildChatUrl,
   buildChatWebUrl,
   isLocalAgentId,
-  LETTA_CHAT_API_KEYS_URL,
 } from "@/cli/helpers/app-urls";
 
 describe("app URL helpers", () => {
@@ -66,9 +65,6 @@ describe("app URL helpers", () => {
   test("builds non-agent URLs for their owning surface", () => {
     expect(buildChatWebUrl("/preferences/usage")).toBe(
       "https://chat.letta.com/preferences/usage",
-    );
-    expect(LETTA_CHAT_API_KEYS_URL).toBe(
-      "https://chat.letta.com/preferences/api-keys",
     );
   });
 });

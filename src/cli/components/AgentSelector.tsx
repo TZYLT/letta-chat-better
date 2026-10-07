@@ -14,10 +14,7 @@ import { listSharedAgentsForCurrentUser } from "@/cli/helpers/shared-agent-listi
 import { useTerminalWidth } from "@/cli/hooks/use-terminal-width";
 import { DEFAULT_AGENT_NAME } from "@/constants";
 import { AgentSelectorFooter } from "./AgentSelectorFooter";
-import {
-  AgentDeleteConfirmOverlay,
-  CloudLoginPrompt,
-} from "./AgentSelectorViews";
+import { AgentDeleteConfirmOverlay } from "./AgentSelectorViews";
 import {
   AGENT_SELECTOR_TAB_DESCRIPTIONS,
   AGENT_SELECTOR_TAB_EMPTY_STATES,
@@ -939,19 +936,15 @@ export function AgentSelector({
         </Box>
       )}
 
-      {/* Cloud upsell when not logged in */}
-      {activeTab === "cloud" && !currentLoading && hasCloudAuth === false && (
-        <CloudLoginPrompt loginCommand="/login" />
-      )}
-
       {/* Empty state */}
       {!currentLoading &&
         ((activeTab === "pinned" && validPinnedAgents.length === 0) ||
           (activeTab !== "new" &&
             activeTab !== "pinned" &&
             !currentError &&
-            hasCloudAuth !== false &&
-            currentAgents.length === 0)) && (
+            (currentAgents.length === 0 ||
+              (hasCloudAuth === false &&
+                (activeTab === "cloud" || activeTab === "shared"))))) && (
           <Box
             flexDirection="column"
             paddingLeft={activeTab === "pinned" ? 2 : 0}

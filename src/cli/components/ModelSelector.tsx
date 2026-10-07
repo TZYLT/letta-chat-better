@@ -89,10 +89,8 @@ export function usesBackendModelCatalog(
   return Boolean(isSelfHosted || localModelCatalog);
 }
 
-export function getEmptyStateActionDescriptors(
-  showLoginAction: boolean,
-): Array<{
-  id: "connect" | "login";
+export function getEmptyStateActionDescriptors(): Array<{
+  id: "connect";
   label: string;
   description: string;
 }> {
@@ -102,15 +100,6 @@ export function getEmptyStateActionDescriptors(
       label: "/connect",
       description: "Connect your LLM API keys (OpenAI, Anthropic, etc.)",
     },
-    ...(showLoginAction
-      ? [
-          {
-            id: "login" as const,
-            label: "/login",
-            description: "Sign in with Letta",
-          },
-        ]
-      : []),
   ];
 }
 
@@ -147,7 +136,6 @@ interface ModelSelectorProps {
   currentModelServiceTier?: string | null;
   onSelect: (selection: ModelSelectorSelection) => void;
   onOpenConnect?: () => void;
-  onOpenLogin?: () => void;
   onCancel: () => void;
   /** Filter models to only show those matching this provider prefix (e.g., "chatgpt-plus-pro") */
   filterProvider?: string;
@@ -167,7 +155,6 @@ export function ModelSelector({
   currentModelServiceTier,
   onSelect,
   onOpenConnect,
-  onOpenLogin,
   onCancel,
   filterProvider,
   forceRefresh: forceRefreshOnMount,
@@ -210,7 +197,6 @@ export function ModelSelector({
   const [isCached, setIsCached] = useState(cachedHandlesAtMount !== null);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showLoginAction, setShowLoginAction] = useState(false);
   const [byokProviderAliases, setByokProviderAliases] = useState<
     Record<string, string>
   >(() => buildByokProviderAliases([]));
@@ -234,29 +220,6 @@ export function ModelSelector({
       mountedRef.current = false;
     };
   }, []);
-
-  useEffect(() => {
-    if (isSelfHosted) {
-      setShowLoginAction(false);
-      return;
-    }
-
-    let cancelled = false;
-    void settingsManager
-      .getSettingsWithSecureTokens()
-      .then((settings) => {
-        if (cancelled) return;
-        setShowLoginAction(!settings.refreshToken);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setShowLoginAction(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isSelfHosted]);
 
   // Fetch available models from the API (with caching + inflight dedupe)
   const loadModels = useRef(async (forceRefresh = false) => {
@@ -846,11 +809,11 @@ export function ModelSelector({
     !isLoading && nonEmptyCategories.length === 0 && !searchQuery;
   const emptyStateActions = useMemo(
     () =>
-      getEmptyStateActionDescriptors(showLoginAction).map((action) => ({
+      getEmptyStateActionDescriptors().map((action) => ({
         ...action,
-        onSelect: action.id === "connect" ? onOpenConnect : onOpenLogin,
+        onSelect: onOpenConnect,
       })),
-    [onOpenConnect, onOpenLogin, showLoginAction],
+    [onOpenConnect],
   );
 
   // When all categories are empty, collapse to a single "All" tab

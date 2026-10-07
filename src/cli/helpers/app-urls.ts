@@ -2,8 +2,6 @@ import { isLocalAgentId as isLocalAgentIdShared } from "@/agent/agent-id";
 
 const CHAT_BASE = "https://chat.letta.com";
 
-export const LETTA_CHAT_API_KEYS_URL = `${CHAT_BASE}/preferences/api-keys`;
-
 export function isLocalAgentId(agentId: string): boolean {
   return isLocalAgentIdShared(agentId);
 }
