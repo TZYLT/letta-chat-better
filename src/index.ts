@@ -752,11 +752,6 @@ async function main(): Promise<void> {
     hasRefreshToken: Boolean(settings.refreshToken),
   });
 
-  const requestedMemoryPromptMode: "memfs" | undefined = memfsFlag
-    ? "memfs"
-    : undefined;
-  const shouldAutoEnableMemfsForNewAgent = !memfsFlag;
-
   // Initialize telemetry (enabled by default, opt-out via LETTA_CODE_TELEM=0)
   // Surface is set here so session_start captures the correct mode.
   telemetry.setSurface(getTerminalTelemetrySurface(isHeadless));
@@ -1575,7 +1570,6 @@ async function main(): Promise<void> {
         const { createAgent } = await import("@/agent/create");
 
         let agent: AgentState | null = null;
-        let autoEnableMemfsForFreshAgent = false;
 
         // Priority 2: Try to use --agent specified ID
         if (!agent && agentIdArg) {
@@ -1619,15 +1613,14 @@ async function main(): Promise<void> {
             effectiveModel = getDefaultModelForTier(billingTier);
           }
 
-          // Pre-determine memfs mode so the agent is created with the correct prompt.
-          const { isLettaCloud } = await import("@/agent/memory-filesystem");
-          const willAutoEnableMemfs =
-            shouldAutoEnableMemfsForNewAgent && (await isLettaCloud());
+          // Pre-determine memfs mode so the agent is created with the correct
+          // prompt. Auto-enabling `memfs` needed `isLettaCloud()`; the local
+          // in-process backend owns its memory on disk, so `local-memfs` is the
+          // only mode that still exists.
           const effectiveMemoryMode: MemoryPromptMode | undefined = backend
             .capabilities.localMemfs
             ? "local-memfs"
-            : (requestedMemoryPromptMode ??
-              (willAutoEnableMemfs ? "memfs" : undefined));
+            : undefined;
 
           const personalityOptions = personality
             ? await buildCreateAgentOptionsForPersonality({
@@ -1655,7 +1648,6 @@ async function main(): Promise<void> {
           });
           agent = result.agent;
           setAgentProvenance(result.provenance);
-          autoEnableMemfsForFreshAgent = willAutoEnableMemfs;
         }
 
         // Priority 4: Try to resume from project settings LRU (.letta/settings.local.json)
@@ -1706,53 +1698,24 @@ async function main(): Promise<void> {
           agent.name ?? null,
         );
 
-        let startupMemfsFlag: boolean | undefined = autoEnableMemfsForFreshAgent
-          ? true
-          : memfsFlag;
-        if (backend.capabilities.remoteMemfs && !autoEnableMemfsForFreshAgent) {
-          const { hydrateMemfsSettingFromAgent, isLettaCloud } = await import(
-            "@/agent/memory-filesystem"
-          );
-          const memfsEnabled = await hydrateMemfsSettingFromAgent(agent);
-          if (!memfsEnabled) {
-            if (await isLettaCloud()) {
-              // Auto-enable memfs for existing agents that don't have it yet.
-              // Agents can be created outside Letta Code without the tag.
-              startupMemfsFlag = true;
-            } else {
-              console.warn(
-                "Warning: this agent does not have git-backed memory enabled. Run `/memfs enable` to enable MemFS.",
-              );
-            }
-          }
-        }
-
         // Start memfs sync early. Interactive startup is optimistic: keep the
-        // session moving and let memfs clone/pull finish in the background
-        // unless the user explicitly requested a memfs mode toggle.
+        // session moving and let memfs setup finish in the background unless
+        // the user explicitly requested a memfs mode toggle.
         const agentId = agent.id;
-        const agentTags = agent.tags ?? undefined;
         const shouldBlockOnMemfsStartup = Boolean(memfsFlag);
-        const memfsSyncPromise = backend.capabilities.remoteMemfs
-          ? import("@/agent/memory-filesystem").then(({ applyMemfsFlags }) =>
-              applyMemfsFlags(agentId, startupMemfsFlag, {
-                pullOnExistingRepo: true,
-                agentTags,
-                skipPromptUpdate: shouldCreateNew,
-              }),
-            )
-          : Promise.resolve().then(() => {
-              if (backend.capabilities.localMemfs) {
-                settingsManager.setMemfsEnabled(agentId, true);
-                return { action: "enabled" };
-              }
-              if (memfsFlag) {
-                throw new Error(
-                  "MemFS is not supported by the active backend.",
-                );
-              }
-              return null;
-            });
+        // Memory is local. `remoteMemfs` used to select a git-backed server sync
+        // here; the local in-process backend is the only backend left, so this
+        // is always the local enable path.
+        const memfsSyncPromise = Promise.resolve().then(() => {
+          if (backend.capabilities.localMemfs) {
+            settingsManager.setMemfsEnabled(agentId, true);
+            return { action: "enabled" as const };
+          }
+          if (memfsFlag) {
+            throw new Error("MemFS is not supported by the active backend.");
+          }
+          return null;
+        });
         const memfsSyncBackgroundPromise = memfsSyncPromise.catch((error) => {
           const message =
             error instanceof Error ? error.message : String(error);

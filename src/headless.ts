@@ -804,7 +804,6 @@ export async function handleHeadlessCommand(
   // Resolve agent (same logic as interactive mode)
   let agent: AgentState | null = null;
   let ephemeralConversationId: string | null = null;
-  let autoEnableMemfsForFreshAgent = false;
   const startupBackendMode = backend.capabilities.localModelCatalog
     ? "local"
     : "api";
@@ -843,25 +842,6 @@ export async function handleHeadlessCommand(
     );
     disableLocalBackendMemfsForProcess();
   }
-  // MemFS startup: block (default), pull in background, or skip this session.
-  const memfsStartupRaw = values["memfs-startup"];
-  const memfsStartupPolicy: "blocking" | "background" | "skip" =
-    memfsStartupRaw === "background" || memfsStartupRaw === "skip"
-      ? memfsStartupRaw
-      : "blocking";
-  const requestedMemoryPromptMode: "memfs" | undefined = memfsFlag
-    ? "memfs"
-    : undefined;
-  if (memfsFlag && !backend.capabilities.remoteMemfs) {
-    trackHeadlessBoundaryError(
-      "headless_memfs_unsupported_backend",
-      "MemFS requires a backend with remote MemFS support",
-      "headless_startup_memfs_flags",
-    );
-    console.error("Error: --memfs is not supported by this backend yet");
-    process.exit(1);
-  }
-  const shouldAutoEnableMemfsForNewAgent = !memfsFlag && !isStatelessSession;
   const preLoadSkillsRaw = values["pre-load-skills"];
   const systemInfoReminderEnabled =
     systemInfoReminderEnabledOverride ?? !values["no-system-info-reminder"];
@@ -1123,9 +1103,6 @@ export async function handleHeadlessCommand(
     }
   }
 
-  if (usesRemoteEnvironment && !backend.capabilities.remoteMemfs)
-    throw new Error("Computer routing requires the Cloud backend");
-
   if (!agent && ephemeralFlag) {
     try {
       const result = await createHeadlessEphemeralConversation({
@@ -1151,18 +1128,14 @@ export async function handleHeadlessCommand(
   // Priority 3: Check if --new flag was passed (skip all resume logic)
   if (!agent && forceNew) {
     // Pre-determine memfs mode so the agent is created with the correct prompt.
-    const { isLettaCloud } = await import("@/agent/memory-filesystem");
-    const willAutoEnableMemfs =
-      backend.capabilities.remoteMemfs &&
-      shouldAutoEnableMemfsForNewAgent &&
-      (await isLettaCloud());
+    // Auto-enabling `memfs` needed `remoteMemfs && isLettaCloud()`; no backend
+    // satisfies that any more, so only the local mode is left to choose.
     const effectiveMemoryMode: MemoryPromptMode | undefined = backend
       .capabilities.localMemfs
       ? isFreshStatelessSubagent
         ? "standard"
         : "local-memfs"
-      : (requestedMemoryPromptMode ??
-        (willAutoEnableMemfs ? "memfs" : undefined));
+      : undefined;
 
     const personalityOptions = personality
       ? await buildCreateAgentOptionsForPersonality({
@@ -1200,7 +1173,6 @@ export async function handleHeadlessCommand(
       throw error;
     }
     agent = result.agent;
-    autoEnableMemfsForFreshAgent = willAutoEnableMemfs;
   }
 
   // Priority 4: Try to resume from project settings (.letta/settings.local.json)
@@ -1300,30 +1272,8 @@ export async function handleHeadlessCommand(
   let effectiveReflectionSettings: ReflectionSettings;
 
   const isSubagent = process.env.LETTA_CODE_AGENT_ROLE === "subagent";
-  let startupMemfsFlag: boolean | undefined = autoEnableMemfsForFreshAgent
-    ? true
-    : memfsFlag;
 
-  if (
-    !isStatelessSession &&
-    backend.capabilities.remoteMemfs &&
-    !autoEnableMemfsForFreshAgent
-  ) {
-    const { hydrateMemfsSettingFromAgent, isLettaCloud } = await import(
-      "@/agent/memory-filesystem"
-    );
-    const memfsEnabled = await hydrateMemfsSettingFromAgent(agent);
-    if (!memfsEnabled && (await isLettaCloud())) {
-      // Auto-enable memfs for existing agents that don't have it yet.
-      // Matches interactive mode behavior where memfs defaults to enabled.
-      startupMemfsFlag = true;
-    }
-  }
-
-  // Captured so prompt logic below can await it when needed.
-  let memfsBgPromise: Promise<unknown> | undefined;
-
-  // Init secrets cache — runs in parallel with memfs sync below.
+  // Init secrets cache.
   const secretsAgentId = ephemeralFlag ? undefined : agent?.id;
   const secretsInitPromise = secretsAgentId
     ? import("@/utils/secrets-store").then(({ initSecretsFromServer }) =>
@@ -1331,92 +1281,14 @@ export async function handleHeadlessCommand(
       )
     : Promise.resolve();
 
-  // Apply memfs flags and auto-enable from server tag when local settings are missing.
-  // Respects memfsStartupPolicy:
-  //   "blocking"  (default) – await the pull; exit on conflict.
-  //   "background"           – fire pull async; session init proceeds immediately.
-  //   "skip"                 – skip the pull this session.
+  // Memfs state is local. The branch below used to run `applyMemfsFlags` and a
+  // git pull against a remote memory server, honouring `--memfs-startup`; that
+  // path only existed for a backend with `remoteMemfs`, which no longer exists.
   if (isStatelessSession) {
     // Stateless subagents retain the inherited checkout without enabling their own MemFS.
     settingsManager.setMemfsEnabled(agent.id, false);
-  } else if (!backend.capabilities.remoteMemfs) {
-    if (backend.capabilities.localMemfs) {
-      settingsManager.setMemfsEnabled(agent.id, true);
-    }
-  } else if (memfsStartupPolicy === "skip") {
-    // Run enable logic but skip the git pull.
-    try {
-      const { applyMemfsFlags } = await import("@/agent/memory-filesystem");
-      await applyMemfsFlags(agent.id, startupMemfsFlag, {
-        pullOnExistingRepo: false,
-        agentTags: agent.tags,
-        skipPromptUpdate: forceNew,
-      });
-    } catch (error) {
-      trackHeadlessBoundaryError(
-        "headless_memfs_flags_failed",
-        error,
-        "headless_startup_memfs_flags",
-      );
-      console.error(
-        `Memory flags failed: ${error instanceof Error ? error.message : String(error)}`,
-      );
-      process.exit(1);
-    }
-  } else if (memfsStartupPolicy === "background") {
-    // Fire pull async; don't block session initialisation.
-    const { applyMemfsFlags } = await import("@/agent/memory-filesystem");
-    memfsBgPromise = applyMemfsFlags(agent.id, startupMemfsFlag, {
-      pullOnExistingRepo: true,
-      agentTags: agent.tags,
-      skipPromptUpdate: forceNew,
-    }).catch((error) => {
-      trackHeadlessBoundaryError(
-        "headless_memfs_background_pull_failed",
-        error,
-        "headless_runtime_memfs_background_pull",
-      );
-      // Log to stderr only — the session is already live.
-      console.error(
-        `[memfs background pull] ${error instanceof Error ? error.message : String(error)}`,
-      );
-    });
-  } else {
-    // "blocking" — original behaviour.
-    try {
-      const { applyMemfsFlags } = await import("@/agent/memory-filesystem");
-      const memfsResult = await applyMemfsFlags(agent.id, startupMemfsFlag, {
-        pullOnExistingRepo: true,
-        agentTags: agent.tags,
-        skipPromptUpdate: forceNew,
-      });
-      if (memfsResult.pullSummary?.includes("CONFLICT")) {
-        trackHeadlessBoundaryError(
-          "headless_memfs_conflict",
-          "Memory has merge conflicts. Run in interactive mode to resolve.",
-          "headless_startup_memfs_sync",
-        );
-        console.error(
-          "Memory has merge conflicts. Run in interactive mode to resolve.",
-        );
-        process.exit(1);
-      }
-    } catch (error) {
-      trackHeadlessBoundaryError(
-        "headless_memfs_sync_failed",
-        error,
-        "headless_startup_memfs_sync",
-      );
-      console.error(
-        `Memory git sync failed: ${error instanceof Error ? error.message : String(error)}`,
-      );
-      process.exit(1);
-    }
-  }
-
-  // Ensure background memfs sync settles before prompt logic reads isMemfsEnabled().
-  if (memfsBgPromise && isResumingAgent) {
-    await memfsBgPromise;
+  } else if (backend.capabilities.localMemfs) {
+    settingsManager.setMemfsEnabled(agent.id, true);
   }
 
   // Ensure secrets cache is populated (non-fatal).
