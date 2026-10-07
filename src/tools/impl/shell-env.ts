@@ -31,7 +31,6 @@ import {
 } from "@/runtime-context";
 import { getRuntimeExecutionEnv } from "@/runtime-execution-settings";
 import { settingsManager } from "@/settings-manager";
-import { LISTENER_CONNECTION_ENV } from "@/utils/subagent-launch-marker";
 import { getRipgrepBinDir } from "./ripgrep-manager.js";
 
 /**
@@ -365,10 +364,6 @@ export function getShellEnv(): NodeJS.ProcessEnv {
   const environmentDeviceId = getRuntimeContext()?.environmentDeviceId?.trim();
   if (environmentDeviceId) {
     env.LETTA_RUNTIME_ENVIRONMENT_DEVICE_ID = environmentDeviceId;
-  }
-  const listenerConnectionId = getRuntimeContext()?.connectionId;
-  if (listenerConnectionId?.startsWith("conn-")) {
-    env[LISTENER_CONNECTION_ENV] = listenerConnectionId;
   }
 
   // Add Letta context for skill scripts.

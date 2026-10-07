@@ -134,7 +134,6 @@ export function resolveSubagentLauncher(
 export interface ComposeSubagentChildEnvOptions {
   /** The env of the process spawning the subagent (parent). */
   parentProcessEnv: NodeJS.ProcessEnv;
-  listenerConnectionId?: string | null;
   /** Active backend mode to force in the child CLI process. */
   backendMode?: BackendMode;
   /** Local backend flatfile root to forward when backendMode="local". */
@@ -211,7 +210,6 @@ export function composeSubagentChildEnv(
 ): NodeJS.ProcessEnv {
   const {
     parentProcessEnv,
-    listenerConnectionId,
     backendMode,
     localBackendStorageDir,
     parentAgentId,
@@ -271,8 +269,6 @@ export function composeSubagentChildEnv(
       delete childEnv.MEMORY_DIR;
       delete childEnv.LETTA_MEMORY_DIR;
     }
-  } else if (listenerConnectionId?.startsWith("conn-")) {
-    childEnv[LISTENER_CONNECTION_ENV] = listenerConnectionId;
   }
 
   return childEnv;

@@ -385,7 +385,6 @@ async function executeSubagent(
     };
     const childEnv = composeSubagentChildEnv({
       parentProcessEnv,
-      listenerConnectionId: getRuntimeContext()?.connectionId,
       backendMode,
       localBackendStorageDir,
       parentAgentId,

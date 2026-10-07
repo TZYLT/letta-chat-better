@@ -83,8 +83,7 @@ test("an ordinary child's caller routes it without changing the parent's environ
     parentAgentId: "agent-parent",
     inheritedPrimaryRoot: null,
     launchProfile: "default",
-    listenerConnectionId: "conn-parent",
   });
-  expect(env[LISTENER_CONNECTION_ENV]).toBe("conn-parent");
   expect(parentProcessEnv).toEqual({ USER_CWD: "/workspace" });
+  expect(env.USER_CWD).toBe("/workspace");
 });
