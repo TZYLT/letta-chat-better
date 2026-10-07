@@ -22,7 +22,7 @@ User-editable preference keys:
 - `allowRemoteAccess`: boolean for whether remote access should be enabled in preferences.
 - `runInBackground`: boolean for whether Desktop stays alive in tray/menu bar when all windows close.
 - `startAtLogin`: boolean for whether Desktop starts hidden at login.
-- `remoteEnvName`: environment name shown in the Letta Cloud environment picker for the cloud listener.
+- `remoteEnvName`: environment name shown in the environment picker for the local listener.
 - `localBackendDirectory`: directory containing local backend agents, conversations, and memory.
 - `allowLocalAgentsWhenSignedIn`: boolean for whether signed-in Desktop sessions can see local/offline agents.
 
