@@ -62,7 +62,6 @@ import { ProfileSelectionInline } from "./cli/profile-selection";
 import {
   createStartupAgentPickerHandler,
   getStartupBackendLookupOrder,
-  inferBackendModeFromAgentId,
   resolveSubcommandBackendMode,
 } from "./cli/startup-backend-mode";
 import {
@@ -420,15 +419,6 @@ function isBackendNotFoundError(error: unknown): boolean {
   );
 }
 
-function isLocalBackendTranscriptStartupError(error: unknown): boolean {
-  if (!(error instanceof Error)) return false;
-  return (
-    error.name === "LocalTranscriptMigrationRequiredError" ||
-    error.name === "LocalTranscriptRepairRequiredError" ||
-    error.message.includes("Unsupported local transcript format")
-  );
-}
-
 async function getLocalBackendStartupFallbackSession(
   backend: Backend,
 ): Promise<LocalStartupFallbackSession | null> {
@@ -546,7 +536,6 @@ async function main(): Promise<void> {
     const savedBackendSettings =
       settingsManager.readStartupBackendSettingsSync();
     const backendMode = resolveSubcommandBackendMode({
-      explicitBackendMode,
       envBackendMode,
       savedBackendMode: savedBackendSettings.preferredBackendMode,
       baseURL:
@@ -688,11 +677,6 @@ async function main(): Promise<void> {
   }
 
   const specifiedAgentName = values.name ?? null;
-  const inferredBackendModeFromAgentId =
-    inferBackendModeFromAgentId(specifiedAgentId);
-  if (!explicitBackendMode && inferredBackendModeFromAgentId) {
-    configureBackendMode(inferredBackendModeFromAgentId);
-  }
   const specifiedModel = values.model ?? undefined;
   const systemPromptPreset = values.system ?? undefined;
   const systemCustom = values["system-custom"] ?? undefined;
@@ -750,47 +734,20 @@ async function main(): Promise<void> {
     process.env.LETTA_BASE_URL ||
     settings.env?.LETTA_BASE_URL ||
     LETTA_CLOUD_API_URL;
-  const tryConfigureStartupLocalBackend = async (): Promise<boolean> => {
-    try {
-      configureBackendMode("local");
-      return true;
-    } catch (error) {
-      if (!isLocalBackendTranscriptStartupError(error)) {
-        throw error;
-      }
-      console.warn(
-        `Local backend data needs migration before it can be used: ${error instanceof Error ? error.message : String(error)}`,
-      );
-      console.warn(
-        "Continuing to setup/login so local transcript migration does not block account access.",
-      );
-      configureBackendMode("api");
-      settingsManager.updateSettings({ preferredBackendMode: "api" });
-      await settingsManager.flush();
-      return false;
-    }
-  };
-
   const startupBackendMode = resolveSubcommandBackendMode({
-    explicitBackendMode: explicitBackendMode ?? inferredBackendModeFromAgentId,
     envBackendMode,
     savedBackendMode: settings.preferredBackendMode,
     baseURL,
     cloudBaseURL: LETTA_CLOUD_API_URL,
   });
   if (startupBackendMode === "local") {
-    await tryConfigureStartupLocalBackend();
-  } else if (startupBackendMode === "api") {
-    configureBackendMode("api");
+    configureBackendMode("local");
   }
 
   const startupTargetLookupOrder = getStartupTargetLookupOrderForCredentials({
     baseURL,
     explicitBackendMode,
-    lookupOrder: getStartupBackendLookupOrder(
-      isExperimentalLocalBackendEnabled() ? "local" : "api",
-      explicitBackendMode,
-    ),
+    lookupOrder: getStartupBackendLookupOrder(),
     apiKey,
     hasRefreshToken: Boolean(settings.refreshToken),
   });
@@ -2145,7 +2102,6 @@ async function main(): Promise<void> {
         defaultModelHandle: customApiDefaultModel ?? undefined,
         serverBaseUrl: customApiBaseUrl ?? undefined,
         onSelect: createStartupAgentPickerHandler(
-          tryConfigureStartupLocalBackend,
           setSelectedGlobalAgentId,
           () => setLoadingState("assembling"),
           setFailedAgentMessage,
