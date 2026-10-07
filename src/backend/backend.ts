@@ -9,7 +9,10 @@ import type {
 } from "./api/conversations";
 import { type BackendMode, setConfiguredBackendMode } from "./backend-mode";
 import { LocalBackend } from "./local/local-backend";
-import { getLocalBackendStorageDir as getLocalBackendStorageDirFromPaths } from "./local/paths";
+import {
+  getLocalBackendStorageDir as getLocalBackendStorageDirFromPaths,
+  LOCAL_BACKEND_EXPERIMENTAL_ENV,
+} from "./local/paths";
 
 export type { BackendMode };
 export { isExperimentalLocalBackendEnabled } from "./backend-mode";
@@ -352,13 +355,31 @@ export function getBackendForMode(_mode: BackendMode): Backend {
 }
 
 /**
- * Point the process at the local backend. There is no longer a second backend
- * to switch to, so the mode argument is ignored and no environment variable is
- * written: `LETTA_LOCAL_BACKEND_EXPERIMENTAL` is frozen as the settings-bucket
- * predicate and must not be flipped by backend selection.
+ * Select which *namespace* this process reads and writes, and point the process
+ * at the matching backend instance.
+ *
+ * Namespace selection is not cosmetic: `LETTA_LOCAL_BACKEND_EXPERIMENTAL` is the
+ * predicate behind `isLocalBackendEnvEnabled()`, which in turn picks
+ *  - the settings bucket (`local:<dir>` vs `api.letta.com`) that namespaces
+ *    pins, per-agent settings and last-session refs, and
+ *  - the agent memory directory (`<storageDir>/memfs/<agentId>/memory` vs
+ *    `~/.letta/agents/<agentId>/memory`).
+ *
+ * A process that runs the local backend but leaves the variable unset would
+ * therefore read and write the legacy Cloud namespace: its local pins and
+ * per-agent settings stay invisible, and its memory files land outside the
+ * local store. This function is the single writer that keeps the predicate in
+ * step with the selected mode, so it must write it — `setConfiguredBackendMode`
+ * stays a pure bookkeeping no-op for callers that only thread a value.
+ *
+ * Passing `"api"` selects the *legacy Cloud* namespace for as long as it is
+ * configured. That is only reachable from legacy-Cloud agent/conversation
+ * resolution; `--backend` itself can no longer produce it (see
+ * `parseBackendModeFlag`).
  */
-export function configureBackendMode(_mode: BackendMode): void {
-  setConfiguredBackendMode(_mode);
+export function configureBackendMode(mode: BackendMode): void {
+  setConfiguredBackendMode(mode);
+  process.env[LOCAL_BACKEND_EXPERIMENTAL_ENV] = mode === "local" ? "1" : "0";
   backend = createExperimentalLocalBackend();
 }
 

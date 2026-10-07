@@ -493,6 +493,12 @@ async function getLocalBackendStartupFallbackSession(
 
 async function main(): Promise<void> {
   markMilestone("CLI_START");
+
+  // The local backend is the only one, so this process is in the local
+  // namespace (settings bucket + memory dir) before its first read. Resolving a
+  // legacy Cloud agent or conversation id can still re-point it below.
+  configureBackendMode("local");
+
   await initializeDesktopCredentials();
 
   // Exit when the owning Desktop or terminal process dies.
@@ -730,15 +736,6 @@ async function main(): Promise<void> {
     process.env.LETTA_BASE_URL ||
     settings.env?.LETTA_BASE_URL ||
     LETTA_CLOUD_API_URL;
-  const startupBackendMode = resolveSubcommandBackendMode({
-    envBackendMode,
-    savedBackendMode: settings.preferredBackendMode,
-    baseURL,
-    cloudBaseURL: LETTA_CLOUD_API_URL,
-  });
-  if (startupBackendMode === "local") {
-    configureBackendMode("local");
-  }
 
   const startupTargetLookupOrder = getStartupTargetLookupOrderForCredentials({
     baseURL,

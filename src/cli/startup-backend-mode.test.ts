@@ -2,9 +2,15 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { __testSetBackend, getBackend } from "@/backend";
+import { getScopedMemoryFilesystemRoot } from "@/agent/memory-filesystem";
+import { __testSetBackend, configureBackendMode, getBackend } from "@/backend";
 import { type BackendMode, resolveBackendMode } from "@/backend/backend-mode";
-import { LOCAL_BACKEND_DIR_ENV } from "@/backend/local/paths";
+import {
+  getLocalBackendMemoryFilesystemRoot,
+  isLocalBackendEnvEnabled,
+  LOCAL_BACKEND_DIR_ENV,
+  LOCAL_BACKEND_EXPERIMENTAL_ENV,
+} from "@/backend/local/paths";
 import {
   createStartupAgentPickerHandler,
   getStartupBackendLookupOrder,
@@ -92,12 +98,65 @@ describe("startup backend mode inference", () => {
   });
 });
 
+describe("configured mode selects the process namespace", () => {
+  let storageDir: string;
+  let originalStorageDir: string | undefined;
+  let originalFlag: string | undefined;
+
+  beforeEach(async () => {
+    originalFlag = process.env[LOCAL_BACKEND_EXPERIMENTAL_ENV];
+    originalStorageDir = process.env[LOCAL_BACKEND_DIR_ENV];
+    storageDir = await mkdtemp(join(tmpdir(), "letta-namespace-"));
+    process.env[LOCAL_BACKEND_DIR_ENV] = storageDir;
+  });
+
+  afterEach(async () => {
+    if (originalFlag === undefined) {
+      delete process.env[LOCAL_BACKEND_EXPERIMENTAL_ENV];
+    } else {
+      process.env[LOCAL_BACKEND_EXPERIMENTAL_ENV] = originalFlag;
+    }
+    if (originalStorageDir === undefined) {
+      delete process.env[LOCAL_BACKEND_DIR_ENV];
+    } else {
+      process.env[LOCAL_BACKEND_DIR_ENV] = originalStorageDir;
+    }
+    await rm(storageDir, { recursive: true, force: true });
+  });
+
+  // Regression: `configureBackendMode` stopped writing
+  // `LETTA_LOCAL_BACKEND_EXPERIMENTAL`, so `--backend local` (and every startup
+  // path) left the predicate false. The process then namespaced the *legacy
+  // Cloud* settings bucket and memory directory while running the local
+  // backend: local pins and per-agent settings stayed invisible, and memory
+  // files were written outside the local store.
+  test("local mode namespaces settings and memory under the local store", () => {
+    configureBackendMode("local");
+
+    expect(isLocalBackendEnvEnabled()).toBe(true);
+    expect(getScopedMemoryFilesystemRoot("agent-local-ns")).toBe(
+      getLocalBackendMemoryFilesystemRoot("agent-local-ns", storageDir),
+    );
+  });
+
+  test("legacy Cloud mode keeps the Cloud memory namespace", () => {
+    configureBackendMode("api");
+
+    expect(isLocalBackendEnvEnabled()).toBe(false);
+    expect(getScopedMemoryFilesystemRoot("agent-local-ns")).not.toBe(
+      getLocalBackendMemoryFilesystemRoot("agent-local-ns", storageDir),
+    );
+  });
+});
+
 describe("startup picker backend selection", () => {
   let storageDir: string;
   let originalStorageDir: string | undefined;
+  let originalFlag: string | undefined;
   let originalBackend: ReturnType<typeof getBackend>;
 
   beforeEach(async () => {
+    originalFlag = process.env[LOCAL_BACKEND_EXPERIMENTAL_ENV];
     originalStorageDir = process.env[LOCAL_BACKEND_DIR_ENV];
     originalBackend = getBackend();
     storageDir = await mkdtemp(join(tmpdir(), "letta-startup-pin-"));
@@ -109,6 +168,12 @@ describe("startup picker backend selection", () => {
       delete process.env[LOCAL_BACKEND_DIR_ENV];
     } else {
       process.env[LOCAL_BACKEND_DIR_ENV] = originalStorageDir;
+    }
+    // Selecting a pin configures local mode, which writes the flag.
+    if (originalFlag === undefined) {
+      delete process.env[LOCAL_BACKEND_EXPERIMENTAL_ENV];
+    } else {
+      process.env[LOCAL_BACKEND_EXPERIMENTAL_ENV] = originalFlag;
     }
     __testSetBackend(originalBackend);
     await rm(storageDir, { recursive: true, force: true });

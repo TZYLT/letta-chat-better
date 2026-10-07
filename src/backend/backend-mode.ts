@@ -9,10 +9,12 @@
  * would silently re-key an existing user's pins. Do not read it as "which
  * backend should run"; read `resolveBackendMode()`, which is a constant.
  *
- * Note: settings namespacing intentionally does NOT read `resolveBackendMode()`.
- * It stays on the env-based predicate (`isLocalBackendEnvEnabled`) so that making
- * the backend non-configurable cannot flip an existing user's settings bucket key
- * from `api.letta.com` to `local:<dir>` and appear to lose their settings.
+ * Note: settings and memory namespacing intentionally do NOT read
+ * `resolveBackendMode()`. They stay on the env-based predicate
+ * (`isLocalBackendEnvEnabled`), whose only writer is
+ * `configureBackendMode()` in `@/backend`. That keeps one selector for both the
+ * storage namespace and the backend instance, so the two can never disagree —
+ * see the note on `configureBackendMode` for what a mismatch costs.
  */
 export type BackendMode = "api" | "local";
 
