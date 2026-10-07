@@ -31,8 +31,8 @@ A send runs the recipient's turn in the `letta -p` process you launched.
 With only `--agent`, the CLI chooses the launch settings and normally creates a
 new conversation.
 
-Cloud delivery is not supported by this CLI: `--no-wait`, `--computer`, and
-`SendAgentMessage` have no local equivalent.
+Cloud delivery is not supported by this CLI: `--no-wait` and `--computer` have no
+local equivalent, and the cross-agent send tool was removed with it.
 
 The recipient learns who is asking only when the send identifies a sender:
 `--from-agent`, or the caller IDs from the agent's shell environment
@@ -50,9 +50,9 @@ environment does not inherit the current conversation as its return address.
 - **Waiting send** (`letta -p` without `--no-wait`). The process normally returns
   the recipient's final message, in `result` with JSON output. When a sender is
   identified, the recipient is told to put its answer in that message.
-- **Non-waiting send** (`SendAgentMessage`, or `letta -p --no-wait`). Not
-  supported by this CLI: acceptance and delivery were Cloud-side, and a receipt
-  did not guarantee a reply.
+- **Non-waiting send** (`letta -p --no-wait`). Not supported by this CLI:
+  acceptance and delivery were Cloud-side, and a receipt did not guarantee a
+  reply.
 
 A waiting send occupies the CLI process, not necessarily you. Run it in the
 background (your shell tool may already do this for long-running commands) and
@@ -64,9 +64,9 @@ For a managed child task with a completion notification, use the Agent tool.
 
 ## Send and keep working
 
-Not supported by this CLI. `SendAgentMessage` and `letta -p --no-wait` depended
-on Cloud accepting the message and returning a receipt. Use a waiting send in
-the background instead (see above) when you want to keep working.
+Not supported by this CLI. `letta -p --no-wait` depended on Cloud accepting the
+message and returning a receipt. Use a waiting send in the background instead
+(see above) when you want to keep working.
 
 ## Send and wait
 
@@ -136,8 +136,9 @@ no `computer` selector for sends or the Agent tool.
 
 ## Gotchas
 
-- `SendAgentMessage`, `--no-wait`, `--computer`, and `messages status` are
-  Cloud-only; this CLI does not support them.
+- `--no-wait`, `--computer`, and `messages status` are Cloud-only; this CLI does
+  not support them, and the cross-agent send tool was removed for the same
+  reason.
 - Do not rely on `--agent` alone to select message delivery. Add
   `--from-agent $LETTA_AGENT_ID` to deliver and identify yourself;
   pass `--conversation <id>` to reach an existing thread.
