@@ -29,17 +29,18 @@ export interface AgentSelectorVisibleTabsOptions {
   hasLocalAgents: boolean;
 }
 
-export type AgentSelectorTabId =
-  | "pinned"
-  | "local"
-  | "cloud"
-  | "shared"
-  | "new";
+/**
+ * The Cloud and Shared tabs are gone, not merely hidden:
+ * `getVisibleAgentSelectorTabs` never returned them (both list agents that live
+ * in Letta Cloud, which this build has no backend for), so every branch that
+ * handled them was unreachable. They are removed from the type so the compiler
+ * keeps them out. Legacy Cloud-shaped *pins* stay reachable through Pinned,
+ * which walks both pin namespaces.
+ */
+export type AgentSelectorTabId = "pinned" | "local" | "new";
 
 export const AGENT_SELECTOR_TABS: AgentSelectorTabDefinition[] = [
   { id: "pinned", label: "Pinned" },
-  { id: "cloud", label: "Cloud" },
-  { id: "shared", label: "Shared" },
   { id: "local", label: "Local" },
   { id: "new", label: "New" },
 ];
@@ -50,8 +51,6 @@ export const AGENT_SELECTOR_TAB_DESCRIPTIONS: Record<
 > = {
   pinned: "Save agents for easy access with /pin or Desktop favorites",
   local: "Local agents from this device",
-  cloud: "Agents hosted in Letta Cloud",
-  shared: "Agents shared with you in Letta Cloud",
   new: "Create a brand new agent",
 };
 
@@ -61,22 +60,10 @@ export const AGENT_SELECTOR_TAB_EMPTY_STATES: Record<
 > = {
   pinned: "No pinned or favorite agents, use /pin to save",
   local: "No local agents found",
-  cloud: "No agents found",
-  shared: "No shared agents found",
   new: "",
 };
 
-/**
- * Tabs the selector may show.
- *
- * The Cloud and Shared tabs are never offered: both list agents that live in
- * Letta Cloud (`getClient().agents.list()` against `api.letta.com`), which this
- * build has no backend for. Leaving them visible made the selector query the
- * configured server — by default `http://localhost:8283` — for agents that
- * cannot be listed, and their login affordance (`onLogin`) has no caller.
- * Legacy Cloud-shaped *pins* stay reachable through the Pinned tab, which walks
- * both pin namespaces.
- */
+/** Tabs the selector may show. */
 export function getVisibleAgentSelectorTabs({
   showNewTab,
   hasLocalAgents,
@@ -84,8 +71,6 @@ export function getVisibleAgentSelectorTabs({
   return AGENT_SELECTOR_TABS.filter(
     (tab) =>
       (showNewTab || tab.id !== "new") &&
-      tab.id !== "cloud" &&
-      tab.id !== "shared" &&
       (tab.id !== "local" || hasLocalAgents),
   );
 }

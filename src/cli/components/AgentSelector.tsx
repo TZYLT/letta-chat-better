@@ -6,11 +6,9 @@ import { unpinAgentForCurrentUser } from "@/agent/favorites";
 import { getBackendForMode } from "@/backend/backend";
 import { listLocalAgentsFromDisk } from "@/cli/helpers/local-agent-listing";
 import {
-  hasCloudCredentials,
   listPinnedAgentsForCurrentUser,
   type PinnedAgentData,
 } from "@/cli/helpers/pinned-agent-listing";
-import { listSharedAgentsForCurrentUser } from "@/cli/helpers/shared-agent-listing";
 import { useTerminalWidth } from "@/cli/hooks/use-terminal-width";
 import { DEFAULT_AGENT_NAME } from "@/constants";
 import { AgentSelectorFooter } from "./AgentSelectorFooter";
@@ -62,14 +60,11 @@ type ViewState =
     };
 
 const DISPLAY_PAGE_SIZE = 5;
-const FETCH_PAGE_SIZE = 20;
-const NEW_AGENT_DEFAULT_BACKEND: AgentBackendMode = "api";
 
 export function AgentSelector({
   currentAgentId,
   onSelect,
   onCancel,
-  onLogin,
   onCreateNewAgent,
   command = "/agents",
   title = "Swap to a different agent",
@@ -88,7 +83,6 @@ export function AgentSelector({
       return false;
     }
   });
-  const [hasCloudAuth, setHasCloudAuth] = useState<boolean | null>(null);
 
   // Compute visible tabs — Local tab only shown when there are local agents
   const visibleTabs = useMemo(
@@ -99,11 +93,9 @@ export function AgentSelector({
   const [activeTab, setActiveTab] = useState<AgentSelectorTabId>("pinned");
 
   // If active tab is no longer visible (e.g. local tab hidden after deleting all
-  // local agents, or a tab the selector never offers), fall back to Pinned.
+  // local agents), fall back to Pinned.
   useEffect(() => {
     if (activeTab === "local" && !hasLocalAgents) {
-      setActiveTab("pinned");
-    } else if (activeTab === "shared" || activeTab === "cloud") {
       setActiveTab("pinned");
     } else if (activeTab === "new" && !showNewTab) {
       setActiveTab("pinned");
@@ -123,32 +115,6 @@ export function AgentSelector({
   const [localPage, setLocalPage] = useState(0);
   const [localLoaded, setLocalLoaded] = useState(false);
 
-  // Cloud tab state (fetches from API)
-  const [cloudAgents, setCloudAgents] = useState<AgentState[]>([]);
-  const [cloudCursor, setCloudCursor] = useState<string | null>(null);
-  const [cloudLoading, setCloudLoading] = useState(false);
-  const [cloudLoadingMore, setCloudLoadingMore] = useState(false);
-  const [cloudHasMore, setCloudHasMore] = useState(true);
-  const [cloudSelectedIndex, setCloudSelectedIndex] = useState(0);
-  const [cloudPage, setCloudPage] = useState(0);
-  const [cloudError, setCloudError] = useState<string | null>(null);
-  const [cloudLoaded, setCloudLoaded] = useState(false);
-  const [cloudQuery, setCloudQuery] = useState<string>("");
-
-  // Shared tab state (fetches from Cloud's shared-with-me endpoint)
-  const [sharedAgents, setSharedAgents] = useState<AgentSelectorListAgent[]>(
-    [],
-  );
-  const [sharedCursor, setSharedCursor] = useState<string | null>(null);
-  const [sharedLoading, setSharedLoading] = useState(false);
-  const [sharedLoadingMore, setSharedLoadingMore] = useState(false);
-  const [sharedHasMore, setSharedHasMore] = useState(true);
-  const [sharedSelectedIndex, setSharedSelectedIndex] = useState(0);
-  const [sharedPage, setSharedPage] = useState(0);
-  const [sharedError, setSharedError] = useState<string | null>(null);
-  const [sharedLoaded, setSharedLoaded] = useState(false);
-  const [sharedQuery, setSharedQuery] = useState<string>("");
-
   // Search state (shared across list tabs)
   const [searchInput, setSearchInput] = useState("");
   const [activeQuery, setActiveQuery] = useState("");
@@ -161,8 +127,6 @@ export function AgentSelector({
   // New agent tab state
   const [newAgentNameInput, setNewAgentNameInput] = useState("");
   const [newAgentNameError, setNewAgentNameError] = useState("");
-  const [newAgentBackendMode, setNewAgentBackendMode] =
-    useState<AgentBackendMode>(NEW_AGENT_DEFAULT_BACKEND);
 
   // Load pinned agents
   const loadPinnedAgents = useCallback(async () => {
@@ -203,131 +167,6 @@ export function AgentSelector({
     }
   }, []);
 
-  // Fetch Cloud agents from cloud API directly (not via getBackend, which may be local)
-  const fetchCloudAgents = useCallback(
-    async (afterCursor?: string | null, query?: string) => {
-      const { getClient } = await import("@/backend/api/client");
-      const client = await getClient();
-
-      const agentList = await client.agents.list({
-        limit: FETCH_PAGE_SIZE,
-        include: ["agent.blocks"],
-        order: "desc",
-        order_by: "last_run_completion",
-        ...(afterCursor && { after: afterCursor }),
-        ...(query && { query_text: query }),
-      });
-
-      const cursor =
-        agentList.items.length === FETCH_PAGE_SIZE
-          ? (agentList.items[agentList.items.length - 1]?.id ?? null)
-          : null;
-
-      return { agents: agentList.items, nextCursor: cursor };
-    },
-    [],
-  );
-
-  // Load Cloud agents
-  const loadCloudAgents = useCallback(
-    async (query?: string) => {
-      setCloudLoading(true);
-      setCloudError(null);
-      try {
-        const result = await fetchCloudAgents(null, query);
-        setCloudAgents(result.agents);
-        setCloudCursor(result.nextCursor);
-        setCloudHasMore(result.nextCursor !== null);
-        setCloudPage(0);
-        setCloudSelectedIndex(0);
-        setCloudLoaded(true);
-        setCloudQuery(query || "");
-      } catch (err) {
-        setCloudError(err instanceof Error ? err.message : String(err));
-      } finally {
-        setCloudLoading(false);
-      }
-    },
-    [fetchCloudAgents],
-  );
-
-  // Fetch more Cloud agents (pagination)
-  const fetchMoreCloudAgents = useCallback(async () => {
-    if (cloudLoadingMore || !cloudHasMore || !cloudCursor) return;
-
-    setCloudLoadingMore(true);
-    try {
-      const result = await fetchCloudAgents(
-        cloudCursor,
-        activeQuery || undefined,
-      );
-      setCloudAgents((prev) => [...prev, ...result.agents]);
-      setCloudCursor(result.nextCursor);
-      setCloudHasMore(result.nextCursor !== null);
-    } catch {
-      // Silently fail on pagination errors
-    } finally {
-      setCloudLoadingMore(false);
-    }
-  }, [
-    cloudLoadingMore,
-    cloudHasMore,
-    cloudCursor,
-    fetchCloudAgents,
-    activeQuery,
-  ]);
-
-  const loadSharedAgents = useCallback(async (query?: string) => {
-    setSharedLoading(true);
-    setSharedError(null);
-    try {
-      const result = await listSharedAgentsForCurrentUser({
-        limit: FETCH_PAGE_SIZE,
-        order: "desc",
-        orderBy: "last_run_completion",
-        queryText: query,
-      });
-      setSharedAgents(result.agents);
-      setSharedCursor(result.nextCursor ?? null);
-      setSharedHasMore(Boolean(result.nextCursor));
-      setSharedPage(0);
-      setSharedSelectedIndex(0);
-      setSharedLoaded(true);
-      setSharedQuery(query || "");
-    } catch (err) {
-      setSharedError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setSharedLoading(false);
-    }
-  }, []);
-
-  const fetchMoreSharedAgents = useCallback(async () => {
-    if (sharedLoadingMore || !sharedHasMore || !sharedCursor) return;
-
-    setSharedLoadingMore(true);
-    try {
-      const result = await listSharedAgentsForCurrentUser({
-        limit: FETCH_PAGE_SIZE,
-        after: sharedCursor,
-        order: "desc",
-        orderBy: "last_run_completion",
-        queryText: activeQuery || undefined,
-      });
-      setSharedAgents((prev) => [...prev, ...result.agents]);
-      setSharedCursor(result.nextCursor ?? null);
-      setSharedHasMore(Boolean(result.nextCursor));
-    } catch {
-      // Silently fail on pagination errors
-    } finally {
-      setSharedLoadingMore(false);
-    }
-  }, [sharedLoadingMore, sharedHasMore, sharedCursor, activeQuery]);
-
-  // Check cloud credentials on mount (sync — reads from the in-memory keychain cache)
-  useEffect(() => {
-    setHasCloudAuth(hasCloudCredentials());
-  }, []);
-
   // Load pinned agents on mount
   useEffect(() => {
     loadPinnedAgents();
@@ -337,58 +176,8 @@ export function AgentSelector({
   useEffect(() => {
     if (activeTab === "local" && !localLoaded && !localLoading) {
       loadLocalAgents();
-    } else if (
-      activeTab === "cloud" &&
-      !cloudLoaded &&
-      !cloudLoading &&
-      hasCloudAuth
-    ) {
-      loadCloudAgents();
-    } else if (
-      activeTab === "shared" &&
-      !sharedLoaded &&
-      !sharedLoading &&
-      hasCloudAuth
-    ) {
-      loadSharedAgents();
     }
-  }, [
-    activeTab,
-    localLoaded,
-    localLoading,
-    loadLocalAgents,
-    cloudLoaded,
-    cloudLoading,
-    loadCloudAgents,
-    sharedLoaded,
-    sharedLoading,
-    loadSharedAgents,
-    hasCloudAuth,
-  ]);
-
-  useEffect(() => {
-    if (activeTab === "new") {
-      setNewAgentBackendMode(NEW_AGENT_DEFAULT_BACKEND);
-    }
-  }, [activeTab]);
-
-  // Reload current tab when search query changes (only if query differs from cached)
-  useEffect(() => {
-    if (activeTab === "cloud" && hasCloudAuth && activeQuery !== cloudQuery) {
-      loadCloudAgents(activeQuery || undefined);
-    }
-    if (activeTab === "shared" && hasCloudAuth && activeQuery !== sharedQuery) {
-      loadSharedAgents(activeQuery || undefined);
-    }
-  }, [
-    activeQuery,
-    activeTab,
-    cloudQuery,
-    loadCloudAgents,
-    sharedQuery,
-    loadSharedAgents,
-    hasCloudAuth,
-  ]);
+  }, [activeTab, localLoaded, localLoading, loadLocalAgents]);
 
   // Pagination calculations - Pinned (filter out 404 agents)
   const validPinnedAgents = pinnedAgents.filter((p) => p.agent !== null);
@@ -420,29 +209,11 @@ export function AgentSelector({
     localStartIndex + DISPLAY_PAGE_SIZE,
   );
 
-  // Pagination calculations - Cloud
-  const cloudTotalPages = Math.ceil(cloudAgents.length / DISPLAY_PAGE_SIZE);
-  const cloudStartIndex = cloudPage * DISPLAY_PAGE_SIZE;
-  const cloudPageAgents = cloudAgents.slice(
-    cloudStartIndex,
-    cloudStartIndex + DISPLAY_PAGE_SIZE,
-  );
-  const cloudCanGoNext = cloudPage < cloudTotalPages - 1 || cloudHasMore;
-
-  // Pagination calculations - Shared
-  const sharedTotalPages = Math.ceil(sharedAgents.length / DISPLAY_PAGE_SIZE);
-  const sharedStartIndex = sharedPage * DISPLAY_PAGE_SIZE;
-  const sharedPageAgents = sharedAgents.slice(
-    sharedStartIndex,
-    sharedStartIndex + DISPLAY_PAGE_SIZE,
-  );
-  const sharedCanGoNext = sharedPage < sharedTotalPages - 1 || sharedHasMore;
-
   // Current tab's state (computed)
   let currentLoading = false;
-  let currentError: string | null = null;
+  const currentError: string | null = null;
   let currentAgents: AgentSelectorListAgent[] = [];
-  let setCurrentSelectedIndex = setCloudSelectedIndex;
+  let setCurrentSelectedIndex = setPinnedSelectedIndex;
   if (activeTab === "pinned") {
     currentLoading = pinnedLoading;
     currentAgents = pinnedPageAgents
@@ -453,15 +224,6 @@ export function AgentSelector({
     currentLoading = localLoading;
     currentAgents = localPageAgents;
     setCurrentSelectedIndex = setLocalSelectedIndex;
-  } else if (activeTab === "shared") {
-    currentLoading = sharedLoading;
-    currentError = sharedError;
-    currentAgents = sharedPageAgents;
-    setCurrentSelectedIndex = setSharedSelectedIndex;
-  } else if (activeTab === "cloud") {
-    currentLoading = cloudLoading;
-    currentError = cloudError;
-    currentAgents = cloudPageAgents;
   }
 
   // Submit search
@@ -501,8 +263,6 @@ export function AgentSelector({
       // Reload pinned and invalidate cached tabs
       loadPinnedAgents();
       setLocalLoaded(false);
-      setCloudLoaded(false);
-      setSharedLoaded(false);
     } catch {
       // Stay on confirmation screen on error
     } finally {
@@ -554,11 +314,6 @@ export function AgentSelector({
     // New tab has its own input handling via PasteAwareTextInput.
     // Only handle Escape here.
     if (activeTab === "new") {
-      if (hasCloudAuth && key.ctrl && input.toLowerCase() === "b") {
-        setNewAgentBackendMode((prev) => (prev === "api" ? "local" : "api"));
-        return;
-      }
-
       if (key.escape) {
         if (newAgentNameInput) {
           setNewAgentNameInput("");
@@ -598,20 +353,6 @@ export function AgentSelector({
         if (selected?.id) {
           onSelect(selected.id, "local");
         }
-      } else if (activeTab === "cloud") {
-        const selected = cloudPageAgents[cloudSelectedIndex];
-        if (selected?.id) {
-          onSelect(selected.id, "api");
-        } else if (hasCloudAuth === false) {
-          onLogin?.();
-        }
-      } else if (activeTab === "shared") {
-        const selected = sharedPageAgents[sharedSelectedIndex];
-        if (selected?.id) {
-          onSelect(selected.id, "api");
-        } else if (hasCloudAuth === false) {
-          onLogin?.();
-        }
       }
     } else if (key.escape) {
       // If typing search (list tabs), clear it first
@@ -636,16 +377,6 @@ export function AgentSelector({
           setLocalPage((prev) => prev - 1);
           setLocalSelectedIndex(0);
         }
-      } else if (activeTab === "shared") {
-        if (sharedPage > 0) {
-          setSharedPage((prev) => prev - 1);
-          setSharedSelectedIndex(0);
-        }
-      } else if (activeTab === "cloud") {
-        if (cloudPage > 0) {
-          setCloudPage((prev) => prev - 1);
-          setCloudSelectedIndex(0);
-        }
       }
     } else if (key.rightArrow) {
       // Next page
@@ -658,30 +389,6 @@ export function AgentSelector({
         if (localPage < localTotalPages - 1) {
           setLocalPage((prev) => prev + 1);
           setLocalSelectedIndex(0);
-        }
-      } else if (activeTab === "cloud" && cloudCanGoNext) {
-        const nextPageIndex = cloudPage + 1;
-        const nextStartIndex = nextPageIndex * DISPLAY_PAGE_SIZE;
-
-        if (nextStartIndex >= cloudAgents.length && cloudHasMore) {
-          fetchMoreCloudAgents();
-        }
-
-        if (nextStartIndex < cloudAgents.length) {
-          setCloudPage(nextPageIndex);
-          setCloudSelectedIndex(0);
-        }
-      } else if (activeTab === "shared" && sharedCanGoNext) {
-        const nextPageIndex = sharedPage + 1;
-        const nextStartIndex = nextPageIndex * DISPLAY_PAGE_SIZE;
-
-        if (nextStartIndex >= sharedAgents.length && sharedHasMore) {
-          fetchMoreSharedAgents();
-        }
-
-        if (nextStartIndex < sharedAgents.length) {
-          setSharedPage(nextPageIndex);
-          setSharedSelectedIndex(0);
         }
       }
     } else if (
@@ -697,7 +404,7 @@ export function AgentSelector({
           loadPinnedAgents();
         });
       }
-    } else if (allowDelete && input === "D" && activeTab !== "shared") {
+    } else if (allowDelete && input === "D") {
       // Delete agent - open confirmation
       let selectedAgent: AgentState | null = null;
       let selectedAgentId: string | null = null;
@@ -714,10 +421,6 @@ export function AgentSelector({
         selectedAgent = localPageAgents[localSelectedIndex] ?? null;
         selectedAgentId = selectedAgent?.id ?? null;
         selectedIsLocal = true;
-      } else {
-        selectedAgent = cloudPageAgents[cloudSelectedIndex] ?? null;
-        selectedAgentId = selectedAgent?.id ?? null;
-        selectedIsLocal = false;
       }
 
       if (selectedAgent && selectedAgentId) {
@@ -876,14 +579,6 @@ export function AgentSelector({
             pinnedAgentsCount={validPinnedAgents.length}
             localPage={localPage}
             localTotalPages={localTotalPages}
-            cloudPage={cloudPage}
-            cloudTotalPages={cloudTotalPages}
-            cloudHasMore={cloudHasMore}
-            cloudLoadingMore={cloudLoadingMore}
-            sharedPage={sharedPage}
-            sharedTotalPages={sharedTotalPages}
-            sharedHasMore={sharedHasMore}
-            sharedLoadingMore={sharedLoadingMore}
             allowDelete={allowDelete}
             allowPinActions={allowPinActions}
             hasSelectedPinnedAgent={
@@ -939,12 +634,9 @@ export function AgentSelector({
       {/* Empty state */}
       {!currentLoading &&
         ((activeTab === "pinned" && validPinnedAgents.length === 0) ||
-          (activeTab !== "new" &&
-            activeTab !== "pinned" &&
+          (activeTab === "local" &&
             !currentError &&
-            (currentAgents.length === 0 ||
-              (hasCloudAuth === false &&
-                (activeTab === "cloud" || activeTab === "shared"))))) && (
+            currentAgents.length === 0)) && (
           <Box
             flexDirection="column"
             paddingLeft={activeTab === "pinned" ? 2 : 0}
@@ -952,20 +644,6 @@ export function AgentSelector({
             <Text dimColor>{AGENT_SELECTOR_TAB_EMPTY_STATES[activeTab]}</Text>
             {activeTab !== "pinned" && (
               <Text dimColor>Press ESC to cancel</Text>
-            )}
-          </Box>
-        )}
-
-      {/* Shared tab content */}
-      {activeTab === "shared" &&
-        !sharedLoading &&
-        !sharedError &&
-        sharedAgents.length > 0 && (
-          <Box flexDirection="column">
-            {sharedPageAgents.map((agent, index) =>
-              renderAgentItem(agent, index, index === sharedSelectedIndex, {
-                backend: "shared",
-              }),
             )}
           </Box>
         )}
@@ -992,20 +670,6 @@ export function AgentSelector({
         </Box>
       )}
 
-      {/* Cloud tab content */}
-      {activeTab === "cloud" &&
-        !cloudLoading &&
-        !cloudError &&
-        cloudAgents.length > 0 && (
-          <Box flexDirection="column">
-            {cloudPageAgents.map((agent, index) =>
-              renderAgentItem(agent, index, index === cloudSelectedIndex, {
-                backend: "cloud",
-              }),
-            )}
-          </Box>
-        )}
-
       {/* New tab content */}
       {activeTab === "new" && (
         <Box flexDirection="column">
@@ -1031,10 +695,7 @@ export function AgentSelector({
                 onSubmit={(text) => {
                   const trimmed = text.trim();
                   if (!trimmed) {
-                    onCreateNewAgent?.(
-                      DEFAULT_AGENT_NAME,
-                      hasCloudAuth ? newAgentBackendMode : "local",
-                    );
+                    onCreateNewAgent?.(DEFAULT_AGENT_NAME, "local");
                     return;
                   }
                   const validationError = validateAgentName(trimmed);
@@ -1042,41 +703,12 @@ export function AgentSelector({
                     setNewAgentNameError(validationError);
                     return;
                   }
-                  onCreateNewAgent?.(
-                    trimmed,
-                    hasCloudAuth ? newAgentBackendMode : "local",
-                  );
+                  onCreateNewAgent?.(trimmed, "local");
                 }}
                 placeholder={DEFAULT_AGENT_NAME}
               />
             </Box>
           </Box>
-          {hasCloudAuth && (
-            <Box paddingLeft={2} marginTop={1}>
-              <Text>Backend: </Text>
-              <Text
-                bold={newAgentBackendMode === "api"}
-                color={
-                  newAgentBackendMode === "api"
-                    ? colors.selector.itemHighlighted
-                    : colors.selector.title
-                }
-              >
-                Cloud
-              </Text>
-              <Text color={colors.selector.title}> · </Text>
-              <Text
-                bold={newAgentBackendMode === "local"}
-                color={
-                  newAgentBackendMode === "local"
-                    ? colors.selector.itemHighlighted
-                    : colors.selector.title
-                }
-              >
-                Local
-              </Text>
-            </Box>
-          )}
           {newAgentNameError && (
             <Box paddingLeft={2} marginTop={1}>
               <Text color="red">{newAgentNameError}</Text>
@@ -1084,11 +716,7 @@ export function AgentSelector({
           )}
           <Box height={1} />
           <Box paddingLeft={2}>
-            <Text dimColor>
-              {hasCloudAuth
-                ? `Enter create · Ctrl+B switch to ${newAgentBackendMode === "api" ? "Local" : "Cloud"} · Esc cancel`
-                : "Enter create · Esc cancel"}
-            </Text>
+            <Text dimColor>{"Enter create · Esc cancel"}</Text>
           </Box>
         </Box>
       )}
