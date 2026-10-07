@@ -126,10 +126,8 @@ USAGE
   letta messages ...    Messages subcommands (JSON-only)
   letta mcp ...         List, search, and call MCP servers available to an agent
   letta mods ...        List and manage local mods
-  letta server ...      Run a remote computer, channels, or the App Server
+  letta server ...      Run the local agent server (App Server + channels)
   letta connect ...     Connect providers from terminal
-  letta backend ...     Show or set the default backend
-  letta setup           Re-run first-run setup
   letta install ...     Install a skill or mod package
   letta skills ...      List or delete installed agent skills
 OPTIONS
@@ -155,12 +153,11 @@ SUBCOMMANDS
   letta mods disable <package-spec>
   letta mods remove <package-spec>
   letta mcp list|get|tools|search|call ... [--agent <id>]
-  letta server [--computer-name <name> | --listen [url]] [options]
+  letta server [--listen [url]] [options]
   letta connect <provider> [options]
   letta install <thing> [--agent <id> | -n <name>]
   letta skills list [--agent <id> | -n <name>]
   letta skills delete <skill_name> --agent <id>
-  letta backend [cloud|local]
   letta local-backend migrate-transcripts [--storage-dir <path>] [--dry-run]
 
 BEHAVIOR
@@ -171,8 +168,7 @@ BEHAVIOR
 
   Agent pins are stored in ~/.letta/settings.json.
 
-  If no credentials are configured, you'll be prompted to authenticate via
-  Letta Cloud OAuth on first run.
+  Providers are connected from the terminal: letta connect <provider>.
 
 EXAMPLES
   # when installed as an executable
