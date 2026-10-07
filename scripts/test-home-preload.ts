@@ -50,6 +50,17 @@ process.env.USERPROFILE = testHome;
 process.env.LETTA_TEST_SECRETS_SERVICE_PREFIX = `letta-code-test-${process.pid}-${basename(testHome)}`;
 process.env.LETTA_CODE_TELEM ??= "0";
 
+// Skill watchers invalidate the client-skills payload cache asynchronously, so a
+// case that writes a skill file and then asserts the *cached* payload is stale
+// races the watcher: which side wins decides the assertion. Two such cases
+// (`client-skills-working-directory`, `client-skills-shared-memory`) failed on
+// this machine, and a standalone probe with watchers off showed the cache
+// behaving exactly as documented (a deleted or edited skill still came from the
+// cache until explicit invalidation). Tests also do not need a live watcher; the
+// one case that exercises the production watcher spawns a child with
+// `LETTA_DISABLE_SKILL_WATCHERS=0`, which overrides this.
+process.env.LETTA_DISABLE_SKILL_WATCHERS ??= "1";
+
 // Managed tools (ripgrep for the Glob/Grep tools) are bootstrapped into
 // `<home>/.letta/bin`. This home is disposable, so leaving the tools directory
 // inside it means every test run re-downloads ripgrep from GitHub — which times
