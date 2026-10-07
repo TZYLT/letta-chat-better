@@ -9,7 +9,7 @@ import { runMessagesSubcommand } from "./messages";
 import { runModelSubcommand } from "./model";
 import { runModsSubcommand } from "./mods";
 import { runSecretSubcommand } from "./secret";
-import { asLegacyAppServerCommand, runServerSubcommand } from "./server";
+import { runServerSubcommand } from "./server";
 import { runInstallSubcommand, runSkillsSubcommand } from "./skills";
 import { runStepsSubcommand } from "./steps";
 import { runTrajectoriesSubcommand } from "./trajectories";
@@ -66,9 +66,9 @@ export async function runSubcommand(argv: string[]): Promise<number | null> {
       return runModelSubcommand(rest);
     case "app-server":
       console.error(
-        "Warning: `letta app-server` is deprecated. Use `letta server --listen` instead.",
+        "Warning: `letta app-server` is deprecated. Use `letta server` instead.",
       );
-      return runServerSubcommand(asLegacyAppServerCommand(rest));
+      return runServerSubcommand(rest);
     case "messages":
       return runMessagesSubcommand(rest);
     case "steps":

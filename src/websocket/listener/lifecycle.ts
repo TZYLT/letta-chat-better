@@ -13,18 +13,14 @@ import { loadTools } from "@/tools/manager";
 import type { RuntimeScope } from "@/types/protocol_v2";
 import { isDebugEnabled } from "@/utils/debug";
 import { sealStartupLogs } from "@/utils/startup-log-boundary";
-import { killAllTerminals } from "@/websocket/terminal-handler";
 import {
   rejectPendingApprovalResolvers,
-  rejectPendingApprovalResolversForConnection,
   replayPendingApprovalRequestsToConnection,
 } from "./approval";
-import { resolveListenerReconnectAuth } from "./auth";
 import {
   getOrCreateProcessTransport,
   markListenerConnectionInitialized,
   openListenerConnection,
-  suspendListenerConnection,
 } from "./connection";
 import {
   cleanupListenerConnection,
@@ -32,12 +28,7 @@ import {
   createConnectionTurnProcessor,
 } from "./connection-lifecycle";
 import { emitInitialConnectionState as emitInitialState } from "./connection-state-sync";
-import {
-  INITIAL_RETRY_DELAY_MS,
-  LISTENER_PONG_TIMEOUT_MS,
-  MAX_RETRY_DELAY_MS,
-  MAX_RETRY_DURATION_MS,
-} from "./constants";
+import { LISTENER_PONG_TIMEOUT_MS } from "./constants";
 import {
   handleAbortMessageInput,
   handleApprovalResponseInput,
@@ -71,22 +62,11 @@ import {
 } from "./recover-recorded-turn";
 import {
   clearConversationRuntimeState,
-  clearRuntimeTimers,
   getActiveRuntime,
   safeEmitWsEvent,
   setActiveRuntime,
 } from "./runtime";
-import {
-  applyListenerPairIdentity,
-  attachSplitStreamSocketHandlers,
-  createListenerPairIdentity,
-  handleListenerSocketOpenFailure,
-  isCurrentSocketPair,
-  parseListenerReadyMessage,
-  preparePairedListenerTransport,
-  prepareSplitStreamTransport,
-  shouldHandleControlSocketClose,
-} from "./split-stream-lifecycle";
+import { attachSplitStreamSocketHandlers } from "./split-stream-lifecycle";
 import { notifyStreamObserversRuntimeStopped } from "./stream-observers";
 import { replaySyncStateForRuntime } from "./sync-replay";
 import {
@@ -590,30 +570,6 @@ export async function attachOpenListenerSocket(
   );
 }
 
-/**
- * Start the listener WebSocket client with automatic retry.
- */
-export async function startListenerClient(
-  opts: StartListenerOptions,
-): Promise<void> {
-  // Replace any existing runtime without stale callback leakage.
-  const existingRuntime = getActiveRuntime();
-  if (existingRuntime) {
-    stopRuntime(existingRuntime, true);
-  }
-
-  const runtime = createRuntime();
-  runtime.onWsEvent = opts.onWsEvent;
-  runtime.connectionId = opts.connectionId;
-  runtime.connectionName = opts.connectionName;
-  setActiveRuntime(runtime);
-  telemetry.setSurface(getListenerTelemetrySurface());
-  telemetry.init();
-
-  await reloadListenerModAdapter(runtime);
-  await connectWithRetry(runtime, opts);
-}
-
 export interface StartLocalChannelListenerOptions {
   connectionId: string;
   deviceId: string;
@@ -675,303 +631,6 @@ export async function startLocalChannelListener(
     }
     opts.onError(error instanceof Error ? error : new Error(String(error)));
   }
-}
-
-/** Connect to WebSocket with exponential backoff retry. */
-async function connectWithRetry(
-  runtime: ListenerRuntime,
-  opts: StartListenerOptions,
-  attempt: number = 0,
-  startTime: number = Date.now(),
-): Promise<void> {
-  if (runtime !== getActiveRuntime() || runtime.intentionallyClosed) {
-    return;
-  }
-
-  const elapsedTime = Date.now() - startTime;
-
-  if (attempt > 0) {
-    if (elapsedTime >= MAX_RETRY_DURATION_MS) {
-      // If we ever had a successful connection, try to re-register instead
-      // of giving up. This keeps established sessions alive through transient
-      // outages (e.g. Cloudflare 521, server deploys).
-      if (runtime.everConnected && opts.onNeedsReregister) {
-        opts.onNeedsReregister();
-        return;
-      }
-      opts.onError(new Error("Failed to connect after 5 minutes of retrying"));
-      return;
-    }
-
-    const delay = Math.min(
-      INITIAL_RETRY_DELAY_MS * 2 ** (attempt - 1),
-      MAX_RETRY_DELAY_MS,
-    );
-    const maxAttempts = Math.ceil(
-      Math.log2(MAX_RETRY_DURATION_MS / INITIAL_RETRY_DELAY_MS),
-    );
-
-    opts.onRetrying?.(attempt, maxAttempts, delay, opts.connectionId);
-
-    await new Promise<void>((resolve) => {
-      runtime.reconnectTimeout = setTimeout(resolve, delay);
-    });
-
-    runtime.reconnectTimeout = null;
-    if (runtime !== getActiveRuntime() || runtime.intentionallyClosed) {
-      return;
-    }
-  }
-
-  clearRuntimeTimers(runtime);
-
-  if (attempt === 0) {
-    await loadTools();
-  }
-
-  const auth = await resolveListenerReconnectAuth(opts);
-  if (auth.kind === "retry")
-    return connectWithRetry(runtime, opts, attempt + 1, startTime);
-  if (runtime !== getActiveRuntime() || runtime.intentionallyClosed) {
-    return;
-  }
-  const apiKey = auth.apiKey;
-
-  const url = new URL(opts.wsUrl);
-  url.searchParams.set("deviceId", opts.deviceId);
-  url.searchParams.set("connectionName", opts.connectionName);
-
-  const supportsSplitStatusChannels = opts.supportsSplitStatusChannels === true;
-  const pairIdentity =
-    supportsSplitStatusChannels &&
-    opts.supportsPairedListenerGenerations === true
-      ? createListenerPairIdentity(runtime)
-      : null;
-  if (supportsSplitStatusChannels) url.searchParams.set("channel", "control");
-  if (pairIdentity) applyListenerPairIdentity(url, pairIdentity);
-
-  const streamUrl = supportsSplitStatusChannels ? new URL(url) : null;
-  if (streamUrl) streamUrl.searchParams.set("channel", "stream");
-  const headers = { Authorization: `Bearer ${apiKey}` };
-  const socket = new WebSocket(url.toString(), { headers });
-  let streamSocket =
-    streamUrl && !pairIdentity
-      ? new WebSocket(streamUrl.toString(), { headers })
-      : null;
-
-  const fileCommandSession = createFileCommandSession({
-    socket,
-    safeSocketSend,
-    runDetachedListenerTask,
-  });
-
-  runtime.socket = socket;
-  runtime.streamSocket = streamSocket;
-  const transport = socket;
-  const processQueuedTurn = createConnectionTurnProcessor(runtime);
-  const handleMessage = createListenerMessageHandler({
-    runtime,
-    socket,
-    connectionId: opts.connectionId,
-    opts,
-    processQueuedTurn,
-    fileCommandSession,
-    getParsedRuntimeScope,
-    replaySyncStateForRuntime,
-    getOrCreateScopedRuntime,
-    handleApprovalResponseInput,
-    handleChangeDeviceStateInput,
-    handleAbortMessageInput,
-    stampInboundUserMessageOtids,
-    safeSocketSend,
-    runDetachedListenerTask,
-    trackListenerError,
-  });
-  let pairedStartupReady = pairIdentity === null;
-  const pendingStartupFrames: WebSocket.RawData[] = [];
-  if (streamSocket) {
-    attachSplitStreamSocketHandlers({
-      runtime,
-      streamSocket,
-      trackListenerError,
-    });
-  }
-
-  socket.on("open", () => {
-    void (async () => {
-      const streamOpen = pairIdentity
-        ? await preparePairedListenerTransport({
-            runtime,
-            controlSocket: socket,
-            identity: pairIdentity,
-            createStreamSocket: () => {
-              if (!streamUrl) throw new Error("Paired stream URL is missing");
-              streamSocket = new WebSocket(streamUrl.toString(), { headers });
-              return streamSocket;
-            },
-            trackListenerError,
-          })
-        : await prepareSplitStreamTransport({
-            runtime,
-            controlSocket: socket,
-            streamSocket,
-            trackListenerError,
-          });
-      if (streamOpen.kind !== "ready") return;
-      const streamTransport = streamOpen.transport;
-      if (streamOpen.streamSocket) {
-        streamSocket = streamOpen.streamSocket;
-        attachSplitStreamSocketHandlers({
-          runtime,
-          streamSocket: streamOpen.streamSocket,
-          trackListenerError,
-        });
-      }
-      if (!isCurrentSocketPair(runtime, socket, streamSocket)) return;
-      openListenerConnection({
-        runtime,
-        connectionId: opts.connectionId,
-        writer: socket,
-        streamWriter: streamTransport,
-        options: opts,
-      });
-      await startConnectedListenerRuntime(
-        runtime,
-        transport,
-        opts,
-        processQueuedTurn,
-        {
-          startHeartbeat: true,
-          startCronScheduler: true,
-          streamTransport,
-        },
-      );
-      pairedStartupReady = true;
-      for (const frame of pendingStartupFrames.splice(0)) {
-        await handleMessage(frame);
-      }
-    })().catch((error) => {
-      handleListenerSocketOpenFailure({
-        runtime,
-        controlSocket: socket,
-        streamSocket,
-        error,
-        trackListenerError,
-      });
-    });
-  });
-
-  socket.on("message", (data: WebSocket.RawData) => {
-    if (
-      pairIdentity &&
-      !pairedStartupReady &&
-      !parseListenerReadyMessage(data)
-    ) {
-      pendingStartupFrames.push(data);
-      return;
-    }
-    void handleMessage(data);
-  });
-
-  socket.on("close", (code: number, reason: Buffer) => {
-    if (!shouldHandleControlSocketClose(runtime, socket, opts.connectionId)) {
-      return;
-    }
-
-    safeEmitWsEvent("recv", "lifecycle", {
-      type: "_ws_close",
-      code,
-      reason: reason.toString(),
-    });
-
-    fileCommandSession.dispose();
-    const reasonText = reason.toString();
-    const terminalClose =
-      runtime.intentionallyClosed ||
-      code === 1008 ||
-      (code === 1000 && reasonText === "Replaced by new connection");
-
-    clearRuntimeTimers(runtime);
-
-    if (isDebugEnabled()) {
-      console.log(
-        `[Listen] WebSocket disconnected (code: ${code}, reason: ${reason.toString()})`,
-      );
-    }
-
-    if (!terminalClose) {
-      for (const conversationRuntime of runtime.conversationRuntimes.values()) {
-        rejectPendingApprovalResolversForConnection(
-          conversationRuntime,
-          opts.connectionId,
-          "Listener connection closed",
-        );
-      }
-    }
-    suspendListenerConnection(runtime, opts.connectionId);
-    killAllTerminals();
-    clearListenerWarmState(runtime);
-    if (streamSocket) {
-      streamSocket.removeAllListeners("message");
-      streamSocket.removeAllListeners("open");
-      streamSocket.removeAllListeners("close");
-      if (
-        streamSocket.readyState === WebSocket.OPEN ||
-        streamSocket.readyState === WebSocket.CONNECTING
-      ) {
-        streamSocket.close();
-      }
-    }
-    runtime.socket = null;
-    runtime.streamSocket = null;
-    runtime.streamTransport = null;
-    if (terminalClose) {
-      if (getActiveRuntime() === runtime) {
-        setActiveRuntime(null);
-      }
-      stopRuntime(runtime, true);
-
-      if (code === 1008) {
-        if (isDebugEnabled()) {
-          console.log("[Listen] Environment not found, re-registering...");
-        }
-        if (opts.onNeedsReregister) {
-          opts.onNeedsReregister();
-        } else {
-          opts.onDisconnected();
-        }
-        return;
-      }
-
-      opts.onDisconnected();
-      return;
-    }
-
-    // If we had connected before, restart backoff from zero for this outage window.
-    const nextAttempt = runtime.hasSuccessfulConnection ? 0 : attempt + 1;
-    const nextStartTime = runtime.hasSuccessfulConnection
-      ? Date.now()
-      : startTime;
-    runtime.hasSuccessfulConnection = false;
-
-    connectWithRetry(runtime, opts, nextAttempt, nextStartTime).catch(
-      (error) => {
-        opts.onError(error instanceof Error ? error : new Error(String(error)));
-      },
-    );
-  });
-
-  socket.on("error", (error: Error) => {
-    trackListenerError("listener_websocket_error", error, "listener_socket");
-    safeEmitWsEvent("recv", "lifecycle", {
-      type: "_ws_error",
-      message: error.message,
-    });
-    if (isDebugEnabled()) {
-      console.error("[Listen] WebSocket error:", error);
-    }
-    // Error triggers close(), which handles retry logic.
-  });
 }
 
 /**

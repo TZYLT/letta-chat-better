@@ -510,7 +510,6 @@ export {
 export type { StartLocalChannelListenerOptions } from "./lifecycle";
 export {
   isListenerActive,
-  startListenerClient,
   startLocalChannelListener,
   stopListenerClient,
 } from "./lifecycle";

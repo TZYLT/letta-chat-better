@@ -5,7 +5,7 @@
  * Lifecycle:
  * 1. initializeChannels() creates adapters from channel accounts
  * 2. Adapters start long-polling (buffer inbound until ready)
- * 3. setReady() is called from inside startListenerClient() once closure state exists
+ * 3. setReady() is called from inside startLocalChannelListener() once closure state exists
  * 4. Buffered messages flush through the registered onMessage handler
  */
 
@@ -750,7 +750,7 @@ export class ChannelRegistry {
  * 4. Starts adapters (begin long-polling, buffer until ready)
  *
  * Does NOT set the message handler or mark ready — that happens
- * inside startListenerClient() when closure state is available.
+ * inside startLocalChannelListener() when closure state is available.
  */
 export async function initializeChannels(
   channelNames: string[],

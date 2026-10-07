@@ -1231,7 +1231,6 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
             agentId,
             buffersRef,
             commandRunner,
-            conversationIdRef,
             refreshDerived,
             openOverlay,
             setCommandRunning,

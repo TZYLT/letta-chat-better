@@ -19,7 +19,6 @@ type ConnectionCommandContext = {
   agentId: string;
   buffersRef: MutableRefObject<Buffers>;
   commandRunner: AppCommandRunner;
-  conversationIdRef: MutableRefObject<string>;
   markLocalModelsAvailable: () => void;
   refreshDerived: () => void;
   setCommandRunning: (value: boolean) => void;
@@ -41,7 +40,6 @@ export async function handleConnectionCommand(
     agentId,
     buffersRef,
     commandRunner,
-    conversationIdRef,
     markLocalModelsAvailable,
     refreshDerived,
     setCommandRunning,
@@ -143,52 +141,6 @@ export async function handleConnectionCommand(
       );
     } finally {
       setActiveConnectCommandId(null);
-    }
-    return { submitted: true };
-  }
-
-  // Special handling for /server command (alias: /remote)
-  if (
-    trimmed === "/server" ||
-    trimmed.startsWith("/server ") ||
-    trimmed === "/remote" ||
-    trimmed.startsWith("/remote ")
-  ) {
-    const parts = Array.from(
-      trimmed.matchAll(
-        /"([^"\\]*(?:\\.[^"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'|(\S+)/g,
-      ),
-      (match) => match[1] ?? match[2] ?? match[3],
-    );
-
-    let name: string | undefined;
-    for (let i = 1; i < parts.length; i++) {
-      const part = parts[i];
-      const nextPart = parts[i + 1];
-      if ((part === "--computer-name" || part === "--env-name") && nextPart) {
-        name = nextPart;
-        i++;
-      }
-    }
-
-    const cmd = commandRunner.start(msg, "Starting listener...");
-    const { handleListen, setActiveCommandId: setActiveListenCommandId } =
-      await import("@/cli/commands/listen");
-    setActiveListenCommandId(cmd.id);
-    try {
-      await handleListen(
-        {
-          buffersRef,
-          refreshDerived,
-          setCommandRunning,
-          agentId,
-          conversationId: conversationIdRef.current,
-        },
-        msg,
-        { envName: name },
-      );
-    } finally {
-      setActiveListenCommandId(null);
     }
     return { submitted: true };
   }

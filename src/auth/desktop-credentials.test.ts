@@ -133,17 +133,7 @@ for (const runtime of [process.execPath, "node"]) {
         pid: child.pid,
       });
       response = nextMessage(child);
-      child.send({ type: "register" });
-      expect((await response).type).toBe("retry_waiting");
-      response = nextMessage(child);
       child.send({ type: "desktop_credentials", accessToken: "renewed" });
-      child.send({ type: "resume_registration" });
-      expect(await response).toMatchObject({
-        type: "registered",
-        headers: ["Bearer first", "Bearer renewed"],
-        pid: child.pid,
-      });
-      response = nextMessage(child);
       child.send({ type: "request" });
       expect(await response).toMatchObject({
         type: "observed",

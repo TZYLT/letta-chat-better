@@ -5,7 +5,6 @@ import { initializeDesktopCredentials } from "@/auth/desktop-credentials";
 import { getClient } from "@/backend/api/client";
 import { getApiRequestConfig } from "@/backend/api/request";
 import { settingsManager } from "@/settings-manager";
-import { registerWithCloudRetry } from "@/websocket/listen-register";
 
 await initializeDesktopCredentials();
 await settingsManager.initialize();
@@ -82,53 +81,6 @@ process.on("message", async (message) => {
       env: { LETTA_API_KEY: "unrelated-cli-key" },
     });
     process.send?.({ type: "subagent_result", ...result });
-  }
-  if (
-    message &&
-    typeof message === "object" &&
-    "type" in message &&
-    message.type === "register"
-  ) {
-    const headers: (string | null)[] = [];
-    await registerWithCloudRetry(
-      {
-        serverUrl: "http://credential-test.invalid",
-        apiKey: client.apiKey ?? "",
-        deviceId: "desktop:install:user",
-        connectionName: "Desktop",
-      },
-      {
-        fetchImpl: Object.assign(
-          async (_url: unknown, init?: RequestInit) => {
-            headers.push(new Headers(init?.headers).get("authorization"));
-            return headers.length === 1
-              ? new Response("unavailable", { status: 503 })
-              : Response.json({
-                  connectionId: "conn-test",
-                  wsUrl: "ws://credential-test.invalid",
-                });
-          },
-          { preconnect: () => {} },
-        ),
-        sleep: () =>
-          new Promise<void>((resolve) => {
-            const resume = (input: unknown) => {
-              if (
-                input &&
-                typeof input === "object" &&
-                "type" in input &&
-                input.type === "resume_registration"
-              ) {
-                process.off("message", resume);
-                resolve();
-              }
-            };
-            process.on("message", resume);
-            process.send?.({ type: "retry_waiting" });
-          }),
-      },
-    );
-    process.send?.({ type: "registered", headers, pid: process.pid });
   }
   if (
     message &&
