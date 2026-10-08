@@ -106,6 +106,20 @@ function isReflectionTurn(body: HeadlessTurnBody): boolean {
 }
 
 /**
+ * Shell command that reads the transcript through the runtime already running
+ * this process.
+ *
+ * The Bash tool picks the platform shell (PowerShell on Windows), so a bare
+ * `bun` is not portable: the npm shim it resolves to there is a `.ps1` script,
+ * which a locked-down execution policy refuses to run. Use the absolute runtime
+ * path instead, and keep the payload free of `$`, spaces, and double quotes so
+ * every shell passes it through verbatim.
+ */
+function transcriptReadCommand(): string {
+  return `"${process.execPath}" -e "const p=process.env.TRANSCRIPT_PATH;if(!p)process.exit(3);process.stdout.write(require('fs').readFileSync(p,'utf8'))"`;
+}
+
+/**
  * Deterministic test executor that keeps ordinary turns simple while making a
  * reflection prove it opened the transcript before returning success.
  */
@@ -131,8 +145,7 @@ export class DeterministicReflectionExecutor implements HeadlessTurnExecutor {
           tool_call_id: toolCallId,
           name: "Bash",
           arguments: JSON.stringify({
-            command:
-              "bun -e \"const fs=require('fs');const p=process.env.TRANSCRIPT_PATH;if(!p)throw new Error('TRANSCRIPT_PATH missing');process.stdout.write(fs.readFileSync(p,'utf8'))\"",
+            command: transcriptReadCommand(),
             description: "Read the reflection transcript payload",
             login: false,
           }),
