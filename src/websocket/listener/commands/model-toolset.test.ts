@@ -4,7 +4,6 @@ import {
   getAvailableModelHandles,
 } from "@/agent/available-models";
 import { models } from "@/agent/model";
-import { __modifyTestUtils } from "@/agent/modify";
 import type { Backend } from "@/backend";
 import { __testSetBackend } from "@/backend";
 import {
