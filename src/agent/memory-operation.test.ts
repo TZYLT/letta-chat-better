@@ -9,6 +9,10 @@ import { getProcessStartTime } from "@/utils/process-liveness";
 import { claimMemoryOperation, withMemoryOperation } from "./memory-operation";
 
 const repos: TempGitRepo[] = [];
+// Every case here claims a real git checkout, and most of them also start a
+// child runtime to probe pid liveness; on Windows that costs several seconds
+// each, well past bun's 5s default. The budget is per test, not
+// `setDefaultTimeout`, so it cannot leak into other files sharing the worker.
 afterEach(() => {
   for (const repo of repos.splice(0)) repo.cleanup();
 });
@@ -40,7 +44,7 @@ test("a separate process cannot claim an owned checkout", async () => {
   const next = await claimMemoryOperation(root);
   expect(next).not.toBeNull();
   await next?.();
-});
+}, 30_000);
 
 test("the record is published whole and the holder's start time is timezone-invariant", async () => {
   const root = repository();
@@ -56,7 +60,7 @@ test("the record is published whole and the holder's start time is timezone-inva
   expect(await other.exited).toBe(0);
   expect((await new Response(other.stdout).text()).trim()).toBe("true");
   await release?.();
-});
+}, 30_000);
 
 test("reclaims a checkout whose holder exited", async () => {
   const root = repository();
@@ -73,7 +77,7 @@ test("reclaims a checkout whose holder exited", async () => {
   const release = await claimMemoryOperation(root);
   expect(release).not.toBeNull();
   await release?.();
-});
+}, 30_000);
 
 test("reclaims a checkout whose pid now belongs to another process", async () => {
   const root = repository();
@@ -90,7 +94,7 @@ test("reclaims a checkout whose pid now belongs to another process", async () =>
   expect(release).not.toBeNull();
   expect(await claimMemoryOperation(root)).toBeNull();
   await release?.();
-});
+}, 30_000);
 
 test("an unreadable lock file does not wedge the checkout", async () => {
   const root = repository();
@@ -100,7 +104,7 @@ test("an unreadable lock file does not wedge the checkout", async () => {
   const release = await claimMemoryOperation(root);
   expect(release).not.toBeNull();
   await release?.();
-});
+}, 30_000);
 
 test.skipIf(process.platform === "win32")(
   "a paused holder keeps its checkout",
@@ -126,6 +130,7 @@ test.skipIf(process.platform === "win32")(
       await holder.exited;
     }
   },
+  30_000,
 );
 
 test("cancelling a waiting operation does not release someone else's checkout", async () => {
@@ -143,7 +148,7 @@ test("cancelling a waiting operation does not release someone else's checkout", 
   await expect(waiting).rejects.toThrow();
   expect(await claimMemoryOperation(root)).toBeNull();
   await release?.();
-});
+}, 30_000);
 
 test("a follow-up operation started inside another still waits its turn", async () => {
   const root = repository();
@@ -158,4 +163,4 @@ test("a follow-up operation started inside another still waits its turn", async 
   });
   await followup;
   expect(ran).toBe(true);
-});
+}, 30_000);
