@@ -8,7 +8,6 @@ import { isCloudApiDeploymentInterrupted } from "@/utils/cloud-api-shutdown";
 import { debugLog } from "@/utils/debug";
 import { normalizeCloudRetryWireMessage } from "./cloud-retry-message";
 import { LISTENER_STREAM_RESUME_POLICY } from "./constants";
-import { recordListenerWork } from "./interrupted-turn-record";
 import { normalizeToolReturnWireMessage } from "./interrupts";
 import {
   emitCanonicalMessageDelta,
@@ -75,13 +74,6 @@ export async function drainTurnStreamWithEmission(
         runtime.turnLifecycle.setRunId(turnLease, maybeRunId);
         turnCorrelation.observeRun(maybeRunId);
         if (!runIdSent) {
-          recordListenerWork(
-            runtime,
-            {
-              runId: maybeRunId,
-            },
-            "run_observed",
-          );
           runIdSent = true;
           msgRunIds.push(maybeRunId);
           emitLoopStatusUpdate(socket, runtime, {
