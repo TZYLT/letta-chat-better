@@ -39,7 +39,7 @@ if (process.platform !== 'win32') {
   assert.equal(direct.status, 0, direct.stderr); // Executable bits + /usr/bin/env node.
   assert.match(direct.stdout, /Letta Code/);
 }
-assert.ok(fs.existsSync(path.join(app, 'skills', 'letta-guide', 'SKILL.md')));
+assert.ok(fs.existsSync(path.join(app, 'skills', 'haruyuki-guide', 'SKILL.md')));
 assert.ok(fs.existsSync(path.join(app, 'assets', 'tutor-profile.png')));
 const rg = spawnSync(req('@vscode/ripgrep').rgPath, ['--version'], {env, encoding:'utf8'});
 assert.equal(rg.status, 0, rg.stderr);

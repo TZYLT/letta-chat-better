@@ -1,418 +1,251 @@
 #!/usr/bin/env node
 
-import { execFile } from "node:child_process";
-import { createHash, randomBytes } from "node:crypto";
-import { constants as fsConstants } from "node:fs";
-import {
-  access,
-  mkdir,
-  readFile,
-  rename,
-  rm,
-  stat,
-  writeFile,
-} from "node:fs/promises";
+/**
+ * Reads the reference documents bundled with this skill.
+ *
+ * This route is offline by design: the documents live in this repository, so
+ * there is no index to fetch, no ETag to verify, and no cache to keep. The
+ * reader only lists, prints, and searches files under `docs/`.
+ */
+
+import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
-import { pathToFileURL } from "node:url";
-import { promisify } from "node:util";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
-const DEFAULT_DOCS_URL = "https://docs.letta.com/llms.txt";
-const CACHE_DIRECTORY_NAME = "letta-docs-cache";
-const DOCUMENT_NAME = "letta-docs.md";
-const OUTLINE_NAME = "letta-docs.outline.md";
-const USER_AGENT = "letta-guide";
-const runFile = promisify(execFile);
+const SCRIPT_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
+const SKILL_DIRECTORY = path.resolve(SCRIPT_DIRECTORY, "..");
+const DEFAULT_DOCS_DIRECTORY = path.join(SKILL_DIRECTORY, "docs");
 
-class DocsFetchError extends Error {
-  constructor(message, cause) {
-    super(message, cause ? { cause } : undefined);
-    this.name = "DocsFetchError";
+/** Search hits printed before the reader stops and reports the remainder. */
+const MAX_SEARCH_HITS = 60;
+
+class DocsLookupError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "DocsLookupError";
   }
-}
-
-function bodyDigest(body) {
-  return createHash("md5").update(body).digest("hex");
-}
-
-function hasProxyEnvironment() {
-  return ["HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"].some(
-    (key) => Boolean(process.env[key]),
-  );
-}
-
-function temporaryFile(directory, extension) {
-  return path.join(
-    directory,
-    `.letta-docs-${process.pid}-${Date.now()}-${randomBytes(5).toString("hex")}${extension}`,
-  );
-}
-
-function parseHeaderDump(raw) {
-  const responseBlocks = raw
-    .replace(/\r\n/g, "\n")
-    .trim()
-    .split(/\n\n+/)
-    .filter((block) => block.startsWith("HTTP/"));
-  const finalBlock = responseBlocks.at(-1);
-  if (!finalBlock) {
-    throw new DocsFetchError("curl returned no HTTP response headers.");
-  }
-
-  const [statusLine, ...lines] = finalBlock.split("\n");
-  const status = Number(/^HTTP\/\S+\s+(\d{3})/.exec(statusLine)?.[1]);
-  if (!Number.isInteger(status)) {
-    throw new DocsFetchError(
-      `curl returned an invalid status line: ${statusLine}`,
-    );
-  }
-
-  const headers = new Map();
-  for (const line of lines) {
-    const separator = line.indexOf(":");
-    if (separator < 1) continue;
-    headers.set(
-      line.slice(0, separator).trim().toLowerCase(),
-      line.slice(separator + 1).trim(),
-    );
-  }
-  return { headers, status };
-}
-
-async function curlRequest(url, method, cacheDirectory, timeoutMs) {
-  const headersFile = temporaryFile(cacheDirectory, ".headers");
-  const bodyFile = temporaryFile(cacheDirectory, ".body");
-  const executables =
-    process.platform === "win32" ? ["curl.exe", "curl"] : ["curl"];
-  const argumentsList = [
-    "--silent",
-    "--show-error",
-    "--location",
-    "--dump-header",
-    headersFile,
-    "--output",
-    bodyFile,
-    "--user-agent",
-    USER_AGENT,
-    "--max-time",
-    String(Math.max(1, Math.ceil(timeoutMs / 1000))),
-    ...(method === "HEAD" ? ["--head"] : ["--request", method]),
-    url,
-  ];
-
-  let failure;
-  for (const executable of executables) {
-    try {
-      await runFile(executable, argumentsList, { windowsHide: true });
-      const [rawHeaders, body] = await Promise.all([
-        readFile(headersFile, "utf8"),
-        readFile(bodyFile, "utf8"),
-      ]);
-      return { ...parseHeaderDump(rawHeaders), body };
-    } catch (error) {
-      failure = error;
-      if (error?.code !== "ENOENT") break;
-    } finally {
-      await Promise.all([
-        rm(headersFile, { force: true }),
-        rm(bodyFile, { force: true }),
-      ]);
-    }
-  }
-  throw new DocsFetchError(
-    failure?.code === "ENOENT"
-      ? "curl is unavailable in this environment."
-      : `curl could not ${method} ${url}.`,
-    failure,
-  );
-}
-
-async function nodeRequest(url, method, _cacheDirectory, timeoutMs) {
-  if (typeof fetch !== "function") {
-    throw new DocsFetchError("Native fetch requires Node.js 18 or newer.");
-  }
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const response = await fetch(url, {
-      method,
-      headers: { "User-Agent": USER_AGENT },
-      redirect: "follow",
-      signal: controller.signal,
-    });
-    const headers = new Map();
-    response.headers.forEach((value, key) => {
-      headers.set(key.toLowerCase(), value);
-    });
-    return {
-      body: method === "HEAD" ? "" : await response.text(),
-      headers,
-      status: response.status,
-    };
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-async function requestDocument(url, method, cacheDirectory, timeoutMs) {
-  const transports = hasProxyEnvironment()
-    ? [curlRequest, nodeRequest]
-    : [nodeRequest, curlRequest];
-  let failure;
-  for (const transport of transports) {
-    try {
-      const result = await transport(url, method, cacheDirectory, timeoutMs);
-      if (result.status < 200 || result.status >= 300) {
-        throw new DocsFetchError(
-          `${method} ${url} failed with HTTP ${result.status}.`,
-        );
-      }
-      return result;
-    } catch (error) {
-      failure = error;
-    }
-  }
-  throw new DocsFetchError(`${method} ${url} could not be fetched.`, failure);
-}
-
-function digestFromEtag(headers) {
-  const etag = headers.get("etag") ?? "";
-  const digest = /^(?:W\/)?"([a-f0-9]{32})"$/i.exec(etag)?.[1];
-  if (!digest) {
-    throw new DocsFetchError(
-      "Letta docs response is missing a content-MD5 ETag.",
-    );
-  }
-  return digest.toLowerCase();
-}
-
-async function nearestExistingDirectory(candidate) {
-  let current = path.resolve(candidate);
-  while (true) {
-    try {
-      return (await stat(current)).isDirectory() ? current : null;
-    } catch (error) {
-      if (error?.code !== "ENOENT") return null;
-    }
-    const parent = path.dirname(current);
-    if (parent === current) return null;
-    current = parent;
-  }
-}
-
-async function writableCacheDirectory(candidate) {
-  if (!candidate) return null;
-  const resolved = path.resolve(candidate);
-  try {
-    const existing = await stat(resolved);
-    if (!existing.isDirectory()) return null;
-  } catch (error) {
-    if (error?.code !== "ENOENT") return null;
-  }
-  const existingParent = await nearestExistingDirectory(resolved);
-  if (!existingParent) return null;
-  try {
-    await access(existingParent, fsConstants.W_OK | fsConstants.X_OK);
-    return resolved;
-  } catch {
-    return null;
-  }
-}
-
-async function selectCacheDirectory(override) {
-  if (override) return writableCacheDirectory(override);
-  const candidates = [process.env.TMPDIR, process.env.TEMP, process.env.TMP]
-    .filter(Boolean)
-    .map((directory) => path.join(directory, CACHE_DIRECTORY_NAME));
-  if (process.platform !== "win32") {
-    candidates.push(
-      path.join("/private/tmp", CACHE_DIRECTORY_NAME),
-      path.join("/tmp", CACHE_DIRECTORY_NAME),
-    );
-  }
-  for (const candidate of new Set(candidates)) {
-    const usable = await writableCacheDirectory(candidate);
-    if (usable) return usable;
-  }
-  return null;
-}
-
-async function atomicWrite(destination, contents) {
-  const temporary = temporaryFile(
-    path.dirname(destination),
-    `.${path.basename(destination)}.tmp`,
-  );
-  await writeFile(temporary, contents, "utf8");
-  await rename(temporary, destination);
-}
-
-function createOutline(markdown) {
-  const lines = markdown.replace(/\r\n/g, "\n").split("\n");
-  if (lines.at(-1) === "") lines.pop();
-  const entries = [];
-  let fenced = false;
-  lines.forEach((line, index) => {
-    if (/^\s*(?:```|~~~)/.test(line)) {
-      fenced = !fenced;
-      return;
-    }
-    if (fenced) return;
-    const heading = /^(#{2,3})\s+(.+?)\s*$/.exec(line);
-    if (!heading) return;
-    entries.push({
-      level: heading[1].length,
-      title: heading[2]
-        .replace(/\s+#+\s*$/, "")
-        .replace(/\s+/g, " ")
-        .trim(),
-      start: index + 1,
-      end: lines.length,
-    });
-  });
-  entries.forEach((entry, index) => {
-    const nextPeer = entries
-      .slice(index + 1)
-      .find((candidate) => candidate.level <= entry.level);
-    if (nextPeer) entry.end = nextPeer.start - 1;
-  });
-
-  const lowestLevel = entries.length
-    ? Math.min(...entries.map((entry) => entry.level))
-    : 2;
-  const text = entries.length
-    ? entries
-        .map(
-          (entry) =>
-            `${"  ".repeat(entry.level - lowestLevel)}- ${entry.title} (lines ${entry.start}-${entry.end})`,
-        )
-        .join("\n")
-    : "No markdown headings found.";
-  return {
-    headingCount: entries.length,
-    lineCount: lines.length,
-    markdown: `# Letta Docs Outline\n\n${text}\n`,
-  };
-}
-
-async function cachedBody(documentPath, expectedDigest) {
-  try {
-    const body = await readFile(documentPath, "utf8");
-    return bodyDigest(body) === expectedDigest ? body : null;
-  } catch {
-    return null;
-  }
-}
-
-async function fetchLettaDocs({
-  docsUrl = DEFAULT_DOCS_URL,
-  cacheDir,
-  timeoutMs = 30000,
-} = {}) {
-  const selectedCache = await selectCacheDirectory(cacheDir);
-  if (!selectedCache) {
-    throw new DocsFetchError(
-      "No writable docs cache is available; pass --cache-dir to override.",
-    );
-  }
-  await mkdir(selectedCache, { recursive: true });
-
-  const documentPath = path.join(selectedCache, DOCUMENT_NAME);
-  const outlinePath = path.join(selectedCache, OUTLINE_NAME);
-  const head = await requestDocument(docsUrl, "HEAD", selectedCache, timeoutMs);
-  const expectedDigest = digestFromEtag(head.headers);
-  let body = await cachedBody(documentPath, expectedDigest);
-  const cacheStatus = body === null ? "updated" : "hit";
-
-  if (body === null) {
-    const get = await requestDocument(docsUrl, "GET", selectedCache, timeoutMs);
-    const getDigest = digestFromEtag(get.headers);
-    if (getDigest !== expectedDigest) {
-      throw new DocsFetchError(
-        `ETag changed between HEAD and GET for ${docsUrl}.`,
-      );
-    }
-    if (bodyDigest(get.body) !== expectedDigest) {
-      throw new DocsFetchError(
-        `ETag did not match the fetched body for ${docsUrl}.`,
-      );
-    }
-    body = get.body;
-    await atomicWrite(documentPath, body);
-  }
-
-  const outline = createOutline(body);
-  await atomicWrite(outlinePath, outline.markdown);
-  return {
-    outline: outline.markdown,
-    status: {
-      docsUrl,
-      etagMd5: expectedDigest,
-      fetchedMd5: bodyDigest(body),
-      contentMatchesEtag: true,
-      cacheStatus,
-      cacheDir: selectedCache,
-      docsPath: documentPath,
-      outlinePath,
-      checkedAt: new Date().toISOString(),
-      lineCount: outline.lineCount,
-      headingCount: outline.headingCount,
-    },
-  };
 }
 
 function parseArguments(argv) {
-  const result = {
-    docsUrl: DEFAULT_DOCS_URL,
-    cacheDir: undefined,
-    timeoutMs: 30000,
+  const options = {
+    docsDir: DEFAULT_DOCS_DIRECTORY,
+    doc: undefined,
+    search: undefined,
     statusJson: false,
   };
   for (let index = 0; index < argv.length; index += 1) {
     const value = argv[index];
-    if (value === "--docs-url") result.docsUrl = argv[++index];
-    else if (value === "--cache-dir") result.cacheDir = argv[++index];
-    else if (value === "--timeout-ms") result.timeoutMs = Number(argv[++index]);
-    else if (value === "--status-json") result.statusJson = true;
-    else throw new DocsFetchError(`Unknown argument: ${value}`);
+    if (value === "--docs-dir") options.docsDir = argv[++index];
+    else if (value === "--doc") options.doc = argv[++index];
+    else if (value === "--search") options.search = argv[++index];
+    else if (value === "--status-json") options.statusJson = true;
+    else throw new DocsLookupError(`Unknown argument: ${value}`);
   }
-  if (!result.docsUrl) throw new DocsFetchError("--docs-url cannot be empty.");
-  if (!Number.isFinite(result.timeoutMs) || result.timeoutMs <= 0) {
-    throw new DocsFetchError("--timeout-ms must be a positive number.");
-  }
-  return result;
+  if (!options.docsDir)
+    throw new DocsLookupError("--docs-dir cannot be empty.");
+  if (options.doc !== undefined && !options.doc)
+    throw new DocsLookupError("--doc needs a document name.");
+  if (options.search !== undefined && !options.search)
+    throw new DocsLookupError("--search needs a search string.");
+  return { ...options, docsDir: path.resolve(options.docsDir) };
 }
 
-function outputFor(status, outline) {
+async function collectDocuments(directory) {
+  let entries;
+  try {
+    entries = await readdir(directory, { withFileTypes: true });
+  } catch (error) {
+    if (error?.code === "ENOENT") return [];
+    throw error;
+  }
+
+  const documents = [];
+  for (const entry of entries.sort((left, right) =>
+    left.name.localeCompare(right.name),
+  )) {
+    const file = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      documents.push(...(await collectDocuments(file)));
+    } else if (entry.isFile() && entry.name.endsWith(".md")) {
+      documents.push(file);
+    }
+  }
+  return documents;
+}
+
+/**
+ * Outline a document: its headings with the line range each one covers.
+ *
+ * Fences are tracked so a `#` comment inside a shell example is not mistaken
+ * for a heading.
+ */
+export function createOutline(body) {
+  const lines = body.split(/\r?\n/);
+  const headings = [];
+  let fence = null;
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const fenceMatch = /^\s*(```+|~~~+)/.exec(line);
+    if (fenceMatch) {
+      const marker = fenceMatch[1][0];
+      fence = fence === marker ? null : (fence ?? marker);
+      continue;
+    }
+    if (fence) continue;
+    const heading = /^(#{1,6})\s+(.*\S)\s*$/.exec(line);
+    if (heading) {
+      headings.push({
+        depth: heading[1].length,
+        title: heading[2],
+        line: index + 1,
+      });
+    }
+  }
+
+  const markdown = headings
+    .map((heading, position) => {
+      const next = headings
+        .slice(position + 1)
+        .find((candidate) => candidate.depth <= heading.depth);
+      const end = (next ? next.line : lines.length) - 1;
+      const indent = "  ".repeat(heading.depth - 1);
+      return `${indent}${heading.title} (lines ${heading.line}-${Math.max(heading.line, end)})`;
+    })
+    .join("\n");
+
+  return {
+    headings,
+    markdown,
+    lineCount: lines.length,
+    headingCount: headings.length,
+  };
+}
+
+function slugFor(file, docsDirectory) {
+  const relative = path.relative(docsDirectory, file);
+  return relative.replace(/\.md$/, "").split(path.sep).join("/");
+}
+
+async function readDocuments(directory) {
+  const files = await collectDocuments(directory);
+  const documents = [];
+  for (const file of files) {
+    const body = await readFile(file, "utf8");
+    const { size } = await stat(file);
+    const outline = createOutline(body);
+    documents.push({
+      name: path.basename(file, ".md"),
+      slug: slugFor(file, directory),
+      body,
+      bytes: size,
+      lineCount: outline.lineCount,
+      headings: outline.headings,
+      outline: outline.markdown,
+    });
+  }
+  return documents;
+}
+
+function emptyCorpusMessage(directory) {
   return [
-    `Docs path: ${status.docsPath}`,
-    `Outline path: ${status.outlinePath}`,
-    status.cacheStatus === "hit"
-      ? "Docs status: local document was already current."
-      : "Docs status: local document was updated.",
-    "",
-    outline,
+    `No reference documents are bundled yet: ${path.join(directory, "*.md")} does not exist or is empty.`,
+    "Answer from this repository's own source and runtime output instead, and say when a detail is not documented.",
   ].join("\n");
 }
 
-function errorChain(error) {
-  const messages = [];
-  let current = error;
-  while (current) {
-    messages.push(
-      current instanceof Error
-        ? `${current.name}: ${current.message}`
-        : String(current),
-    );
-    current = current?.cause;
+function indexOutput(directory, documents) {
+  if (documents.length === 0) return emptyCorpusMessage(directory);
+  return [
+    `Reference documents: ${directory}`,
+    "",
+    ...documents.flatMap((document) => [
+      `## ${document.slug} (${document.lineCount} lines)`,
+      document.outline.length > 0 ? document.outline : "  (no headings)",
+      "",
+    ]),
+  ]
+    .join("\n")
+    .trimEnd();
+}
+
+function resolveRequestedDocument(query, documents) {
+  const normalized = query.replace(/\.md$/, "").split("\\").join("/");
+  const exact = documents.find((document) => document.slug === normalized);
+  if (exact) return exact;
+  const byName = documents.filter((document) => document.name === normalized);
+  return byName.length === 1 ? byName[0] : null;
+}
+
+function searchDocuments(documents, query) {
+  const needle = query.toLowerCase();
+  const hits = [];
+  let total = 0;
+  for (const document of documents) {
+    const lines = document.body.split(/\r?\n/);
+    for (let index = 0; index < lines.length; index += 1) {
+      if (!lines[index].toLowerCase().includes(needle)) continue;
+      total += 1;
+      if (hits.length < MAX_SEARCH_HITS) {
+        hits.push(`${document.slug}.md:${index + 1}: ${lines[index].trim()}`);
+      }
+    }
   }
-  return messages.join("\nCaused by: ");
+  return { hits, total };
 }
 
 async function main() {
   const options = parseArguments(process.argv.slice(2));
-  const result = await fetchLettaDocs(options);
-  process.stdout.write(outputFor(result.status, result.outline));
-  if (options.statusJson) console.error(JSON.stringify(result.status));
+  const documents = await readDocuments(options.docsDir);
+  const status = {
+    docsDir: options.docsDir,
+    documentCount: documents.length,
+    documents: documents.map((document) => ({
+      slug: document.slug,
+      bytes: document.bytes,
+      lineCount: document.lineCount,
+      headings: document.headings.length,
+    })),
+  };
+
+  if (options.doc !== undefined) {
+    const document = resolveRequestedDocument(options.doc, documents);
+    if (!document) {
+      const available = documents.map((entry) => entry.slug).join(", ");
+      throw new DocsLookupError(
+        documents.length === 0
+          ? emptyCorpusMessage(options.docsDir)
+          : `No reference document named "${options.doc}". Available: ${available}`,
+      );
+    }
+    process.stdout.write(`${document.body.trimEnd()}\n`);
+  } else if (options.search !== undefined) {
+    const { hits, total } = searchDocuments(documents, options.search);
+    if (total === 0) {
+      process.stdout.write(
+        `${
+          documents.length === 0
+            ? emptyCorpusMessage(options.docsDir)
+            : `No matches for "${options.search}" in ${documents.length} reference document(s).`
+        }\n`,
+      );
+    } else {
+      process.stdout.write(
+        [
+          ...hits,
+          ...(total > hits.length
+            ? [`... ${total - hits.length} more match(es) not shown.`]
+            : []),
+          "",
+        ].join("\n"),
+      );
+    }
+    status.search = { query: options.search, matches: total };
+  } else {
+    process.stdout.write(`${indexOutput(options.docsDir, documents)}\n`);
+  }
+
+  if (options.statusJson) console.error(JSON.stringify(status));
 }
 
 if (
@@ -421,20 +254,8 @@ if (
 ) {
   main().catch((error) => {
     console.error(`Error: ${error.message}`);
-    if (hasProxyEnvironment()) {
-      console.error(
-        "Hint: proxy variables are set, so curl is tried before native fetch.",
-      );
-    } else if (typeof fetch !== "function") {
-      console.error("Hint: install curl or use Node.js 18 or newer.");
-    } else if (process.platform === "win32") {
-      console.error("Hint: use a cache directory under %TEMP% or %TMP%.");
-    }
-    console.error("");
-    console.error("Details:");
-    console.error(errorChain(error));
     process.exitCode = 1;
   });
 }
 
-export { DEFAULT_DOCS_URL, createOutline, fetchLettaDocs };
+export { DEFAULT_DOCS_DIRECTORY };
