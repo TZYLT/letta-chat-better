@@ -24,16 +24,34 @@ import {
 
 describe("remote settings cwd repair", () => {
   const originalHome = process.env.HOME;
+  const originalUserProfile = process.env.USERPROFILE;
   let tempRoot: string | null = null;
 
-  afterEach(async () => {
-    resetRemoteSettingsCache();
-    await flushRemoteSettingsWrites();
+  // Windows resolves the home directory from USERPROFILE, not HOME, so a case
+  // that moves only HOME keeps reading the shared test home and sees whatever
+  // another file in the same worker wrote there.
+  function useHome(directory: string): void {
+    process.env.HOME = directory;
+    process.env.USERPROFILE = directory;
+  }
+
+  function restoreHome(): void {
     if (originalHome === undefined) {
       delete process.env.HOME;
     } else {
       process.env.HOME = originalHome;
     }
+    if (originalUserProfile === undefined) {
+      delete process.env.USERPROFILE;
+    } else {
+      process.env.USERPROFILE = originalUserProfile;
+    }
+  }
+
+  afterEach(async () => {
+    resetRemoteSettingsCache();
+    await flushRemoteSettingsWrites();
+    restoreHome();
     if (tempRoot) {
       await rm(tempRoot, { recursive: true, force: true });
       tempRoot = null;
@@ -46,7 +64,7 @@ describe("remote settings cwd repair", () => {
     const liveDirectory = path.join(tempRoot, "live");
     const deletedDirectory = path.join(tempRoot, "deleted-worktree");
     const regularFile = path.join(tempRoot, "not-a-directory");
-    process.env.HOME = fakeHome;
+    useHome(fakeHome);
 
     await mkdir(path.dirname(getRemoteSettingsPath()), { recursive: true });
     await mkdir(liveDirectory);
@@ -91,7 +109,7 @@ describe("remote settings cwd repair", () => {
     tempRoot = await mkdtemp(path.join(tmpdir(), "letta-remote-settings-"));
     const fakeHome = path.join(tempRoot, "home");
     const deletedDirectory = path.join(tempRoot, "deleted-worktree");
-    process.env.HOME = fakeHome;
+    useHome(fakeHome);
 
     const legacyPath = path.join(fakeHome, ".letta", "cwd-cache.json");
     await mkdir(path.dirname(legacyPath), { recursive: true });
@@ -112,7 +130,7 @@ describe("remote settings cwd repair", () => {
 
   test("coalesces asynchronous updates while preserving merged settings", async () => {
     tempRoot = await mkdtemp(path.join(tmpdir(), "letta-remote-settings-"));
-    process.env.HOME = path.join(tempRoot, "home");
+    useHome(path.join(tempRoot, "home"));
 
     saveRemoteSettings({
       cwdMap: { "conversation:stale": "/deleted/worktree" },
@@ -132,7 +150,7 @@ describe("remote settings cwd repair", () => {
 
   test("synchronous cwd repair fences a pending permission snapshot", async () => {
     tempRoot = await mkdtemp(path.join(tmpdir(), "letta-remote-settings-"));
-    process.env.HOME = path.join(tempRoot, "home");
+    useHome(path.join(tempRoot, "home"));
 
     saveRemoteSettings({
       cwdMap: { "conversation:stale": "/deleted/worktree" },
@@ -161,7 +179,7 @@ describe("remote settings cwd repair", () => {
   test("retries an unchanged snapshot after a transient write failure", async () => {
     tempRoot = await mkdtemp(path.join(tmpdir(), "letta-remote-settings-"));
     const fakeHome = path.join(tempRoot, "home");
-    process.env.HOME = fakeHome;
+    useHome(fakeHome);
 
     await mkdir(fakeHome);
     await writeFile(path.join(fakeHome, ".letta"), "temporarily blocked");
@@ -184,7 +202,7 @@ describe("remote settings cwd repair", () => {
 
   test("recovers a dead process lock before persisting", async () => {
     tempRoot = await mkdtemp(path.join(tmpdir(), "letta-remote-settings-"));
-    process.env.HOME = path.join(tempRoot, "home");
+    useHome(path.join(tempRoot, "home"));
 
     const lockPath = `${getRemoteSettingsPath()}.lock`;
     await mkdir(path.dirname(lockPath), { recursive: true });
@@ -201,7 +219,7 @@ describe("remote settings cwd repair", () => {
 
   test("takes over an abandoned stale-lock recovery claim", async () => {
     tempRoot = await mkdtemp(path.join(tmpdir(), "letta-remote-settings-"));
-    process.env.HOME = path.join(tempRoot, "home");
+    useHome(path.join(tempRoot, "home"));
 
     const lockPath = `${getRemoteSettingsPath()}.lock`;
     const deadToken = "99999999-dead-owner";
@@ -229,7 +247,7 @@ describe("remote settings cwd repair", () => {
 
   test("replays a cwd deletion after shutdown lock contention", async () => {
     tempRoot = await mkdtemp(path.join(tmpdir(), "letta-remote-settings-"));
-    process.env.HOME = path.join(tempRoot, "home");
+    useHome(path.join(tempRoot, "home"));
     const settingsPath = getRemoteSettingsPath();
     const staleDirectory = path.join(tempRoot, "recreated-worktree");
     await mkdir(path.dirname(settingsPath), { recursive: true });
@@ -276,7 +294,7 @@ describe("remote settings cwd repair", () => {
 
   test("does not replay a repair already fenced in settings", async () => {
     tempRoot = await mkdtemp(path.join(tmpdir(), "letta-remote-settings-"));
-    process.env.HOME = path.join(tempRoot, "home");
+    useHome(path.join(tempRoot, "home"));
     const settingsPath = getRemoteSettingsPath();
     const restoredDirectory = path.join(tempRoot, "explicitly-restored");
     const repairId = "repair-applied-before-crash";
@@ -314,7 +332,7 @@ describe("remote settings cwd repair", () => {
 
   test("orders an explicit same-path assignment after a pending repair", async () => {
     tempRoot = await mkdtemp(path.join(tmpdir(), "letta-remote-settings-"));
-    process.env.HOME = path.join(tempRoot, "home");
+    useHome(path.join(tempRoot, "home"));
     const settingsPath = getRemoteSettingsPath();
     const reassignedDirectory = path.join(tempRoot, "reassigned");
     const repairId = "repair-before-explicit-reassignment";
@@ -349,7 +367,7 @@ describe("remote settings cwd repair", () => {
 
   test("does not replay a queued repair after another writer applies its journal", async () => {
     tempRoot = await mkdtemp(path.join(tmpdir(), "letta-remote-settings-"));
-    process.env.HOME = path.join(tempRoot, "home");
+    useHome(path.join(tempRoot, "home"));
     const settingsPath = getRemoteSettingsPath();
     const reassignedDirectory = path.join(tempRoot, "reassigned-by-writer-b");
     await mkdir(path.dirname(settingsPath), { recursive: true });
@@ -416,7 +434,7 @@ describe("remote settings cwd repair", () => {
 
   test("replays a fully written repair temp after a pre-rename crash", async () => {
     tempRoot = await mkdtemp(path.join(tmpdir(), "letta-remote-settings-"));
-    process.env.HOME = path.join(tempRoot, "home");
+    useHome(path.join(tempRoot, "home"));
     const settingsPath = getRemoteSettingsPath();
     const recreatedDirectory = path.join(tempRoot, "recreated-before-replay");
     const repairId = "repair-temp-before-rename";
@@ -450,7 +468,7 @@ describe("remote settings cwd repair", () => {
     const localDirectory = path.join(tempRoot, "local");
     const nextLocalDirectory = path.join(tempRoot, "local-next");
     const externalDirectory = path.join(tempRoot, "external");
-    process.env.HOME = fakeHome;
+    useHome(fakeHome);
 
     await mkdir(path.dirname(getRemoteSettingsPath()), { recursive: true });
     await Promise.all([
@@ -529,6 +547,34 @@ describe("remote settings cwd repair", () => {
       permissionModeMap: {
         "conversation:shared": { mode: "unrestricted" },
       },
+    });
+  });
+
+  test("re-reads when the settings path moves with the home directory", async () => {
+    tempRoot = await mkdtemp(path.join(tmpdir(), "letta-remote-settings-"));
+    const liveDirectory = path.join(tempRoot, "live");
+    await mkdir(liveDirectory);
+
+    useHome(path.join(tempRoot, "home-a"));
+    await mkdir(path.dirname(getRemoteSettingsPath()), { recursive: true });
+    await writeFile(
+      getRemoteSettingsPath(),
+      JSON.stringify({ cwdMap: { "conversation:a": liveDirectory } }),
+    );
+    expect(loadRemoteSettings().cwdMap).toEqual({
+      "conversation:a": liveDirectory,
+    });
+
+    // A different home means a different file: serving the cached settings here
+    // made another test file's home decide this process's settings.
+    useHome(path.join(tempRoot, "home-b"));
+    await mkdir(path.dirname(getRemoteSettingsPath()), { recursive: true });
+    await writeFile(
+      getRemoteSettingsPath(),
+      JSON.stringify({ cwdMap: { "conversation:b": liveDirectory } }),
+    );
+    expect(loadRemoteSettings().cwdMap).toEqual({
+      "conversation:b": liveDirectory,
     });
   });
 });

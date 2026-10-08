@@ -69,7 +69,10 @@ interface PendingRemoteSettingsPatch {
 }
 
 // Module-level cache to avoid repeated disk reads and enable cheap merges.
+// The path it was read from is part of the key: a process whose home moves
+// (tests do this via HOME) must not keep serving the previous file's contents.
 let _cache: RemoteSettings | null = null;
+let _cachePath: string | null = null;
 let _settingsGeneration = 0;
 let _settledGeneration = 0;
 let _pendingPatches: PendingRemoteSettingsPatch[] = [];
@@ -97,14 +100,14 @@ export function getRemoteSettingsPath(): string {
  * the legacy ~/.letta/cwd-cache.json.
  */
 export function loadRemoteSettings(): RemoteSettings {
-  if (_cache !== null) {
+  const settingsPath = getRemoteSettingsPath();
+  if (_cache !== null && _cachePath === settingsPath) {
     return _cache;
   }
 
   let loaded: RemoteSettings = {};
 
   try {
-    const settingsPath = getRemoteSettingsPath();
     if (existsSync(settingsPath)) {
       const raw = readFileSync(settingsPath, "utf-8");
       const parsed = JSON.parse(raw) as RemoteSettings;
@@ -144,6 +147,7 @@ export function loadRemoteSettings(): RemoteSettings {
   loaded = applyCwdRepairJournals(loaded, startupRepairJournals);
 
   _cache = loaded;
+  _cachePath = settingsPath;
   if (repairedCwdMap) {
     const repairPatch = buildRemoteSettingsPatch(
       { cwdMap: originalCwdMap },
@@ -628,11 +632,7 @@ function persistCurrentSettingsSync(): void {
  * Merge updates and queue the newest snapshot for serialized persistence.
  */
 export function saveRemoteSettings(updates: Partial<RemoteSettings>): void {
-  if (_cache === null) {
-    loadRemoteSettings();
-  }
-
-  const previous = _cache ?? {};
+  const previous = loadRemoteSettings();
   const nextSettings = {
     ...previous,
     ...updates,
@@ -641,6 +641,7 @@ export function saveRemoteSettings(updates: Partial<RemoteSettings>): void {
     buildRemoteSettingsPatch(previous, updates),
   );
   _cache = nextSettings;
+  _cachePath = getRemoteSettingsPath();
   if (generation === null) {
     if (_settledGeneration < _settingsGeneration) {
       scheduleRemoteSettingsWrite();
@@ -661,11 +662,7 @@ export function saveRemoteSettingsCwdAssignment(
   scopeKey: string,
   workingDirectory: string,
 ): void {
-  if (_cache === null) {
-    loadRemoteSettings();
-  }
-
-  const previous = _cache ?? {};
+  const previous = loadRemoteSettings();
   _cache = {
     ...previous,
     cwdMap: {
@@ -673,6 +670,7 @@ export function saveRemoteSettingsCwdAssignment(
       [scopeKey]: workingDirectory,
     },
   };
+  _cachePath = getRemoteSettingsPath();
   queueRemoteSettingsPatch({
     cwdMap: {
       [scopeKey]: { kind: "set", value: workingDirectory },
@@ -686,17 +684,14 @@ export function saveRemoteSettingsCwdAssignment(
  * Transient failures stay queued for the asynchronous retry loop.
  */
 export function saveRemoteSettingsSync(updates: Partial<RemoteSettings>): void {
-  if (_cache === null) {
-    loadRemoteSettings();
-  }
-
-  const previous = _cache ?? {};
+  const previous = loadRemoteSettings();
   const patch = buildRemoteSettingsPatch(previous, updates);
   const repairJournalId = writeCwdRepairJournal(getRemoteSettingsPath(), patch);
   _cache = {
     ...previous,
     ...updates,
   };
+  _cachePath = getRemoteSettingsPath();
   queueRemoteSettingsPatch(patch, true, repairJournalId ?? undefined);
   persistCurrentSettingsSync();
 }
@@ -749,6 +744,7 @@ export async function flushRemoteSettingsWrites(): Promise<boolean> {
 export function resetRemoteSettingsCache(): void {
   clearRemoteSettingsRetry();
   _cache = null;
+  _cachePath = null;
   const generation = ++_settingsGeneration;
   _pendingPatches = [];
   _settledGeneration = Math.max(_settledGeneration, generation);
