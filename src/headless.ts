@@ -28,7 +28,6 @@ import { detectShellContext } from "@/utils/shell-context";
 import { createSigintAbortSignal } from "@/utils/sigint-abort";
 import {
   consumeSubagentLaunch,
-  LISTENER_CONNECTION_ENV,
   SUBAGENT_LAUNCH_PROFILE_ENV,
 } from "@/utils/subagent-launch-marker";
 import { reportSubagentStdoutLoss } from "@/utils/subagent-stdout-failure";
@@ -781,11 +780,8 @@ export async function handleHeadlessCommand(
   const fromAgentId = values["from-agent"];
   const explicitEnvironmentSelector =
     values.computer ?? values.environment ?? values.env;
-  const inheritedListenerConnectionId = process.env[LISTENER_CONNECTION_ENV];
   const usesRemoteEnvironment = shouldLaunchThroughListener({
     launchProfile,
-    cloudBackend: false, // no backend is a Cloud backend any more
-    connectionId: inheritedListenerConnectionId,
     computer: explicitEnvironmentSelector,
     ephemeral: values.ephemeral,
   });
@@ -1819,18 +1815,16 @@ export async function handleHeadlessCommand(
         ? await resolveAgentSandboxConnectionId(agent.id, { conversationId })
         : await resolveEnvironmentConnectionId(environmentSelector)
       : null;
-    const connectionId =
-      replyEnvironment?.connectionId ?? inheritedListenerConnectionId;
-    if (!connectionId)
+    if (!replyEnvironment?.connectionId)
       throw new Error("No listener connection was resolved for this launch");
-    const responseEnvironment: ReplyEnvironmentMetadata = replyEnvironment
-      ? buildEnvironmentResponseMetadata({
-          source: useCloudSandbox ? "cloud-sandbox" : "explicit",
-          input: environmentSelector,
-          connectionId,
-          environment: replyEnvironment.environment,
-        })
-      : { source: "same-environment" };
+    const connectionId = replyEnvironment.connectionId;
+    const responseEnvironment: ReplyEnvironmentMetadata =
+      buildEnvironmentResponseMetadata({
+        source: useCloudSandbox ? "cloud-sandbox" : "explicit",
+        input: environmentSelector,
+        connectionId,
+        environment: replyEnvironment.environment,
+      });
     const launchParams: Parameters<typeof launchListenerConversation>[0] = {
       noWait: Boolean(values["no-wait"]),
       clientMessageId: values["client-message-id"],

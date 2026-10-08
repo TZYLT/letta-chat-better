@@ -20,7 +20,6 @@ import {
   resolveLettaInvocation,
 } from "@/tools/impl/shell-env";
 import {
-  LISTENER_CONNECTION_ENV,
   SUBAGENT_LAUNCH_ENV,
   SUBAGENT_LAUNCH_PROFILE_ENV,
   SUBAGENT_NAME_ENV,
@@ -256,7 +255,6 @@ export function composeSubagentChildEnv(
   // subagents either have their own memfs (if memfs-enabled) or no MEMORY_DIR
   // at all — their tools will surface resolution errors appropriately.
   if (launchProfile === "memory-subagent") {
-    delete childEnv[LISTENER_CONNECTION_ENV];
     childEnv.LETTA_SCRATCHPAD = resolveMemorySubagentScratchpad(
       parentProcessEnv,
       options.subagentId,
@@ -276,8 +274,6 @@ export function composeSubagentChildEnv(
 
 export function shouldLaunchThroughListener(options: {
   launchProfile?: string;
-  cloudBackend: boolean;
-  connectionId?: string;
   computer?: string;
   ephemeral?: boolean;
 }): boolean {
@@ -298,12 +294,10 @@ export function shouldLaunchThroughListener(options: {
       );
     return false;
   }
-  // Select explicit routes before agent lookup; validate backend compatibility
-  // after lookup so an unavailable ambient agent cannot silently be replaced.
-  return (
-    Boolean(options.computer) ||
-    (options.cloudBackend && Boolean(options.connectionId))
-  );
+  // An explicit `--computer` route is the only way to a listener: the ambient
+  // `LETTA_RUNTIME_LISTENER_CONNECTION_ID` route existed for Cloud relay
+  // sandboxes, which no longer exist here.
+  return Boolean(options.computer);
 }
 
 export function resolveSubagentInheritedPrimaryRoot(options: {

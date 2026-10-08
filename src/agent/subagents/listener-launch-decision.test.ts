@@ -1,74 +1,48 @@
 import { expect, test } from "bun:test";
-import {
-  LISTENER_CONNECTION_ENV,
-  SUBAGENT_LAUNCH_PROFILE_ENV,
-} from "@/utils/subagent-launch-marker";
+import { SUBAGENT_LAUNCH_PROFILE_ENV } from "@/utils/subagent-launch-marker";
 import {
   composeSubagentChildEnv,
   shouldLaunchThroughListener,
 } from "./subagent-launcher";
 
-test("ordinary children use the existing listener and preserve local execution without one", () => {
+test("only an explicit computer route sends a child through a listener", () => {
   expect(
     shouldLaunchThroughListener({
-      cloudBackend: true,
-      connectionId: "conn-parent",
       launchProfile: "default",
+      computer: "cloud",
     }),
-  ).toBe(true);
-  expect(
-    shouldLaunchThroughListener({ cloudBackend: true, computer: "cloud" }),
   ).toBe(true);
   expect(
     shouldLaunchThroughListener({
-      cloudBackend: false,
-      connectionId: "conn-parent",
+      launchProfile: "default",
+      computer: "remote",
     }),
-  ).toBe(false);
-  expect(shouldLaunchThroughListener({ cloudBackend: true })).toBe(false);
-  expect(
-    shouldLaunchThroughListener({ cloudBackend: false, computer: "remote" }),
   ).toBe(true);
+  expect(shouldLaunchThroughListener({ launchProfile: "default" })).toBe(false);
 });
 
 test("ephemeral launches stay local and reject explicit computer routing", () => {
-  expect(
-    shouldLaunchThroughListener({
-      cloudBackend: true,
-      connectionId: "conn-parent",
-      ephemeral: true,
-    }),
-  ).toBe(false);
+  expect(shouldLaunchThroughListener({ ephemeral: true })).toBe(false);
   expect(() =>
-    shouldLaunchThroughListener({
-      cloudBackend: true,
-      computer: "cloud",
-      ephemeral: true,
-    }),
+    shouldLaunchThroughListener({ computer: "cloud", ephemeral: true }),
   ).toThrow("Ephemeral conversations");
 });
 
-test("memory workers remain confined processes, without an inherited listener route", () => {
+test("memory workers remain confined processes, without a listener route", () => {
   const env = composeSubagentChildEnv({
-    parentProcessEnv: { [LISTENER_CONNECTION_ENV]: "conn-parent" },
+    parentProcessEnv: {},
     subagentType: "memory",
     parentAgentId: "agent-parent",
     launchProfile: "memory-subagent",
     inheritedPrimaryRoot: "/memory",
   });
-  expect(env[LISTENER_CONNECTION_ENV]).toBeUndefined();
   expect(env[SUBAGENT_LAUNCH_PROFILE_ENV]).toBe("memory-subagent");
   expect(env.MEMORY_DIR).toBe("/memory");
   expect(
-    shouldLaunchThroughListener({
-      cloudBackend: true,
-      connectionId: "conn-parent",
-      launchProfile: "memory-subagent",
-    }),
+    shouldLaunchThroughListener({ launchProfile: "memory-subagent" }),
   ).toBe(false);
   expect(() =>
     shouldLaunchThroughListener({
-      cloudBackend: true,
       computer: "cloud",
       launchProfile: "memory-subagent",
     }),
