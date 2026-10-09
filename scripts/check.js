@@ -15,6 +15,7 @@ function parseFileCount(output) {
 const checks = [
   { name: "circular dependencies", script: ["check:cycles", "--no-spinner"] },
   { name: "layer boundaries", script: ["check:boundaries"] },
+  { name: "cloud egress", script: ["check:cloud-egress"] },
   { name: "exported function style", script: ["check:exported-functions"] },
   { name: "filename casing", script: ["check:filename-casing"] },
   { name: "source file size", script: ["check:file-size"] },

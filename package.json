@@ -200,6 +200,7 @@
     "typecheck": "tsc --noEmit",
     "check:cycles": "madge --circular --extensions ts,tsx src/",
     "check:boundaries": "node scripts/check-layer-boundaries.js",
+    "check:cloud-egress": "node scripts/check-cloud-egress.js",
     "check:exported-functions": "node scripts/check-exported-functions.js",
     "check:filename-casing": "node scripts/check-filename-casing.js",
     "check:file-size": "node scripts/check-source-file-size.js",

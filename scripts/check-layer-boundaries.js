@@ -9,6 +9,11 @@
  *   websocket/listener/ must not import from  backend/api/client  or  backend/api/conversations
  *   telemetry/          must not import from  cli/  agent/  websocket/  or  tools/
  *
+ * Plus one whitelist-style rule (batch ⑧): production code must not import the
+ * modules that exist only to reach Letta Cloud. Unlike the rules above, that one
+ * is expressed as a forbidden list plus documented exemptions, and it lives in
+ * its own check (`scripts/check-cloud-egress.js`) so each rule keeps one job.
+ *
  * These are currently violation-free. Adding a rule here means you must
  * also ensure no existing code violates it.
  *
