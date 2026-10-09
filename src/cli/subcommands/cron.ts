@@ -244,7 +244,7 @@ function handleAdd(values: CronArgValues): number {
 
     console.log(JSON.stringify(output, null, 2));
     console.error(
-      "Created local schedule: it only fires while a Letta session is running on this device.",
+      "Created local schedule: it only fires while a Haruyuki session is running on this device.",
     );
     return 0;
   } catch (err) {

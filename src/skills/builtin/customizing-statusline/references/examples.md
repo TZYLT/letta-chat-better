@@ -13,7 +13,7 @@ export default function activate(haruyuki) {
     order: 0,
     render: ({ width, agent, model, row, chalk }) =>
       row(
-        chalk.cyan(agent.name ?? "Letta"),
+        chalk.cyan(agent.name ?? "Haruyuki"),
         chalk.dim(model.displayName ?? "no model"),
         width,
       ),
@@ -40,7 +40,7 @@ export default function activate(haruyuki) {
     id: "statusline",
     order: 0,
     render: ({ width, agent, row, chalk }) =>
-      row(branch ? chalk.green(`git ${branch}`) : (agent.name ?? "Letta"), "", width),
+      row(branch ? chalk.green(`git ${branch}`) : (agent.name ?? "Haruyuki"), "", width),
   });
 
   const update = async () => {
@@ -76,7 +76,7 @@ export default function activate(haruyuki) {
     render: ({ width, agent, model, row, chalk }) =>
       row(
         chalk.dim("Press / for commands"),
-        `${agent.name ?? "Letta"} \u00b7 ${model.displayName ?? "no model"}`,
+        `${agent.name ?? "Haruyuki"} \u00b7 ${model.displayName ?? "no model"}`,
         width,
       ),
   });
@@ -144,7 +144,7 @@ export default function activate(haruyuki) {
     id: "statusline",
     order: 0,
     render: ({ width, agent, row, chalk }) =>
-      row(music ? chalk.magenta(music) : (agent.name ?? "Letta"), "", width),
+      row(music ? chalk.magenta(music) : (agent.name ?? "Haruyuki"), "", width),
   });
 
   const update = async () => {

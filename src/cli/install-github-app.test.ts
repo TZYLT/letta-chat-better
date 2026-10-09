@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
   buildInstallPrBody,
-  generateLettaWorkflowYaml,
+  generateHaruyukiWorkflowYaml,
   getDefaultWorkflowPath,
   type InstallGithubAppResult,
   parseGitHubRepoFromRemote,
@@ -73,8 +73,8 @@ describe("install-github-app helpers", () => {
     );
   });
 
-  test("generateLettaWorkflowYaml includes required action configuration", () => {
-    const yaml = generateLettaWorkflowYaml();
+  test("generateHaruyukiWorkflowYaml includes required action configuration", () => {
+    const yaml = generateHaruyukiWorkflowYaml();
 
     expect(yaml).toContain("uses: letta-ai/letta-code-action@v0");
     expect(yaml).toContain("letta_api_key: $" + "{{ secrets.LETTA_API_KEY }}");
@@ -83,8 +83,8 @@ describe("install-github-app helpers", () => {
     expect(yaml).not.toContain("agent_id");
   });
 
-  test("generateLettaWorkflowYaml includes agent_id when requested", () => {
-    const yaml = generateLettaWorkflowYaml({ includeAgentId: true });
+  test("generateHaruyukiWorkflowYaml includes agent_id when requested", () => {
+    const yaml = generateHaruyukiWorkflowYaml({ includeAgentId: true });
 
     expect(yaml).toContain("agent_id: $" + "{{ vars.HARUYUKI_AGENT_ID }}");
     expect(yaml).toContain("uses: letta-ai/letta-code-action@v0");
@@ -328,7 +328,7 @@ describe("success screen content", () => {
     successLines.push("");
     successLines.push("Next steps:");
     successLines.push("1. A pre-filled PR page has been created");
-    successLines.push("2. Merge the PR to enable Haruyuki PR assistance");
+    successLines.push("2. Merge the PR to enable Haruyuki assistance");
     successLines.push("3. Mention @letta-code in an issue or PR to test");
 
     // Verify all expected content is present

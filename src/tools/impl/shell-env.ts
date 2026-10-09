@@ -56,7 +56,7 @@ function shellPathDelimiter(): string {
   return process.platform === "win32" ? ";" : path.delimiter;
 }
 
-interface LettaInvocation {
+interface HaruyukiInvocation {
   command: string;
   args: string[];
 }
@@ -119,12 +119,12 @@ function isDevLettaEntryScript(
   return normalized.endsWith("/src/index.ts");
 }
 
-export function resolveLettaInvocation(
+export function resolveHaruyukiInvocation(
   env: NodeJS.ProcessEnv = process.env,
   argv: string[] = process.argv,
   execPath: string = process.execPath,
   cwd: string = process.cwd(),
-): LettaInvocation | null {
+): HaruyukiInvocation | null {
   const explicitBin = normalizeInvocationCommand(env.HARUYUKI_CODE_BIN);
   if (explicitBin) {
     return {
@@ -175,7 +175,7 @@ export function getLettaShimDir(env: NodeJS.ProcessEnv = process.env): string {
 }
 
 export function ensureLettaShimDir(
-  invocation: LettaInvocation,
+  invocation: HaruyukiInvocation,
   electronExecPath: string | undefined = process.versions.electron
     ? process.execPath
     : undefined,
@@ -336,11 +336,11 @@ export function getShellEnv(): NodeJS.ProcessEnv {
     Object.keys(env).find((k) => k.toUpperCase() === "PATH") || "PATH";
   const pathPrefixes: string[] = [];
 
-  const lettaInvocation = resolveLettaInvocation(env);
-  if (lettaInvocation) {
-    env.HARUYUKI_CODE_BIN = lettaInvocation.command;
-    env[HARUYUKI_BIN_ARGS_ENV] = JSON.stringify(lettaInvocation.args);
-    const shimDir = ensureLettaShimDir(lettaInvocation);
+  const haruyukiInvocation = resolveHaruyukiInvocation(env);
+  if (haruyukiInvocation) {
+    env.HARUYUKI_CODE_BIN = haruyukiInvocation.command;
+    env[HARUYUKI_BIN_ARGS_ENV] = JSON.stringify(haruyukiInvocation.args);
+    const shimDir = ensureLettaShimDir(haruyukiInvocation);
     if (shimDir) {
       pathPrefixes.push(shimDir);
     }
@@ -414,7 +414,8 @@ export function getShellEnv(): NodeJS.ProcessEnv {
         env.MEMORY_DIR = memoryDir;
       } else {
         const inheritedMemoryDir = executionEnv.MEMORY_DIR?.trim();
-        const inheritedLettaMemoryDir = executionEnv.LETTA_MEMORY_DIR?.trim();
+        const inheritedHaruyukiMemoryDir =
+          executionEnv.LETTA_MEMORY_DIR?.trim();
         const parentAgentId = executionEnv.HARUYUKI_PARENT_AGENT_ID?.trim();
         const inheritedParentMemoryDir = parentAgentId
           ? getScopedMemoryFilesystemRoot(parentAgentId)
@@ -461,7 +462,8 @@ export function getShellEnv(): NodeJS.ProcessEnv {
             (inheritedMemoryExplicit && inheritedMemoryOutsideStore))
         ) {
           env.MEMORY_DIR = inheritedMemoryDir;
-          env.LETTA_MEMORY_DIR = inheritedLettaMemoryDir || inheritedMemoryDir;
+          env.LETTA_MEMORY_DIR =
+            inheritedHaruyukiMemoryDir || inheritedMemoryDir;
         } else {
           // Clear inherited/stale memory-dir vars for non-memfs agents.
           delete env.LETTA_MEMORY_DIR;

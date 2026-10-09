@@ -87,9 +87,9 @@ export type {
 } from "@/mods/mod-adapter";
 export type {
   CreateModEngineOptions,
-  LettaModApi,
-  LettaModDisposer,
-  LettaModFactory,
+  HaruyukiModApi,
+  HaruyukiModDisposer,
+  HaruyukiModFactory,
   LoadLocalModsOptions,
   LocalModDisposer,
   LocalModRegistry,

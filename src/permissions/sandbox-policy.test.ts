@@ -16,7 +16,7 @@ import {
   deriveSelfAgentRootsForTrees,
   getCrossBackendAgentsTreeRoots,
   getDefaultAgentsTreeRoot,
-  getLettaHomeRoot,
+  getHaruyukiHomeRoot,
 } from "@/permissions/sandbox-policy";
 
 const tempDirs: string[] = [];
@@ -79,7 +79,7 @@ test("memory-subagent policy: writes scoped to ~/.haruyuki, agents tree read-den
   expect(policy.restrictWrites).toBe(true);
   // Writes are scoped to the harness state dir (~/.haruyuki) as the base — so the
   // subagent can persist harness metadata but not the repo/home/temp.
-  expect(policy.baseWritableRoots).toEqual([getLettaHomeRoot()]);
+  expect(policy.baseWritableRoots).toEqual([getHaruyukiHomeRoot()]);
   expect(policy.baseWritableRoots).not.toContain(canonicalizeRoot("/tmp"));
   // Self memory is re-carved writable (it's nested inside the denied tree, where
   // the base ~/.haruyuki carve is overridden by the deny).
@@ -102,7 +102,7 @@ test("memory-subagent policy folds harness roots outside ~/.haruyuki into the ba
   });
 
   // ~/.haruyuki is always the base; explicit harness roots fold in alongside it.
-  expect(policy.baseWritableRoots).toContain(getLettaHomeRoot());
+  expect(policy.baseWritableRoots).toContain(getHaruyukiHomeRoot());
   expect(policy.baseWritableRoots).toContain(canonicalizeRoot(extra));
   // No temp dir is auto-granted.
   expect(policy.baseWritableRoots).not.toContain(canonicalizeRoot("/tmp"));
@@ -231,7 +231,7 @@ test("deriveSelfAgentRootsForTrees keeps roots outside the tree as-is", () => {
 test("deriveSelfAgentRootsForTrees refuses to carve the whole tree or its ancestors", () => {
   const tree = getDefaultAgentsTreeRoot();
   expect(deriveSelfAgentRootsForTrees([tree], [tree])).toEqual([]);
-  expect(deriveSelfAgentRootsForTrees([getLettaHomeRoot()], [tree])).toEqual(
+  expect(deriveSelfAgentRootsForTrees([getHaruyukiHomeRoot()], [tree])).toEqual(
     [],
   );
 });

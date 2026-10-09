@@ -27,7 +27,7 @@ const shouldTreatAsReturn = (keypressName, platform = process.platform) =>
     keypressName === 'return' || (isLinuxPlatform(platform) && keypressName === 'enter');
 
 // Exported for targeted key-sequence regression tests.
-export const __lettaUseInputTestUtils = {
+export const __haruyukiUseInputTestUtils = {
     isLinuxPlatform,
     isProtocolReportSequence,
     stripTrailingNewlineFromCsiU,

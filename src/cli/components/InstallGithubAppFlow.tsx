@@ -702,7 +702,7 @@ export const InstallGithubAppFlow = memo(function InstallGithubAppFlow({
     successLines.push("");
     successLines.push("Next steps:");
     successLines.push("1. A pre-filled PR page has been created");
-    successLines.push("2. Merge the PR to enable Haruyuki PR assistance");
+    successLines.push("2. Merge the PR to enable Haruyuki assistance");
     successLines.push("3. Mention @letta-code in an issue or PR to test");
 
     return renderPanel(

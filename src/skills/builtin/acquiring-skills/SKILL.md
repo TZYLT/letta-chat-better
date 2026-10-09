@@ -34,9 +34,9 @@ Even for skills from trusted sources, ALWAYS:
 ### Cross-Harness Compatibility
 Skills from Hermes, OpenClaw, and other ecosystems were written for their own harnesses. After installing, **read the full SKILL.md before using it** and watch for:
 
-- **Harness-specific commands** — e.g. `hermes skills config`, `openclaw plugins install`, `/curator`, `/kanban`. These won't exist in Letta. Determine whether the underlying capability can be achieved with Letta tools (Bash, the Skill tool, etc.) or if the skill simply doesn't apply.
-- **Harness-specific paths and state** — e.g. `~/.hermes/skills/`, `~/.openclaw/skills/`, `~/.hermes/config.yaml`. Letta stores skills in the agent's memfs (`<memory-dir>/skills/`). Adapt any path references.
-- **Toolset assumptions** — some skills assume specific tool names or APIs (e.g. Hermes `web` toolset, OpenClaw `browser` tool). Map these to the equivalent Letta tools or note when no equivalent exists.
+- **Harness-specific commands** — e.g. `hermes skills config`, `openclaw plugins install`, `/curator`, `/kanban`. These won't exist in Letta. Determine whether the underlying capability can be achieved with Haruyuki tools (Bash, the Skill tool, etc.) or if the skill simply doesn't apply.
+- **Harness-specific paths and state** — e.g. `~/.hermes/skills/`, `~/.openclaw/skills/`, `~/.hermes/config.yaml`. Haruyuki stores skills in the agent's memfs (`<memory-dir>/skills/`). Adapt any path references.
+- **Toolset assumptions** — some skills assume specific tool names or APIs (e.g. Hermes `web` toolset, OpenClaw `browser` tool). Map these to the equivalent Haruyuki tools or note when no equivalent exists.
 - **Platform gating** — skills may declare `platforms: [cli, discord, telegram]` in frontmatter. Ignore platform restrictions that don't apply to Letta.
 - **Environment variables** — skills may require API keys or credentials. Check `requires.env` in frontmatter and note any setup the user needs to do.
 
@@ -125,7 +125,7 @@ letta skills install official/creative/meme-generation
 
 The `official/<category>/<skill>` form clones `NousResearch/hermes-agent` and copies from `optional-skills/<category>/<skill>`.
 
-For non-official Hermes hub skills, use the GitHub URL or shorthand form to install into Letta (e.g., `letta skills install openai/skills/k8s`).
+For non-official Hermes hub skills, use the GitHub URL or shorthand form to install into Haruyuki (e.g., `letta skills install openai/skills/k8s`).
 
 ### 2. ClawHub (OpenClaw)
 

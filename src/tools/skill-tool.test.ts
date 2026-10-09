@@ -40,7 +40,7 @@ describe("Skill tool memory filesystem lookup", () => {
 
   let tempRoot: string;
   const originalMemoryDir = process.env.MEMORY_DIR;
-  const originalLettaMemoryDir = process.env.LETTA_MEMORY_DIR;
+  const originalHaruyukiMemoryDir = process.env.LETTA_MEMORY_DIR;
   const originalLocalBackendExperimental =
     process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
   const originalHome = process.env.HOME;
@@ -64,10 +64,10 @@ describe("Skill tool memory filesystem lookup", () => {
       process.env.MEMORY_DIR = originalMemoryDir;
     }
 
-    if (originalLettaMemoryDir === undefined) {
+    if (originalHaruyukiMemoryDir === undefined) {
       delete process.env.LETTA_MEMORY_DIR;
     } else {
-      process.env.LETTA_MEMORY_DIR = originalLettaMemoryDir;
+      process.env.LETTA_MEMORY_DIR = originalHaruyukiMemoryDir;
     }
 
     if (originalLocalBackendExperimental === undefined) {

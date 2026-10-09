@@ -59,7 +59,7 @@ import {
   projectAppHomePath,
 } from "@/utils/app-paths";
 
-const originalLettaHome = process.env.HARUYUKI_HOME;
+const originalHaruyukiHome = process.env.HARUYUKI_HOME;
 const tempDirs: string[] = [];
 
 function makeTempDir(prefix: string): string {
@@ -74,10 +74,10 @@ function slash(value: string): string {
 }
 
 afterEach(() => {
-  if (originalLettaHome === undefined) {
+  if (originalHaruyukiHome === undefined) {
     delete process.env.HARUYUKI_HOME;
   } else {
-    process.env.HARUYUKI_HOME = originalLettaHome;
+    process.env.HARUYUKI_HOME = originalHaruyukiHome;
   }
   resetPermissionLoaderCacheForTests();
   while (tempDirs.length) {

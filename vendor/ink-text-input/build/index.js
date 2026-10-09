@@ -41,10 +41,10 @@ export function isControlSequence(input, key) {
     if (input && typeof input === 'string' && input.startsWith('\x1b') && input.length > 1) return true;
 
     // Forward delete (fn+Delete on macOS): handled by parent's raw input handler
-    // Check timestamp to avoid double-processing (globalThis.__lettaForwardDeleteTimestamp)
+    // Check timestamp to avoid double-processing (globalThis.__haruyukiForwardDeleteTimestamp)
     // Only forward delete sets this; regular backspace doesn't, so backspace still works here
-    if (key.delete && globalThis.__lettaForwardDeleteTimestamp && 
-        (Date.now() - globalThis.__lettaForwardDeleteTimestamp) < 100) {
+    if (key.delete && globalThis.__haruyukiForwardDeleteTimestamp && 
+        (Date.now() - globalThis.__haruyukiForwardDeleteTimestamp) < 100) {
         return true;
     }
 

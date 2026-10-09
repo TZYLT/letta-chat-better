@@ -2105,7 +2105,7 @@ describe("listen-client model command helpers", () => {
 describe("listen-client cron command handling", () => {
   test("wraps cron library CRUD over WS commands", async () => {
     const tempRoot = await mkdtemp(join(os.tmpdir(), "letta-listen-cron-"));
-    const originalLettaHome = process.env.HARUYUKI_HOME;
+    const originalHaruyukiHome = process.env.HARUYUKI_HOME;
     process.env.HARUYUKI_HOME = tempRoot;
 
     try {
@@ -2329,8 +2329,8 @@ describe("listen-client cron command handling", () => {
         agent_id: "agent-1",
       });
     } finally {
-      if (originalLettaHome) {
-        process.env.HARUYUKI_HOME = originalLettaHome;
+      if (originalHaruyukiHome) {
+        process.env.HARUYUKI_HOME = originalHaruyukiHome;
       } else {
         delete process.env.HARUYUKI_HOME;
       }
@@ -5515,7 +5515,7 @@ describe("listen-client edit_file command", () => {
 describe("listen-client skill enable/disable command handling", () => {
   test("enables a skill by creating a symlink and disables it by removing it", async () => {
     const tempRoot = await mkdtemp(join(os.tmpdir(), "letta-listen-skill-"));
-    const originalLettaHome = process.env.HARUYUKI_HOME;
+    const originalHaruyukiHome = process.env.HARUYUKI_HOME;
     process.env.HARUYUKI_HOME = tempRoot;
 
     try {
@@ -5584,8 +5584,8 @@ describe("listen-client skill enable/disable command handling", () => {
       const { existsSync } = await import("node:fs");
       expect(existsSync(linkPath)).toBe(false);
     } finally {
-      if (originalLettaHome) {
-        process.env.HARUYUKI_HOME = originalLettaHome;
+      if (originalHaruyukiHome) {
+        process.env.HARUYUKI_HOME = originalHaruyukiHome;
       } else {
         delete process.env.HARUYUKI_HOME;
       }
@@ -5595,7 +5595,7 @@ describe("listen-client skill enable/disable command handling", () => {
 
   test("rejects enable when path does not exist", async () => {
     const tempRoot = await mkdtemp(join(os.tmpdir(), "letta-listen-skill-"));
-    const originalLettaHome = process.env.HARUYUKI_HOME;
+    const originalHaruyukiHome = process.env.HARUYUKI_HOME;
     process.env.HARUYUKI_HOME = tempRoot;
 
     try {
@@ -5618,8 +5618,8 @@ describe("listen-client skill enable/disable command handling", () => {
       });
       expect(messages[0].error).toContain("does not exist");
     } finally {
-      if (originalLettaHome) {
-        process.env.HARUYUKI_HOME = originalLettaHome;
+      if (originalHaruyukiHome) {
+        process.env.HARUYUKI_HOME = originalHaruyukiHome;
       } else {
         delete process.env.HARUYUKI_HOME;
       }
@@ -5629,7 +5629,7 @@ describe("listen-client skill enable/disable command handling", () => {
 
   test("rejects enable when SKILL.md is missing", async () => {
     const tempRoot = await mkdtemp(join(os.tmpdir(), "letta-listen-skill-"));
-    const originalLettaHome = process.env.HARUYUKI_HOME;
+    const originalHaruyukiHome = process.env.HARUYUKI_HOME;
     process.env.HARUYUKI_HOME = tempRoot;
 
     try {
@@ -5656,8 +5656,8 @@ describe("listen-client skill enable/disable command handling", () => {
       });
       expect(messages[0].error).toContain("No SKILL.md");
     } finally {
-      if (originalLettaHome) {
-        process.env.HARUYUKI_HOME = originalLettaHome;
+      if (originalHaruyukiHome) {
+        process.env.HARUYUKI_HOME = originalHaruyukiHome;
       } else {
         delete process.env.HARUYUKI_HOME;
       }
@@ -5667,7 +5667,7 @@ describe("listen-client skill enable/disable command handling", () => {
 
   test("rejects disable when skill is not a symlink", async () => {
     const tempRoot = await mkdtemp(join(os.tmpdir(), "letta-listen-skill-"));
-    const originalLettaHome = process.env.HARUYUKI_HOME;
+    const originalHaruyukiHome = process.env.HARUYUKI_HOME;
     process.env.HARUYUKI_HOME = tempRoot;
 
     try {
@@ -5694,8 +5694,8 @@ describe("listen-client skill enable/disable command handling", () => {
       });
       expect(messages[0].error).toContain("not a symlink");
     } finally {
-      if (originalLettaHome) {
-        process.env.HARUYUKI_HOME = originalLettaHome;
+      if (originalHaruyukiHome) {
+        process.env.HARUYUKI_HOME = originalHaruyukiHome;
       } else {
         delete process.env.HARUYUKI_HOME;
       }

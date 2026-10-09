@@ -31,16 +31,16 @@ async function waitForOutput(getOutput, predicate, label, timeoutMs = 10000) {
 }
 
 function writeBrokenLocalTranscriptStore(homeDir) {
-  const lettaDir = path.join(homeDir, HARNESS_DIR_NAME);
+  const haruyukiDir = path.join(homeDir, HARNESS_DIR_NAME);
   const conversationDir = path.join(
-    lettaDir,
+    haruyukiDir,
     "lc-local-backend",
     "conversations",
     "broken",
   );
   fs.mkdirSync(conversationDir, { recursive: true });
   fs.writeFileSync(
-    path.join(lettaDir, "settings.json"),
+    path.join(haruyukiDir, "settings.json"),
     `${JSON.stringify({ preferredBackendMode: "local" }, null, 2)}\n`,
   );
   fs.writeFileSync(

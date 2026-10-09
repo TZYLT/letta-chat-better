@@ -3,7 +3,7 @@ import { join } from "node:path";
 import {
   buildMemorySubagentSandboxPolicy,
   getCrossBackendAgentsTreeRoots,
-  getLettaHomeRoot,
+  getHaruyukiHomeRoot,
 } from "@/permissions/sandbox-policy";
 import {
   detectSandboxBackend,
@@ -140,7 +140,7 @@ export function wrapSubagentLauncher(
   const [command, ...args] = wrapped;
   // Shell output and runtime scripts use os.tmpdir(). Keep their scratch files
   // inside the existing harness write scope instead of opening the host temp dir.
-  const scratchRoot = join(getLettaHomeRoot(), "tmp");
+  const scratchRoot = join(getHaruyukiHomeRoot(), "tmp");
   mkdirSync(scratchRoot, { recursive: true });
   return {
     command: command as string,

@@ -202,7 +202,7 @@ export function runGhPreflight(cwd: string): GhPreflightResult {
   };
 }
 
-export function generateLettaWorkflowYaml(options?: {
+export function generateHaruyukiWorkflowYaml(options?: {
   includeAgentId?: boolean;
 }): string {
   const lines = [
@@ -469,7 +469,7 @@ export async function installGithubApp(
   const { tempDir, repoDir } = cloneRepoToTemp(repo);
 
   try {
-    const workflowContent = generateLettaWorkflowYaml({
+    const workflowContent = generateHaruyukiWorkflowYaml({
       includeAgentId: resolvedAgentId != null,
     });
 

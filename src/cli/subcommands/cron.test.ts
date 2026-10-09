@@ -18,7 +18,7 @@ const originalApiKey = process.env.LETTA_API_KEY;
 const originalRuntimeDeviceId =
   process.env.HARUYUKI_RUNTIME_ENVIRONMENT_DEVICE_ID;
 const originalConversationId = process.env.HARUYUKI_CONVERSATION_ID;
-const originalLettaHome = process.env.HARUYUKI_HOME;
+const originalHaruyukiHome = process.env.HARUYUKI_HOME;
 
 const addArgs = [
   "add",
@@ -115,7 +115,7 @@ afterEach(() => {
     ["LETTA_API_KEY", originalApiKey],
     ["HARUYUKI_RUNTIME_ENVIRONMENT_DEVICE_ID", originalRuntimeDeviceId],
     ["HARUYUKI_CONVERSATION_ID", originalConversationId],
-    ["HARUYUKI_HOME", originalLettaHome],
+    ["HARUYUKI_HOME", originalHaruyukiHome],
   ] as const) {
     if (value === undefined) delete process.env[key];
     else process.env[key] = value;

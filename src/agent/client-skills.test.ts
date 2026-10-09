@@ -7,7 +7,7 @@ import {
   invalidateClientSkillsPayloadCacheForAgent,
 } from "@/agent/client-skills";
 import type { Skill, SkillDiscoveryResult, SkillSource } from "@/agent/skills";
-import { isolateAmbientLettaTestEnv } from "@/test-utils/test-process-env";
+import { isolateAmbientHaruyukiTestEnv } from "@/test-utils/test-process-env";
 
 /** Normalize path separators so assertions work on Windows too. */
 const normalize = (p: string): string => p.replace(/\\/g, "/");
@@ -23,7 +23,7 @@ const baseSkill: Skill = {
 let restoreAmbientEnv: (() => void) | undefined;
 
 beforeEach(() => {
-  restoreAmbientEnv = isolateAmbientLettaTestEnv();
+  restoreAmbientEnv = isolateAmbientHaruyukiTestEnv();
   invalidateClientSkillsPayloadCache();
 });
 
@@ -328,7 +328,7 @@ describe("buildClientSkillsPayload", () => {
     const { buildClientSkillsPayload } = await import("@/agent/client-skills");
 
     const originalMemoryDir = process.env.MEMORY_DIR;
-    const originalLettaMemoryDir = process.env.LETTA_MEMORY_DIR;
+    const originalHaruyukiMemoryDir = process.env.LETTA_MEMORY_DIR;
     const tempRoot = await mkdtemp(join(os.tmpdir(), "letta-client-skills-"));
 
     try {
@@ -387,10 +387,10 @@ describe("buildClientSkillsPayload", () => {
       } else {
         process.env.MEMORY_DIR = originalMemoryDir;
       }
-      if (originalLettaMemoryDir === undefined) {
+      if (originalHaruyukiMemoryDir === undefined) {
         delete process.env.LETTA_MEMORY_DIR;
       } else {
-        process.env.LETTA_MEMORY_DIR = originalLettaMemoryDir;
+        process.env.LETTA_MEMORY_DIR = originalHaruyukiMemoryDir;
       }
       await rm(tempRoot, { recursive: true, force: true });
     }
@@ -400,7 +400,7 @@ describe("buildClientSkillsPayload", () => {
     const { buildClientSkillsPayload } = await import("@/agent/client-skills");
 
     const originalMemoryDir = process.env.MEMORY_DIR;
-    const originalLettaMemoryDir = process.env.LETTA_MEMORY_DIR;
+    const originalHaruyukiMemoryDir = process.env.LETTA_MEMORY_DIR;
     const originalHome = process.env.HOME;
     const tempRoot = await mkdtemp(join(os.tmpdir(), "letta-client-skills-"));
 
@@ -473,10 +473,10 @@ describe("buildClientSkillsPayload", () => {
       } else {
         process.env.MEMORY_DIR = originalMemoryDir;
       }
-      if (originalLettaMemoryDir === undefined) {
+      if (originalHaruyukiMemoryDir === undefined) {
         delete process.env.LETTA_MEMORY_DIR;
       } else {
-        process.env.LETTA_MEMORY_DIR = originalLettaMemoryDir;
+        process.env.LETTA_MEMORY_DIR = originalHaruyukiMemoryDir;
       }
       if (originalHome === undefined) {
         delete process.env.HOME;
@@ -491,7 +491,7 @@ describe("buildClientSkillsPayload", () => {
     const { buildClientSkillsPayload } = await import("@/agent/client-skills");
 
     const originalMemoryDir = process.env.MEMORY_DIR;
-    const originalLettaMemoryDir = process.env.LETTA_MEMORY_DIR;
+    const originalHaruyukiMemoryDir = process.env.LETTA_MEMORY_DIR;
     const originalHome = process.env.HOME;
     const tempRoot = await mkdtemp(join(os.tmpdir(), "letta-client-skills-"));
 
@@ -548,10 +548,10 @@ describe("buildClientSkillsPayload", () => {
       } else {
         process.env.MEMORY_DIR = originalMemoryDir;
       }
-      if (originalLettaMemoryDir === undefined) {
+      if (originalHaruyukiMemoryDir === undefined) {
         delete process.env.LETTA_MEMORY_DIR;
       } else {
-        process.env.LETTA_MEMORY_DIR = originalLettaMemoryDir;
+        process.env.LETTA_MEMORY_DIR = originalHaruyukiMemoryDir;
       }
       if (originalHome === undefined) {
         delete process.env.HOME;
@@ -566,7 +566,7 @@ describe("buildClientSkillsPayload", () => {
     const { buildClientSkillsPayload } = await import("@/agent/client-skills");
 
     const originalMemoryDir = process.env.MEMORY_DIR;
-    const originalLettaMemoryDir = process.env.LETTA_MEMORY_DIR;
+    const originalHaruyukiMemoryDir = process.env.LETTA_MEMORY_DIR;
     const tempRoot = await mkdtemp(join(os.tmpdir(), "letta-client-skills-"));
 
     try {
@@ -637,10 +637,10 @@ describe("buildClientSkillsPayload", () => {
       } else {
         process.env.MEMORY_DIR = originalMemoryDir;
       }
-      if (originalLettaMemoryDir === undefined) {
+      if (originalHaruyukiMemoryDir === undefined) {
         delete process.env.LETTA_MEMORY_DIR;
       } else {
-        process.env.LETTA_MEMORY_DIR = originalLettaMemoryDir;
+        process.env.LETTA_MEMORY_DIR = originalHaruyukiMemoryDir;
       }
       await rm(tempRoot, { recursive: true, force: true });
     }

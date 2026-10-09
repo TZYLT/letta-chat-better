@@ -532,7 +532,7 @@ describe("listener mod adapter", () => {
       join(modsDir, "turn-end-mod.ts"),
       `export default function activate(haruyuki) {
         haruyuki.events.on("turn_end", (event) => {
-          globalThis.__lettaTurnEndSeen = {
+          globalThis.__haruyukiTurnEndSeen = {
             stopReason: event.stopReason,
             assistantMessage: event.assistantMessage,
           };
@@ -562,13 +562,14 @@ describe("listener mod adapter", () => {
     const result = await adapter.events.emit("turn_end", event, context);
     expect(result.diagnostics).toHaveLength(0);
     expect(
-      (globalThis as { __lettaTurnEndSeen?: unknown }).__lettaTurnEndSeen,
+      (globalThis as { __haruyukiTurnEndSeen?: unknown }).__haruyukiTurnEndSeen,
     ).toEqual({
       stopReason: "end_turn",
       assistantMessage: "all done",
     });
 
-    delete (globalThis as { __lettaTurnEndSeen?: unknown }).__lettaTurnEndSeen;
+    delete (globalThis as { __haruyukiTurnEndSeen?: unknown })
+      .__haruyukiTurnEndSeen;
     adapter.dispose();
   });
 
@@ -581,7 +582,7 @@ describe("listener mod adapter", () => {
       join(modsDir, "tool-end-mod.ts"),
       `export default function activate(haruyuki) {
         haruyuki.events.on("tool_end", (event) => {
-          globalThis.__lettaToolEndSeen = {
+          globalThis.__haruyukiToolEndSeen = {
             toolName: event.toolName,
             args: event.args,
             status: event.status,
@@ -634,7 +635,7 @@ describe("listener mod adapter", () => {
     const result = await adapter.events.emit("tool_end", event, context);
     expect(result.diagnostics).toHaveLength(0);
     expect(
-      (globalThis as { __lettaToolEndSeen?: unknown }).__lettaToolEndSeen,
+      (globalThis as { __haruyukiToolEndSeen?: unknown }).__haruyukiToolEndSeen,
     ).toEqual({
       toolName: "Bash",
       args: { command: "echo secret" },
@@ -645,7 +646,8 @@ describe("listener mod adapter", () => {
     // result override is written back onto the event (first handler wins).
     expect(event.result).toEqual({ status: "success", output: "redacted" });
 
-    delete (globalThis as { __lettaToolEndSeen?: unknown }).__lettaToolEndSeen;
+    delete (globalThis as { __haruyukiToolEndSeen?: unknown })
+      .__haruyukiToolEndSeen;
     adapter.dispose();
   });
 

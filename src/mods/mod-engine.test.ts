@@ -23,17 +23,17 @@ import {
 import type { ModCapabilities, ModContext, ModPanelHandle } from "@/mods/types";
 
 type ModTestGlobal = typeof globalThis & {
-  __lettaModBackend?: unknown;
-  __lettaModBackendCalls?: string[];
-  __lettaModForkResult?: { id: string };
-  __lettaModHistoryResult?: string[];
-  __lettaModCapabilities?: ModCapabilities;
-  __lettaModEvents?: string[];
-  __lettaModGate?: Promise<void>;
-  __lettaModPanel?: ModPanelHandle;
-  __lettaModSignal?: AbortSignal;
-  __lettaModStarted?: () => void;
-  __lettaSwapBackend?: () => void;
+  __haruyukiModBackend?: unknown;
+  __haruyukiModBackendCalls?: string[];
+  __haruyukiModForkResult?: { id: string };
+  __haruyukiModHistoryResult?: string[];
+  __haruyukiModCapabilities?: ModCapabilities;
+  __haruyukiModEvents?: string[];
+  __haruyukiModGate?: Promise<void>;
+  __haruyukiModPanel?: ModPanelHandle;
+  __haruyukiModSignal?: AbortSignal;
+  __haruyukiModStarted?: () => void;
+  __haruyukiSwapBackend?: () => void;
 };
 
 function createTempDir(): string {
@@ -545,7 +545,7 @@ describe("mod engine", () => {
   test("exposes configured capabilities to mods", async () => {
     const root = createTempDir();
     const testGlobal = globalThis as ModTestGlobal;
-    delete testGlobal.__lettaModCapabilities;
+    delete testGlobal.__haruyukiModCapabilities;
 
     try {
       const modDir = path.join(root, "global-mods");
@@ -554,7 +554,7 @@ describe("mod engine", () => {
       writeFileSync(
         modPath,
         `export default function(haruyuki) {
-          globalThis.__lettaModCapabilities = haruyuki.capabilities;
+          globalThis.__haruyukiModCapabilities = haruyuki.capabilities;
           if (haruyuki.capabilities.commands) {
             haruyuki.commands.register({
               id: "hidden",
@@ -579,7 +579,7 @@ describe("mod engine", () => {
       await engine.reload();
       const snapshot = engine.getSnapshot();
 
-      const observedCapabilities = testGlobal.__lettaModCapabilities as
+      const observedCapabilities = testGlobal.__haruyukiModCapabilities as
         | ModCapabilities
         | undefined;
       expect(observedCapabilities).toEqual(TOOL_ONLY_MOD_CAPABILITIES);
@@ -588,7 +588,7 @@ describe("mod engine", () => {
       expect(Object.values(snapshot.ui.panels)).toEqual([]);
       expect(Object.keys(snapshot.tools)).toEqual(["visible_tool"]);
     } finally {
-      delete testGlobal.__lettaModCapabilities;
+      delete testGlobal.__haruyukiModCapabilities;
       rmSync(root, { force: true, recursive: true });
     }
   });
@@ -596,8 +596,8 @@ describe("mod engine", () => {
   test("keeps backend internal and exposes scoped conversation helpers to events", async () => {
     const root = createTempDir();
     const testGlobal = globalThis as ModTestGlobal;
-    delete testGlobal.__lettaModBackend;
-    delete testGlobal.__lettaModForkResult;
+    delete testGlobal.__haruyukiModBackend;
+    delete testGlobal.__haruyukiModForkResult;
 
     const backend = {
       forkConversation: async (
@@ -614,9 +614,9 @@ describe("mod engine", () => {
       writeFileSync(
         modPath,
         `export default async function(haruyuki) {
-          globalThis.__lettaModBackend = haruyuki.backend;
+          globalThis.__haruyukiModBackend = haruyuki.backend;
           haruyuki.events.on("conversation_open", async (_event, ctx) => {
-            globalThis.__lettaModForkResult = await ctx.conversation.fork({ hidden: true });
+            globalThis.__haruyukiModForkResult = await ctx.conversation.fork({ hidden: true });
           });
         }`,
       );
@@ -634,10 +634,10 @@ describe("mod engine", () => {
         createModContext(),
       );
 
-      const forkResult = testGlobal.__lettaModForkResult as
+      const forkResult = testGlobal.__haruyukiModForkResult as
         | { id: string }
         | undefined;
-      expect(testGlobal.__lettaModBackend).toBeUndefined();
+      expect(testGlobal.__haruyukiModBackend).toBeUndefined();
       expect(forkResult).toMatchObject({
         id: "conv-1:agent-1:hidden",
       });
@@ -645,8 +645,8 @@ describe("mod engine", () => {
         [],
       );
     } finally {
-      delete testGlobal.__lettaModBackend;
-      delete testGlobal.__lettaModForkResult;
+      delete testGlobal.__haruyukiModBackend;
+      delete testGlobal.__haruyukiModForkResult;
       rmSync(root, { force: true, recursive: true });
     }
   });
@@ -654,16 +654,16 @@ describe("mod engine", () => {
   test("captures backend once per event invocation for composed conversation helpers", async () => {
     const root = createTempDir();
     const testGlobal = globalThis as ModTestGlobal;
-    testGlobal.__lettaModBackendCalls = [];
-    delete testGlobal.__lettaModHistoryResult;
-    delete testGlobal.__lettaSwapBackend;
+    testGlobal.__haruyukiModBackendCalls = [];
+    delete testGlobal.__haruyukiModHistoryResult;
+    delete testGlobal.__haruyukiSwapBackend;
 
     const createBackend = (label: string) =>
       ({
         forkConversation: async (
           ...[conversationId, options]: Parameters<Backend["forkConversation"]>
         ) => {
-          testGlobal.__lettaModBackendCalls?.push(
+          testGlobal.__haruyukiModBackendCalls?.push(
             `${label}:fork:${conversationId}:${options?.agentId}:${options?.hidden}`,
           );
           return { id: `${label}-forked-conversation` };
@@ -673,7 +673,7 @@ describe("mod engine", () => {
             Backend["listConversationMessages"]
           >
         ) => {
-          testGlobal.__lettaModBackendCalls?.push(
+          testGlobal.__haruyukiModBackendCalls?.push(
             `${label}:history:${conversationId}:${body?.limit}`,
           );
           return {
@@ -685,7 +685,7 @@ describe("mod engine", () => {
     const backendA = createBackend("a");
     const backendB = createBackend("b");
     let activeBackend = backendA;
-    testGlobal.__lettaSwapBackend = () => {
+    testGlobal.__haruyukiSwapBackend = () => {
       activeBackend = backendB;
     };
 
@@ -698,9 +698,9 @@ describe("mod engine", () => {
         `export default function(haruyuki) {
           haruyuki.events.on("conversation_open", async (_event, ctx) => {
             const fork = await ctx.conversation.fork({ hidden: true });
-            globalThis.__lettaSwapBackend();
+            globalThis.__haruyukiSwapBackend();
             const history = await fork.getHistory({ limit: 1 });
-            globalThis.__lettaModHistoryResult = history.map((message) => message.id);
+            globalThis.__haruyukiModHistoryResult = history.map((message) => message.id);
           });
         }`,
       );
@@ -723,17 +723,17 @@ describe("mod engine", () => {
         createModContext(),
       );
 
-      expect(testGlobal.__lettaModBackendCalls).toEqual([
+      expect(testGlobal.__haruyukiModBackendCalls).toEqual([
         "a:fork:conv-1:agent-1:true",
         "a:history:a-forked-conversation:1",
       ]);
       const historyResult = (globalThis as ModTestGlobal)
-        .__lettaModHistoryResult;
+        .__haruyukiModHistoryResult;
       expect(historyResult).toEqual(["a-message"]);
     } finally {
-      delete testGlobal.__lettaModBackendCalls;
-      delete testGlobal.__lettaModHistoryResult;
-      delete testGlobal.__lettaSwapBackend;
+      delete testGlobal.__haruyukiModBackendCalls;
+      delete testGlobal.__haruyukiModHistoryResult;
+      delete testGlobal.__haruyukiSwapBackend;
       rmSync(root, { force: true, recursive: true });
     }
   });
@@ -828,7 +828,7 @@ describe("mod engine", () => {
   test("emits mod lifecycle events and isolates handler errors", async () => {
     const root = createTempDir();
     const testGlobal = globalThis as ModTestGlobal;
-    testGlobal.__lettaModEvents = [];
+    testGlobal.__haruyukiModEvents = [];
 
     try {
       const modDir = path.join(root, "global-mods");
@@ -837,7 +837,7 @@ describe("mod engine", () => {
         path.join(modDir, "events.ts"),
         `export default function(haruyuki) {
           haruyuki.events.on("conversation_open", (event, ctx) => {
-            globalThis.__lettaModEvents.push(
+            globalThis.__haruyukiModEvents.push(
               event.reason + ":" + event.agentId + ":" + ctx.agent.name + ":" + ctx.conversation.id,
             );
           });
@@ -871,7 +871,7 @@ describe("mod engine", () => {
         name: "conversation_open",
       });
       expect(result.diagnostics).toHaveLength(1);
-      expect(testGlobal.__lettaModEvents).toEqual([
+      expect(testGlobal.__haruyukiModEvents).toEqual([
         "startup:agent-1:Amelia:conversation-1",
       ]);
       expect(getModErrorDiagnostics(snapshot.diagnostics).at(-1)).toMatchObject(
@@ -883,7 +883,7 @@ describe("mod engine", () => {
 
       engine.dispose();
     } finally {
-      delete testGlobal.__lettaModEvents;
+      delete testGlobal.__haruyukiModEvents;
       rmSync(root, { force: true, recursive: true });
     }
   });
@@ -891,7 +891,7 @@ describe("mod engine", () => {
   test("delivers compact_start and compact_end events to mod handlers", async () => {
     const root = createTempDir();
     const testGlobal = globalThis as ModTestGlobal;
-    testGlobal.__lettaModEvents = [];
+    testGlobal.__haruyukiModEvents = [];
 
     try {
       const modDir = path.join(root, "global-mods");
@@ -900,12 +900,12 @@ describe("mod engine", () => {
         path.join(modDir, "compact.ts"),
         `export default function(haruyuki) {
           haruyuki.events.on("compact_start", (event) => {
-            globalThis.__lettaModEvents.push(
+            globalThis.__haruyukiModEvents.push(
               "start:" + event.trigger + ":" + event.conversationId,
             );
           });
           haruyuki.events.on("compact_end", (event) => {
-            globalThis.__lettaModEvents.push(
+            globalThis.__haruyukiModEvents.push(
               "end:" + event.trigger + ":" + event.messagesBefore + "->" + event.messagesAfter,
             );
           });
@@ -940,14 +940,14 @@ describe("mod engine", () => {
         createModContext(),
       );
 
-      expect(testGlobal.__lettaModEvents).toEqual([
+      expect(testGlobal.__haruyukiModEvents).toEqual([
         "start:manual:conversation-1",
         "end:context_window_overflow:12->3",
       ]);
 
       engine.dispose();
     } finally {
-      delete testGlobal.__lettaModEvents;
+      delete testGlobal.__haruyukiModEvents;
       rmSync(root, { force: true, recursive: true });
     }
   });
@@ -955,7 +955,7 @@ describe("mod engine", () => {
   test("delivers llm_start and llm_end events to mod handlers", async () => {
     const root = createTempDir();
     const testGlobal = globalThis as ModTestGlobal;
-    testGlobal.__lettaModEvents = [];
+    testGlobal.__haruyukiModEvents = [];
 
     try {
       const modDir = path.join(root, "global-mods");
@@ -964,12 +964,12 @@ describe("mod engine", () => {
         path.join(modDir, "llm.ts"),
         `export default function(haruyuki) {
           haruyuki.events.on("llm_start", (event) => {
-            globalThis.__lettaModEvents.push(
+            globalThis.__haruyukiModEvents.push(
               "start:" + event.model + ":" + event.messageCount + "/" + event.contextWindow,
             );
           });
           haruyuki.events.on("llm_end", (event) => {
-            globalThis.__lettaModEvents.push(
+            globalThis.__haruyukiModEvents.push(
               "end:" + event.stopReason + ":" + (event.usage?.totalTokens ?? "no-usage") + ":" + (event.error?.message ?? "no-error") + ":" + event.durationMs + "ms",
             );
           });
@@ -1023,7 +1023,7 @@ describe("mod engine", () => {
         createModContext(),
       );
 
-      expect(testGlobal.__lettaModEvents).toEqual([
+      expect(testGlobal.__haruyukiModEvents).toEqual([
         "start:anthropic/claude-fable-5:8/200000",
         "end:stop:120:no-error:1234ms",
         "end:llm_api_error:no-usage:provider failed:42ms",
@@ -1031,7 +1031,7 @@ describe("mod engine", () => {
 
       engine.dispose();
     } finally {
-      delete testGlobal.__lettaModEvents;
+      delete testGlobal.__haruyukiModEvents;
       rmSync(root, { force: true, recursive: true });
     }
   });
@@ -1603,8 +1603,8 @@ describe("mod engine", () => {
   test("reload aborts old activations and ignores stale handles", async () => {
     const root = createTempDir();
     const testGlobal = globalThis as ModTestGlobal;
-    delete testGlobal.__lettaModPanel;
-    delete testGlobal.__lettaModSignal;
+    delete testGlobal.__haruyukiModPanel;
+    delete testGlobal.__haruyukiModSignal;
 
     try {
       const modDir = path.join(root, "global-mods");
@@ -1613,8 +1613,8 @@ describe("mod engine", () => {
       writeFileSync(
         modPath,
         `export default function(haruyuki) {
-          globalThis.__lettaModSignal = haruyuki.signal;
-          globalThis.__lettaModPanel = haruyuki.ui.openPanel({
+          globalThis.__haruyukiModSignal = haruyuki.signal;
+          globalThis.__haruyukiModPanel = haruyuki.ui.openPanel({
             id: "status",
             render: () => "first generation",
           });
@@ -1623,10 +1623,10 @@ describe("mod engine", () => {
 
       const engine = createEngine(root);
       await engine.reload();
-      const firstSignal = testGlobal.__lettaModSignal as
+      const firstSignal = testGlobal.__haruyukiModSignal as
         | AbortSignal
         | undefined;
-      const stalePanel = testGlobal.__lettaModPanel as
+      const stalePanel = testGlobal.__haruyukiModPanel as
         | ModPanelHandle
         | undefined;
       expect(firstSignal?.aborted).toBe(false);
@@ -1635,7 +1635,7 @@ describe("mod engine", () => {
       writeFileSync(
         modPath,
         `export default function(haruyuki) {
-          globalThis.__lettaModSignal = haruyuki.signal;
+          globalThis.__haruyukiModSignal = haruyuki.signal;
         }`,
       );
       await engine.reload();
@@ -1652,13 +1652,13 @@ describe("mod engine", () => {
       });
 
       engine.dispose();
-      const secondSignal = testGlobal.__lettaModSignal as
+      const secondSignal = testGlobal.__haruyukiModSignal as
         | AbortSignal
         | undefined;
       expect(secondSignal?.aborted).toBe(true);
     } finally {
-      delete testGlobal.__lettaModPanel;
-      delete testGlobal.__lettaModSignal;
+      delete testGlobal.__haruyukiModPanel;
+      delete testGlobal.__haruyukiModSignal;
       rmSync(root, { force: true, recursive: true });
     }
   });
@@ -1705,8 +1705,8 @@ describe("mod engine", () => {
   test("reload publishes an empty snapshot while mods are loading", async () => {
     const root = createTempDir();
     const testGlobal = globalThis as ModTestGlobal;
-    delete testGlobal.__lettaModGate;
-    delete testGlobal.__lettaModStarted;
+    delete testGlobal.__haruyukiModGate;
+    delete testGlobal.__haruyukiModStarted;
 
     try {
       const modDir = path.join(root, "global-mods");
@@ -1731,16 +1731,16 @@ describe("mod engine", () => {
 
       let releaseReload!: () => void;
       const reloadStarted = new Promise<void>((resolve) => {
-        testGlobal.__lettaModStarted = resolve;
+        testGlobal.__haruyukiModStarted = resolve;
       });
-      testGlobal.__lettaModGate = new Promise<void>((resolve) => {
+      testGlobal.__haruyukiModGate = new Promise<void>((resolve) => {
         releaseReload = resolve;
       });
       writeFileSync(
         modPath,
         `export default async function(haruyuki) {
-          globalThis.__lettaModStarted?.();
-          await globalThis.__lettaModGate;
+          globalThis.__haruyukiModStarted?.();
+          await globalThis.__haruyukiModGate;
           haruyuki.commands.register({
             id: "new-command",
             description: "New command",
@@ -1763,8 +1763,8 @@ describe("mod engine", () => {
 
       engine.dispose();
     } finally {
-      delete testGlobal.__lettaModGate;
-      delete testGlobal.__lettaModStarted;
+      delete testGlobal.__haruyukiModGate;
+      delete testGlobal.__haruyukiModStarted;
       rmSync(root, { force: true, recursive: true });
     }
   });
@@ -1772,8 +1772,8 @@ describe("mod engine", () => {
   test("ignores stale reload completions", async () => {
     const root = createTempDir();
     const testGlobal = globalThis as ModTestGlobal;
-    delete testGlobal.__lettaModGate;
-    delete testGlobal.__lettaModStarted;
+    delete testGlobal.__haruyukiModGate;
+    delete testGlobal.__haruyukiModStarted;
 
     try {
       const modDir = path.join(root, "global-mods");
@@ -1781,9 +1781,9 @@ describe("mod engine", () => {
       mkdirSync(modDir, { recursive: true });
       let releaseFirstReload!: () => void;
       const firstReloadStarted = new Promise<void>((resolve) => {
-        testGlobal.__lettaModStarted = resolve;
+        testGlobal.__haruyukiModStarted = resolve;
       });
-      testGlobal.__lettaModGate = new Promise<void>((resolve) => {
+      testGlobal.__haruyukiModGate = new Promise<void>((resolve) => {
         releaseFirstReload = resolve;
       });
       writeFileSync(
@@ -1795,8 +1795,8 @@ describe("mod engine", () => {
             parameters: { type: "object", properties: {} },
             run() { return "stale"; },
           });
-          globalThis.__lettaModStarted?.();
-          await globalThis.__lettaModGate;
+          globalThis.__haruyukiModStarted?.();
+          await globalThis.__haruyukiModGate;
           haruyuki.commands.register({
             id: "stale-command",
             description: "Stale command",
@@ -1809,8 +1809,8 @@ describe("mod engine", () => {
       const firstReload = engine.reload();
       await firstReloadStarted;
 
-      delete testGlobal.__lettaModGate;
-      delete testGlobal.__lettaModStarted;
+      delete testGlobal.__haruyukiModGate;
+      delete testGlobal.__haruyukiModStarted;
       writeFileSync(
         modPath,
         `export default function(haruyuki) {
@@ -1851,8 +1851,8 @@ describe("mod engine", () => {
 
       engine.dispose();
     } finally {
-      delete testGlobal.__lettaModGate;
-      delete testGlobal.__lettaModStarted;
+      delete testGlobal.__haruyukiModGate;
+      delete testGlobal.__haruyukiModStarted;
       rmSync(root, { force: true, recursive: true });
     }
   });

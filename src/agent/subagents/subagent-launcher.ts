@@ -17,7 +17,7 @@ import {
 import { getCurrentWorkingDirectory } from "@/runtime-context";
 import {
   resolveEntryScriptPath,
-  resolveLettaInvocation,
+  resolveHaruyukiInvocation,
 } from "@/tools/impl/shell-env";
 import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 import {
@@ -91,7 +91,7 @@ export function resolveSubagentLauncher(
   const platform = options.platform ?? process.platform;
   const cwd = options.cwd ?? process.cwd();
 
-  const invocation = resolveLettaInvocation(env, argv, execPath, cwd);
+  const invocation = resolveHaruyukiInvocation(env, argv, execPath, cwd);
   if (invocation) {
     return {
       command: invocation.command,

@@ -5,33 +5,33 @@ import { isModFileExtension } from "@/mods/file-extensions";
 
 export const HARUYUKI_PACKAGE_MANIFEST_VERSION = 1;
 
-export type LettaPackageCapability = ModCapabilityId;
+export type HaruyukiPackageCapability = ModCapabilityId;
 
-export interface LettaPackageEngines {
+export interface HaruyukiPackageEngines {
   lettaCodeCli?: string;
   lettaCodeDesktop?: string;
 }
 
-export interface LettaPackageManifest {
+export interface HaruyukiPackageManifest {
   manifestVersion: typeof HARUYUKI_PACKAGE_MANIFEST_VERSION;
   mods: string[];
-  capabilities?: LettaPackageCapability[];
-  engines?: LettaPackageEngines;
+  capabilities?: HaruyukiPackageCapability[];
+  engines?: HaruyukiPackageEngines;
 }
 
-export interface LettaPackageManifestValidationError {
+export interface HaruyukiPackageManifestValidationError {
   message: string;
   path: string;
 }
 
-export type LettaPackageManifestParseResult =
+export type HaruyukiPackageManifestParseResult =
   | {
       errors: [];
-      manifest: LettaPackageManifest | null;
+      manifest: HaruyukiPackageManifest | null;
       ok: true;
     }
   | {
-      errors: LettaPackageManifestValidationError[];
+      errors: HaruyukiPackageManifestValidationError[];
       manifest: null;
       ok: false;
     };
@@ -49,7 +49,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function addError(
-  errors: LettaPackageManifestValidationError[],
+  errors: HaruyukiPackageManifestValidationError[],
   errorPath: string,
   message: string,
 ): void {
@@ -67,7 +67,7 @@ function isWindowsAbsolutePath(value: string): boolean {
   return path.win32.isAbsolute(value) || /^[a-zA-Z]:[\\/]/.test(value);
 }
 
-export function isSafeLettaPackageModEntryPath(value: string): boolean {
+export function isSafeHaruyukiPackageModEntryPath(value: string): boolean {
   if (!value.trim()) return false;
   if (value.includes("\0")) return false;
   if (value.includes("\\")) return false;
@@ -152,7 +152,7 @@ function isValidSemverRange(value: string): boolean {
 
 function validateMods(
   value: unknown,
-  errors: LettaPackageManifestValidationError[],
+  errors: HaruyukiPackageManifestValidationError[],
 ): string[] | null {
   if (!Array.isArray(value)) {
     addError(errors, "letta.mods", "mods must be a non-empty array");
@@ -170,7 +170,7 @@ function validateMods(
       addError(errors, entryPath, "mod entry must be a string path");
       return;
     }
-    if (!isSafeLettaPackageModEntryPath(entry)) {
+    if (!isSafeHaruyukiPackageModEntryPath(entry)) {
       addError(
         errors,
         entryPath,
@@ -186,15 +186,15 @@ function validateMods(
 
 function validateCapabilities(
   value: unknown,
-  errors: LettaPackageManifestValidationError[],
-): LettaPackageCapability[] | undefined {
+  errors: HaruyukiPackageManifestValidationError[],
+): HaruyukiPackageCapability[] | undefined {
   if (value === undefined) return undefined;
   if (!Array.isArray(value)) {
     addError(errors, "haruyuki.capabilities", "capabilities must be an array");
     return undefined;
   }
 
-  const capabilities: LettaPackageCapability[] = [];
+  const capabilities: HaruyukiPackageCapability[] = [];
   value.forEach((entry, index) => {
     const entryPath = `haruyuki.capabilities[${index}]`;
     if (typeof entry !== "string") {
@@ -213,8 +213,8 @@ function validateCapabilities(
 
 function validateEngines(
   value: unknown,
-  errors: LettaPackageManifestValidationError[],
-): LettaPackageEngines | undefined {
+  errors: HaruyukiPackageManifestValidationError[],
+): HaruyukiPackageEngines | undefined {
   if (value === undefined) return undefined;
   if (!isRecord(value)) {
     addError(errors, "letta.engines", "engines must be an object");
@@ -225,7 +225,7 @@ function validateEngines(
     addError(errors, `letta.engines.${key}`, `unknown engine '${key}'`);
   }
 
-  const engines: LettaPackageEngines = {};
+  const engines: HaruyukiPackageEngines = {};
   for (const key of ENGINE_KEYS) {
     const engineRange = value[key];
     if (engineRange === undefined) continue;
@@ -241,15 +241,15 @@ function validateEngines(
       );
       continue;
     }
-    engines[key as keyof LettaPackageEngines] = engineRange;
+    engines[key as keyof HaruyukiPackageEngines] = engineRange;
   }
 
   return Object.keys(engines).length > 0 ? engines : undefined;
 }
 
-export function parseLettaPackageManifest(
+export function parseHaruyukiPackageManifest(
   packageJson: unknown,
-): LettaPackageManifestParseResult {
+): HaruyukiPackageManifestParseResult {
   if (!isRecord(packageJson)) {
     return {
       errors: [{ message: "package.json must be an object", path: "package" }],
@@ -270,7 +270,7 @@ export function parseLettaPackageManifest(
     };
   }
 
-  const errors: LettaPackageManifestValidationError[] = [];
+  const errors: HaruyukiPackageManifestValidationError[] = [];
   for (const key of getUnknownKeys(rawManifest, MANIFEST_KEYS)) {
     addError(errors, `letta.${key}`, `unknown manifest field '${key}'`);
   }
@@ -303,12 +303,12 @@ export function parseLettaPackageManifest(
   };
 }
 
-export function readLettaPackageManifest(
+export function readHaruyukiPackageManifest(
   packageJsonPath: string,
-): LettaPackageManifestParseResult {
+): HaruyukiPackageManifestParseResult {
   try {
     const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
-    return parseLettaPackageManifest(packageJson);
+    return parseHaruyukiPackageManifest(packageJson);
   } catch (error) {
     return {
       errors: [

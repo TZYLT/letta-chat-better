@@ -33,7 +33,7 @@ export const OVERFLOW_CONFIG = {
  */
 export function getOverflowDirectory(workingDirectory: string): string {
   const homeDir = os.homedir();
-  const lettaDir = appHomeRoot(homeDir);
+  const haruyukiDir = appHomeRoot(homeDir);
 
   // Normalize and sanitize the working directory path for use in the file system
   const normalizedPath = path.normalize(workingDirectory);
@@ -44,7 +44,7 @@ export function getOverflowDirectory(workingDirectory: string): string {
     .replace(/\s+/g, "_"); // Replace spaces with underscores
 
   const overflowDir = path.join(
-    lettaDir,
+    haruyukiDir,
     "projects",
     sanitizedPath,
     "agent-tools",

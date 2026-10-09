@@ -414,7 +414,7 @@ letta cron list
 letta cron add --name "weekly-review" --description "Weekly project review" --prompt "Ask the user for the weekly project review." --cron "0 9 * * 1" --agent "$AGENT_ID" --conversation "$CONVERSATION_ID"
 ```
 
-Scheduled tasks fire only while a Letta session/listener is running. Cron bindings can target other agents/conversations visible to the account; verify agent and conversation IDs explicitly when exact routing matters.
+Scheduled tasks fire only while a Haruyuki session/listener is running. Cron bindings can target other agents/conversations visible to the account; verify agent and conversation IDs explicitly when exact routing matters.
 
 ## CLI startup flags
 
@@ -439,7 +439,7 @@ Startup flags affect a new process only. They do not rewrite an already-running 
 
 ### Existing listeners and long-running processes
 
-Before starting, replacing, or stopping a listener, inspect existing Letta processes and determine ownership: interactive shell, Desktop, launchd/systemd, supervisor, or another agent.
+Before starting, replacing, or stopping a listener, inspect existing Haruyuki processes and determine ownership: interactive shell, Desktop, launchd/systemd, supervisor, or another agent.
 
 Do not start a second listener for the same channel accounts merely to apply new flags. Never stop or restart an existing listener without explicit coordination and user approval. Prefer changing the owned service configuration and then performing one approved restart.
 

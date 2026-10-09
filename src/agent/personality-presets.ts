@@ -39,7 +39,7 @@ export const PERSONALITY_OPTIONS: PersonalityOption[] = [
     id: "tutorial",
     label: "Tutor",
     description:
-      "I help with getting started with Letta. I can answer any questions about Letta, and also help you create and configure agents.",
+      "I help with getting started with Haruyuki. I can answer any questions about Haruyuki, and also help you create and configure agents.",
     defaultMemoryFiles: [
       {
         path: "profile.png",

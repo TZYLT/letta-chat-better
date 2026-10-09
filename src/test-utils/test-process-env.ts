@@ -5,7 +5,7 @@ export function createIsolatedCliTestEnv(
     ...process.env,
   };
 
-  stripAmbientLettaTestEnv(env);
+  stripAmbientHaruyukiTestEnv(env);
 
   Object.assign(env, {
     HARUYUKI_DISABLE_SESSION_PERSIST: "1",
@@ -54,7 +54,7 @@ export const AMBIENT_LETTA_TEST_ENV_KEYS = [
   "HARUYUKI_CODE_DEV_AI_SDK_PROVIDER",
 ] as const;
 
-export function stripAmbientLettaTestEnv(env: NodeJS.ProcessEnv): void {
+export function stripAmbientHaruyukiTestEnv(env: NodeJS.ProcessEnv): void {
   for (const key of AMBIENT_LETTA_TEST_ENV_KEYS) {
     delete env[key];
   }
@@ -73,13 +73,15 @@ function applyEnvOverrides(
   }
 }
 
-export function snapshotAmbientLettaTestEnv(): NodeJS.ProcessEnv {
+export function snapshotAmbientHaruyukiTestEnv(): NodeJS.ProcessEnv {
   return Object.fromEntries(
     AMBIENT_LETTA_TEST_ENV_KEYS.map((key) => [key, process.env[key]]),
   );
 }
 
-export function restoreAmbientLettaTestEnv(snapshot: NodeJS.ProcessEnv): void {
+export function restoreAmbientHaruyukiTestEnv(
+  snapshot: NodeJS.ProcessEnv,
+): void {
   for (const key of AMBIENT_LETTA_TEST_ENV_KEYS) {
     const value = snapshot[key];
     if (value === undefined) {
@@ -90,13 +92,13 @@ export function restoreAmbientLettaTestEnv(snapshot: NodeJS.ProcessEnv): void {
   }
 }
 
-export function isolateAmbientLettaTestEnv(
+export function isolateAmbientHaruyukiTestEnv(
   extraEnv: NodeJS.ProcessEnv = {},
 ): () => void {
-  const snapshot = snapshotAmbientLettaTestEnv();
+  const snapshot = snapshotAmbientHaruyukiTestEnv();
 
-  stripAmbientLettaTestEnv(process.env);
+  stripAmbientHaruyukiTestEnv(process.env);
   applyEnvOverrides(process.env, extraEnv);
 
-  return () => restoreAmbientLettaTestEnv(snapshot);
+  return () => restoreAmbientHaruyukiTestEnv(snapshot);
 }

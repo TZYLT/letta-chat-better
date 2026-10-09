@@ -69,7 +69,7 @@ function makeTelegramAccountWithSecretRef(): Record<string, unknown> {
     rich_private_chat_default: true,
     createdAt: "2026-05-26T00:00:00.000Z",
     updatedAt: "2026-05-26T00:00:00.000Z",
-    __letta_secret_refs: {
+    __haruyuki_secret_refs: {
       token: true,
     },
   };
@@ -125,7 +125,7 @@ describe("channel credential storage", () => {
     expect(JSON.stringify(persisted)).not.toContain("xoxb-secret");
     expect(JSON.stringify(persisted)).not.toContain("xapp-secret");
     expect(persisted.accounts[0]).toMatchObject({
-      __letta_secret_refs: {
+      __haruyuki_secret_refs: {
         botToken: true,
         appToken: true,
       },
@@ -183,7 +183,7 @@ describe("channel credential storage", () => {
     );
     expect(persistedText).not.toContain("xoxb-secret");
     expect(persistedText).not.toContain("xapp-secret");
-    expect(persistedText).toContain("__letta_secret_refs");
+    expect(persistedText).toContain("__haruyuki_secret_refs");
   });
 
   test("keyring mode preserves unresolved Telegram token refs on restart", async () => {
@@ -207,7 +207,7 @@ describe("channel credential storage", () => {
       accounts: Array<Record<string, unknown>>;
     };
     expect(persisted.accounts[0]).toMatchObject({
-      __letta_secret_refs: {
+      __haruyuki_secret_refs: {
         token: true,
       },
     });
@@ -217,7 +217,7 @@ describe("channel credential storage", () => {
       "telegram",
       "telegram-account",
     )) as TelegramChannelAccount | null;
-    expect(hydrated?.token).toBe("__letta_channel_secret_present__");
+    expect(hydrated?.token).toBe("__haruyuki_channel_secret_present__");
   });
 
   test("deleting an account removes keyring secrets", async () => {
@@ -264,7 +264,7 @@ describe("channel credential storage", () => {
     );
     expect(persistedText).toContain("xoxb-secret");
     expect(persistedText).toContain("xapp-secret");
-    expect(persistedText).not.toContain("__letta_secret_refs");
+    expect(persistedText).not.toContain("__haruyuki_secret_refs");
     expect(existsSync(join(channelsRoot, "slack", "accounts.json"))).toBe(true);
   });
 });

@@ -7,9 +7,9 @@ import {
 } from "node:fs";
 import path from "node:path";
 import {
-  isSafeLettaPackageModEntryPath,
-  type LettaPackageCapability,
-  readLettaPackageManifest,
+  type HaruyukiPackageCapability,
+  isSafeHaruyukiPackageModEntryPath,
+  readHaruyukiPackageManifest,
 } from "@/mods/package-manifest";
 
 export const MOD_PACKAGES_REGISTRY_FILENAME = "packages.json";
@@ -35,7 +35,7 @@ export interface ResolveManagedModPackagesResult {
 }
 
 export interface ManagedModPackageListItem {
-  capabilities: LettaPackageCapability[];
+  capabilities: HaruyukiPackageCapability[];
   enabled: boolean;
   entries: string[];
   files: string[];
@@ -278,7 +278,7 @@ function validatePackageEntries(
       );
       return;
     }
-    if (!isSafeLettaPackageModEntryPath(entry)) {
+    if (!isSafeHaruyukiPackageModEntryPath(entry)) {
       diagnostics.push(
         createDiagnostic(
           entryPath,
@@ -473,7 +473,7 @@ function resolvePackage(
   }
 
   const packageJsonPath = path.join(metadata.packageRoot, "package.json");
-  const manifestResult = readLettaPackageManifest(packageJsonPath);
+  const manifestResult = readHaruyukiPackageManifest(packageJsonPath);
   if (!manifestResult.ok) {
     return {
       diagnostics: manifestResult.errors.map((error) =>
@@ -599,8 +599,8 @@ export function listManagedModPackages(
     if (!metadata.ok) return;
 
     const packageJsonPath = path.join(metadata.packageRoot, "package.json");
-    const manifestResult = readLettaPackageManifest(packageJsonPath);
-    let capabilities: LettaPackageCapability[] = [];
+    const manifestResult = readHaruyukiPackageManifest(packageJsonPath);
+    let capabilities: HaruyukiPackageCapability[] = [];
     if (!manifestResult.ok) {
       diagnostics.push(
         ...manifestResult.errors.map((error) =>

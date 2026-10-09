@@ -3,8 +3,8 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
-  parseLettaPackageManifest,
-  readLettaPackageManifest,
+  parseHaruyukiPackageManifest,
+  readHaruyukiPackageManifest,
 } from "@/mods/package-manifest";
 
 function createTempDir(): string {
@@ -12,20 +12,20 @@ function createTempDir(): string {
 }
 
 function errorPathsFor(packageJson: unknown): string[] {
-  const result = parseLettaPackageManifest(packageJson);
+  const result = parseHaruyukiPackageManifest(packageJson);
   if (result.ok) return [];
   return result.errors.map((error) => error.path);
 }
 
 function errorMessagesFor(packageJson: unknown): string[] {
-  const result = parseLettaPackageManifest(packageJson);
+  const result = parseHaruyukiPackageManifest(packageJson);
   if (result.ok) return [];
   return result.errors.map((error) => error.message);
 }
 
 describe("Letta package manifest", () => {
   test("parses a valid minimal manifest", () => {
-    const result = parseLettaPackageManifest({
+    const result = parseHaruyukiPackageManifest({
       letta: {
         manifestVersion: 1,
         mods: ["./mods/index.ts"],
@@ -43,7 +43,7 @@ describe("Letta package manifest", () => {
   });
 
   test("parses capabilities and engines", () => {
-    const result = parseLettaPackageManifest({
+    const result = parseHaruyukiPackageManifest({
       letta: {
         manifestVersion: 1,
         mods: ["mods/provider.mjs", "mods/statusline.tsx"],
@@ -70,7 +70,7 @@ describe("Letta package manifest", () => {
   });
 
   test("returns null when package has no Letta manifest", () => {
-    expect(parseLettaPackageManifest({ name: "@caren/example" })).toEqual({
+    expect(parseHaruyukiPackageManifest({ name: "@caren/example" })).toEqual({
       errors: [],
       manifest: null,
       ok: true,
@@ -118,7 +118,7 @@ describe("Letta package manifest", () => {
       "\\\\server\\share\\mod.ts",
     ];
 
-    const result = parseLettaPackageManifest({
+    const result = parseHaruyukiPackageManifest({
       letta: {
         manifestVersion: 1,
         mods: entries,
@@ -134,7 +134,7 @@ describe("Letta package manifest", () => {
   });
 
   test("rejects unknown capabilities and non-string capability entries", () => {
-    const result = parseLettaPackageManifest({
+    const result = parseHaruyukiPackageManifest({
       letta: {
         manifestVersion: 1,
         mods: ["mods/index.ts"],
@@ -152,7 +152,7 @@ describe("Letta package manifest", () => {
   });
 
   test("accepts common semver range syntax", () => {
-    const result = parseLettaPackageManifest({
+    const result = parseHaruyukiPackageManifest({
       letta: {
         manifestVersion: 1,
         mods: ["mods/index.ts"],
@@ -167,7 +167,7 @@ describe("Letta package manifest", () => {
   });
 
   test("rejects malformed engines", () => {
-    const result = parseLettaPackageManifest({
+    const result = parseHaruyukiPackageManifest({
       letta: {
         manifestVersion: 1,
         mods: ["mods/index.ts"],
@@ -190,7 +190,7 @@ describe("Letta package manifest", () => {
   });
 
   test("rejects unknown manifest keys", () => {
-    const result = parseLettaPackageManifest({
+    const result = parseHaruyukiPackageManifest({
       letta: {
         manifestVersion: 1,
         mods: ["mods/index.ts"],
@@ -224,7 +224,7 @@ describe("Letta package manifest", () => {
         }),
       );
 
-      expect(readLettaPackageManifest(packageJsonPath)).toEqual({
+      expect(readHaruyukiPackageManifest(packageJsonPath)).toEqual({
         errors: [],
         manifest: {
           manifestVersion: 1,
@@ -246,7 +246,7 @@ describe("Letta package manifest", () => {
       expect(
         errorMessagesFor({ letta: { manifestVersion: 1, mods: [1] } }),
       ).toEqual(["mod entry must be a string path"]);
-      const result = readLettaPackageManifest(packageJsonPath);
+      const result = readHaruyukiPackageManifest(packageJsonPath);
       expect(result.ok).toBe(false);
       if (result.ok) return;
       expect(result.errors[0]?.path).toBe(packageJsonPath);

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { getClientDefaultHeaders } from "./client";
-import { getLettaCodeHeaders } from "./http-headers";
+import { getHaruyukiHeaders } from "./http-headers";
 
 const RUNTIME_ENVIRONMENT_DEVICE_ID_ENV =
   "HARUYUKI_RUNTIME_ENVIRONMENT_DEVICE_ID";
@@ -26,9 +26,9 @@ describe("getClientDefaultHeaders", () => {
   });
 });
 
-describe("getLettaCodeHeaders", () => {
+describe("getHaruyukiHeaders", () => {
   test("sends only the API key and source identity", () => {
-    expect(getLettaCodeHeaders("test-key")).toMatchObject({
+    expect(getHaruyukiHeaders("test-key")).toMatchObject({
       Authorization: "Bearer test-key",
       "X-Letta-Source": "letta-code",
     });

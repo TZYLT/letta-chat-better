@@ -8,7 +8,7 @@ import { __testSetBackend } from "@/backend";
 import { FakeHeadlessBackend } from "@/backend/dev/fake-headless-backend";
 import { settingsManager } from "@/settings-manager";
 import { TestDirectory } from "@/test-utils/test-fs";
-import { isolateAmbientLettaTestEnv } from "@/test-utils/test-process-env";
+import { isolateAmbientHaruyukiTestEnv } from "@/test-utils/test-process-env";
 import { getStoredClientPreferences } from "@/tools/client-preferences";
 import { clearCapturedToolExecutionContexts } from "@/tools/manager";
 import type { InputCreateMessagePayload } from "@/types/protocol_v2";
@@ -29,7 +29,7 @@ test("conversation preferences preserve serialized tools across idle, automatic 
   const directory = new TestDirectory();
   const originalHome = process.env.HOME;
   await settingsManager.reset();
-  const restoreEnv = isolateAmbientLettaTestEnv();
+  const restoreEnv = isolateAmbientHaruyukiTestEnv();
   process.env.HOME = directory.path;
   const listener = createRuntime();
   const agentId = "agent-question-input";

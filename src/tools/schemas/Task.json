@@ -15,7 +15,7 @@
     },
     "model": {
       "type": "string",
-      "description": "The model for the external coding CLI, only valid with subagent_type \"claude-code\" or \"codex\" (passed to that CLI's own --model flag). Letta subagents always inherit the parent conversation's model and reject this argument."
+      "description": "The model for the external coding CLI, only valid with subagent_type \"claude-code\" or \"codex\" (passed to that CLI's own --model flag). Haruyuki subagents always inherit the parent conversation's model and reject this argument."
     },
     "agent_id": {
       "type": "string",

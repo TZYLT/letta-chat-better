@@ -2,7 +2,7 @@ import { afterEach, beforeEach, expect, test } from "bun:test";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { isolateAmbientLettaTestEnv } from "@/test-utils/test-process-env";
+import { isolateAmbientHaruyukiTestEnv } from "@/test-utils/test-process-env";
 import { startCheckout } from "@/utils/checkout-readiness";
 import {
   buildClientSkillsPayload,
@@ -19,7 +19,7 @@ let originalUserProfile: string | undefined;
 let restoreAmbientEnv: (() => void) | undefined;
 
 beforeEach(async () => {
-  restoreAmbientEnv = isolateAmbientLettaTestEnv();
+  restoreAmbientEnv = isolateAmbientHaruyukiTestEnv();
   originalHome = process.env.HOME;
   originalUserProfile = process.env.USERPROFILE;
   tempHome = await mkdtemp(join(tmpdir(), "letta-shared-skills-"));

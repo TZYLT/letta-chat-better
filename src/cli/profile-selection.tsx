@@ -363,7 +363,7 @@ function ProfileSelectionUI({
     }
   });
 
-  const hasLocalDir = settingsManager.hasLocalLettaDir();
+  const hasLocalDir = settingsManager.hasLocalHaruyukiDir();
   const contextMessage = externalFreshRepoMode
     ? `${options.length} pinned agent${options.length !== 1 ? "s" : ""} available.`
     : hasLocalDir

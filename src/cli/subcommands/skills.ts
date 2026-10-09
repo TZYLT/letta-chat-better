@@ -19,7 +19,7 @@ import {
   installGitManagedModPackage,
   installLocalManagedModPackage,
   installNpmManagedModPackage,
-  isLocalLettaModPackageDirectory,
+  isLocalHaruyukiModPackageDirectory,
   parseGitManagedModPackageInstallSpecifier,
 } from "@/mods/package-installer";
 import { resolveDefaultGlobalModsDirectory } from "@/mods/paths";
@@ -1102,7 +1102,7 @@ async function runInstall(
   }
 
   const maybeLocalPath = resolve(specifier);
-  if (isLocalLettaModPackageDirectory(maybeLocalPath)) {
+  if (isLocalHaruyukiModPackageDirectory(maybeLocalPath)) {
     if (hasInstallAgentScope(parsed.values)) {
       console.error("Agent-scoped mod package install is not supported yet.");
       return 1;

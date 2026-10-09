@@ -119,7 +119,7 @@ export function getMemoryPromptModeForAgent(agentId: string): MemoryPromptMode {
   });
 }
 
-function isLettaCodePrimaryAgent(agent: AgentState): boolean {
+function isHaruyukiPrimaryAgent(agent: AgentState): boolean {
   const tags = agent.tags ?? [];
   return (
     tags.includes(HARUYUKI_CODE_ORIGIN_TAG) &&
@@ -300,7 +300,7 @@ export function decideManagedSystemPromptUpdate(input: {
 
   const matchingPreset = findMatchingCurrentPreset(currentSystemPrompt);
   if (!matchingPreset) {
-    if (isLettaCodePrimaryAgent(agent)) {
+    if (isHaruyukiPrimaryAgent(agent)) {
       return {
         kind: "custom",
         reason: "legacy Haruyuki agent prompt does not match a current preset",
@@ -326,7 +326,7 @@ export function decideManagedSystemPromptUpdate(input: {
   };
 }
 
-export async function ensureLettaCodeOriginTag(
+export async function ensureHaruyukiOriginTag(
   agent: AgentState,
 ): Promise<AgentState> {
   const backend = getBackend();

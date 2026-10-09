@@ -24,7 +24,7 @@ import { getModDiagnosticsLatestFilePath } from "@/mods/mod-diagnostics-file";
 import type { ModContext } from "@/mods/types";
 
 type ModAdapterTestGlobal = typeof globalThis & {
-  __lettaAdapterEvents?: string[];
+  __haruyukiAdapterEvents?: string[];
 };
 
 function createTempDir(): string {
@@ -542,7 +542,7 @@ describe("mod adapter", () => {
   test("loads mods and dispatches events with fresh context and backend", async () => {
     const root = createTempDir();
     const testGlobal = globalThis as ModAdapterTestGlobal;
-    testGlobal.__lettaAdapterEvents = [];
+    testGlobal.__haruyukiAdapterEvents = [];
 
     try {
       const modDir = path.join(root, "global-mods");
@@ -552,7 +552,7 @@ describe("mod adapter", () => {
         `export default function(haruyuki) {
           haruyuki.events.on("conversation_open", async (event, ctx) => {
             const fork = await ctx.conversation.fork({ hidden: true });
-            globalThis.__lettaAdapterEvents.push(
+            globalThis.__haruyukiAdapterEvents.push(
               event.reason + ":" + ctx.agent.name + ":" + fork.id,
             );
           });
@@ -586,7 +586,7 @@ describe("mod adapter", () => {
         createModContext(),
       );
       expect(loadingResult.handlerCount).toBe(0);
-      expect(testGlobal.__lettaAdapterEvents).toEqual([]);
+      expect(testGlobal.__haruyukiAdapterEvents).toEqual([]);
 
       await adapter.reload();
 
@@ -607,13 +607,13 @@ describe("mod adapter", () => {
         createModContext("Updated Agent"),
       );
 
-      expect(testGlobal.__lettaAdapterEvents).toEqual([
+      expect(testGlobal.__haruyukiAdapterEvents).toEqual([
         "startup:Updated Agent:forked-conversation",
       ]);
 
       adapter.dispose();
     } finally {
-      delete testGlobal.__lettaAdapterEvents;
+      delete testGlobal.__haruyukiAdapterEvents;
       rmSync(root, { force: true, recursive: true });
     }
   });

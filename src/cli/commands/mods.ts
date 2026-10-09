@@ -14,7 +14,7 @@ import { readModLearningEnv, runModLearning } from "@/mods/learning-harness";
 import { settingsManager } from "@/settings-manager";
 import {
   resolveEntryScriptPath,
-  resolveLettaInvocation,
+  resolveHaruyukiInvocation,
 } from "@/tools/impl/shell-env";
 import { APP_DIR_NAME } from "@/utils/app-paths";
 
@@ -706,7 +706,7 @@ export async function defaultHeadlessEnv(): Promise<NodeJS.ProcessEnv> {
 }
 
 export function resolveCurrentLettaLauncher(): LettaLauncher {
-  const invocation = resolveLettaInvocation(
+  const invocation = resolveHaruyukiInvocation(
     process.env,
     process.argv,
     process.execPath,

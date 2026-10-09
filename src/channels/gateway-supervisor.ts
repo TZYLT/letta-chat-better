@@ -1,7 +1,7 @@
 import { type ChildProcess, spawn } from "node:child_process";
 import {
   resolveEntryScriptPath,
-  resolveLettaInvocation,
+  resolveHaruyukiInvocation,
 } from "@/tools/impl/shell-env";
 import type {
   ServiceCommandRequest,
@@ -74,7 +74,7 @@ export interface ChannelGatewaySupervisor {
 }
 
 function resolveLauncher(cwd: string): { command: string; args: string[] } {
-  const invocation = resolveLettaInvocation(
+  const invocation = resolveHaruyukiInvocation(
     process.env,
     process.argv,
     process.execPath,

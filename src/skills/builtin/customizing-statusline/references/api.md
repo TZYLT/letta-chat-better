@@ -22,7 +22,7 @@ export default function activate(haruyuki) {
     id: "statusline",
     order: 0, // primary line: overrides the built-in agent · model
     render: ({ width, agent, model, row, chalk }) => {
-      const left = chalk.cyan(agent.name ?? "Letta");
+      const left = chalk.cyan(agent.name ?? "Haruyuki");
       const right = chalk.dim(model.displayName ?? "no model");
       return row(left, right, width);
     },
@@ -103,7 +103,7 @@ export default function activate(haruyuki) {
     id: "statusline",
     order: 0,
     render: ({ width, agent, row, chalk }) => {
-      const left = branch ? chalk.green(`\u2442 ${branch}`) : (agent.name ?? "Letta");
+      const left = branch ? chalk.green(`\u2442 ${branch}`) : (agent.name ?? "Haruyuki");
       return row(left, "", width);
     },
   });
@@ -136,7 +136,7 @@ There is no host left/right API. Build left/right alignment inside `render` with
 
 ```tsx
 render: ({ width, agent, model, row, chalk }) =>
-  row(chalk.dim("Press / for commands"), `${agent.name ?? "Letta"} \u00b7 ${model.displayName ?? ""}`, width),
+  row(chalk.dim("Press / for commands"), `${agent.name ?? "Haruyuki"} \u00b7 ${model.displayName ?? ""}`, width),
 ```
 
 Use `columns` for three or more evenly-spread segments:

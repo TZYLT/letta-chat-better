@@ -29,11 +29,11 @@ import { format } from "node:util";
  * Also accepts DEBUG=1|true for legacy compatibility.
  */
 export function isDebugEnabled(): boolean {
-  const lettaDebug = process.env.HARUYUKI_DEBUG;
+  const haruyukiDebug = process.env.HARUYUKI_DEBUG;
   const legacyDebug = process.env.DEBUG;
   return (
-    lettaDebug === "1" ||
-    lettaDebug === "true" ||
+    haruyukiDebug === "1" ||
+    haruyukiDebug === "true" ||
     legacyDebug === "1" ||
     legacyDebug === "true"
   );

@@ -17,12 +17,12 @@ export const POWERSHELL_UTF8_OUTPUT_PREFIX =
 // when the parsed final operation is a command that resolves to an application.
 // Language expressions and PowerShell scripts use PowerShell's ERROR semantics.
 export const POWERSHELL_EXIT_CODE_SUFFIX =
-  "\n$__lettaCommandSucceeded = $?; " +
-  "if ($__lettaCommandSucceeded) { exit 0 }; " +
-  "$__lettaFinalCommand = $null; " +
-  "if ($null -ne $__lettaFinalCommandName) { try { $__lettaFinalCommand = $ExecutionContext.InvokeCommand.GetCommand($__lettaFinalCommandName, [System.Management.Automation.CommandTypes]::All) } catch {} }; " +
-  "while ($__lettaFinalCommand -is [System.Management.Automation.AliasInfo]) { $__lettaFinalCommand = $__lettaFinalCommand.ResolvedCommand }; " +
-  "if (($__lettaFinalCommand.CommandType -eq [System.Management.Automation.CommandTypes]::Application) -and ($null -ne $LASTEXITCODE) -and ($LASTEXITCODE -ne 0)) { exit $LASTEXITCODE }; " +
+  "\n$__haruyukiCommandSucceeded = $?; " +
+  "if ($__haruyukiCommandSucceeded) { exit 0 }; " +
+  "$__haruyukiFinalCommand = $null; " +
+  "if ($null -ne $__haruyukiFinalCommandName) { try { $__haruyukiFinalCommand = $ExecutionContext.InvokeCommand.GetCommand($__haruyukiFinalCommandName, [System.Management.Automation.CommandTypes]::All) } catch {} }; " +
+  "while ($__haruyukiFinalCommand -is [System.Management.Automation.AliasInfo]) { $__haruyukiFinalCommand = $__haruyukiFinalCommand.ResolvedCommand }; " +
+  "if (($__haruyukiFinalCommand.CommandType -eq [System.Management.Automation.CommandTypes]::Application) -and ($null -ne $LASTEXITCODE) -and ($LASTEXITCODE -ne 0)) { exit $LASTEXITCODE }; " +
   "exit 1";
 
 const POWERSHELL_ENV_ALIASES = [
@@ -118,13 +118,13 @@ export function buildPowerShellCommand(
   );
   const exitCodePrefix = preserveExitCode
     ? "$global:LASTEXITCODE = $null; " +
-      `$__lettaHookText = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String('${encodedCommand}')); ` +
-      "$__lettaTokens = $null; $__lettaParseErrors = $null; " +
-      "$__lettaHookAst = [System.Management.Automation.Language.Parser]::ParseInput($__lettaHookText, [ref]$__lettaTokens, [ref]$__lettaParseErrors); " +
-      "$__lettaStatements = $__lettaHookAst.EndBlock.Statements; " +
-      "$__lettaFinalStatement = if ($__lettaStatements.Count -gt 0) { $__lettaStatements[$__lettaStatements.Count - 1] } else { $null }; " +
-      "$__lettaFinalPipelineElement = if ($__lettaFinalStatement -is [System.Management.Automation.Language.PipelineAst]) { $__lettaFinalStatement.PipelineElements[$__lettaFinalStatement.PipelineElements.Count - 1] } else { $null }; " +
-      "$__lettaFinalCommandName = if ($__lettaFinalPipelineElement -is [System.Management.Automation.Language.CommandAst]) { $__lettaFinalPipelineElement.GetCommandName() } else { $null }; "
+      `$__haruyukiHookText = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String('${encodedCommand}')); ` +
+      "$__haruyukiTokens = $null; $__haruyukiParseErrors = $null; " +
+      "$__haruyukiHookAst = [System.Management.Automation.Language.Parser]::ParseInput($__haruyukiHookText, [ref]$__haruyukiTokens, [ref]$__haruyukiParseErrors); " +
+      "$__haruyukiStatements = $__haruyukiHookAst.EndBlock.Statements; " +
+      "$__haruyukiFinalStatement = if ($__haruyukiStatements.Count -gt 0) { $__haruyukiStatements[$__haruyukiStatements.Count - 1] } else { $null }; " +
+      "$__haruyukiFinalPipelineElement = if ($__haruyukiFinalStatement -is [System.Management.Automation.Language.PipelineAst]) { $__haruyukiFinalStatement.PipelineElements[$__haruyukiFinalStatement.PipelineElements.Count - 1] } else { $null }; " +
+      "$__haruyukiFinalCommandName = if ($__haruyukiFinalPipelineElement -is [System.Management.Automation.Language.CommandAst]) { $__haruyukiFinalPipelineElement.GetCommandName() } else { $null }; "
     : "";
   const exitCodeSuffix = preserveExitCode ? POWERSHELL_EXIT_CODE_SUFFIX : "";
   return prefixPowerShellCommandWithUtf8Output(

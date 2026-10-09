@@ -21,7 +21,7 @@ import {
 // Use globalThis to ensure singleton across bundle
 declare global {
   // eslint-disable-next-line no-var
-  var __lettaForwardDeleteTimestamp: number | undefined;
+  var __haruyukiForwardDeleteTimestamp: number | undefined;
 }
 
 interface PasteAwareTextInputProps {
@@ -564,7 +564,7 @@ export function PasteAwareTextInput({
       // biome-ignore lint/suspicious/noControlCharactersInRegex: ESC sequence matching
       if (sequence === "\x1b[3~" || /^\x1b\[3;\d+~$/.test(sequence)) {
         // Set timestamp so ink-text-input skips its delete handling
-        globalThis.__lettaForwardDeleteTimestamp = Date.now();
+        globalThis.__haruyukiForwardDeleteTimestamp = Date.now();
         forwardDeleteAtCursor(caretOffsetRef.current);
         return;
       }

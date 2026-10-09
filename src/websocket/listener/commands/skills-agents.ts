@@ -53,10 +53,10 @@ export async function handleSkillCommand(
   const { basename, join } = await import("node:path");
 
   // Compute skills dir dynamically to respect HARUYUKI_HOME (important for tests)
-  const lettaHome =
+  const haruyukiHome =
     process.env.HARUYUKI_HOME ||
     appHomeRoot(process.env.HOME || process.env.USERPROFILE || "~");
-  const globalSkillsDir = join(lettaHome, "skills");
+  const globalSkillsDir = join(haruyukiHome, "skills");
 
   if (parsed.type === "skill_enable") {
     try {

@@ -45,7 +45,7 @@ Do not alter persona, user identity, or unrelated preferences, and preserve
 protected `read_only` fields and files.
 Do not store raw transcripts or the entire investigation in core memory.
 
-Use existing commands, bounded file reads, and small ad hoc scripts. Letta
+Use existing commands, bounded file reads, and small ad hoc scripts. Haruyuki
 evidence commands output JSON. For API access, use normal CLI authentication;
 do not inspect credential files, print secrets, or access production ClickHouse.
 

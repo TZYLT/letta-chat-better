@@ -20,7 +20,7 @@ import {
 } from "@/backend/dev/headless-turn-executor";
 import { LocalBackend } from "@/backend/local";
 import { settingsManager } from "@/settings-manager";
-import { isolateAmbientLettaTestEnv } from "@/test-utils/test-process-env";
+import { isolateAmbientHaruyukiTestEnv } from "@/test-utils/test-process-env";
 import type { WsProtocolMessage } from "@/types/app-server-protocol";
 import { type AppServerHandle, startAppServer } from "./app-server";
 
@@ -92,7 +92,7 @@ test.each(["answered", "dismissed"] as const)(
     const oldHome = process.env.HOME;
     const oldMods = process.env.HARUYUKI_DISABLE_MODS;
     const oldCron = process.env.HARUYUKI_DISABLE_CRON_SCHEDULER;
-    const restoreEnv = isolateAmbientLettaTestEnv();
+    const restoreEnv = isolateAmbientHaruyukiTestEnv();
     process.env.HOME = directory;
     process.env.HARUYUKI_DISABLE_MODS = "1";
     process.env.HARUYUKI_DISABLE_CRON_SCHEDULER = "1";

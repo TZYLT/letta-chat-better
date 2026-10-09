@@ -82,14 +82,14 @@ function trySpawnWithLauncher(
   // Build environment: start with parent env but strip execution-scoped vars so
   // hooks only inherit the scoped values we set explicitly for this run.
   const {
-    HARUYUKI_AGENT_ID: _lettaAgentId,
+    HARUYUKI_AGENT_ID: _haruyukiAgentId,
     AGENT_ID: _agentId,
     HARUYUKI_CONVERSATION_ID: _lettaConversationId,
     CONVERSATION_ID: _conversationId,
-    LETTA_MEMORY_DIR: _lettaMemoryDir,
+    LETTA_MEMORY_DIR: _haruyukiMemoryDir,
     MEMORY_DIR: _memoryDir,
     USER_CWD: _userCwd,
-    HARUYUKI_WORKING_DIR: _lettaWorkingDir,
+    HARUYUKI_WORKING_DIR: _haruyukiWorkingDir,
     ...parentEnv
   } = process.env;
 

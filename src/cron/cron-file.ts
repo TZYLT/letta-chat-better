@@ -134,17 +134,17 @@ const GC_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 // ── Paths ───────────────────────────────────────────────────────────
 
-function getLettaDir(): string {
+function getHaruyukiDir(): string {
   if (process.env.HARUYUKI_HOME) return process.env.HARUYUKI_HOME;
   return appHomeRoot(process.env.HOME ?? process.env.USERPROFILE ?? "~");
 }
 
 export function getCronFilePath(): string {
-  return join(getLettaDir(), CRON_FILE_NAME);
+  return join(getHaruyukiDir(), CRON_FILE_NAME);
 }
 
 function getLockDirPath(): string {
-  return join(getLettaDir(), LOCK_DIR_NAME);
+  return join(getHaruyukiDir(), LOCK_DIR_NAME);
 }
 
 // ── File I/O ────────────────────────────────────────────────────────
@@ -198,7 +198,7 @@ export function readCronFile(): CronFileData {
 
 function writeCronFile(data: CronFileData): void {
   const path = getCronFilePath();
-  const dir = getLettaDir();
+  const dir = getHaruyukiDir();
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }

@@ -117,7 +117,7 @@ export const MOD_CACHE_DIRECTORY = getModCacheDirectory();
 const requireFromRuntime = createRequire(import.meta.url);
 let resolveRuntimePackageDirectory = getRuntimePackageDirectory;
 
-export type LettaModDisposer = () => void;
+export type HaruyukiModDisposer = () => void;
 
 export type ModCapabilityDiagnosticRecorder = (
   diagnostic: Pick<
@@ -126,11 +126,11 @@ export type ModCapabilityDiagnosticRecorder = (
   >,
 ) => void;
 
-export type LettaModFactory = (
-  haruyuki: LettaModApi,
-) => undefined | LettaModDisposer | Promise<undefined | LettaModDisposer>;
+export type HaruyukiModFactory = (
+  haruyuki: HaruyukiModApi,
+) => undefined | HaruyukiModDisposer | Promise<undefined | HaruyukiModDisposer>;
 
-export interface LettaModApi {
+export interface HaruyukiModApi {
   capabilities: ModCapabilities;
   client: Letta;
   getClient: () => Promise<Letta>;
@@ -138,21 +138,21 @@ export interface LettaModApi {
   registerProvider: (
     name: string,
     config: PiProviderRegistration,
-  ) => LettaModDisposer;
+  ) => HaruyukiModDisposer;
   unregisterProvider: (name: string) => void;
   commands: {
-    register: (command: ModCommandRegistration) => LettaModDisposer;
+    register: (command: ModCommandRegistration) => HaruyukiModDisposer;
     unregister: (id: string) => void;
   };
   tools: {
-    register: (tool: ModToolRegistration) => LettaModDisposer;
+    register: (tool: ModToolRegistration) => HaruyukiModDisposer;
     unregister: (name: string) => void;
   };
   providers: {
     register: (
       name: string,
       config: PiProviderRegistration,
-    ) => LettaModDisposer;
+    ) => HaruyukiModDisposer;
     unregister: (name: string) => void;
   };
   events: {
@@ -163,10 +163,10 @@ export interface LettaModApi {
     on: <TName extends ModEventName>(
       name: TName,
       handler: ModEventHandler<TName>,
-    ) => LettaModDisposer;
+    ) => HaruyukiModDisposer;
   };
   permissions: {
-    register: (permission: ModPermissionRegistration) => LettaModDisposer;
+    register: (permission: ModPermissionRegistration) => HaruyukiModDisposer;
     unregister: (id: string) => void;
   };
   diagnostics: {
@@ -187,7 +187,7 @@ export interface LettaModApi {
 
 export interface LocalModDisposer {
   abortController?: AbortController;
-  dispose: LettaModDisposer;
+  dispose: HaruyukiModDisposer;
   owner: ModOwner;
 }
 
@@ -877,7 +877,7 @@ function upsertModPanel(
   };
 }
 
-function createLettaModApi(
+function createHaruyukiModApi(
   registry: LocalModRegistry,
   owner: ModOwner,
   capabilities: ModCapabilities,
@@ -888,7 +888,7 @@ function createLettaModApi(
   builtinCommandIds: Set<string>,
   reservedToolNames: Set<string>,
   signal: AbortSignal,
-): LettaModApi {
+): HaruyukiModApi {
   const isLive = () => isOwnerLive(registry, owner);
   const guardLive = (capability: ModDiagnostic["capability"]): boolean => {
     if (isLive()) return true;
@@ -1008,7 +1008,7 @@ function createLettaModApi(
   const registerProviderForOwner = (
     name: string,
     config: PiProviderRegistration,
-  ): LettaModDisposer => {
+  ): HaruyukiModDisposer => {
     if (!capabilities.providers) {
       return () => undefined;
     }
@@ -1068,7 +1068,7 @@ function createLettaModApi(
   const onEvent = <TName extends ModEventName>(
     name: TName,
     handler: ModEventHandler<TName>,
-  ): LettaModDisposer => {
+  ): HaruyukiModDisposer => {
     validateModEventName(name);
     if (!isModEventCapabilityEnabled(capabilities, name)) {
       return () => undefined;
@@ -1093,7 +1093,7 @@ function createLettaModApi(
     return () => unregisterEvent(name, handler);
   };
 
-  const api: LettaModApi = {
+  const api: HaruyukiModApi = {
     capabilities: cloneModCapabilities(capabilities),
     client: createLazyClient(getClient),
     getClient,
@@ -1460,7 +1460,7 @@ export async function loadLocalMods(
           );
         }
         const changes = createModChangeBatcher(onChange);
-        const api = createLettaModApi(
+        const api = createHaruyukiModApi(
           registry,
           owner,
           capabilities,
@@ -1472,7 +1472,7 @@ export async function loadLocalMods(
           reservedToolNames,
           abortController.signal,
         );
-        const activate = factory as LettaModFactory;
+        const activate = factory as HaruyukiModFactory;
         const dispose = await changes.run(() => activate(api));
         if (typeof dispose === "function") {
           registry.disposers.push({

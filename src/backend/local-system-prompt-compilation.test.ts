@@ -283,7 +283,10 @@ describe("local system prompt compilation", () => {
     const prompt = await resolveAndBuildSystemPrompt("default", "local-memfs");
 
     expect(prompt).toContain("$MEMORY_DIR");
-    expect(prompt).toContain("git commit --author=");
+    // The commit identity is the harness-configured repo identity, so the
+    // prompt must not tell the agent to override `--author`.
+    expect(prompt).not.toContain("--author=");
+    expect(prompt).toContain("git commit -m");
     expect(prompt).not.toContain(
       "Changes you commit and push sync to the Letta server",
     );

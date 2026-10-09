@@ -30,7 +30,7 @@ When using the Agent tool, you must specify a subagent_type parameter to select 
 
 ## External Coding Agents
 
-Use `subagent_type: "claude-code"` or `subagent_type: "codex"` to start a coding worker through the corresponding locally installed CLI. These types use the same background task lifecycle and completion notifications as Letta subagents, but they do not create Letta agents or conversations. Do not combine them with `agent_id` or `conversation_id`. External coding workers always run on the current machine and do not accept the remote-machine option.
+Use `subagent_type: "claude-code"` or `subagent_type: "codex"` to start a coding worker through the corresponding locally installed CLI. These types use the same background task lifecycle and completion notifications as Haruyuki subagents, but they do not create Letta agents or conversations. Do not combine them with `agent_id` or `conversation_id`. External coding workers always run on the current machine and do not accept the remote-machine option.
 
 The initial receipt includes a synthetic `claude_...` or `codex_...` agent ID as soon as the native session starts. That ID addresses the worker for the CLI's own bookkeeping; steering an active external worker from a tool call is not supported by this CLI.
 
@@ -50,7 +50,7 @@ Agent({
 
 `mcp: { inherit: true }` advertises every MCP server currently available to the parent agent. Adding `servers` advertises exactly that named subset and fails before launch if a requested server is unavailable. This passes discovery metadata, not new authorization; the worker calls tools through `letta mcp` under the parent agent identity.
 
-`model` is only meaningful for these two types: it is handed to the CLI's own model flag (for example `claude --model opus`). Letta subagents have no model argument — they always inherit the parent conversation's model, and passing `model` for any other subagent_type fails the launch.
+`model` is only meaningful for these two types: it is handed to the CLI's own model flag (for example `claude --model opus`). Haruyuki subagents have no model argument — they always inherit the parent conversation's model, and passing `model` for any other subagent_type fails the launch.
 
 ## Deploying an Existing Agent
 

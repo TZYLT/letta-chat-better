@@ -6,12 +6,12 @@ import {
   buildClientSkillsPayload,
   invalidateClientSkillsPayloadCache,
 } from "@/agent/client-skills";
-import { isolateAmbientLettaTestEnv } from "@/test-utils/test-process-env";
+import { isolateAmbientHaruyukiTestEnv } from "@/test-utils/test-process-env";
 
 let restoreAmbientEnv: (() => void) | undefined;
 
 beforeEach(() => {
-  restoreAmbientEnv = isolateAmbientLettaTestEnv();
+  restoreAmbientEnv = isolateAmbientHaruyukiTestEnv();
   invalidateClientSkillsPayloadCache();
 });
 

@@ -64,7 +64,7 @@ export function getCrossBackendAgentsTreeRoots(
  * under it (settings, logs, conversations, transcripts, memory) but not the
  * repo/home/temp — while the cross-agent tree nested inside it stays denied.
  */
-export function getLettaHomeRoot(homeDir: string = homedir()): string {
+export function getHaruyukiHomeRoot(homeDir: string = homedir()): string {
   return canonicalizeRoot(appHomeRoot(homeDir));
 }
 
@@ -265,7 +265,7 @@ export function buildMemorySubagentSandboxPolicy(
   // (custom LETTA_LOCAL_BACKEND_DIR / LETTA_TRANSCRIPT_ROOT). These are emitted
   // BEFORE the cross-agent deny, so the nested tree is still walled off.
   const baseWritableRoots = [
-    getLettaHomeRoot(),
+    getHaruyukiHomeRoot(),
     ...(input.harnessWritableRoots ?? []),
   ].map(canonicalizeRoot);
 

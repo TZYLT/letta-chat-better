@@ -125,15 +125,15 @@ async function runWatchLoop(params: {
   const dirExists = await directoryExists(worktreesDir);
   if (!dirExists) {
     // Watch the parent (.haruyuki/) for worktrees/ creation, then recurse.
-    const lettaDir = path.dirname(worktreesDir);
-    const lettaDirExists = await directoryExists(lettaDir);
-    if (!lettaDirExists) {
+    const haruyukiDir = path.dirname(worktreesDir);
+    const haruyukiDirExists = await directoryExists(haruyukiDir);
+    if (!haruyukiDirExists) {
       // No .haruyuki/ directory either — nothing to watch.
       return;
     }
 
     // Wait for `worktrees/` to appear inside `.haruyuki/`.
-    await waitForDirectoryCreation(lettaDir, "worktrees", abort.signal);
+    await waitForDirectoryCreation(haruyukiDir, "worktrees", abort.signal);
 
     // Now the worktrees dir exists — fall through to watch it.
   }

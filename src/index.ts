@@ -1926,11 +1926,11 @@ async function main(): Promise<void> {
         // stored managed prompt hash, so custom edits are preserved.
         if (resuming && !systemPromptPreset) {
           const {
-            ensureLettaCodeOriginTag,
+            ensureHaruyukiOriginTag,
             getMemoryPromptModeForAgent,
             scheduleManagedSystemPromptUpdate,
           } = await import("@/agent/system-prompt-versioning");
-          void ensureLettaCodeOriginTag(agent)
+          void ensureHaruyukiOriginTag(agent)
             .catch((error) => {
               import("@/utils/debug").then(({ debugWarn }) =>
                 debugWarn(

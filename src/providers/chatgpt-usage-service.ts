@@ -4,7 +4,7 @@ import {
   refreshAccessToken as refreshLettaAccessToken,
   type TokenResponse,
 } from "@/auth/oauth";
-import { getLettaCodeHeaders } from "@/backend/api/http-headers";
+import { getHaruyukiHeaders } from "@/backend/api/http-headers";
 import {
   getLocalOAuthApiKey,
   getLocalProviderRecordByName,
@@ -835,7 +835,7 @@ async function readCloudChatGPTUsage(
     response = await (input.fetch ?? fetch)(url, {
       method: "GET",
       headers: {
-        ...getLettaCodeHeaders(auth.apiKey),
+        ...getHaruyukiHeaders(auth.apiKey),
         Accept: "application/json",
       },
       signal: controller.signal,

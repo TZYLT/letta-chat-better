@@ -41,7 +41,7 @@ The order-0 panel owns the whole primary row. It renders text (not React) and ow
 If the user ran `/statusline` without a specific request:
 
 - If a custom statusline file exists, summarize what it appears to do and ask what they want to change.
-- If no custom file exists, explain that Letta is using the built-in default statusline and offer focused next steps:
+- If no custom file exists, explain that Haruyuki is using the built-in default statusline and offer focused next steps:
   1. start from a simple `agent · model` statusline
   2. add project info like git branch, worktree, or PR
   3. migrate an existing legacy statusline `.sh` file

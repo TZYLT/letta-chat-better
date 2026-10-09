@@ -11,7 +11,7 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { installLocalManagedModPackage } from "@/mods/package-installer";
-import { readLettaPackageManifest } from "@/mods/package-manifest";
+import { readHaruyukiPackageManifest } from "@/mods/package-manifest";
 import { scaffoldLocalModPackage } from "@/mods/package-scaffolder";
 
 const tempRoots: string[] = [];
@@ -69,7 +69,7 @@ describe("local mod package scaffolder", () => {
         mods: ["mods/hello.ts"],
       },
     });
-    expect(readLettaPackageManifest(result.packageJsonPath)).toMatchObject({
+    expect(readHaruyukiPackageManifest(result.packageJsonPath)).toMatchObject({
       manifest: {
         mods: ["mods/hello.ts"],
       },

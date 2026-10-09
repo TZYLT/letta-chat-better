@@ -2,7 +2,7 @@
 
 Use this reference when migrating legacy command statuslines, standalone `.sh` statusline scripts, or shell PS1 prompts into `~/.haruyuki/mods/statusline.tsx`.
 
-## Legacy Letta command statusline
+## Legacy Haruyuki command statusline
 
 Inspect these files for old config:
 

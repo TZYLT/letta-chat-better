@@ -158,11 +158,11 @@ export async function prepareListenerTurn(params: {
           include: ["agent.tags"],
         })) as AgentState;
         const {
-          ensureLettaCodeOriginTag,
+          ensureHaruyukiOriginTag,
           getMemoryPromptModeForAgent,
           scheduleManagedSystemPromptUpdate,
         } = await import("@/agent/system-prompt-versioning");
-        cachedAgent = await ensureLettaCodeOriginTag(cachedAgent);
+        cachedAgent = await ensureHaruyukiOriginTag(cachedAgent);
         scheduleManagedSystemPromptUpdate({
           agent: cachedAgent,
           memoryMode: getMemoryPromptModeForAgent(cachedAgent.id),

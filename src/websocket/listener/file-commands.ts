@@ -159,7 +159,7 @@ function shouldSkipProtectedHomePath(root: string, absPath: string): boolean {
   return getProtectedHomeSegment(root) !== protectedSegment;
 }
 
-function parseLettaIgnore(content: string): string[] {
+function parseHaruyukiIgnore(content: string): string[] {
   return content
     .split("\n")
     .map((line) => line.trim())
@@ -180,7 +180,7 @@ async function getIgnoreConfig(root: string): Promise<IgnoreConfig> {
       path.join(absRoot, appHomeDirName(), APP_IGNORE_FILE_NAME),
       "utf-8",
     );
-    patterns = parseLettaIgnore(content);
+    patterns = parseHaruyukiIgnore(content);
   } catch {
     patterns = [];
   }

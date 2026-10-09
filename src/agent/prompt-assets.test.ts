@@ -139,7 +139,10 @@ describe("buildSystemPrompt", () => {
       const result = buildSystemPrompt("letta", mode);
       expect(result).toContain("`memory` subagent's entry in the Agent tool");
       expect(result).not.toContain("**Memory upkeep during another task:**");
-      expect(result).toContain("git commit --author=");
+      // The commit identity is the harness-configured repo identity, so the
+      // prompt must not tell the agent to override `--author`.
+      expect(result).not.toContain("--author=");
+      expect(result).toContain("git commit -m");
       expect(result).not.toContain("Delegate all memory changes");
       expect(result).not.toContain("Leave memory writes and Git repair");
     },

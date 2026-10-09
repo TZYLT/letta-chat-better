@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { getAllowedMemoryPrefixes } from "./agent-memory-prefixes";
 
 import { isPathWithinRoots, normalizeMemoryPath } from "./memory-paths";
-import { isReadOnlyLettaCommand } from "./read-only-letta";
+import { isReadOnlyHaruyukiCommand } from "./read-only-letta";
 import {
   extractDashCArgument,
   isShellExecutor,
@@ -1175,7 +1175,7 @@ function isSafeSegment(
   }
 
   if (command === "letta") {
-    return isReadOnlyLettaCommand(tokens.slice(1));
+    return isReadOnlyHaruyukiCommand(tokens.slice(1));
   }
 
   if (command === "find") {

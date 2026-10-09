@@ -1,6 +1,6 @@
 import { getDesktopAccessToken } from "@/auth/desktop-credentials";
 import { settingsManager } from "@/settings-manager";
-import { getLettaCodeHeaders } from "./http-headers";
+import { getHaruyukiHeaders } from "./http-headers";
 import { DEFAULT_LOCAL_SERVER_URL } from "./server-url";
 
 export type ApiRequestMethod = "GET" | "POST" | "PATCH" | "DELETE";
@@ -102,7 +102,7 @@ export async function apiFetch(
   return fetch(url, {
     method: options.method ?? "GET",
     headers: {
-      ...getLettaCodeHeaders(apiKey),
+      ...getHaruyukiHeaders(apiKey),
       ...options.headers,
     },
     ...(options.body && { body: JSON.stringify(options.body) }),

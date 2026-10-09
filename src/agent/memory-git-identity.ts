@@ -3,10 +3,10 @@ import { execFileSync } from "node:child_process";
 /**
  * Who the harness attributes its own git commits to.
  *
- * Memory repositories used to be committed as `Letta Code <noreply@letta.com>`
- * (and `<agentId>@letta.com` per agent). That hardcoded domain belongs to a
- * project this fork is not, and the identity was never the operator's, so
- * GitHub could not link the commits to anyone.
+ * Memory repositories used to carry a harness-owned identity
+ * (`<product name> <noreply@letta.com>`, and `<agentId>@letta.com` per agent).
+ * That hardcoded domain belongs to a project this fork is not, and the identity
+ * was never the operator's, so GitHub could not link the commits to anyone.
  *
  * Resolution order:
  *   1. the operator's global git config (`user.name` / `user.email`),

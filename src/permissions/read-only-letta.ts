@@ -12,7 +12,7 @@ const SAFE_LETTA_COMMANDS: Record<string, Set<string>> = {
 // The CLI extracts --backend before dispatching subcommands, wherever it
 // appears. Recognize only its literal supported values; other leading options
 // must not accidentally turn an invocation into an allowed group/action pair.
-export function isReadOnlyLettaCommand(args: string[]): boolean {
+export function isReadOnlyHaruyukiCommand(args: string[]): boolean {
   const filtered: string[] = [];
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];

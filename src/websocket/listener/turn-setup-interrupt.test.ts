@@ -10,7 +10,7 @@ import { FakeHeadlessBackend } from "@/backend/dev/fake-headless-backend";
 import { DEFAULT_PERMISSION_MODE } from "@/permissions/mode";
 import { settingsManager } from "@/settings-manager";
 import { TestDirectory } from "@/test-utils/test-fs";
-import { isolateAmbientLettaTestEnv } from "@/test-utils/test-process-env";
+import { isolateAmbientHaruyukiTestEnv } from "@/test-utils/test-process-env";
 import { clearCapturedToolExecutionContexts } from "@/tools/manager";
 import { handleAbortMessageInput } from "./control-inputs";
 import { getOrCreateScopedRuntime } from "./conversation-runtime";
@@ -31,7 +31,7 @@ test("turn setup delivers the interrupt recovery notice once, only to the interr
   const directory = new TestDirectory();
   const originalHome = process.env.HOME;
   await settingsManager.reset();
-  const restoreEnv = isolateAmbientLettaTestEnv();
+  const restoreEnv = isolateAmbientHaruyukiTestEnv();
   process.env.HOME = directory.path;
   const listener = createRuntime();
   const agentId = "agent-turn-setup-interrupt";

@@ -877,7 +877,7 @@ export function AppView(props: AppViewProps) {
                         ? "1. A pre-filled PR page has been created"
                         : "1. A pull request has been created",
                     );
-                    lines.push("2. Merge the PR to enable Letta PR assistance");
+                    lines.push("2. Merge the PR to enable Haruyuki assistance");
                     lines.push(
                       "3. Mention @letta-code in an issue or PR to test",
                     );
@@ -890,7 +890,7 @@ export function AppView(props: AppViewProps) {
                     lines.push(
                       "1. Open a PR for the branch created by the installer",
                     );
-                    lines.push("2. Merge the PR to enable Letta PR assistance");
+                    lines.push("2. Merge the PR to enable Haruyuki assistance");
                     lines.push(
                       "3. Mention @letta-code in an issue or PR to test",
                     );

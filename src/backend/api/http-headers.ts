@@ -4,7 +4,7 @@ import packageJson from "../../../package.json";
  * Get standard headers for manual HTTP calls to Letta API.
  * Use this for any direct fetch() calls (not SDK calls).
  */
-export function getLettaCodeHeaders(apiKey?: string): Record<string, string> {
+export function getHaruyukiHeaders(apiKey?: string): Record<string, string> {
   return {
     "Content-Type": "application/json",
     "User-Agent": `letta-code/${packageJson.version}`,
@@ -18,7 +18,7 @@ export function getLettaCodeHeaders(apiKey?: string): Record<string, string> {
  */
 export function getMcpOAuthHeaders(apiKey: string): Record<string, string> {
   return {
-    ...getLettaCodeHeaders(apiKey),
+    ...getHaruyukiHeaders(apiKey),
     Accept: "text/event-stream",
   };
 }

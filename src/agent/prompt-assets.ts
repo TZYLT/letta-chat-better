@@ -1,11 +1,11 @@
 // Additional system prompts for /system command
 
 import approvalRecoveryAlert from "./prompts/approval_recovery_alert.txt";
-import lettaMemfsPrompt from "./prompts/haruyuki.md";
-import lettaLocalMemfsPrompt from "./prompts/haruyuki_local_memfs.md";
-import lettaNoMemfsPrompt from "./prompts/haruyuki_no_memfs.md";
-import lettaRootMemfsPrompt from "./prompts/haruyuki_root_memfs.md";
-import lettaTopicMarkingPrompt from "./prompts/haruyuki_topic_marking.md";
+import haruyukiMemfsPrompt from "./prompts/haruyuki.md";
+import haruyukiLocalMemfsPrompt from "./prompts/haruyuki_local_memfs.md";
+import haruyukiNoMemfsPrompt from "./prompts/haruyuki_no_memfs.md";
+import haruyukiRootMemfsPrompt from "./prompts/haruyuki_root_memfs.md";
+import haruyukiTopicMarkingPrompt from "./prompts/haruyuki_topic_marking.md";
 import humanPrompt from "./prompts/human.mdx";
 import humanKawaiiPrompt from "./prompts/human_kawaii.mdx";
 import humanLinusPrompt from "./prompts/human_linus.mdx";
@@ -29,7 +29,7 @@ import sourceGeminiPrompt from "./prompts/source_gemini.md";
 
 import stylePrompt from "./prompts/style.mdx";
 
-export const SYSTEM_PROMPT = lettaNoMemfsPrompt;
+export const SYSTEM_PROMPT = haruyukiNoMemfsPrompt;
 
 export const SKILL_CREATOR_PROMPT = skillCreatorModePrompt;
 export const APPROVAL_RECOVERY_PROMPT = approvalRecoveryAlert;
@@ -39,7 +39,7 @@ export const INTERRUPT_RECOVERY_ALERT = interruptRecoveryAlert;
  * Appended by the local backend's compiler while agent topic marking is on, so
  * the guidance disappears with the tool declaration when it is switched off.
  */
-export const TOPIC_MARKING_PROMPT = lettaTopicMarkingPrompt;
+export const TOPIC_MARKING_PROMPT = haruyukiTopicMarkingPrompt;
 
 export const MEMORY_PROMPTS: Record<string, string> = {
   "persona.mdx": personaPrompt,
@@ -79,10 +79,10 @@ export const SYSTEM_PROMPTS: SystemPromptOption[] = [
     id: "default",
     label: "Default",
     description: "Alias for letta",
-    content: lettaNoMemfsPrompt,
-    memfsContent: lettaMemfsPrompt,
-    rootMemfsContent: lettaRootMemfsPrompt,
-    localMemfsContent: lettaLocalMemfsPrompt,
+    content: haruyukiNoMemfsPrompt,
+    memfsContent: haruyukiMemfsPrompt,
+    rootMemfsContent: haruyukiRootMemfsPrompt,
+    localMemfsContent: haruyukiLocalMemfsPrompt,
     isDefault: true,
     isFeatured: true,
   },
@@ -90,10 +90,10 @@ export const SYSTEM_PROMPTS: SystemPromptOption[] = [
     id: "letta",
     label: "Haruyuki",
     description: "Full Haruyuki system prompt",
-    content: lettaNoMemfsPrompt,
-    memfsContent: lettaMemfsPrompt,
-    rootMemfsContent: lettaRootMemfsPrompt,
-    localMemfsContent: lettaLocalMemfsPrompt,
+    content: haruyukiNoMemfsPrompt,
+    memfsContent: haruyukiMemfsPrompt,
+    rootMemfsContent: haruyukiRootMemfsPrompt,
+    localMemfsContent: haruyukiLocalMemfsPrompt,
     isFeatured: true,
   },
   {

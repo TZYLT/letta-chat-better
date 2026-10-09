@@ -16,7 +16,7 @@ import {
   ensureLettaShimDir,
   getLettaShimDir,
   getShellEnv,
-  resolveLettaInvocation,
+  resolveHaruyukiInvocation,
 } from "@/tools/impl/shell-env";
 
 function withTemporaryAgentEnv<T>(agentId: string, fn: () => T): T {
@@ -73,8 +73,8 @@ function withTemporaryEnv<T>(
 }
 
 describe("shellEnv letta shim", () => {
-  test("resolveLettaInvocation prefers explicit launcher env", () => {
-    const invocation = resolveLettaInvocation(
+  test("resolveHaruyukiInvocation prefers explicit launcher env", () => {
+    const invocation = resolveHaruyukiInvocation(
       {
         HARUYUKI_CODE_BIN: "/tmp/custom-letta",
         HARUYUKI_CODE_BIN_ARGS_JSON: JSON.stringify(["/tmp/entry.ts"]),
@@ -89,8 +89,8 @@ describe("shellEnv letta shim", () => {
     });
   });
 
-  test("resolveLettaInvocation strips accidental wrapping quotes in HARUYUKI_CODE_BIN", () => {
-    const invocation = resolveLettaInvocation(
+  test("resolveHaruyukiInvocation strips accidental wrapping quotes in HARUYUKI_CODE_BIN", () => {
+    const invocation = resolveHaruyukiInvocation(
       {
         HARUYUKI_CODE_BIN:
           '"C:\\Users\\Example User\\AppData\\Roaming\\npm\\letta.cmd"',
@@ -105,8 +105,8 @@ describe("shellEnv letta shim", () => {
     });
   });
 
-  test("resolveLettaInvocation infers dev entrypoint launcher", () => {
-    const invocation = resolveLettaInvocation(
+  test("resolveHaruyukiInvocation infers dev entrypoint launcher", () => {
+    const invocation = resolveHaruyukiInvocation(
       {},
       ["bun", "/Users/example/dev/letta-code-prod/src/index.ts"],
       "/opt/homebrew/bin/bun",
@@ -124,7 +124,7 @@ describe("shellEnv letta shim", () => {
     });
   });
 
-  test("resolveLettaInvocation resolves relative dev entrypoint against cwd", () => {
+  test("resolveHaruyukiInvocation resolves relative dev entrypoint against cwd", () => {
     const cwd =
       process.platform === "win32"
         ? path.win32.join("C:\\", "Users", "example", "dev", "letta-code-prod")
@@ -138,7 +138,7 @@ describe("shellEnv letta shim", () => {
         ? "C:\\bun\\bun.exe"
         : "/opt/homebrew/bin/bun";
 
-    const invocation = resolveLettaInvocation(
+    const invocation = resolveHaruyukiInvocation(
       {},
       ["bun", "src/index.ts"],
       execPath,
@@ -157,8 +157,8 @@ describe("shellEnv letta shim", () => {
     });
   });
 
-  test("resolveLettaInvocation keeps non-bun dev launcher behavior", () => {
-    const invocation = resolveLettaInvocation(
+  test("resolveHaruyukiInvocation keeps non-bun dev launcher behavior", () => {
+    const invocation = resolveHaruyukiInvocation(
       {},
       ["node", "/Users/example/dev/letta-code-prod/src/index.ts"],
       "/usr/local/bin/node",
@@ -170,8 +170,8 @@ describe("shellEnv letta shim", () => {
     });
   });
 
-  test("resolveLettaInvocation returns null for unrelated argv scripts", () => {
-    const invocation = resolveLettaInvocation(
+  test("resolveHaruyukiInvocation returns null for unrelated argv scripts", () => {
+    const invocation = resolveHaruyukiInvocation(
       {},
       ["bun", "/Users/example/dev/another-project/scripts/run.ts"],
       "/opt/homebrew/bin/bun",
@@ -180,8 +180,8 @@ describe("shellEnv letta shim", () => {
     expect(invocation).toBeNull();
   });
 
-  test("resolveLettaInvocation does not infer production letta.js entrypoint", () => {
-    const invocation = resolveLettaInvocation(
+  test("resolveHaruyukiInvocation does not infer production letta.js entrypoint", () => {
+    const invocation = resolveHaruyukiInvocation(
       {},
       [
         "/usr/local/bin/node",
@@ -417,7 +417,7 @@ test("getShellEnv does not inject MEMORY_DIR aliases when memfs is disabled", ()
     const originalIsMemfsEnabled =
       settingsManager.isMemfsEnabled.bind(settingsManager);
     const originalMemoryDir = process.env.MEMORY_DIR;
-    const originalLettaMemoryDir = process.env.LETTA_MEMORY_DIR;
+    const originalHaruyukiMemoryDir = process.env.LETTA_MEMORY_DIR;
     (
       settingsManager as unknown as { isMemfsEnabled: (id: string) => boolean }
     ).isMemfsEnabled = () => false;
@@ -441,10 +441,10 @@ test("getShellEnv does not inject MEMORY_DIR aliases when memfs is disabled", ()
         process.env.MEMORY_DIR = originalMemoryDir;
       }
 
-      if (originalLettaMemoryDir === undefined) {
+      if (originalHaruyukiMemoryDir === undefined) {
         delete process.env.LETTA_MEMORY_DIR;
       } else {
-        process.env.LETTA_MEMORY_DIR = originalLettaMemoryDir;
+        process.env.LETTA_MEMORY_DIR = originalHaruyukiMemoryDir;
       }
     }
   });

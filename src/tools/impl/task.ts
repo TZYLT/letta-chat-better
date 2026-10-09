@@ -649,14 +649,14 @@ export async function launchSubagent(
       ? requestedType
       : null;
   const isExternalCodingAgent = externalCodingAgentType !== null;
-  // `model` selects the external CLI's own model. Letta subagents have no model
+  // `model` selects the external CLI's own model. Haruyuki subagents have no model
   // of their own — they inherit the parent conversation's — so reject it rather
   // than silently spawning a child on a different model.
   if (model !== undefined && !isExternalCodingAgent) {
     return {
       success: false,
       error:
-        "Letta subagents inherit the parent conversation model; the model argument is only supported for claude-code and codex.",
+        "Haruyuki subagents inherit the parent conversation model; the model argument is only supported for claude-code and codex.",
     };
   }
   if (isExternalCodingAgent && isDeployingExisting) {

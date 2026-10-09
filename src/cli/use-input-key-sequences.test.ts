@@ -7,7 +7,7 @@ const useInputModuleUrl = new URL(
 
 async function loadTestUtils() {
   const mod = await import(useInputModuleUrl);
-  return mod.__lettaUseInputTestUtils as {
+  return mod.__haruyukiUseInputTestUtils as {
     isProtocolReportSequence: (data: unknown) => boolean;
     stripTrailingNewlineFromCsiU: (data: unknown) => unknown;
     shouldSuppressBareEnterAfterModifiedEnter: (

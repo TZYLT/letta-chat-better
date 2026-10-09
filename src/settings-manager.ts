@@ -1840,7 +1840,7 @@ class SettingsManager {
   /**
    * Check if local .haruyuki directory exists (indicates existing project)
    */
-  hasLocalLettaDir(workingDirectory: string = process.cwd()): boolean {
+  hasLocalHaruyukiDir(workingDirectory: string = process.cwd()): boolean {
     const dirPath = projectAppHomePath(workingDirectory);
     return exists(dirPath);
   }
@@ -2081,11 +2081,11 @@ class SettingsManager {
 
 // Singleton instance - use globalThis to ensure only one instance across the entire bundle
 declare global {
-  var __lettaSettingsManager: SettingsManager | undefined;
+  var __haruyukiSettingsManager: SettingsManager | undefined;
 }
 
-if (!globalThis.__lettaSettingsManager) {
-  globalThis.__lettaSettingsManager = new SettingsManager();
+if (!globalThis.__haruyukiSettingsManager) {
+  globalThis.__haruyukiSettingsManager = new SettingsManager();
 }
 
-export const settingsManager = globalThis.__lettaSettingsManager;
+export const settingsManager = globalThis.__haruyukiSettingsManager;

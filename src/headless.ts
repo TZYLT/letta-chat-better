@@ -1307,13 +1307,13 @@ export async function handleHeadlessCommand(
   // Refresh unchanged managed prompts on resume without blocking startup.
   if (isResumingAgent && !systemPromptPreset) {
     const {
-      ensureLettaCodeOriginTag,
+      ensureHaruyukiOriginTag,
       getMemoryPromptModeForAgent,
       scheduleManagedSystemPromptUpdate,
     } = await import("@/agent/system-prompt-versioning");
     let taggedAgent = agent;
     try {
-      taggedAgent = await ensureLettaCodeOriginTag(agent);
+      taggedAgent = await ensureHaruyukiOriginTag(agent);
     } catch (error) {
       debugWarn(
         "headless startup",

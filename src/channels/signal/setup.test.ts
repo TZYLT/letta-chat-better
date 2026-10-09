@@ -67,7 +67,7 @@ describe("Signal setup helpers", () => {
 
   test("builds QR link URL for device linking", () => {
     expect(getSignalQrLinkUrl("http://127.0.0.1:8080")).toBe(
-      "http://127.0.0.1:8080/v1/qrcodelink?device_name=Letta+Code",
+      "http://127.0.0.1:8080/v1/qrcodelink?device_name=Haruyuki",
     );
   });
 

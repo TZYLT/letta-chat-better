@@ -86,8 +86,8 @@ interface ChannelAccountStore {
 export const LEGACY_CHANNEL_ACCOUNT_ID = "__legacy_migrated__";
 
 const stores = new Map<string, ChannelAccountStore>();
-const CHANNEL_SECRET_REFS_KEY = "__letta_secret_refs";
-const SECRET_PRESENT_PLACEHOLDER = "__letta_channel_secret_present__";
+const CHANNEL_SECRET_REFS_KEY = "__haruyuki_secret_refs";
+const SECRET_PRESENT_PLACEHOLDER = "__haruyuki_channel_secret_present__";
 const pendingSecretWrites: Promise<unknown>[] = [];
 
 type ChannelAccountWithSecretRefs = ChannelAccount & {

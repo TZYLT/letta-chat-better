@@ -17,9 +17,9 @@ For ordinary one-shot or recurring work in the current conversation, use Wake in
 
 ## Where Schedules Run
 
-Every schedule is device-local. It lives in `~/.haruyuki/crons.json` and fires from the Letta process on this computer:
+Every schedule is device-local. It lives in `~/.haruyuki/crons.json` and fires from the Haruyuki process on this computer:
 
-- A schedule only fires while a Letta session is running on this computer. A fire that comes due while nothing is running is recorded as missed and is not replayed later.
+- A schedule only fires while a Haruyuki session is running on this computer. A fire that comes due while nothing is running is recorded as missed and is not replayed later.
 - There is no runner selection flag and no remote target. `--computer` is rejected, and a schedule cannot run on another computer or in a hosted sandbox.
 
 ## CLI Usage
@@ -200,7 +200,7 @@ Include context about what the user originally asked for, so you can give a help
 - **Recurring tasks**: No longer auto-expire. They remain active until explicitly cancelled.
 - **Terminal task cleanup**: A task that reached a terminal state — fired, missed, or cancelled — is removed 24 hours later.
 - **Default binding**: `letta cron add` uses `--agent` first, then `HARUYUKI_AGENT_ID`. Omit `--conversation` for a fresh conversation per fire; use `--conversation self` to capture `HARUYUKI_CONVERSATION_ID` explicitly.
-- **Scheduler requirement**: A schedule only fires while a Letta session is running on this computer; a fire that comes due while nothing is running is marked missed.
+- **Scheduler requirement**: A schedule only fires while a Haruyuki session is running on this computer; a fire that comes due while nothing is running is marked missed.
 - **`--at` for specific times**: prefer RFC 3339 with an explicit offset. A bare `--at "3:00pm"` uses the process timezone and schedules tomorrow if that time has already passed there.
 - **Creation failures are loud**: `letta cron add` exits nonzero and prints the reason to stderr, and no task is stored. Check the exit code instead of assuming the task exists.
 

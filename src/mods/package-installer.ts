@@ -16,8 +16,8 @@ import path from "node:path";
 import { isModFileExtension } from "@/mods/file-extensions";
 import {
   HARUYUKI_PACKAGE_MANIFEST_VERSION,
-  type LettaPackageCapability,
-  readLettaPackageManifest,
+  type HaruyukiPackageCapability,
+  readHaruyukiPackageManifest,
 } from "@/mods/package-manifest";
 import {
   getManagedModPackage,
@@ -33,7 +33,7 @@ import {
 } from "@/utils/package-manager-spawn";
 
 export interface InstallLocalManagedModPackageResult {
-  capabilities: LettaPackageCapability[];
+  capabilities: HaruyukiPackageCapability[];
   entries: string[];
   packageDirectory: string;
   registryPath: string;
@@ -73,7 +73,7 @@ export interface GitManagedModPackageInstallSpecifier {
 }
 
 interface PackageSourceInfo {
-  capabilities: LettaPackageCapability[];
+  capabilities: HaruyukiPackageCapability[];
   entries: string[];
   packageDirectory: string;
   packageName: string;
@@ -141,7 +141,7 @@ function formatRepository(repository: unknown): string | undefined {
   return trimmed || undefined;
 }
 
-export function isLocalLettaModPackageDirectory(
+export function isLocalHaruyukiModPackageDirectory(
   packageDirectory: string,
 ): boolean {
   const resolvedPackageDirectory = path.resolve(packageDirectory);
@@ -240,7 +240,7 @@ function validatePackageSource(packageDirectory: string): PackageSourceInfo {
     throw new Error("package.json.version must be a string");
   }
 
-  const manifestResult = readLettaPackageManifest(packageJsonPath);
+  const manifestResult = readHaruyukiPackageManifest(packageJsonPath);
   if (!manifestResult.ok) {
     throw new Error(
       manifestResult.errors
@@ -932,11 +932,11 @@ function createGitPackageSourceInfo(params: {
     packageJson,
     revision: params.revision,
   });
-  let capabilities: LettaPackageCapability[] = [];
+  let capabilities: HaruyukiPackageCapability[] = [];
   let entries: string[];
 
   if (packageJson && Object.hasOwn(packageJson, "letta")) {
-    const manifestResult = readLettaPackageManifest(packageJsonPath);
+    const manifestResult = readHaruyukiPackageManifest(packageJsonPath);
     if (!manifestResult.ok) {
       throw new Error(
         manifestResult.errors
@@ -953,7 +953,7 @@ function createGitPackageSourceInfo(params: {
     entries = inferCompatibilityModEntries(packageDirectory);
     if (entries.length === 0) {
       throw new Error(
-        "GitHub repo is not an installable Letta mod package. Add package.json#letta or a conventional mod entry.",
+        "GitHub repo is not an installable Haruyuki mod package. Add package.json#letta or a conventional mod entry.",
       );
     }
     writeCompatibilityPackageManifest({

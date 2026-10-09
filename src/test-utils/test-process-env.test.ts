@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test } from "bun:test";
 import {
   createAuthenticatedCliTestEnv,
   createIsolatedCliTestEnv,
-  isolateAmbientLettaTestEnv,
+  isolateAmbientHaruyukiTestEnv,
 } from "@/test-utils/test-process-env";
 
 const restores: Array<() => void> = [];
@@ -16,7 +16,7 @@ afterEach(() => {
 describe("test process env helpers", () => {
   test("createIsolatedCliTestEnv strips ambient agent, API, local backend, and memory env", () => {
     restores.push(
-      isolateAmbientLettaTestEnv({
+      isolateAmbientHaruyukiTestEnv({
         AGENT_ID: "agent-ambient",
         CONVERSATION_ID: "conv-ambient",
         HARUYUKI_AGENT_ID: "agent-letta",
@@ -47,7 +47,7 @@ describe("test process env helpers", () => {
 
   test("extra env opts back into values deliberately", () => {
     restores.push(
-      isolateAmbientLettaTestEnv({
+      isolateAmbientHaruyukiTestEnv({
         LETTA_API_KEY: "sk-ambient",
         MEMORY_DIR: "/tmp/ambient-memory",
       }),
@@ -76,7 +76,7 @@ describe("test process env helpers", () => {
 
   test("createAuthenticatedCliTestEnv preserves only explicit API connection env", () => {
     restores.push(
-      isolateAmbientLettaTestEnv({
+      isolateAmbientHaruyukiTestEnv({
         AGENT_ID: "agent-ambient",
         LETTA_API_KEY: "sk-ambient",
         LETTA_BASE_URL: "https://api.example.test",

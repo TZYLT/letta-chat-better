@@ -1204,7 +1204,7 @@ describe("local managed mod package installer", () => {
         modsRoot,
         specifier: "https://github.com/caren/not-a-mod",
       }),
-    ).rejects.toThrow("GitHub repo is not an installable Letta mod package");
+    ).rejects.toThrow("GitHub repo is not an installable Haruyuki mod package");
     expect(existsSync(path.join(modsRoot, "packages.json"))).toBe(false);
     expect(existsSync(path.join(modsRoot, "packages"))).toBe(false);
   });
