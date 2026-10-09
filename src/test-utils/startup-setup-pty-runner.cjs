@@ -104,7 +104,7 @@ async function main() {
           PATH: process.env.PATH,
           HOME: homeDir,
           TERM: "xterm-256color",
-          LETTA_DISABLE_SESSION_PERSIST: "1",
+          HARUYUKI_DISABLE_SESSION_PERSIST: "1",
         },
         name: "xterm-256color",
         rows: 30,

@@ -31,7 +31,7 @@ export const TypeScriptServer: LSPServerInfo = {
       }
     },
     async install(): Promise<void> {
-      if (process.env.LETTA_DISABLE_LSP_DOWNLOAD) {
+      if (process.env.HARUYUKI_DISABLE_LSP_DOWNLOAD) {
         throw new Error(
           "LSP auto-download is disabled. Please install typescript-language-server manually: npm install -g typescript-language-server typescript",
         );

@@ -7,13 +7,13 @@ import Letta from "@letta-ai/letta-client";
 import { APIError } from "@letta-ai/letta-client/core/error";
 import { trackBoundaryError } from "@/telemetry/error-reporting";
 
-export const LETTA_CLOUD_API_URL = "https://api.letta.com";
+export const HARUYUKI_CLOUD_API_URL = "https://api.letta.com";
 
 export const OAUTH_CONFIG = {
   clientId: "ci-let-724dea7e98f4af6f8f370f4b1466200c",
   clientSecret: "", // Not needed for device code flow
   authBaseUrl: "https://app.letta.com",
-  apiBaseUrl: LETTA_CLOUD_API_URL,
+  apiBaseUrl: HARUYUKI_CLOUD_API_URL,
 } as const;
 
 export interface DeviceCodeResponse {

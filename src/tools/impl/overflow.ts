@@ -17,10 +17,11 @@ import { appHomeRoot } from "@/utils/app-paths";
  */
 export const OVERFLOW_CONFIG = {
   /** Whether to write overflow to files (default: true) */
-  ENABLED: process.env.LETTA_TOOL_OVERFLOW_TO_FILE?.toLowerCase() !== "false",
+  ENABLED:
+    process.env.HARUYUKI_TOOL_OVERFLOW_TO_FILE?.toLowerCase() !== "false",
   /** Whether to use middle-truncation instead of post-truncation (default: true) */
   MIDDLE_TRUNCATE:
-    process.env.LETTA_TOOL_MIDDLE_TRUNCATE?.toLowerCase() !== "false",
+    process.env.HARUYUKI_TOOL_MIDDLE_TRUNCATE?.toLowerCase() !== "false",
 } as const;
 
 /**

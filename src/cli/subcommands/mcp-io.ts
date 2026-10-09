@@ -103,7 +103,7 @@ Commands:
   call      Call one exact tool name and print an MCP CallToolResult
 
 Options:
-  --agent <id>       Agent ID. Defaults to LETTA_AGENT_ID or AGENT_ID
+  --agent <id>       Agent ID. Defaults to HARUYUKI_AGENT_ID or AGENT_ID
   --agent-id <id>    Alias for --agent
   --full             Include complete schemas in tools output
   --mode <mode>      Search mode: hybrid (default), vector, or fts
@@ -122,7 +122,13 @@ export function resolveMcpAgentId(
   agentId?: string,
   env: NodeJS.ProcessEnv = process.env,
 ): string {
-  return (agent || agentId || env.LETTA_AGENT_ID || env.AGENT_ID || "").trim();
+  return (
+    agent ||
+    agentId ||
+    env.HARUYUKI_AGENT_ID ||
+    env.AGENT_ID ||
+    ""
+  ).trim();
 }
 
 export async function loadMcpToolArgs(

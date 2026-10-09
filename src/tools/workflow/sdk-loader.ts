@@ -7,7 +7,7 @@
  * subagents may run a version behind), and bundling that nested copy into
  * letta.js would be circular and heavy. Resolution order:
  *
- *   1. LETTA_AGENT_SDK_PATH env var (installed copy or checkout; overrides)
+ *   1. HARUYUKI_AGENT_SDK_PATH env var (installed copy or checkout; overrides)
  *   2. letta-code's own dependency (resolved from this module)
  *   3. Normal module resolution from the working directory
  *   4. A direct probe of node_modules/@letta-ai/letta-agent-sdk walking up
@@ -133,7 +133,7 @@ export function probeInstalledSdkDirs(startDirs: string[]): string[] {
 export async function loadAgentSdk(): Promise<LoadedSdk> {
   preferRunningCliForSubagents();
   const attempts: string[] = [];
-  const envPath = process.env.LETTA_AGENT_SDK_PATH;
+  const envPath = process.env.HARUYUKI_AGENT_SDK_PATH;
   const specifiers: string[] = [];
   if (envPath) {
     try {
@@ -183,7 +183,7 @@ export async function loadAgentSdk(): Promise<LoadedSdk> {
         // never be inferred from query identity: 0.8.17 has that identity but
         // ignores conversationId and starts a new child.
         supportsAgentFreeResume:
-          (process.env.LETTA_WORKFLOW_AGENT_FREE_RESUME === "1" &&
+          (process.env.HARUYUKI_WORKFLOW_AGENT_FREE_RESUME === "1" &&
             Boolean(envPath) &&
             specifier === specifiers[0]) ||
           (specifier.startsWith("file:") &&
@@ -222,7 +222,7 @@ export async function loadAgentSdk(): Promise<LoadedSdk> {
       ? `${SDK_PACKAGE} is installed at ${installedDirs[0]} but this process ` +
         "cannot load it (it was likely started before the install). Restart the CLI and retry."
       : `Could not load ${SDK_PACKAGE}. Install it (bun add ${SDK_PACKAGE}) or ` +
-        "set LETTA_AGENT_SDK_PATH to an installed copy.";
+        "set HARUYUKI_AGENT_SDK_PATH to an installed copy.";
   throw new Error(
     `${advice}\n${attempts.map((a) => `  tried ${a}`).join("\n")}`,
   );

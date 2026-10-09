@@ -7,7 +7,7 @@ import { join } from "node:path";
  *
  * Why this module exists: the directory name used to be a bare `".letta"`
  * literal in ~46 non-test files, so the rename had no single point of control.
- * `LETTA_HOME` did override the root, but only two call sites read it. Resolve
+ * `HARUYUKI_HOME` did override the root, but only two call sites read it. Resolve
  * every harness path through the helpers here so the name (and the override)
  * really is global.
  *
@@ -20,7 +20,7 @@ import { join } from "node:path";
 export const APP_DIR_NAME = ".haruyuki";
 
 /** Env override for the harness root. When set, it replaces `~/.haruyuki` outright. */
-export const APP_HOME_ENV = "LETTA_HOME";
+export const APP_HOME_ENV = "HARUYUKI_HOME";
 
 /** Name of the repo-local ignore file, e.g. `<repo>/.haruyuki/.haruyukiignore`. */
 export const APP_IGNORE_FILE_NAME = ".haruyukiignore";
@@ -69,7 +69,7 @@ export const APP_SUBDIRS = {
 } as const;
 
 /**
- * Explicit harness root: the `LETTA_HOME` override, or `undefined` to mean
+ * Explicit harness root: the `HARUYUKI_HOME` override, or `undefined` to mean
  * "under the home directory". Callers that must distinguish an explicit root
  * (for example settings precedence) use this; most code wants
  * {@link appHomeRoot}.
@@ -82,7 +82,7 @@ export function getAppHomeOverride(
 
 /**
  * Absolute harness root. Resolved on every call because both `HOME` and
- * `LETTA_HOME` may change at runtime (the test preload redirects home).
+ * `HARUYUKI_HOME` may change at runtime (the test preload redirects home).
  */
 export function appHomeRoot(
   homeDir: string = resolveHomeDir(),

@@ -14,19 +14,20 @@ import { createStreamStallReconciler } from "@/cli/helpers/stream-stall-reconcil
  * and aborts the dead read so the resume path replays the lost tail.
  */
 
-const originalInterval = process.env.LETTA_STREAM_STALL_RECONCILE_MS;
-const originalStatusTimeout = process.env.LETTA_STREAM_STALL_STATUS_TIMEOUT_MS;
+const originalInterval = process.env.HARUYUKI_STREAM_STALL_RECONCILE_MS;
+const originalStatusTimeout =
+  process.env.HARUYUKI_STREAM_STALL_STATUS_TIMEOUT_MS;
 
 afterEach(() => {
   if (originalInterval === undefined) {
-    delete process.env.LETTA_STREAM_STALL_RECONCILE_MS;
+    delete process.env.HARUYUKI_STREAM_STALL_RECONCILE_MS;
   } else {
-    process.env.LETTA_STREAM_STALL_RECONCILE_MS = originalInterval;
+    process.env.HARUYUKI_STREAM_STALL_RECONCILE_MS = originalInterval;
   }
   if (originalStatusTimeout === undefined) {
-    delete process.env.LETTA_STREAM_STALL_STATUS_TIMEOUT_MS;
+    delete process.env.HARUYUKI_STREAM_STALL_STATUS_TIMEOUT_MS;
   } else {
-    process.env.LETTA_STREAM_STALL_STATUS_TIMEOUT_MS = originalStatusTimeout;
+    process.env.HARUYUKI_STREAM_STALL_STATUS_TIMEOUT_MS = originalStatusTimeout;
   }
 });
 
@@ -75,7 +76,7 @@ function makeReconciler(options: {
 
 describe("createStreamStallReconciler", () => {
   test("aborts the dead read when the run completed server-side", async () => {
-    process.env.LETTA_STREAM_STALL_RECONCILE_MS = "20";
+    process.env.HARUYUKI_STREAM_STALL_RECONCILE_MS = "20";
     const harness = makeReconciler({ runId: "run-1", status: "completed" });
     harness.reconciler.arm();
     await waitMs(60);
@@ -85,7 +86,7 @@ describe("createStreamStallReconciler", () => {
   });
 
   test("keeps waiting while the run is still active server-side", async () => {
-    process.env.LETTA_STREAM_STALL_RECONCILE_MS = "20";
+    process.env.HARUYUKI_STREAM_STALL_RECONCILE_MS = "20";
     const harness = makeReconciler({ runId: "run-1", status: "running" });
     harness.reconciler.arm();
     await waitMs(70);
@@ -97,7 +98,7 @@ describe("createStreamStallReconciler", () => {
   });
 
   test("reconnects when the status lookup fails", async () => {
-    process.env.LETTA_STREAM_STALL_RECONCILE_MS = "20";
+    process.env.HARUYUKI_STREAM_STALL_RECONCILE_MS = "20";
     const harness = makeReconciler({ runId: "run-1", statusError: true });
     harness.reconciler.arm();
     await waitMs(50);
@@ -107,7 +108,7 @@ describe("createStreamStallReconciler", () => {
   });
 
   test("keeps waiting without a run id or OTID", async () => {
-    process.env.LETTA_STREAM_STALL_RECONCILE_MS = "20";
+    process.env.HARUYUKI_STREAM_STALL_RECONCILE_MS = "20";
     const harness = makeReconciler({ runId: null, status: "completed" });
     harness.reconciler.arm();
     await waitMs(50);
@@ -117,7 +118,7 @@ describe("createStreamStallReconciler", () => {
   });
 
   test("reconnects without a run id when OTID replay is available", async () => {
-    process.env.LETTA_STREAM_STALL_RECONCILE_MS = "20";
+    process.env.HARUYUKI_STREAM_STALL_RECONCILE_MS = "20";
     const harness = makeReconciler({
       runId: null,
       canResumeWithoutRunId: true,
@@ -130,8 +131,8 @@ describe("createStreamStallReconciler", () => {
   });
 
   test("times out a hung status lookup before reconnecting", async () => {
-    process.env.LETTA_STREAM_STALL_RECONCILE_MS = "10";
-    process.env.LETTA_STREAM_STALL_STATUS_TIMEOUT_MS = "15";
+    process.env.HARUYUKI_STREAM_STALL_RECONCILE_MS = "10";
+    process.env.HARUYUKI_STREAM_STALL_STATUS_TIMEOUT_MS = "15";
     let abortCount = 0;
     let statusSignalAborted = false;
     const reconciler = createStreamStallReconciler({
@@ -162,7 +163,7 @@ describe("createStreamStallReconciler", () => {
   });
 
   test("defers to the terminal-EOF guard once stop_reason arrived", async () => {
-    process.env.LETTA_STREAM_STALL_RECONCILE_MS = "20";
+    process.env.HARUYUKI_STREAM_STALL_RECONCILE_MS = "20";
     const harness = makeReconciler({
       runId: "run-1",
       stopReason: "end_turn",
@@ -176,7 +177,7 @@ describe("createStreamStallReconciler", () => {
   });
 
   test("chunk arrival re-arms instead of firing", async () => {
-    process.env.LETTA_STREAM_STALL_RECONCILE_MS = "40";
+    process.env.HARUYUKI_STREAM_STALL_RECONCILE_MS = "40";
     const harness = makeReconciler({ runId: "run-1", status: "completed" });
     harness.reconciler.arm();
     await waitMs(25);
@@ -188,7 +189,7 @@ describe("createStreamStallReconciler", () => {
   });
 
   test("clear() cancels a pending timer", async () => {
-    process.env.LETTA_STREAM_STALL_RECONCILE_MS = "20";
+    process.env.HARUYUKI_STREAM_STALL_RECONCILE_MS = "20";
     const harness = makeReconciler({ runId: "run-1", status: "completed" });
     harness.reconciler.arm();
     harness.reconciler.clear();
@@ -198,7 +199,7 @@ describe("createStreamStallReconciler", () => {
   });
 
   test("does not double-fire after aborting once", async () => {
-    process.env.LETTA_STREAM_STALL_RECONCILE_MS = "15";
+    process.env.HARUYUKI_STREAM_STALL_RECONCILE_MS = "15";
     const harness = makeReconciler({ runId: "run-1", status: "completed" });
     harness.reconciler.arm();
     await waitMs(40);
@@ -209,7 +210,7 @@ describe("createStreamStallReconciler", () => {
   });
 
   test("activity during a status lookup invalidates its result", async () => {
-    process.env.LETTA_STREAM_STALL_RECONCILE_MS = "20";
+    process.env.HARUYUKI_STREAM_STALL_RECONCILE_MS = "20";
     let resolveStatus!: (status: string) => void;
     const statusPromise = new Promise<string>((resolve) => {
       resolveStatus = resolve;
@@ -235,7 +236,7 @@ describe("createStreamStallReconciler", () => {
   });
 
   test("status resolved after stop_reason arrival does not abort", async () => {
-    process.env.LETTA_STREAM_STALL_RECONCILE_MS = "20";
+    process.env.HARUYUKI_STREAM_STALL_RECONCILE_MS = "20";
     let stopReason: string | null = null;
     let abortCount = 0;
     const reconciler = createStreamStallReconciler({

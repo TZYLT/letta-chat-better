@@ -202,9 +202,9 @@ describe("PiStreamAdapter", () => {
     expect(events.some((event) => event.type === "local-message")).toBe(true);
   });
 
-  test("honors LETTA_LOCAL_REQUEST_BYTE_LIMIT for image elision threshold", async () => {
-    const previousLimit = process.env.LETTA_LOCAL_REQUEST_BYTE_LIMIT;
-    process.env.LETTA_LOCAL_REQUEST_BYTE_LIMIT = "3000000";
+  test("honors HARUYUKI_LOCAL_REQUEST_BYTE_LIMIT for image elision threshold", async () => {
+    const previousLimit = process.env.HARUYUKI_LOCAL_REQUEST_BYTE_LIMIT;
+    process.env.HARUYUKI_LOCAL_REQUEST_BYTE_LIMIT = "3000000";
     try {
       let providerCalls = 0;
       const contexts: Context[] = [];
@@ -265,9 +265,9 @@ describe("PiStreamAdapter", () => {
       expect(imageElisionEvents).toHaveLength(0);
     } finally {
       if (previousLimit === undefined) {
-        delete process.env.LETTA_LOCAL_REQUEST_BYTE_LIMIT;
+        delete process.env.HARUYUKI_LOCAL_REQUEST_BYTE_LIMIT;
       } else {
-        process.env.LETTA_LOCAL_REQUEST_BYTE_LIMIT = previousLimit;
+        process.env.HARUYUKI_LOCAL_REQUEST_BYTE_LIMIT = previousLimit;
       }
     }
   });
@@ -347,11 +347,11 @@ describe("PiStreamAdapter", () => {
   });
 
   test("retries a non-image oversized transport failure without rewriting context", async () => {
-    const previousLimit = process.env.LETTA_LOCAL_REQUEST_BYTE_LIMIT;
+    const previousLimit = process.env.HARUYUKI_LOCAL_REQUEST_BYTE_LIMIT;
     // Lower the byte classifier so a payload that is oversized by bytes stays
     // far below the model's token window: the two limits are independent, and
     // only the byte one should lead to a retry.
-    process.env.LETTA_LOCAL_REQUEST_BYTE_LIMIT = "100000";
+    process.env.HARUYUKI_LOCAL_REQUEST_BYTE_LIMIT = "100000";
     try {
       let providerCalls = 0;
       const stream: PiStreamFunction = () => {
@@ -411,9 +411,9 @@ describe("PiStreamAdapter", () => {
       expect(events.some((event) => event.type === "local-message")).toBe(true);
     } finally {
       if (previousLimit === undefined) {
-        delete process.env.LETTA_LOCAL_REQUEST_BYTE_LIMIT;
+        delete process.env.HARUYUKI_LOCAL_REQUEST_BYTE_LIMIT;
       } else {
-        process.env.LETTA_LOCAL_REQUEST_BYTE_LIMIT = previousLimit;
+        process.env.HARUYUKI_LOCAL_REQUEST_BYTE_LIMIT = previousLimit;
       }
     }
   });

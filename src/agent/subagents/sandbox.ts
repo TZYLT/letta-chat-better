@@ -26,7 +26,7 @@ import type { SubagentLaunchProfile } from ".";
  *
  * Enabled by default (unlike the cross-agent shell sandbox, which is opt-in:
  * memory subagents run non-interactively, so there is no approve/deny flow to
- * fall back on); set `LETTA_FS_SANDBOX=0` to opt out. No-ops when the host has
+ * fall back on); set `HARUYUKI_FS_SANDBOX=0` to opt out. No-ops when the host has
  * no sandbox backend.
  *
  * Both backends scope writes to the harness state dir (`~/.haruyuki`): a memory

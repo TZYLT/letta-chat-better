@@ -90,9 +90,9 @@ for (const runtime of [process.execPath, "node"]) {
       env: {
         ...process.env,
         HOME: directory,
-        LETTA_SKIP_KEYCHAIN_CHECK: "1",
+        HARUYUKI_SKIP_KEYCHAIN_CHECK: "1",
         LETTA_BASE_URL: "http://credential-test.invalid",
-        LETTA_DESKTOP_CREDENTIALS_IPC: "1",
+        HARUYUKI_DESKTOP_CREDENTIALS_IPC: "1",
         LETTA_API_KEY: "unrelated-cli-key",
       },
     });

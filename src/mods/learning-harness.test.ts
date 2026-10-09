@@ -183,7 +183,7 @@ describe("mod learning harness", () => {
       calls.push({ args, env: options.env });
       expect(options.env.LETTA_API_KEY).toBe("test-key");
       if (args.includes("--no-mods")) {
-        expect(options.env.LETTA_DISABLE_MODS).toBe("1");
+        expect(options.env.HARUYUKI_DISABLE_MODS).toBe("1");
         await mkdir(path.dirname(candidatePath), { recursive: true });
         writeFileSync(
           candidatePath,
@@ -201,7 +201,7 @@ describe("mod learning harness", () => {
         };
       }
 
-      expect(options.env.LETTA_MODS_DIR).toBe(path.dirname(candidatePath));
+      expect(options.env.HARUYUKI_MODS_DIR).toBe(path.dirname(candidatePath));
       const memoryDir = options.env.MEMORY_DIR ?? "";
       expect(memoryDir).toBe(path.join(runDir, "eval-memory"));
       const promptArg = args[args.indexOf("-p") + 1] ?? "";
@@ -760,8 +760,8 @@ describe("mod learning harness", () => {
         };
       }
 
-      evalDirs.push(options.env.LETTA_MODS_DIR ?? "");
-      const passing = (options.env.LETTA_MODS_DIR ?? "").includes("002");
+      evalDirs.push(options.env.HARUYUKI_MODS_DIR ?? "");
+      const passing = (options.env.HARUYUKI_MODS_DIR ?? "").includes("002");
       return {
         args,
         command,

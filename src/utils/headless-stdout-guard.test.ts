@@ -18,7 +18,7 @@ function runWithStdoutError(options: {
 
   const result = spawnSync(process.execPath, ["-e", script], {
     cwd: process.cwd(),
-    env: { ...process.env, LETTA_PARENT_AGENT_ID: "", ...options.env },
+    env: { ...process.env, HARUYUKI_PARENT_AGENT_ID: "", ...options.env },
     encoding: "utf-8",
     timeout: 15_000,
   });
@@ -28,7 +28,7 @@ function runWithStdoutError(options: {
 describe("installHeadlessStdoutGuard", () => {
   test("subagent child exits 1 with the marker flushed to stderr", () => {
     const { status, stderr } = runWithStdoutError({
-      env: { LETTA_PARENT_AGENT_ID: "agent-parent-1" },
+      env: { HARUYUKI_PARENT_AGENT_ID: "agent-parent-1" },
     });
     expect(status).toBe(1);
     expect(stderr).toContain(SUBAGENT_STDOUT_LOST_MARKER);
@@ -43,7 +43,7 @@ describe("installHeadlessStdoutGuard", () => {
 
   test("subagent child reports non-EPIPE stdout errors too", () => {
     const { status, stderr } = runWithStdoutError({
-      env: { LETTA_PARENT_AGENT_ID: "agent-parent-1" },
+      env: { HARUYUKI_PARENT_AGENT_ID: "agent-parent-1" },
       code: "ERR_STREAM_DESTROYED",
     });
     expect(status).toBe(1);

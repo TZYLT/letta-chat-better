@@ -235,10 +235,10 @@ const COMPLETED_WITHOUT_TEXT_GRACE_MS = 15_000;
 
 /**
  * Ceiling for waiting on an environment-routed turn. Overridable with
- * LETTA_ENVIRONMENT_TIMEOUT_MS (milliseconds); defaults to one hour.
+ * HARUYUKI_ENVIRONMENT_TIMEOUT_MS (milliseconds); defaults to one hour.
  */
 export function resolveEnvironmentMaxWaitMs(): number {
-  const raw = process.env.LETTA_ENVIRONMENT_TIMEOUT_MS;
+  const raw = process.env.HARUYUKI_ENVIRONMENT_TIMEOUT_MS;
   if (raw) {
     const parsed = Number(raw);
     if (Number.isFinite(parsed) && parsed > 0) return parsed;
@@ -296,7 +296,7 @@ function isRuntimeTurnOver(status: AgentRuntimeStatusEntry): boolean {
  * - the turn ends (record IDLE / run terminal) without an assistant reply;
  * - nothing observable happens for `inactivityTimeoutMs`; or
  * - the absolute ceiling `maxWaitMs` is hit (default one hour, overridable
- *   with LETTA_ENVIRONMENT_TIMEOUT_MS).
+ *   with HARUYUKI_ENVIRONMENT_TIMEOUT_MS).
  */
 export async function waitForEnvironmentAssistantMessage(params: {
   backend: Backend;
@@ -565,7 +565,7 @@ export async function waitForEnvironmentAssistantMessage(params: {
     }
     if (now() - startedAt >= maxWaitMs) {
       throw new Error(
-        `Environment turn did not complete within ${maxWaitMs}ms (set LETTA_ENVIRONMENT_TIMEOUT_MS to raise the ceiling)`,
+        `Environment turn did not complete within ${maxWaitMs}ms (set HARUYUKI_ENVIRONMENT_TIMEOUT_MS to raise the ceiling)`,
       );
     }
 

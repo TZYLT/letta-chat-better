@@ -13,8 +13,8 @@ export function buildHeadlessSenderReminder(
   return buildAgentSendReminder(
     isAgentLaunch
       ? {
-          agentId: env.LETTA_PARENT_AGENT_ID,
-          conversationId: env.LETTA_PARENT_CONVERSATION_ID,
+          agentId: env.HARUYUKI_PARENT_AGENT_ID,
+          conversationId: env.HARUYUKI_PARENT_CONVERSATION_ID,
         }
       : { agentId: fromAgentId },
     false,

@@ -41,7 +41,7 @@ export function buildTopLevelSlackConversationKey(
 export function resolveSlackInboundDebounceMs(
   config: Pick<SlackChannelAccount, "inboundDebounceMs">,
 ): number {
-  const raw = process.env.LETTA_SLACK_INBOUND_DEBOUNCE_MS;
+  const raw = process.env.HARUYUKI_SLACK_INBOUND_DEBOUNCE_MS;
   if (typeof raw === "string" && raw.trim() !== "") {
     const envOverride = Number(raw);
     if (Number.isFinite(envOverride) && envOverride >= 0) {

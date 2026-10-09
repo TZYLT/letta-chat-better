@@ -217,7 +217,7 @@ async function runDenyLifecycleScenario(): Promise<HeadlessEvent[]> {
       cwd: repoRoot,
       env: createIsolatedCliTestEnv({
         HOME: homeDir,
-        LETTA_FS_SANDBOX: "0",
+        HARUYUKI_FS_SANDBOX: "0",
         NO_COLOR: "1",
       }),
       stdio: ["pipe", "pipe", "pipe"],

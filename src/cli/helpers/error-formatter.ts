@@ -11,8 +11,8 @@ import { buildAgentTerminalLink, buildChatWebUrl } from "./app-urls";
 import { getErrorContext } from "./error-context";
 import { checkZaiError } from "./zai-errors";
 
-const LETTA_USAGE_URL = buildChatWebUrl("/preferences/usage");
-const LETTA_AGENTS_URL = buildChatWebUrl("/agents");
+const HARUYUKI_USAGE_URL = buildChatWebUrl("/preferences/usage");
+const HARUYUKI_AGENTS_URL = buildChatWebUrl("/agents");
 
 export type ErrorDisplaySurface = "plain" | "terminal";
 
@@ -470,20 +470,20 @@ function getLettaHostedQuotaMessage(
     reasons.includes("basic-usage-exceeded") &&
     reasons.includes("not-enough-credits")
   ) {
-    return `You've reached the quota for this Letta-hosted model. Upgrade your plan for more quota, or purchase credits at ${LETTA_USAGE_URL}.`;
+    return `You've reached the quota for this Letta-hosted model. Upgrade your plan for more quota, or purchase credits at ${HARUYUKI_USAGE_URL}.`;
   }
   return undefined;
 }
 
 function getTierUsageLimitMessage(reasons: string[]): string | undefined {
   if (reasons.includes("premium-usage-exceeded")) {
-    return `You've reached your Premium model usage limit. Try switching to Standard or Basic hosted models with /model. View your plan and usage at ${LETTA_USAGE_URL}, or connect your own provider keys with /connect.`;
+    return `You've reached your Premium model usage limit. Try switching to Standard or Basic hosted models with /model. View your plan and usage at ${HARUYUKI_USAGE_URL}, or connect your own provider keys with /connect.`;
   }
   if (reasons.includes("standard-usage-exceeded")) {
-    return `You've reached your Standard model usage limit. Try switching to Basic hosted models with /model. View your plan and usage at ${LETTA_USAGE_URL}, or connect your own provider keys with /connect.`;
+    return `You've reached your Standard model usage limit. Try switching to Basic hosted models with /model. View your plan and usage at ${HARUYUKI_USAGE_URL}, or connect your own provider keys with /connect.`;
   }
   if (reasons.includes("basic-usage-exceeded")) {
-    return `You've reached your Basic model usage limit. Try switching models with /model, view your plan and usage at ${LETTA_USAGE_URL}, or connect your own provider keys with /connect.`;
+    return `You've reached your Basic model usage limit. Try switching models with /model, view your plan and usage at ${HARUYUKI_USAGE_URL}, or connect your own provider keys with /connect.`;
   }
   return undefined;
 }
@@ -748,7 +748,7 @@ export function formatErrorDetails(
         rateLimitResetMs > 0
           ? formatResetTime(rateLimitResetMs)
           : "Try again later";
-      return `You've hit your usage limit. ${resetInfo}. View usage: ${LETTA_USAGE_URL}`;
+      return `You've hit your usage limit. ${resetInfo}. View usage: ${HARUYUKI_USAGE_URL}`;
     }
 
     // Check for agent limit error (free tier agent count limit)
@@ -756,11 +756,11 @@ export function formatErrorDetails(
       const { billingTier } = getErrorContext();
 
       if (billingTier?.toLowerCase() === "free") {
-        return `You've reached the agent limit (3) for the Free Plan. Delete agents at: ${LETTA_AGENTS_URL}\nOr upgrade to Pro for unlimited agents at: ${LETTA_USAGE_URL}`;
+        return `You've reached the agent limit (3) for the Free Plan. Delete agents at: ${HARUYUKI_AGENTS_URL}\nOr upgrade to Pro for unlimited agents at: ${HARUYUKI_USAGE_URL}`;
       }
 
       // Fallback for paid tiers (shouldn't normally hit this, but just in case)
-      return `You've reached your agent limit. Delete agents at: ${LETTA_AGENTS_URL}\nOr check your plan at: ${LETTA_USAGE_URL}`;
+      return `You've reached your agent limit. Delete agents at: ${HARUYUKI_AGENTS_URL}\nOr check your plan at: ${HARUYUKI_USAGE_URL}`;
     }
 
     if (hasErrorReason(e, "model-unknown", reasons)) {
@@ -777,7 +777,7 @@ export function formatErrorDetails(
       // Extract the resource type (agents, tools, etc.) from the message
       const match = resourceLimitMsg.match(/limit for (\w+)/);
       const resourceType = match ? match[1] : "resources";
-      return `${resourceLimitMsg}\nUpgrade at: ${LETTA_USAGE_URL}\nDelete ${resourceType} at: ${LETTA_AGENTS_URL}`;
+      return `${resourceLimitMsg}\nUpgrade at: ${HARUYUKI_USAGE_URL}\nDelete ${resourceType} at: ${HARUYUKI_AGENTS_URL}`;
     }
 
     // Check for credit exhaustion error - provide a friendly message
@@ -802,11 +802,11 @@ export function formatErrorDetails(
     if (hasErrorReason(e, "byok-not-available-on-free-tier", reasons)) {
       const { modelDisplayName } = getErrorContext();
       const modelInfo = modelDisplayName ? ` (${modelDisplayName})` : "";
-      return `Selected BYOK model${modelInfo} is not available on the Free plan. Switch to a free hosted model with /model (glm-4.7 or minimax-m2.1), or upgrade at ${LETTA_USAGE_URL}.`;
+      return `Selected BYOK model${modelInfo} is not available on the Free plan. Switch to a free hosted model with /model (glm-4.7 or minimax-m2.1), or upgrade at ${HARUYUKI_USAGE_URL}.`;
     }
 
     if (hasErrorReason(e, "free-usage-exceeded", reasons)) {
-      return `You've reached the Free plan hosted model usage limit. Switch to free hosted models with /model (glm-4.7 or minimax-m2.1), upgrade at ${LETTA_USAGE_URL}, or connect your own provider keys with /connect.`;
+      return `You've reached the Free plan hosted model usage limit. Switch to free hosted models with /model (glm-4.7 or minimax-m2.1), upgrade at ${HARUYUKI_USAGE_URL}, or connect your own provider keys with /connect.`;
     }
     // Check for nested error structure: e.error.error
     if (e.error && typeof e.error === "object" && "error" in e.error) {

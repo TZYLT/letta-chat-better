@@ -43,7 +43,7 @@ function assertArtifactsExperimentEnabled(toolName: string): void {
 }
 
 function getArtifactsRoot(): string {
-  const override = process.env.LETTA_ARTIFACTS_DIR?.trim();
+  const override = process.env.HARUYUKI_ARTIFACTS_DIR?.trim();
   if (override) return override;
   return join(homedir(), APP_DIR_NAME, APP_SUBDIRS.artifacts);
 }

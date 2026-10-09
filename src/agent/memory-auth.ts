@@ -12,7 +12,7 @@ import { DEFAULT_LOCAL_SERVER_URL } from "@/backend/api/server-url";
  * Memory is local now, so most git work needs no credentials at all. Two cases
  * still do, and both reach a server rather than the local checkout:
  *
- * - Desktop's transient proxy transport (`LETTA_MEMFS_GIT_PROXY_BASE_URL`). The
+ * - Desktop's transient proxy transport (`HARUYUKI_MEMFS_GIT_PROXY_BASE_URL`). The
  *   proxy authenticates the rewritten URLs, and
  *   `shouldConfigurePersistentMemfsCredentialHelper()` deliberately clears the
  *   repo-local helper in that mode, so this per-command credential is the only

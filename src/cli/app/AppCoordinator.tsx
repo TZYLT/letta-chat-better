@@ -1652,7 +1652,7 @@ export function App({
   // wrapping the footer/input chrome and "printing" divider rows into the
   // transcript while dragging.
   const chromeColumns = Math.min(rawColumns, stableColumns);
-  const debugFlicker = process.env.LETTA_DEBUG_FLICKER === "1";
+  const debugFlicker = process.env.HARUYUKI_DEBUG_FLICKER === "1";
 
   // Terminal resize + Ink:
   // When the terminal shrinks, the *previous* frame reflows (wraps to more

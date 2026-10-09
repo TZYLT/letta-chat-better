@@ -129,7 +129,7 @@ function printHelp(): void {
   console.log(`Usage: bun scripts/mod-learning/learn-mod.ts [options]
 
 Runs the mod learning dogfood loop:
-  env/demo -> generate candidate mod -> headless eval with LETTA_MODS_DIR (and legacy LETTA_EXTENSIONS_DIR for pre-rename branches) -> artifacts/report
+  env/demo -> generate candidate mod -> headless eval with HARUYUKI_MODS_DIR (and legacy HARUYUKI_EXTENSIONS_DIR for pre-rename branches) -> artifacts/report
 
 Options:
   --env <path>                  Learning env JSON (default: memory-citations env)

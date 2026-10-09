@@ -589,7 +589,7 @@ export function createTelegramAdapter(
           telegramBot.init(),
           "Telegram bot init",
           getStartupTimeoutMs(
-            "LETTA_TELEGRAM_INIT_TIMEOUT_MS",
+            "HARUYUKI_TELEGRAM_INIT_TIMEOUT_MS",
             DEFAULT_TELEGRAM_INIT_TIMEOUT_MS,
           ),
         );
@@ -644,7 +644,7 @@ export function createTelegramAdapter(
           }),
           "Telegram bot polling start",
           getStartupTimeoutMs(
-            "LETTA_TELEGRAM_START_TIMEOUT_MS",
+            "HARUYUKI_TELEGRAM_START_TIMEOUT_MS",
             DEFAULT_TELEGRAM_START_TIMEOUT_MS,
           ),
         );

@@ -152,7 +152,7 @@ describe.skipIf(isWindows)("Hooks Executor", () => {
     test("receives environment variables", async () => {
       const hook: HookCommand = {
         type: "command",
-        command: "echo $LETTA_HOOK_EVENT",
+        command: "echo $HARUYUKI_HOOK_EVENT",
       };
 
       const input: PreToolUseHookInput = {
@@ -171,7 +171,7 @@ describe.skipIf(isWindows)("Hooks Executor", () => {
     test("receives scoped agent aliases and cwd environment variables when agent_id is provided", async () => {
       const hook: HookCommand = {
         type: "command",
-        command: 'echo "$LETTA_AGENT_ID:$AGENT_ID:$USER_CWD"',
+        command: 'echo "$HARUYUKI_AGENT_ID:$AGENT_ID:$USER_CWD"',
       };
 
       const input: PreToolUseHookInput = {
@@ -190,10 +190,10 @@ describe.skipIf(isWindows)("Hooks Executor", () => {
       );
     });
 
-    test("LETTA_AGENT_ID is not set when agent_id is not provided", async () => {
+    test("HARUYUKI_AGENT_ID is not set when agent_id is not provided", async () => {
       const hook: HookCommand = {
         type: "command",
-        command: 'echo "agent_id:$' + '{LETTA_AGENT_ID:-empty}"',
+        command: 'echo "agent_id:$' + '{HARUYUKI_AGENT_ID:-empty}"',
       };
 
       const input: PreToolUseHookInput = {

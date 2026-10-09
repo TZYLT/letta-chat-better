@@ -19,22 +19,22 @@ import {
 } from "@/cron/run-log";
 
 const TEST_DIR = path.join(import.meta.dir, "__run_log_test_tmp__");
-const origHome = process.env.LETTA_HOME;
+const origHome = process.env.HARUYUKI_HOME;
 
 beforeEach(() => {
   if (existsSync(TEST_DIR)) {
     rmSync(TEST_DIR, { recursive: true });
   }
   mkdirSync(TEST_DIR, { recursive: true });
-  process.env.LETTA_HOME = TEST_DIR;
+  process.env.HARUYUKI_HOME = TEST_DIR;
 });
 
 afterEach(() => {
   if (existsSync(TEST_DIR)) {
     rmSync(TEST_DIR, { recursive: true });
   }
-  if (origHome) process.env.LETTA_HOME = origHome;
-  else delete process.env.LETTA_HOME;
+  if (origHome) process.env.HARUYUKI_HOME = origHome;
+  else delete process.env.HARUYUKI_HOME;
 });
 
 describe("cron run log", () => {
@@ -51,7 +51,7 @@ describe("cron run log", () => {
     ).toBe(true);
   });
 
-  test("resolves current LETTA_HOME run log path", () => {
+  test("resolves current HARUYUKI_HOME run log path", () => {
     expect(getCronRunLogPath("job-1")).toBe(
       path.join(TEST_DIR, "runs", "job-1.jsonl"),
     );

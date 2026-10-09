@@ -71,7 +71,7 @@ test("no-op when already inside a sandbox (no nested sandbox-exec)", () => {
     LAUNCHER,
     REPO_CWD,
     {
-      LETTA_FS_SANDBOX: "1",
+      HARUYUKI_FS_SANDBOX: "1",
       [SANDBOX_ENV_VAR]: "seatbelt",
       MEMORY_DIR: "/tmp/x/memory",
     },
@@ -86,8 +86,8 @@ test("wraps unsandboxed subagent shell commands", () => {
     LAUNCHER,
     REPO_CWD,
     {
-      LETTA_FS_SANDBOX: "1",
-      LETTA_CODE_AGENT_ROLE: "subagent",
+      HARUYUKI_FS_SANDBOX: "1",
+      HARUYUKI_CODE_AGENT_ROLE: "subagent",
       MEMORY_DIR: "/tmp/x/memory",
     },
     SEATBELT,
@@ -101,8 +101,8 @@ test("no-op for already sandboxed subagent processes", () => {
     LAUNCHER,
     REPO_CWD,
     {
-      LETTA_FS_SANDBOX: "1",
-      LETTA_CODE_AGENT_ROLE: "subagent",
+      HARUYUKI_FS_SANDBOX: "1",
+      HARUYUKI_CODE_AGENT_ROLE: "subagent",
       [SANDBOX_ENV_VAR]: "bwrap",
       MEMORY_DIR: "/tmp/x/memory",
     },
@@ -115,7 +115,7 @@ test("no-op when no sandbox backend is available", () => {
   const result = applyShellSandbox(
     LAUNCHER,
     REPO_CWD,
-    { LETTA_FS_SANDBOX: "1", MEMORY_DIR: "/tmp/x/memory" },
+    { HARUYUKI_FS_SANDBOX: "1", MEMORY_DIR: "/tmp/x/memory" },
     NO_BACKEND,
   );
   expect(result.backend).toBeNull();
@@ -126,7 +126,7 @@ test("no-op when cwd is inside the agents tree (Seatbelt empty-env hazard)", () 
   const result = applyShellSandbox(
     LAUNCHER,
     cwdInTree,
-    { LETTA_FS_SANDBOX: "1", MEMORY_DIR: cwdInTree },
+    { HARUYUKI_FS_SANDBOX: "1", MEMORY_DIR: cwdInTree },
     SEATBELT,
   );
   expect(result.backend).toBeNull();
@@ -137,7 +137,7 @@ test("wraps an agent shell launcher: denies agents tree, carves self, sets senti
   const result = applyShellSandbox(
     LAUNCHER,
     REPO_CWD,
-    { LETTA_FS_SANDBOX: "1", MEMORY_DIR: memDir },
+    { HARUYUKI_FS_SANDBOX: "1", MEMORY_DIR: memDir },
     SEATBELT,
   );
 
@@ -164,7 +164,7 @@ test("api backend: also walls off the local memfs tree", () => {
     LAUNCHER,
     REPO_CWD,
     {
-      LETTA_FS_SANDBOX: "1",
+      HARUYUKI_FS_SANDBOX: "1",
       LETTA_LOCAL_BACKEND_DIR: storageDir,
       MEMORY_DIR: apiMemDir,
     },
@@ -188,8 +188,8 @@ test("local backend: walls off both local memfs and ~/.haruyuki/agents", () => {
     LAUNCHER,
     REPO_CWD,
     {
-      LETTA_FS_SANDBOX: "1",
-      LETTA_LOCAL_BACKEND_EXPERIMENTAL: "1",
+      HARUYUKI_FS_SANDBOX: "1",
+      HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL: "1",
       LETTA_LOCAL_BACKEND_DIR: storageDir,
       MEMORY_DIR: memDir,
     },
@@ -221,7 +221,7 @@ test("carves the whole self agent dir for an in-tree memory root", () => {
   const result = applyShellSandbox(
     LAUNCHER,
     REPO_CWD,
-    { LETTA_FS_SANDBOX: "1", MEMORY_DIR: memDir },
+    { HARUYUKI_FS_SANDBOX: "1", MEMORY_DIR: memDir },
     SEATBELT,
   );
 

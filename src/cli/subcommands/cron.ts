@@ -58,7 +58,7 @@ Add options:
                          RFC 3339 timestamp with an explicit timezone)
   --once                 Fire once (with --at); default for --at
   --cron <expr>          Raw 5-field cron expression
-  --agent <id>           Agent ID (defaults to LETTA_AGENT_ID)
+  --agent <id>           Agent ID (defaults to HARUYUKI_AGENT_ID)
   --conversation <id>    Conversation target (omit or "new" for a fresh
                          conversation per fire; "self" for the current
                          conversation; "default" for the agent default)
@@ -131,7 +131,7 @@ function handleAdd(values: CronArgValues): number {
 
   const agentId = resolveCronAgentId(values.agent);
   if (!agentId) {
-    console.error("Error: --agent or LETTA_AGENT_ID required.");
+    console.error("Error: --agent or HARUYUKI_AGENT_ID required.");
     return 1;
   }
 
@@ -254,7 +254,7 @@ function handleAdd(values: CronArgValues): number {
 }
 
 function handleList(values: CronArgValues): number {
-  const agentId = values.agent || process.env.LETTA_AGENT_ID || undefined;
+  const agentId = values.agent || process.env.HARUYUKI_AGENT_ID || undefined;
   const conversationId = resolveCronConversationFilter(values.conversation);
   if (conversationId === null) return 1;
 
@@ -369,7 +369,7 @@ function handleDelete(values: CronArgValues, positionals: string[]): number {
 function handleDeleteAll(values: CronArgValues): number {
   const agentId = resolveCronAgentId(values.agent);
   if (!agentId) {
-    console.error("Error: --agent or LETTA_AGENT_ID required with --all.");
+    console.error("Error: --agent or HARUYUKI_AGENT_ID required with --all.");
     return 1;
   }
 

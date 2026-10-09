@@ -22,7 +22,7 @@ import {
 } from "./toolset";
 import { TOOLSET_OPTIONS } from "./toolset-catalog";
 
-const originalArtifacts = process.env.LETTA_ARTIFACTS;
+const originalArtifacts = process.env.HARUYUKI_ARTIFACTS;
 const temporaryDirectories: string[] = [];
 
 afterEach(async () => {
@@ -30,8 +30,8 @@ afterEach(async () => {
   clearTools();
   toolFilter.reset();
   __testSetBackend(null);
-  if (originalArtifacts === undefined) delete process.env.LETTA_ARTIFACTS;
-  else process.env.LETTA_ARTIFACTS = originalArtifacts;
+  if (originalArtifacts === undefined) delete process.env.HARUYUKI_ARTIFACTS;
+  else process.env.HARUYUKI_ARTIFACTS = originalArtifacts;
   for (const path of temporaryDirectories.splice(0)) {
     await rm(path, { recursive: true, force: true });
   }
@@ -123,7 +123,7 @@ describe("shared toolset construction", () => {
   });
 
   test("explicit exclusions win over enabled artifact tools for auto and manual presets", async () => {
-    process.env.LETTA_ARTIFACTS = "1";
+    process.env.HARUYUKI_ARTIFACTS = "1";
     const exclude = ["read_artifact_file", "write_artifact_file"] as const;
     for (const toolsetPreference of [
       "auto",

@@ -47,19 +47,19 @@ function makeHangingTerminalStream(chunks: LettaStreamingResponse[]): {
   return { stream, controller };
 }
 
-const originalGrace = process.env.LETTA_STREAM_TERMINAL_EOF_GRACE_MS;
+const originalGrace = process.env.HARUYUKI_STREAM_TERMINAL_EOF_GRACE_MS;
 
 afterEach(() => {
   if (originalGrace === undefined) {
-    delete process.env.LETTA_STREAM_TERMINAL_EOF_GRACE_MS;
+    delete process.env.HARUYUKI_STREAM_TERMINAL_EOF_GRACE_MS;
   } else {
-    process.env.LETTA_STREAM_TERMINAL_EOF_GRACE_MS = originalGrace;
+    process.env.HARUYUKI_STREAM_TERMINAL_EOF_GRACE_MS = originalGrace;
   }
 });
 
 describe("drainStream terminal-EOF guard", () => {
   test("returns requires_approval when body never ends after terminal sequence", async () => {
-    process.env.LETTA_STREAM_TERMINAL_EOF_GRACE_MS = "50";
+    process.env.HARUYUKI_STREAM_TERMINAL_EOF_GRACE_MS = "50";
 
     const { stream, controller } = makeHangingTerminalStream([
       {
@@ -112,7 +112,7 @@ describe("drainStream terminal-EOF guard", () => {
   });
 
   test("returns end_turn when body never ends after terminal sequence", async () => {
-    process.env.LETTA_STREAM_TERMINAL_EOF_GRACE_MS = "50";
+    process.env.HARUYUKI_STREAM_TERMINAL_EOF_GRACE_MS = "50";
 
     const { stream, controller } = makeHangingTerminalStream([
       {
@@ -144,7 +144,7 @@ describe("drainStream terminal-EOF guard", () => {
   });
 
   test("does not abort a stream that ends normally after the terminal sequence", async () => {
-    process.env.LETTA_STREAM_TERMINAL_EOF_GRACE_MS = "5000";
+    process.env.HARUYUKI_STREAM_TERMINAL_EOF_GRACE_MS = "5000";
 
     const controller = new AbortController();
     const stream = {
@@ -177,7 +177,7 @@ describe("drainStream terminal-EOF guard", () => {
   });
 
   test("guard does not fire before a stop_reason chunk arrives", async () => {
-    process.env.LETTA_STREAM_TERMINAL_EOF_GRACE_MS = "30";
+    process.env.HARUYUKI_STREAM_TERMINAL_EOF_GRACE_MS = "30";
 
     const controller = new AbortController();
     const stream = {

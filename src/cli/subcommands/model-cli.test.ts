@@ -87,7 +87,7 @@ describe("model CLI", () => {
     overrides: NodeJS.ProcessEnv = {},
     command = "model",
   ) {
-    const bundle = process.env.LETTA_TEST_CLI_BUNDLE;
+    const bundle = process.env.HARUYUKI_TEST_CLI_BUNDLE;
     return run(
       [bundle || "src/index.ts", "--backend", "local", command, ...args],
       overrides,
@@ -136,12 +136,12 @@ describe("model CLI", () => {
       HOME: home,
       USERPROFILE: home,
       LETTA_LOCAL_BACKEND_DIR: join(home, "backend"),
-      LETTA_LOCAL_BACKEND_EXPERIMENTAL: "1",
+      HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL: "1",
       LETTA_API_KEY: undefined,
       AGENT_ID: undefined,
       CONVERSATION_ID: undefined,
-      LETTA_DEBUG: "0",
-      LETTA_DISABLE_MODS: "1",
+      HARUYUKI_DEBUG: "0",
+      HARUYUKI_DISABLE_MODS: "1",
     };
     const fixture = await run([
       "-e",

@@ -1,6 +1,6 @@
 import { hostname } from "node:os";
 import {
-  LETTA_CLOUD_API_URL,
+  HARUYUKI_CLOUD_API_URL,
   refreshAccessToken as refreshLettaAccessToken,
   type TokenResponse,
 } from "@/auth/oauth";
@@ -687,7 +687,7 @@ function cloudBaseUrl(settings: Pick<Settings, "env">): string {
   return (
     process.env.LETTA_BASE_URL ||
     settings.env?.LETTA_BASE_URL ||
-    LETTA_CLOUD_API_URL
+    HARUYUKI_CLOUD_API_URL
   ).replace(/\/+$/, "");
 }
 

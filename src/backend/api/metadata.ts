@@ -26,10 +26,10 @@ export type FeedbackClientType = "desktop" | "chat.letta.com" | "cli";
 export function getFeedbackClientType(
   env: NodeJS.ProcessEnv = process.env,
 ): FeedbackClientType {
-  if (env.LETTA_DESKTOP_MODE === "1") {
+  if (env.HARUYUKI_DESKTOP_MODE === "1") {
     return "desktop";
   }
-  if (env.LETTA_RUNTIME_ENVIRONMENT_DEVICE_ID) {
+  if (env.HARUYUKI_RUNTIME_ENVIRONMENT_DEVICE_ID) {
     return "chat.letta.com";
   }
   return "cli";

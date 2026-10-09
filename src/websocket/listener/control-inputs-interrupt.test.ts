@@ -81,8 +81,8 @@ describe("listener interrupt queue handoff", () => {
     );
     const target = requireFixture(runtimes[0]);
     const scratchpad = mkdtempSync(join(tmpdir(), "interrupt-monitors-"));
-    const previousScratchpad = process.env.LETTA_SCRATCHPAD;
-    process.env.LETTA_SCRATCHPAD = scratchpad;
+    const previousScratchpad = process.env.HARUYUKI_SCRATCHPAD;
+    process.env.HARUYUKI_SCRATCHPAD = scratchpad;
     const taskIds: string[] = [];
     const peers: WebSocket[] = [];
     const server = new WebSocketServer({ port: 0, host: "127.0.0.1" });
@@ -275,8 +275,9 @@ describe("listener interrupt queue handoff", () => {
       for (const peer of peers) peer.terminate();
       server.close();
       clearProcessServices(listener);
-      if (previousScratchpad === undefined) delete process.env.LETTA_SCRATCHPAD;
-      else process.env.LETTA_SCRATCHPAD = previousScratchpad;
+      if (previousScratchpad === undefined)
+        delete process.env.HARUYUKI_SCRATCHPAD;
+      else process.env.HARUYUKI_SCRATCHPAD = previousScratchpad;
       rmSync(scratchpad, { recursive: true, force: true });
     }
   }, 15000);

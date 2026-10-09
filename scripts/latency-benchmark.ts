@@ -2,7 +2,7 @@
 /**
  * Latency Benchmark Script for Letta Code CLI
  *
- * Runs headless mode with LETTA_DEBUG_TIMINGS=1 and parses the output
+ * Runs headless mode with HARUYUKI_DEBUG_TIMINGS=1 and parses the output
  * to measure latency breakdown at different stages.
  *
  * Usage:
@@ -135,7 +135,7 @@ async function runBenchmark(
 
   return new Promise((resolve) => {
     const proc = spawn("bun", ["run", "dev", ...scenario.args], {
-      env: { ...process.env, LETTA_DEBUG_TIMINGS: "1" },
+      env: { ...process.env, HARUYUKI_DEBUG_TIMINGS: "1" },
       stdio: ["pipe", "pipe", "pipe"],
     });
 

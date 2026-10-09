@@ -753,20 +753,20 @@ describe("runtime-status wait mode", () => {
 });
 
 describe("resolveEnvironmentMaxWaitMs", () => {
-  test("defaults to one hour and honors LETTA_ENVIRONMENT_TIMEOUT_MS", () => {
-    const previous = process.env.LETTA_ENVIRONMENT_TIMEOUT_MS;
+  test("defaults to one hour and honors HARUYUKI_ENVIRONMENT_TIMEOUT_MS", () => {
+    const previous = process.env.HARUYUKI_ENVIRONMENT_TIMEOUT_MS;
     try {
-      delete process.env.LETTA_ENVIRONMENT_TIMEOUT_MS;
+      delete process.env.HARUYUKI_ENVIRONMENT_TIMEOUT_MS;
       expect(resolveEnvironmentMaxWaitMs()).toBe(60 * 60_000);
-      process.env.LETTA_ENVIRONMENT_TIMEOUT_MS = "7200000";
+      process.env.HARUYUKI_ENVIRONMENT_TIMEOUT_MS = "7200000";
       expect(resolveEnvironmentMaxWaitMs()).toBe(7_200_000);
-      process.env.LETTA_ENVIRONMENT_TIMEOUT_MS = "not-a-number";
+      process.env.HARUYUKI_ENVIRONMENT_TIMEOUT_MS = "not-a-number";
       expect(resolveEnvironmentMaxWaitMs()).toBe(60 * 60_000);
     } finally {
       if (previous === undefined) {
-        delete process.env.LETTA_ENVIRONMENT_TIMEOUT_MS;
+        delete process.env.HARUYUKI_ENVIRONMENT_TIMEOUT_MS;
       } else {
-        process.env.LETTA_ENVIRONMENT_TIMEOUT_MS = previous;
+        process.env.HARUYUKI_ENVIRONMENT_TIMEOUT_MS = previous;
       }
     }
   });

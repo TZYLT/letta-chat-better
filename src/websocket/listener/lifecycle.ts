@@ -305,10 +305,10 @@ export async function startConnectedListenerRuntime(
   sealStartupLogs();
   installExternalToolBridge(runtime);
   // Opt out when another process already holds the cron scheduler lease.
-  // LETTA_DISABLE_CRON_SCHEDULER=1 suppresses recurring lease-held messages.
+  // HARUYUKI_DISABLE_CRON_SCHEDULER=1 suppresses recurring lease-held messages.
   const shouldStartCronScheduler =
     options.startCronScheduler !== false &&
-    process.env.LETTA_DISABLE_CRON_SCHEDULER !== "1";
+    process.env.HARUYUKI_DISABLE_CRON_SCHEDULER !== "1";
 
   markListenerConnectionInitialized(runtime, opts.connectionId);
   safeEmitWsEvent("recv", "lifecycle", {

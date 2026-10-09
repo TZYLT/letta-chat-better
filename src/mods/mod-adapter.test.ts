@@ -14,11 +14,11 @@ import type { Backend } from "@/backend";
 import { getRegisteredPiProvider } from "@/backend/dev/pi-provider-mod-registry";
 import {
   DISABLED_MOD_CAPABILITIES,
-  LETTA_MOD_CAPABILITY_PROFILE_ENV,
+  HARUYUKI_MOD_CAPABILITY_PROFILE_ENV,
   PROVIDERS_ONLY_MOD_CAPABILITIES,
   PROVIDERS_ONLY_MOD_CAPABILITY_PROFILE,
 } from "@/mods/capabilities";
-import { LETTA_DISABLE_MODS_ENV } from "@/mods/disable";
+import { HARUYUKI_DISABLE_MODS_ENV } from "@/mods/disable";
 import { createModAdapter } from "@/mods/mod-adapter";
 import { getModDiagnosticsLatestFilePath } from "@/mods/mod-diagnostics-file";
 import type { ModContext } from "@/mods/types";
@@ -86,10 +86,10 @@ function sleep(ms: number): Promise<void> {
 }
 
 describe("mod adapter", () => {
-  test("LETTA_DISABLE_MODS disables the adapter", () => {
-    const original = process.env[LETTA_DISABLE_MODS_ENV];
+  test("HARUYUKI_DISABLE_MODS disables the adapter", () => {
+    const original = process.env[HARUYUKI_DISABLE_MODS_ENV];
     try {
-      process.env[LETTA_DISABLE_MODS_ENV] = "1";
+      process.env[HARUYUKI_DISABLE_MODS_ENV] = "1";
       const adapter = createModAdapter({
         getClient: async () => ({}) as unknown as Letta,
       });
@@ -103,42 +103,42 @@ describe("mod adapter", () => {
       );
     } finally {
       if (original === undefined) {
-        delete process.env[LETTA_DISABLE_MODS_ENV];
+        delete process.env[HARUYUKI_DISABLE_MODS_ENV];
       } else {
-        process.env[LETTA_DISABLE_MODS_ENV] = original;
+        process.env[HARUYUKI_DISABLE_MODS_ENV] = original;
       }
     }
   });
 
   test("disabled option disables mods for the process", () => {
-    const original = process.env[LETTA_DISABLE_MODS_ENV];
+    const original = process.env[HARUYUKI_DISABLE_MODS_ENV];
     try {
-      delete process.env[LETTA_DISABLE_MODS_ENV];
+      delete process.env[HARUYUKI_DISABLE_MODS_ENV];
       const adapter = createModAdapter({
         disabled: true,
         getClient: async () => ({}) as unknown as Letta,
       });
 
-      expect(process.env[LETTA_DISABLE_MODS_ENV]).toBe("1");
+      expect(process.env[HARUYUKI_DISABLE_MODS_ENV]).toBe("1");
       expect(adapter.getSnapshot().registry.capabilities).toEqual(
         DISABLED_MOD_CAPABILITIES,
       );
     } finally {
       if (original === undefined) {
-        delete process.env[LETTA_DISABLE_MODS_ENV];
+        delete process.env[HARUYUKI_DISABLE_MODS_ENV];
       } else {
-        process.env[LETTA_DISABLE_MODS_ENV] = original;
+        process.env[HARUYUKI_DISABLE_MODS_ENV] = original;
       }
     }
   });
 
   test("provider-only profile loads providers without hooks, tools, or UI", async () => {
     const root = createTempDir();
-    const originalProfile = process.env[LETTA_MOD_CAPABILITY_PROFILE_ENV];
+    const originalProfile = process.env[HARUYUKI_MOD_CAPABILITY_PROFILE_ENV];
     let adapter: ReturnType<typeof createModAdapter> | undefined;
 
     try {
-      process.env[LETTA_MOD_CAPABILITY_PROFILE_ENV] =
+      process.env[HARUYUKI_MOD_CAPABILITY_PROFILE_ENV] =
         PROVIDERS_ONLY_MOD_CAPABILITY_PROFILE;
       const modDir = path.join(root, "global-mods");
       mkdirSync(modDir, { recursive: true });
@@ -186,9 +186,9 @@ describe("mod adapter", () => {
     } finally {
       adapter?.dispose();
       if (originalProfile === undefined) {
-        delete process.env[LETTA_MOD_CAPABILITY_PROFILE_ENV];
+        delete process.env[HARUYUKI_MOD_CAPABILITY_PROFILE_ENV];
       } else {
-        process.env[LETTA_MOD_CAPABILITY_PROFILE_ENV] = originalProfile;
+        process.env[HARUYUKI_MOD_CAPABILITY_PROFILE_ENV] = originalProfile;
       }
       rmSync(root, { force: true, recursive: true });
     }

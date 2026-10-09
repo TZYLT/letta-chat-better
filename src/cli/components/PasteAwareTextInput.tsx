@@ -503,7 +503,7 @@ export function PasteAwareTextInput({
       if (!sequence) return;
 
       // Optional debug logging for raw input bytes
-      if (process.env.LETTA_DEBUG_INPUT === "1") {
+      if (process.env.HARUYUKI_DEBUG_INPUT === "1") {
         const debugHex = [...sequence]
           .map((c) => `0x${c.charCodeAt(0).toString(16).padStart(2, "0")}`)
           .join(" ");

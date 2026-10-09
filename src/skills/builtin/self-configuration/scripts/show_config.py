@@ -168,8 +168,8 @@ def format_runtime(
         "agent_id": os.environ.get("AGENT_ID") or None,
         "conversation_id": os.environ.get("CONVERSATION_ID") or None,
         "base_url": env_or_settings(all_settings, "LETTA_BASE_URL"),
-        "settings_base_url": env_or_settings(all_settings, "LETTA_SETTINGS_BASE_URL"),
-        "backend_env": env_or_settings(all_settings, "LETTA_BACKEND"),
+        "settings_base_url": env_or_settings(all_settings, "HARUYUKI_SETTINGS_BASE_URL"),
+        "backend_env": env_or_settings(all_settings, "HARUYUKI_BACKEND"),
         "api_key_present": bool(env_or_settings(all_settings, "LETTA_API_KEY")),
         "memory_dir": os.environ.get("MEMORY_DIR") or None,
     }

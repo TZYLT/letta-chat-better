@@ -47,8 +47,8 @@ describe("resolveSubagentLauncher", () => {
   test("explicit launcher takes precedence over .ts script autodetection", () => {
     const launcher = resolveSubagentLauncher(["-p", "hi"], {
       env: {
-        LETTA_CODE_BIN: "custom-bun",
-        LETTA_CODE_BIN_ARGS_JSON: JSON.stringify(["run", "src/index.ts"]),
+        HARUYUKI_CODE_BIN: "custom-bun",
+        HARUYUKI_CODE_BIN_ARGS_JSON: JSON.stringify(["run", "src/index.ts"]),
       } as NodeJS.ProcessEnv,
       argv: ["bun", "/tmp/dev-entry.ts"],
       execPath: "/opt/homebrew/bin/bun",
@@ -64,7 +64,7 @@ describe("resolveSubagentLauncher", () => {
   test("explicit launcher takes precedence over .js script autodetection", () => {
     const launcher = resolveSubagentLauncher(["-p", "hi"], {
       env: {
-        LETTA_CODE_BIN: "custom-node",
+        HARUYUKI_CODE_BIN: "custom-node",
       } as NodeJS.ProcessEnv,
       argv: ["node", "/tmp/letta.js"],
       execPath: "/usr/local/bin/node",
@@ -180,7 +180,7 @@ describe("resolveSubagentLauncher", () => {
       ["--output-format", "stream-json"],
       {
         env: {
-          LETTA_CODE_BIN:
+          HARUYUKI_CODE_BIN:
             '"C:\\Users\\Example User\\AppData\\Roaming\\npm\\letta.cmd"',
         } as NodeJS.ProcessEnv,
         argv: ["node", "C:\\Program Files\\Letta\\letta.js"],

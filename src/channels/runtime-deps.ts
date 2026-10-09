@@ -15,7 +15,7 @@ import { getChannelDir } from "./config";
 import { getChannelPluginMetadata } from "./plugin-registry";
 import type { SupportedChannelId } from "./types";
 
-export const CHANNEL_RUNTIME_ROOT_ENV = "LETTA_CHANNEL_RUNTIME_ROOT";
+export const CHANNEL_RUNTIME_ROOT_ENV = "HARUYUKI_CHANNEL_RUNTIME_ROOT";
 
 type InstallProcessFactory = PackageManagerProcessFactory;
 type RuntimePackageManager = PackageManager;

@@ -3,7 +3,7 @@ export type LocalProviderTimeout = number | false;
 export const DEFAULT_LOCAL_PROVIDER_TIMEOUT_MS = 5 * 60 * 1000;
 
 const GLOBAL_LOCAL_PROVIDER_TIMEOUT_ENV =
-  "LETTA_CODE_LOCAL_PROVIDER_TIMEOUT_MS";
+  "HARUYUKI_CODE_LOCAL_PROVIDER_TIMEOUT_MS";
 
 function normalizeProviderEnvStem(providerId: string): string {
   return providerId
@@ -18,7 +18,7 @@ function timeoutEnvNames(providerIds: readonly string[]): string[] {
   for (const providerId of providerIds) {
     const stem = normalizeProviderEnvStem(providerId);
     if (!stem) continue;
-    names.add(`LETTA_CODE_${stem}_TIMEOUT_MS`);
+    names.add(`HARUYUKI_CODE_${stem}_TIMEOUT_MS`);
     names.add(`${stem}_TIMEOUT_MS`);
   }
   names.add(GLOBAL_LOCAL_PROVIDER_TIMEOUT_ENV);

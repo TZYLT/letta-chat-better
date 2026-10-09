@@ -633,7 +633,8 @@ export async function runSignalSetup(): Promise<boolean> {
       );
     }
 
-    const envAgentId = process.env.LETTA_AGENT_ID || process.env.AGENT_ID || "";
+    const envAgentId =
+      process.env.HARUYUKI_AGENT_ID || process.env.AGENT_ID || "";
     let agentId: string | null = null;
     if (envAgentId) {
       const useEnv = await rl.question(

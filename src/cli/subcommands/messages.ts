@@ -60,13 +60,13 @@ Search options:
   --end-date <date>     Filter messages before this date (ISO format)
   --limit <n>           Max results (default: 10)
   --all-agents          Search all agents, not just current agent
-  --agent <id>          Explicit agent ID (overrides LETTA_AGENT_ID)
+  --agent <id>          Explicit agent ID (overrides HARUYUKI_AGENT_ID)
   --agent-id <id>       Alias for --agent
   --conversation <id>   Conversation ID to search; "default" requires an agent
   --conversation-id <id> Alias for --conversation
 
 List options:
-  --agent <id>          Agent ID (overrides LETTA_AGENT_ID)
+  --agent <id>          Agent ID (overrides HARUYUKI_AGENT_ID)
   --agent-id <id>       Alias for --agent
   --conversation <id>   Conversation ID to list (default: default)
   --conversation-id <id> Alias for --conversation
@@ -120,7 +120,9 @@ function parseOrder(value: unknown): ListOrder | undefined {
 }
 
 function getAgentId(agentFromArgs?: string, agentIdFromArgs?: string): string {
-  return agentFromArgs || agentIdFromArgs || process.env.LETTA_AGENT_ID || "";
+  return (
+    agentFromArgs || agentIdFromArgs || process.env.HARUYUKI_AGENT_ID || ""
+  );
 }
 
 function pageItems<T>(page: unknown): T[] {
@@ -372,7 +374,7 @@ export async function runMessagesSubcommand(
       if (conversationId === "default") {
         if (!agentId) {
           console.error(
-            'Conversation "default" requires an agent id. Set LETTA_AGENT_ID or pass --agent/--agent-id.',
+            'Conversation "default" requires an agent id. Set HARUYUKI_AGENT_ID or pass --agent/--agent-id.',
           );
           return 1;
         }
@@ -385,7 +387,7 @@ export async function runMessagesSubcommand(
       }
       if (!allAgents && !agentId && !conversationId) {
         console.error(
-          "Missing search scope. Set LETTA_AGENT_ID, pass --agent/--agent-id, pass --conversation, or use --all-agents.",
+          "Missing search scope. Set HARUYUKI_AGENT_ID, pass --agent/--agent-id, pass --conversation, or use --all-agents.",
         );
         return 1;
       }
@@ -436,7 +438,7 @@ export async function runMessagesSubcommand(
         "default";
       if (conversationId === "default" && !agentId) {
         console.error(
-          'Conversation "default" requires an agent id. Set LETTA_AGENT_ID or pass --agent/--agent-id.',
+          'Conversation "default" requires an agent id. Set HARUYUKI_AGENT_ID or pass --agent/--agent-id.',
         );
         return 1;
       }
@@ -494,7 +496,7 @@ export async function runMessagesSubcommand(
 
       if (conversationId === "default" && !agentId) {
         console.error(
-          'Conversation "default" requires an agent id. Set LETTA_AGENT_ID or pass --agent/--agent-id.',
+          'Conversation "default" requires an agent id. Set HARUYUKI_AGENT_ID or pass --agent/--agent-id.',
         );
         return 1;
       }

@@ -176,11 +176,11 @@ Quick sanity pass before committing.
 
 Before writing the commit, resolve the actual ID values:
 ```bash
-echo "CHILD_AGENT_ID=$LETTA_AGENT_ID"
-echo "PARENT_AGENT_ID=$LETTA_PARENT_AGENT_ID"
+echo "CHILD_AGENT_ID=$HARUYUKI_AGENT_ID"
+echo "PARENT_AGENT_ID=$HARUYUKI_PARENT_AGENT_ID"
 ```
 
-Use the printed values (e.g., `agent-abc123...`) in the trailers. If a variable is empty or unset, omit that trailer. Never write a literal variable name like `$LETTA_AGENT_ID` in the commit message. Run git commands only from `$MEMORY_DIR`. Use plain `-m "..."` with an embedded multi-line string exactly as shown below:
+Use the printed values (e.g., `agent-abc123...`) in the trailers. If a variable is empty or unset, omit that trailer. Never write a literal variable name like `$HARUYUKI_AGENT_ID` in the commit message. Run git commands only from `$MEMORY_DIR`. Use plain `-m "..."` with an embedded multi-line string exactly as shown below:
 
 ```bash
 cd $MEMORY_DIR

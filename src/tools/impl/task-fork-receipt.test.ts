@@ -75,14 +75,14 @@ const { task_stop } = await import("./task-stop");
 
 const forkConversation = mock(async () => ({ id: "conv-fork" }));
 const originalHome = process.env.HOME;
-const originalScratchpad = process.env.LETTA_SCRATCHPAD;
+const originalScratchpad = process.env.HARUYUKI_SCRATCHPAD;
 let testHome: string;
 
 beforeEach(async () => {
   await settingsManager.reset();
   testHome = mkdtempSync(join(tmpdir(), "task-fork-receipt-"));
   process.env.HOME = testHome;
-  process.env.LETTA_SCRATCHPAD = testHome;
+  process.env.HARUYUKI_SCRATCHPAD = testHome;
   await settingsManager.initialize();
   spyOn(settingsManager, "getSettingsWithSecureTokens").mockImplementation(
     async () => settingsManager.getSettings(),
@@ -117,8 +117,8 @@ afterEach(async () => {
   await settingsManager.reset();
   if (originalHome === undefined) delete process.env.HOME;
   else process.env.HOME = originalHome;
-  if (originalScratchpad === undefined) delete process.env.LETTA_SCRATCHPAD;
-  else process.env.LETTA_SCRATCHPAD = originalScratchpad;
+  if (originalScratchpad === undefined) delete process.env.HARUYUKI_SCRATCHPAD;
+  else process.env.HARUYUKI_SCRATCHPAD = originalScratchpad;
   rmSync(testHome, { recursive: true, force: true });
 });
 

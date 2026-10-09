@@ -954,7 +954,7 @@ html.dark .warning-badge { background: hsl(42, 30%, 18%); color: hsl(42, 80%, 70
   </main>
 </div>
 
-<script type="application/json" id="letta-data"><!--LETTA_DATA_PLACEHOLDER--></script>
+<script type="application/json" id="letta-data"><!--HARUYUKI_DATA_PLACEHOLDER--></script>
 <script>
 /**
  * marked v15.0.4 - a markdown parser

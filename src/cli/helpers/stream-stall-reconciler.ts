@@ -33,7 +33,7 @@ const DEFAULT_STREAM_STALL_RECONCILE_MS = 60_000;
 const DEFAULT_STREAM_STALL_STATUS_TIMEOUT_MS = 5_000;
 
 function getStallReconcileMs(): number {
-  const raw = process.env.LETTA_STREAM_STALL_RECONCILE_MS;
+  const raw = process.env.HARUYUKI_STREAM_STALL_RECONCILE_MS;
   if (raw) {
     const parsed = Number(raw);
     if (Number.isFinite(parsed) && parsed > 0) {
@@ -44,7 +44,7 @@ function getStallReconcileMs(): number {
 }
 
 function getStatusLookupTimeoutMs(): number {
-  const raw = process.env.LETTA_STREAM_STALL_STATUS_TIMEOUT_MS;
+  const raw = process.env.HARUYUKI_STREAM_STALL_STATUS_TIMEOUT_MS;
   if (raw) {
     const parsed = Number(raw);
     if (Number.isFinite(parsed) && parsed > 0) {

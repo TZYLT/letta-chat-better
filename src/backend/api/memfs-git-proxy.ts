@@ -11,8 +11,8 @@ function isLocalhostUrl(value: string | undefined): boolean {
   }
 }
 
-export const LETTA_MEMFS_GIT_PROXY_BASE_URL_ENV =
-  "LETTA_MEMFS_GIT_PROXY_BASE_URL";
+export const HARUYUKI_MEMFS_GIT_PROXY_BASE_URL_ENV =
+  "HARUYUKI_MEMFS_GIT_PROXY_BASE_URL";
 
 export interface MemfsGitProxyRewriteConfig {
   /** Ephemeral proxy base URL used only for git transport. */
@@ -40,7 +40,7 @@ function trimBaseUrl(value: string): string {
  * Intentionally ignores LETTA_BASE_URL: Desktop sets LETTA_BASE_URL to an
  * ephemeral localhost proxy port, but MemFS git config/settings must stay
  * keyed by a stable canonical URL. Desktop's transient git transport proxy is
- * handled separately by LETTA_MEMFS_GIT_PROXY_BASE_URL.
+ * handled separately by HARUYUKI_MEMFS_GIT_PROXY_BASE_URL.
  */
 export function getMemfsServerUrl(): string {
   let settings: Settings | null = null;
@@ -51,7 +51,8 @@ export function getMemfsServerUrl(): string {
   }
 
   const configuredMemfsUrl =
-    process.env.LETTA_MEMFS_BASE_URL || settings?.env?.LETTA_MEMFS_BASE_URL;
+    process.env.HARUYUKI_MEMFS_BASE_URL ||
+    settings?.env?.HARUYUKI_MEMFS_BASE_URL;
   if (configuredMemfsUrl) {
     return configuredMemfsUrl;
   }
@@ -62,7 +63,7 @@ export function getMemfsServerUrl(): string {
 /**
  * Resolve Desktop's transient MemFS git proxy rewrite, if configured.
  *
- * LETTA_MEMFS_GIT_PROXY_BASE_URL is intentionally transport-only: it should
+ * HARUYUKI_MEMFS_GIT_PROXY_BASE_URL is intentionally transport-only: it should
  * never be used for settings keys, persisted remotes, or credential helper
  * config. It lets Desktop route git network traffic through its localhost
  * proxy while keeping the local repo's origin canonical and stable.
@@ -70,7 +71,7 @@ export function getMemfsServerUrl(): string {
 export function getMemfsGitProxyRewriteConfig(
   env: NodeJS.ProcessEnv = process.env,
 ): MemfsGitProxyRewriteConfig | null {
-  const rawProxyBaseUrl = env[LETTA_MEMFS_GIT_PROXY_BASE_URL_ENV]?.trim();
+  const rawProxyBaseUrl = env[HARUYUKI_MEMFS_GIT_PROXY_BASE_URL_ENV]?.trim();
   if (!rawProxyBaseUrl || !isLocalhostUrl(rawProxyBaseUrl)) {
     return null;
   }

@@ -31,10 +31,10 @@ import {
 import { DIRECTORY_LIMIT_ENV } from "@/utils/directory-limits";
 
 const ORIGINAL_LETTA_BASE_URL = process.env.LETTA_BASE_URL;
-const ORIGINAL_LETTA_MEMFS_BASE_URL = process.env.LETTA_MEMFS_BASE_URL;
-const ORIGINAL_LETTA_MEMFS_LOCAL = process.env.LETTA_MEMFS_LOCAL;
+const ORIGINAL_LETTA_MEMFS_BASE_URL = process.env.HARUYUKI_MEMFS_BASE_URL;
+const ORIGINAL_LETTA_MEMFS_LOCAL = process.env.HARUYUKI_MEMFS_LOCAL;
 const ORIGINAL_LETTA_API_KEY = process.env.LETTA_API_KEY;
-const ORIGINAL_LETTA_DESKTOP_MODE = process.env.LETTA_DESKTOP_MODE;
+const ORIGINAL_LETTA_DESKTOP_MODE = process.env.HARUYUKI_DESKTOP_MODE;
 const DIRECTORY_LIMIT_ENV_KEYS = Object.values(DIRECTORY_LIMIT_ENV);
 const ORIGINAL_DIRECTORY_ENV = Object.fromEntries(
   DIRECTORY_LIMIT_ENV_KEYS.map((key) => [key, process.env[key]]),
@@ -48,15 +48,15 @@ function restoreMemfsEnv(): void {
   }
 
   if (ORIGINAL_LETTA_MEMFS_BASE_URL === undefined) {
-    delete process.env.LETTA_MEMFS_BASE_URL;
+    delete process.env.HARUYUKI_MEMFS_BASE_URL;
   } else {
-    process.env.LETTA_MEMFS_BASE_URL = ORIGINAL_LETTA_MEMFS_BASE_URL;
+    process.env.HARUYUKI_MEMFS_BASE_URL = ORIGINAL_LETTA_MEMFS_BASE_URL;
   }
 
   if (ORIGINAL_LETTA_MEMFS_LOCAL === undefined) {
-    delete process.env.LETTA_MEMFS_LOCAL;
+    delete process.env.HARUYUKI_MEMFS_LOCAL;
   } else {
-    process.env.LETTA_MEMFS_LOCAL = ORIGINAL_LETTA_MEMFS_LOCAL;
+    process.env.HARUYUKI_MEMFS_LOCAL = ORIGINAL_LETTA_MEMFS_LOCAL;
   }
 
   if (ORIGINAL_LETTA_API_KEY === undefined) {
@@ -66,9 +66,9 @@ function restoreMemfsEnv(): void {
   }
 
   if (ORIGINAL_LETTA_DESKTOP_MODE === undefined) {
-    delete process.env.LETTA_DESKTOP_MODE;
+    delete process.env.HARUYUKI_DESKTOP_MODE;
   } else {
-    process.env.LETTA_DESKTOP_MODE = ORIGINAL_LETTA_DESKTOP_MODE;
+    process.env.HARUYUKI_DESKTOP_MODE = ORIGINAL_LETTA_DESKTOP_MODE;
   }
 }
 
@@ -258,8 +258,8 @@ describe("labelFromRelativePath", () => {
 describe("MemFS endpoint validation", () => {
   test("treats the local default as a non-server MemFS endpoint", async () => {
     process.env.LETTA_BASE_URL = "http://localhost:54085";
-    delete process.env.LETTA_MEMFS_BASE_URL;
-    delete process.env.LETTA_MEMFS_LOCAL;
+    delete process.env.HARUYUKI_MEMFS_BASE_URL;
+    delete process.env.HARUYUKI_MEMFS_LOCAL;
     process.env.LETTA_API_KEY = "desktop-session-token";
 
     expect(await isLettaMemfsServer()).toBe(false);
@@ -267,9 +267,9 @@ describe("MemFS endpoint validation", () => {
 
   test("rejects explicit non-Letta MemFS sync endpoints by default", async () => {
     process.env.LETTA_BASE_URL = "http://localhost:54085";
-    process.env.LETTA_MEMFS_BASE_URL = "https://selfhost.example.com";
-    delete process.env.LETTA_MEMFS_LOCAL;
-    delete process.env.LETTA_DESKTOP_MODE;
+    process.env.HARUYUKI_MEMFS_BASE_URL = "https://selfhost.example.com";
+    delete process.env.HARUYUKI_MEMFS_LOCAL;
+    delete process.env.HARUYUKI_DESKTOP_MODE;
     process.env.LETTA_API_KEY = "desktop-session-token";
 
     expect(await isLettaMemfsServer()).toBe(false);
@@ -277,9 +277,9 @@ describe("MemFS endpoint validation", () => {
 
   test("rejects Desktop local proxy as a canonical MemFS sync endpoint", async () => {
     process.env.LETTA_BASE_URL = "http://localhost:54085";
-    process.env.LETTA_MEMFS_BASE_URL = "http://localhost:54085";
-    delete process.env.LETTA_MEMFS_LOCAL;
-    process.env.LETTA_DESKTOP_MODE = "1";
+    process.env.HARUYUKI_MEMFS_BASE_URL = "http://localhost:54085";
+    delete process.env.HARUYUKI_MEMFS_LOCAL;
+    process.env.HARUYUKI_DESKTOP_MODE = "1";
     process.env.LETTA_API_KEY = "desktop-session-token";
 
     expect(await isLettaMemfsServer()).toBe(false);

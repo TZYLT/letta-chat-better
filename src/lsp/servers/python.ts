@@ -36,7 +36,7 @@ export const PythonServer: LSPServerInfo = {
       }
     },
     async install(): Promise<void> {
-      if (process.env.LETTA_DISABLE_LSP_DOWNLOAD) {
+      if (process.env.HARUYUKI_DISABLE_LSP_DOWNLOAD) {
         throw new Error(
           "LSP auto-download is disabled. Please install pyright manually: npm install -g pyright",
         );

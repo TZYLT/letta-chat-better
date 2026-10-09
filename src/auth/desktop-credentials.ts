@@ -40,8 +40,8 @@ export function getDesktopAccessToken(): string | undefined {
 }
 
 export async function initializeDesktopCredentials(): Promise<void> {
-  if (session || process.env.LETTA_DESKTOP_CREDENTIALS_IPC !== "1") return;
-  delete process.env.LETTA_DESKTOP_CREDENTIALS_IPC;
+  if (session || process.env.HARUYUKI_DESKTOP_CREDENTIALS_IPC !== "1") return;
+  delete process.env.HARUYUKI_DESKTOP_CREDENTIALS_IPC;
   delete process.env.LETTA_API_KEY;
   if (!process.connected || !process.send) {
     throw new Error("Desktop credentials require the parent IPC channel");

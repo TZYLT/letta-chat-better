@@ -74,19 +74,19 @@ for (const runtime of ["bun", "node"]) {
           LETTA_BASE_URL: `http://127.0.0.1:${server.port}`,
           LETTA_API_KEY: "test-key-not-a-secret",
           IGNORE_SELF_HOSTED_LISTENER_ERROR: "1",
-          LETTA_STARTUP_LOG_MARKER: enabled ? token : undefined,
-          LETTA_STARTUP_LOG_OWNER_PID: undefined,
-          LETTA_DEBUG: "1",
-          LETTA_CODE_TELEM: "0",
+          HARUYUKI_STARTUP_LOG_MARKER: enabled ? token : undefined,
+          HARUYUKI_STARTUP_LOG_OWNER_PID: undefined,
+          HARUYUKI_DEBUG: "1",
+          HARUYUKI_CODE_TELEM: "0",
           DO_NOT_TRACK: "1",
-          LETTA_DISABLE_CRON_SCHEDULER: "1",
-          LETTA_DISABLE_MODS: "1",
+          HARUYUKI_DISABLE_CRON_SCHEDULER: "1",
+          HARUYUKI_DISABLE_MODS: "1",
         });
         const child = spawn(
           "sh",
           [
             "-c",
-            (enabled ? "export LETTA_STARTUP_LOG_OWNER_PID=$$; " : "") +
+            (enabled ? "export HARUYUKI_STARTUP_LOG_OWNER_PID=$$; " : "") +
               'exec "$@" 2>&1',
             "listener",
             runtime,
@@ -172,7 +172,7 @@ unixTest(
       {
         cwd: root,
         encoding: "utf8",
-        env: createIsolatedCliTestEnv({ LETTA_STARTUP_LOG_MARKER: token }),
+        env: createIsolatedCliTestEnv({ HARUYUKI_STARTUP_LOG_MARKER: token }),
       },
     );
     expect(result.status).not.toBe(0);

@@ -90,12 +90,12 @@ test.each(["answered", "dismissed"] as const)(
   async (status) => {
     const directory = await mkdtemp(join(tmpdir(), "async-question-server-"));
     const oldHome = process.env.HOME;
-    const oldMods = process.env.LETTA_DISABLE_MODS;
-    const oldCron = process.env.LETTA_DISABLE_CRON_SCHEDULER;
+    const oldMods = process.env.HARUYUKI_DISABLE_MODS;
+    const oldCron = process.env.HARUYUKI_DISABLE_CRON_SCHEDULER;
     const restoreEnv = isolateAmbientLettaTestEnv();
     process.env.HOME = directory;
-    process.env.LETTA_DISABLE_MODS = "1";
-    process.env.LETTA_DISABLE_CRON_SCHEDULER = "1";
+    process.env.HARUYUKI_DISABLE_MODS = "1";
+    process.env.HARUYUKI_DISABLE_CRON_SCHEDULER = "1";
     const fixture = join(directory, "independent-work.txt");
     await writeFile(fixture, "INDEPENDENT_WORK_FINISHED");
     let server: AppServerHandle | undefined;
@@ -264,11 +264,11 @@ test.each(["answered", "dismissed"] as const)(
       restoreEnv();
       if (oldHome === undefined) delete process.env.HOME;
       else process.env.HOME = oldHome;
-      if (oldMods === undefined) delete process.env.LETTA_DISABLE_MODS;
-      else process.env.LETTA_DISABLE_MODS = oldMods;
+      if (oldMods === undefined) delete process.env.HARUYUKI_DISABLE_MODS;
+      else process.env.HARUYUKI_DISABLE_MODS = oldMods;
       if (oldCron === undefined)
-        delete process.env.LETTA_DISABLE_CRON_SCHEDULER;
-      else process.env.LETTA_DISABLE_CRON_SCHEDULER = oldCron;
+        delete process.env.HARUYUKI_DISABLE_CRON_SCHEDULER;
+      else process.env.HARUYUKI_DISABLE_CRON_SCHEDULER = oldCron;
       await rm(directory, { recursive: true, force: true });
     }
   },

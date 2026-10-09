@@ -284,7 +284,7 @@ path.
 
 Per-agent `agents[]` entries are keyed by `agentId` plus server. For api.letta.com, `baseUrl` may be omitted. For another server, preserve the server key.
 
-Base URL resolution is split between runtime API calls and settings lookup. Runtime API calls require `LETTA_BASE_URL` or an explicit script `--base-url`; do not replace it with a hard-coded remote URL. Settings server keys resolve from `LETTA_SETTINGS_BASE_URL`, `env.LETTA_SETTINGS_BASE_URL`, `LETTA_BASE_URL`, `env.LETTA_BASE_URL`, then api.letta.com. Do not move `agents[]` entries across base URLs unless the user is deliberately migrating servers.
+Base URL resolution is split between runtime API calls and settings lookup. Runtime API calls require `LETTA_BASE_URL` or an explicit script `--base-url`; do not replace it with a hard-coded remote URL. Settings server keys resolve from `HARUYUKI_SETTINGS_BASE_URL`, `env.HARUYUKI_SETTINGS_BASE_URL`, `LETTA_BASE_URL`, `env.LETTA_BASE_URL`, then api.letta.com. Do not move `agents[]` entries across base URLs unless the user is deliberately migrating servers.
 
 Toolset values currently include `auto`, `letta`, `default`, `codex`, and `none`. Use `auto` unless the user explicitly wants a manual override.
 
@@ -351,7 +351,7 @@ letta mods enable <package-spec>
 letta mods remove <package-spec>
 ```
 
-Run `/reload` in active sessions afterward. Loose source files and agent-scoped mods are not individually registry-toggleable; move, rename, or remove the file, or use `--no-mods` / `LETTA_DISABLE_MODS=1` to disable all mods for a new process.
+Run `/reload` in active sessions afterward. Loose source files and agent-scoped mods are not individually registry-toggleable; move, rename, or remove the file, or use `--no-mods` / `HARUYUKI_DISABLE_MODS=1` to disable all mods for a new process.
 
 ## Skills
 
@@ -379,7 +379,7 @@ Rules:
 
 - Pass the source variable *name* to `--env`, not `$NAME`. `--env $GITHUB_TOKEN` triggers harness substitution and places the resolved value in process arguments; `--env GITHUB_TOKEN` reads it from the CLI process environment without exposure.
 - Never echo secret values into tool output. Pipe generated credentials straight into `--stdin`.
-- Inside a session, `AGENT_ID`/`LETTA_AGENT_ID` resolves the target automatically; pass `--agent <agent-id>` otherwise.
+- Inside a session, `AGENT_ID`/`HARUYUKI_AGENT_ID` resolves the target automatically; pass `--agent <agent-id>` otherwise.
 - A running session loads its secret cache at startup; CLI-side changes apply to new sessions. The `/secret` slash command manages the same store interactively and refreshes the live cache.
 
 ## Channels
@@ -397,7 +397,7 @@ letta channels pair --channel <channel> --code <code> --agent <agent-id> --conve
 letta server --channels <channel>
 ```
 
-Channel state lives under `~/.haruyuki/channels/<channel>/` (`config.yaml`, `accounts.json`, routing/pairing files, and channel runtimes). Account tokens may be plaintext in `file` mode or keyring placeholders in `keyring`/`auto` mode. Configure storage with `channelCredentialsStore` (`file`, `keyring`, `auto`) or `LETTA_CHANNEL_CREDENTIALS_STORE`; do not treat keyring placeholders as usable secrets and do not print tokens. Channel configuration and pairing can route external messages to other agents/conversations; verify IDs and get human consent for interactive authorization.
+Channel state lives under `~/.haruyuki/channels/<channel>/` (`config.yaml`, `accounts.json`, routing/pairing files, and channel runtimes). Account tokens may be plaintext in `file` mode or keyring placeholders in `keyring`/`auto` mode. Configure storage with `channelCredentialsStore` (`file`, `keyring`, `auto`) or `HARUYUKI_CHANNEL_CREDENTIALS_STORE`; do not treat keyring placeholders as usable secrets and do not print tokens. Channel configuration and pairing can route external messages to other agents/conversations; verify IDs and get human consent for interactive authorization.
 
 `letta channels configure <channel>` is an interactive TTY wizard. Do not launch it as unattended work or claim setup succeeded while it is waiting for input; hand the authorization/setup step to the user.
 

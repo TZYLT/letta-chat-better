@@ -84,7 +84,7 @@ await Bun.build({
     entry: "letta.js",
   },
   define: {
-    LETTA_VERSION: JSON.stringify(version),
+    HARUYUKI_VERSION: JSON.stringify(version),
     BUILD_TIME: JSON.stringify(new Date().toISOString()),
     __USE_MAGICK__: useMagick ? "true" : "false",
   },
@@ -185,7 +185,7 @@ await Bun.build({
     entry: "mcp-client.js",
   },
   define: {
-    LETTA_VERSION: JSON.stringify(version),
+    HARUYUKI_VERSION: JSON.stringify(version),
   },
 });
 
@@ -200,7 +200,7 @@ await Bun.build({
     entry: "mcp-oauth.js",
   },
   define: {
-    LETTA_VERSION: JSON.stringify(version),
+    HARUYUKI_VERSION: JSON.stringify(version),
   },
 });
 

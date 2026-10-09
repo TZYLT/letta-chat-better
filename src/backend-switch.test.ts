@@ -13,7 +13,7 @@ async function runCliWithEnv(
 ): Promise<{ stdout: string; stderr: string; exitCode: number | null }> {
   return await new Promise((resolve, reject) => {
     const env = createIsolatedCliTestEnv({
-      LETTA_DEBUG: "0",
+      HARUYUKI_DEBUG: "0",
       ...extraEnv,
     });
     const proc = spawn(
@@ -80,9 +80,9 @@ describe("headless backend switches", () => {
           "--no-skills",
         ],
         {
-          LETTA_LOCAL_BACKEND_EXPERIMENTAL: "true",
+          HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL: "true",
           LETTA_LOCAL_BACKEND_DIR: storageDir,
-          LETTA_AGENT_ID: "agent-ambient-remote",
+          HARUYUKI_AGENT_ID: "agent-ambient-remote",
           AGENT_ID: "agent-ambient-remote",
         },
       );
@@ -116,9 +116,9 @@ describe("headless backend switches", () => {
           "--no-skills",
         ],
         {
-          LETTA_LOCAL_BACKEND_EXPERIMENTAL: "true",
+          HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL: "true",
           LETTA_LOCAL_BACKEND_DIR: storageDir,
-          LETTA_AGENT_ID: "agent-ambient-remote",
+          HARUYUKI_AGENT_ID: "agent-ambient-remote",
           AGENT_ID: "agent-ambient-remote",
         },
       );
@@ -153,7 +153,7 @@ describe("headless backend switches", () => {
           "local/default",
         ],
         {
-          LETTA_LOCAL_BACKEND_EXPERIMENTAL: "true",
+          HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL: "true",
           LETTA_LOCAL_BACKEND_DIR: storageDir,
         },
       );

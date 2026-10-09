@@ -72,9 +72,9 @@ describe("Monitor", () => {
   }
 
   beforeEach(() => {
-    previousScratchpad = process.env.LETTA_SCRATCHPAD;
+    previousScratchpad = process.env.HARUYUKI_SCRATCHPAD;
     scratchpad = mkdtempSync(join(tmpdir(), "monitor-test-"));
-    process.env.LETTA_SCRATCHPAD = scratchpad;
+    process.env.HARUYUKI_SCRATCHPAD = scratchpad;
     queuedMessages = [];
     childScriptIndex = 0;
     clearPendingMessages();
@@ -94,9 +94,9 @@ describe("Monitor", () => {
     setMessageQueueAdder(null);
     clearPendingMessages();
     if (previousScratchpad === undefined) {
-      delete process.env.LETTA_SCRATCHPAD;
+      delete process.env.HARUYUKI_SCRATCHPAD;
     } else {
-      process.env.LETTA_SCRATCHPAD = previousScratchpad;
+      process.env.HARUYUKI_SCRATCHPAD = previousScratchpad;
     }
     rmSync(scratchpad, { recursive: true, force: true });
   });

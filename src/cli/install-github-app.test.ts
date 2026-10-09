@@ -86,7 +86,7 @@ describe("install-github-app helpers", () => {
   test("generateLettaWorkflowYaml includes agent_id when requested", () => {
     const yaml = generateLettaWorkflowYaml({ includeAgentId: true });
 
-    expect(yaml).toContain("agent_id: $" + "{{ vars.LETTA_AGENT_ID }}");
+    expect(yaml).toContain("agent_id: $" + "{{ vars.HARUYUKI_AGENT_ID }}");
     expect(yaml).toContain("uses: letta-ai/letta-code-action@v0");
   });
 

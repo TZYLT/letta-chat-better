@@ -14,9 +14,10 @@ import { estimateProviderRequestBytes } from "./provider-turn-executor";
 // tokens, while ~11.8MB failed with "Connection error." on every provider.
 // 8MB keeps headroom under Anthropic's documented 32MB cap while staying
 // above known-good payloads. Local networks can fail below that threshold, so
-// LETTA_LOCAL_REQUEST_BYTE_LIMIT can lower the reactive classifier in dev.
+// HARUYUKI_LOCAL_REQUEST_BYTE_LIMIT can lower the reactive classifier in dev.
 const DEFAULT_LOCAL_PROVIDER_REQUEST_BYTE_LIMIT = 8_000_000;
-const LOCAL_PROVIDER_REQUEST_BYTE_LIMIT_ENV = "LETTA_LOCAL_REQUEST_BYTE_LIMIT";
+const LOCAL_PROVIDER_REQUEST_BYTE_LIMIT_ENV =
+  "HARUYUKI_LOCAL_REQUEST_BYTE_LIMIT";
 
 function localProviderRequestByteLimit(): number {
   const raw = process.env[LOCAL_PROVIDER_REQUEST_BYTE_LIMIT_ENV];

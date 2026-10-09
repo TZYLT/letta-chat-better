@@ -55,7 +55,7 @@ export function resetSandboxAvailabilityCache(): void {
  * default**: memory subagents (reflection, memory, init) run
  * as whole confined processes with a scoped write surface, and there is no
  * interactive approve/deny flow that could stand in for it. Set
- * `LETTA_FS_SANDBOX=0` (or `false`) to opt out entirely. When no backend is
+ * `HARUYUKI_FS_SANDBOX=0` (or `false`) to opt out entirely. When no backend is
  * available on the host, {@link detectSandboxBackend} returns `{backend:null}`
  * and every sandbox entry point no-ops regardless of this flag.
  *
@@ -65,7 +65,7 @@ export function resetSandboxAvailabilityCache(): void {
 export function isFsSandboxEnabled(
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
-  const value = env.LETTA_FS_SANDBOX?.trim().toLowerCase();
+  const value = env.HARUYUKI_FS_SANDBOX?.trim().toLowerCase();
   // Default on: only an explicit off-switch disables it.
   return value !== "0" && value !== "false";
 }
@@ -76,11 +76,11 @@ export function isFsSandboxEnabled(
  * interactive agent's own shells walling off other agents' memory broke
  * legitimate workflows (agents inspecting `~/.haruyuki/agents`) with kernel
  * `Operation not permitted` errors that no permission mode could approve
- * through. Set `LETTA_FS_SANDBOX=1` (or `true`) to opt in — recommended for
+ * through. Set `HARUYUKI_FS_SANDBOX=1` (or `true`) to opt in — recommended for
  * multi-tenant deployments (app server, experiment runners) where one host
  * runs many agents that must not read each other's memory.
  *
- * `LETTA_FS_SANDBOX` semantics across both checks:
+ * `HARUYUKI_FS_SANDBOX` semantics across both checks:
  *   - unset  → memory subagents sandboxed; agent shells unconfined
  *   - `1`/`true`  → both sandboxed
  *   - `0`/`false` → nothing sandboxed
@@ -88,7 +88,7 @@ export function isFsSandboxEnabled(
 export function isShellSandboxEnabled(
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
-  const value = env.LETTA_FS_SANDBOX?.trim().toLowerCase();
+  const value = env.HARUYUKI_FS_SANDBOX?.trim().toLowerCase();
   // Opt-in only: an explicit on-switch enables it.
   return value === "1" || value === "true";
 }

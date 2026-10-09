@@ -5,7 +5,7 @@ const { existsSync } = require('node:fs');
 const { delimiter, join } = require('node:path');
 
 const env = { ...process.env };
-if (!env.LETTA_DEBUG) env.LETTA_DEBUG = '1';
+if (!env.HARUYUKI_DEBUG) env.HARUYUKI_DEBUG = '1';
 
 /**
  * Resolve a bun binary this process can actually spawn.

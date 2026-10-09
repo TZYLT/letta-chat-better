@@ -55,7 +55,7 @@ function harness(hosted: boolean) {
     },
   };
   const deps: McpSubcommandDependencies = {
-    env: { LETTA_AGENT_ID: "agent-cloud" },
+    env: { HARUYUKI_AGENT_ID: "agent-cloud" },
     initializeSettings: async () => {},
     isServerMcpAvailable: () => true,
     isHostedLettaCloud: () => hosted,

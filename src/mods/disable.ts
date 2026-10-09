@@ -1,5 +1,6 @@
-export const LETTA_DISABLE_MODS_ENV = "LETTA_DISABLE_MODS";
-export const LEGACY_LETTA_DISABLE_EXTENSIONS_ENV = "LETTA_DISABLE_EXTENSIONS";
+export const HARUYUKI_DISABLE_MODS_ENV = "HARUYUKI_DISABLE_MODS";
+export const LEGACY_LETTA_DISABLE_EXTENSIONS_ENV =
+  "HARUYUKI_DISABLE_EXTENSIONS";
 
 function isTruthyEnvFlag(value: string | undefined): boolean {
   if (!value) return false;
@@ -9,7 +10,7 @@ function isTruthyEnvFlag(value: string | undefined): boolean {
 
 export function areModsDisabled(env: NodeJS.ProcessEnv = process.env): boolean {
   return (
-    isTruthyEnvFlag(env[LETTA_DISABLE_MODS_ENV]) ||
+    isTruthyEnvFlag(env[HARUYUKI_DISABLE_MODS_ENV]) ||
     isTruthyEnvFlag(env[LEGACY_LETTA_DISABLE_EXTENSIONS_ENV])
   );
 }
@@ -24,5 +25,5 @@ export function shouldDisableMods(options?: {
 }
 
 export function disableModsForProcess(): void {
-  process.env[LETTA_DISABLE_MODS_ENV] = "1";
+  process.env[HARUYUKI_DISABLE_MODS_ENV] = "1";
 }

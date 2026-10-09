@@ -40,14 +40,16 @@ describe("client-side MCP", () => {
         name: "everything",
         command: process.execPath,
         args: [EVERYTHING_SERVER],
-        env: { LETTA_MCP_TEST_VALUE: "client-side" },
+        env: { HARUYUKI_MCP_TEST_VALUE: "client-side" },
       },
       { stderr: "pipe" },
     );
 
     try {
       const result = await server.callTool("get-env");
-      expect(JSON.stringify(result.content)).toContain("LETTA_MCP_TEST_VALUE");
+      expect(JSON.stringify(result.content)).toContain(
+        "HARUYUKI_MCP_TEST_VALUE",
+      );
       expect(JSON.stringify(result.content)).toContain("client-side");
     } finally {
       await server.close();
@@ -61,11 +63,11 @@ describe("client-side MCP", () => {
         transport: "http",
         url: "https://mcp.example.invalid/mcp",
         headers: {
-          Authorization: "Bearer $" + "{LETTA_MCP_TEST_MISSING_TOKEN_7F4C}",
+          Authorization: "Bearer $" + "{HARUYUKI_MCP_TEST_MISSING_TOKEN_7F4C}",
         },
       }),
     ).rejects.toThrow(
-      "MCP header Authorization references missing environment variable LETTA_MCP_TEST_MISSING_TOKEN_7F4C",
+      "MCP header Authorization references missing environment variable HARUYUKI_MCP_TEST_MISSING_TOKEN_7F4C",
     );
   });
 

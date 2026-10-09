@@ -2,8 +2,8 @@
 
 These examples are trusted local Letta Code mods. Copy a file into
 `~/.letta/mods/` and run `/reload`, or point a local test run at this
-directory with `LETTA_MODS_DIR=/path/to/mods` (or legacy
-`LETTA_EXTENSIONS_DIR` on pre-rename branches).
+directory with `HARUYUKI_MODS_DIR=/path/to/mods` (or legacy
+`HARUYUKI_EXTENSIONS_DIR` on pre-rename branches).
 
 ## `memory-citations.ts`
 
@@ -26,7 +26,7 @@ mod system itself:
 
 1. read a target env/demo;
 2. ask a fresh headless Letta Code agent to generate a candidate mod;
-3. run a second headless eval with `LETTA_MODS_DIR` pointed at the
+3. run a second headless eval with `HARUYUKI_MODS_DIR` pointed at the
    candidate directory;
 4. save prompts, stdout/stderr, the candidate mod, and a pass/fail report
    under `.letta/mod-learning-runs/`.

@@ -122,15 +122,15 @@ describe("reflection launchers", () => {
         process,
         "platform",
       );
-      const originalOptIn = process.env.LETTA_ENABLE_WINDOWS_AUTO_REFLECTION;
+      const originalOptIn = process.env.HARUYUKI_ENABLE_WINDOWS_AUTO_REFLECTION;
       // Stop allowed launches at the next gate without API or filesystem work.
       const isCutover = mock(async () => true);
       try {
         Object.defineProperty(process, "platform", { value: platform });
         if (optIn === undefined) {
-          delete process.env.LETTA_ENABLE_WINDOWS_AUTO_REFLECTION;
+          delete process.env.HARUYUKI_ENABLE_WINDOWS_AUTO_REFLECTION;
         } else {
-          process.env.LETTA_ENABLE_WINDOWS_AUTO_REFLECTION = optIn;
+          process.env.HARUYUKI_ENABLE_WINDOWS_AUTO_REFLECTION = optIn;
         }
         const result = await launchReflectionSubagent(
           queuedLaunchOptions({ triggerSource }),
@@ -146,9 +146,9 @@ describe("reflection launchers", () => {
           Object.defineProperty(process, "platform", originalPlatform);
         }
         if (originalOptIn === undefined) {
-          delete process.env.LETTA_ENABLE_WINDOWS_AUTO_REFLECTION;
+          delete process.env.HARUYUKI_ENABLE_WINDOWS_AUTO_REFLECTION;
         } else {
-          process.env.LETTA_ENABLE_WINDOWS_AUTO_REFLECTION = originalOptIn;
+          process.env.HARUYUKI_ENABLE_WINDOWS_AUTO_REFLECTION = originalOptIn;
         }
       }
     },
@@ -167,14 +167,15 @@ describe("reflection launchers", () => {
   });
 
   test("skips before payload and worktree creation when parent memory is dirty", async () => {
-    const originalLocalBackend = process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+    const originalLocalBackend =
+      process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
     const originalLocalBackendDir = process.env.LETTA_LOCAL_BACKEND_DIR;
     const storageDir = mkdtempSync(join(tmpdir(), "reflection-preflight-"));
     const agentId = "agent-parent-dirty";
     const memoryDir = join(storageDir, "memfs", agentId, "memory");
 
     try {
-      process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL = "1";
+      process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL = "1";
       process.env.LETTA_LOCAL_BACKEND_DIR = storageDir;
       mkdirSync(memoryDir, { recursive: true });
       git(storageDir, ["init", "-b", "main", memoryDir]);
@@ -194,9 +195,9 @@ describe("reflection launchers", () => {
       ).toBe(false);
     } finally {
       if (originalLocalBackend === undefined) {
-        delete process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+        delete process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
       } else {
-        process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL = originalLocalBackend;
+        process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL = originalLocalBackend;
       }
       if (originalLocalBackendDir === undefined) {
         delete process.env.LETTA_LOCAL_BACKEND_DIR;

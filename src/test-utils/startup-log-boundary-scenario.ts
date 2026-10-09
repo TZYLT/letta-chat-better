@@ -111,8 +111,8 @@ function connect() {
 }
 
 try {
-  assert.equal(process.env.LETTA_STARTUP_LOG_MARKER, undefined);
-  assert.equal(process.env.LETTA_STARTUP_LOG_OWNER_PID, undefined);
+  assert.equal(process.env.HARUYUKI_STARTUP_LOG_MARKER, undefined);
+  assert.equal(process.env.HARUYUKI_STARTUP_LOG_OWNER_PID, undefined);
   log("STARTUP_DIAGNOSTIC");
   if (mode === "failure" || mode === "invalid-owner") {
     await assert.rejects(handleMessage(input), /Failed to seal startup logs/);

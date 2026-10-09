@@ -34,11 +34,11 @@ const RESUME_BACKFILL_MESSAGE_TYPES: MessageType[] = [
 ];
 
 /**
- * Check if message backfilling is enabled via LETTA_BACKFILL env var.
- * Defaults to true. Set LETTA_BACKFILL=0 or LETTA_BACKFILL=false to disable.
+ * Check if message backfilling is enabled via HARUYUKI_BACKFILL env var.
+ * Defaults to true. Set HARUYUKI_BACKFILL=0 or HARUYUKI_BACKFILL=false to disable.
  */
 function isBackfillEnabled(): boolean {
-  const val = process.env.LETTA_BACKFILL;
+  const val = process.env.HARUYUKI_BACKFILL;
   // Default to enabled (true) - only disable if explicitly set to "0" or "false"
   return val !== "0" && val !== "false";
 }

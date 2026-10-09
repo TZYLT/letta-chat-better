@@ -58,8 +58,8 @@ beforeEach(async () => {
   process.env.GIT_CONFIG_GLOBAL = join(root, "gitconfig");
   process.env.GIT_CONFIG_NOSYSTEM = "1";
   process.env.LETTA_API_KEY = token;
-  process.env.LETTA_MEMFS_BASE_URL = "https://api.letta.com";
-  delete process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+  process.env.HARUYUKI_MEMFS_BASE_URL = "https://api.letta.com";
+  delete process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
   delete process.env.GIT_CONFIG_COUNT;
   writeFileSync(
     process.env.GIT_CONFIG_GLOBAL,
@@ -108,7 +108,7 @@ beforeEach(async () => {
   assert(address && typeof address !== "string");
   proxyUrl = `http://127.0.0.1:${address.port}`;
   process.env.LETTA_BASE_URL = proxyUrl;
-  process.env.LETTA_MEMFS_GIT_PROXY_BASE_URL = proxyUrl;
+  process.env.HARUYUKI_MEMFS_GIT_PROXY_BASE_URL = proxyUrl;
   // A broken fetch must fail locally, never contact api.letta.com. The
   // command-scoped /v1/git/ rewrite is more specific than this safety net.
   git(memoryDir, [
@@ -225,8 +225,8 @@ describe("reflection memory HTTP refresh", () => {
   });
 
   it("authenticates a configured MemFS server without a Desktop proxy", async () => {
-    delete process.env.LETTA_MEMFS_GIT_PROXY_BASE_URL;
-    process.env.LETTA_MEMFS_BASE_URL = proxyUrl;
+    delete process.env.HARUYUKI_MEMFS_GIT_PROXY_BASE_URL;
+    process.env.HARUYUKI_MEMFS_BASE_URL = proxyUrl;
     git(memoryDir, [
       "remote",
       "set-url",

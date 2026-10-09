@@ -39,14 +39,14 @@ describe("headless shared reminder wiring", () => {
     );
   });
 
-  test("subagent mode is wired via LETTA_CODE_AGENT_ROLE check", () => {
+  test("subagent mode is wired via HARUYUKI_CODE_AGENT_ROLE check", () => {
     const headlessPath = fileURLToPath(
       new URL("./headless.ts", import.meta.url),
     );
     const source = readFileSync(headlessPath, "utf-8");
 
     expect(source).toContain(
-      'process.env.LETTA_CODE_AGENT_ROLE === "subagent"',
+      'process.env.HARUYUKI_CODE_AGENT_ROLE === "subagent"',
     );
     expect(source).toContain('isSubagent ? "subagent" : "headless-one-shot"');
     expect(source).toContain(

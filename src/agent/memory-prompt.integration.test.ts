@@ -4,7 +4,7 @@ import { updateAgentSystemPromptMemfs } from "@/agent/modify";
 import { getClient } from "@/backend/api/client";
 
 const describeIntegration =
-  process.env.LETTA_RUN_API_INTEGRATION_TESTS === "true" &&
+  process.env.HARUYUKI_RUN_API_INTEGRATION_TESTS === "true" &&
   process.env.LETTA_API_KEY
     ? describe
     : describe.skip;
@@ -14,7 +14,7 @@ describeIntegration("memory prompt integration", () => {
 
   beforeAll(() => {
     // Avoid polluting user's normal local LRU state in integration runs.
-    process.env.LETTA_CODE_AGENT_ROLE = "subagent";
+    process.env.HARUYUKI_CODE_AGENT_ROLE = "subagent";
   });
 
   afterAll(async () => {

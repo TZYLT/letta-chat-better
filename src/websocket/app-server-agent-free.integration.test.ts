@@ -10,7 +10,7 @@ import type { WsProtocolMessage } from "@/types/app-server-protocol";
 import { type AppServerHandle, startAppServer } from "@/websocket/app-server";
 
 const runIntegration =
-  process.env.LETTA_RUN_API_INTEGRATION_TESTS === "true" &&
+  process.env.HARUYUKI_RUN_API_INTEGRATION_TESTS === "true" &&
   !!process.env.LETTA_API_KEY;
 const describeIntegration = runIntegration ? describe : describe.skip;
 
@@ -46,8 +46,8 @@ describeIntegration("agent-free Cloud App Server", () => {
   let conversationId: string | null = null;
 
   beforeAll(async () => {
-    process.env.LETTA_DISABLE_MODS = "1";
-    process.env.LETTA_DISABLE_CRON_SCHEDULER = "1";
+    process.env.HARUYUKI_DISABLE_MODS = "1";
+    process.env.HARUYUKI_DISABLE_CRON_SCHEDULER = "1";
     await settingsManager.initialize();
     configureBackendMode("api");
     backend = getBackend();

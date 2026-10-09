@@ -9,14 +9,14 @@ let detectionComplete = false;
 let kittySupported = false;
 let kittyEnabled = false;
 
-const DEBUG = process.env.LETTA_DEBUG_KITTY === "1";
-const DISABLED = process.env.LETTA_DISABLE_KITTY === "1";
+const DEBUG = process.env.HARUYUKI_DEBUG_KITTY === "1";
+const DISABLED = process.env.HARUYUKI_DISABLE_KITTY === "1";
 const DETECTION_TIMEOUT_MS = 150;
 
 /**
  * Detects Kitty keyboard protocol support.
  * This function should be called once at app startup, before rendering.
- * Set LETTA_DISABLE_KITTY=1 to skip enabling the protocol (useful for debugging).
+ * Set HARUYUKI_DISABLE_KITTY=1 to skip enabling the protocol (useful for debugging).
  */
 export async function detectAndEnableKittyProtocol(): Promise<void> {
   if (detectionComplete) {
@@ -27,7 +27,7 @@ export async function detectAndEnableKittyProtocol(): Promise<void> {
   if (DISABLED) {
     if (DEBUG) {
       // eslint-disable-next-line no-console
-      console.error("[kitty] protocol disabled via LETTA_DISABLE_KITTY=1");
+      console.error("[kitty] protocol disabled via HARUYUKI_DISABLE_KITTY=1");
     }
     detectionComplete = true;
     return;

@@ -2105,8 +2105,8 @@ describe("listen-client model command helpers", () => {
 describe("listen-client cron command handling", () => {
   test("wraps cron library CRUD over WS commands", async () => {
     const tempRoot = await mkdtemp(join(os.tmpdir(), "letta-listen-cron-"));
-    const originalLettaHome = process.env.LETTA_HOME;
-    process.env.LETTA_HOME = tempRoot;
+    const originalLettaHome = process.env.HARUYUKI_HOME;
+    process.env.HARUYUKI_HOME = tempRoot;
 
     try {
       const socket = new MockSocket(WebSocket.OPEN);
@@ -2330,9 +2330,9 @@ describe("listen-client cron command handling", () => {
       });
     } finally {
       if (originalLettaHome) {
-        process.env.LETTA_HOME = originalLettaHome;
+        process.env.HARUYUKI_HOME = originalLettaHome;
       } else {
-        delete process.env.LETTA_HOME;
+        delete process.env.HARUYUKI_HOME;
       }
       await rm(tempRoot, { recursive: true, force: true });
     }
@@ -4654,11 +4654,11 @@ describe("listen-client recoverable status notices", () => {
   test("suppresses stale approval recovery from transcript and mirrors it to desktop logs", () => {
     const runtime = __listenClientTestUtils.createRuntime();
     const socket = new MockSocket();
-    const originalFlag = process.env.LETTA_DESKTOP_MODE;
+    const originalFlag = process.env.HARUYUKI_DESKTOP_MODE;
     const originalWrite = process.stderr.write.bind(process.stderr);
     const mirroredLines: string[] = [];
 
-    process.env.LETTA_DESKTOP_MODE = "1";
+    process.env.HARUYUKI_DESKTOP_MODE = "1";
     process.stderr.write = ((chunk: string | Uint8Array) => {
       mirroredLines.push(
         typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf8"),
@@ -4678,9 +4678,9 @@ describe("listen-client recoverable status notices", () => {
     } finally {
       process.stderr.write = originalWrite as typeof process.stderr.write;
       if (originalFlag === undefined) {
-        delete process.env.LETTA_DESKTOP_MODE;
+        delete process.env.HARUYUKI_DESKTOP_MODE;
       } else {
-        process.env.LETTA_DESKTOP_MODE = originalFlag;
+        process.env.HARUYUKI_DESKTOP_MODE = originalFlag;
       }
     }
 
@@ -4702,11 +4702,11 @@ describe("listen-client recoverable status notices", () => {
     const runtime = __listenClientTestUtils.createRuntime();
     const firstSocket = new MockSocket();
     const secondSocket = new MockSocket();
-    const originalFlag = process.env.LETTA_DESKTOP_MODE;
+    const originalFlag = process.env.HARUYUKI_DESKTOP_MODE;
     const originalWrite = process.stderr.write.bind(process.stderr);
     const mirroredLines: string[] = [];
 
-    process.env.LETTA_DESKTOP_MODE = "1";
+    process.env.HARUYUKI_DESKTOP_MODE = "1";
     process.stderr.write = ((chunk: string | Uint8Array) => {
       mirroredLines.push(
         typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf8"),
@@ -4743,9 +4743,9 @@ describe("listen-client recoverable status notices", () => {
     } finally {
       process.stderr.write = originalWrite as typeof process.stderr.write;
       if (originalFlag === undefined) {
-        delete process.env.LETTA_DESKTOP_MODE;
+        delete process.env.HARUYUKI_DESKTOP_MODE;
       } else {
-        process.env.LETTA_DESKTOP_MODE = originalFlag;
+        process.env.HARUYUKI_DESKTOP_MODE = originalFlag;
       }
     }
 
@@ -4901,14 +4901,14 @@ describe("listen-client loop error notices", () => {
   test("suppresses abort-like loop errors from transcript and mirrors them to desktop logs", () => {
     const runtime = __listenClientTestUtils.createRuntime();
     const socket = new MockSocket();
-    const originalFlag = process.env.LETTA_DESKTOP_MODE;
+    const originalFlag = process.env.HARUYUKI_DESKTOP_MODE;
     const originalWrite = process.stderr.write.bind(process.stderr);
     const mirroredLines: string[] = [];
     const abortError = Object.assign(new Error("The operation was aborted"), {
       name: "AbortError",
     });
 
-    process.env.LETTA_DESKTOP_MODE = "1";
+    process.env.HARUYUKI_DESKTOP_MODE = "1";
     process.stderr.write = ((chunk: string | Uint8Array) => {
       mirroredLines.push(
         typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf8"),
@@ -4926,9 +4926,9 @@ describe("listen-client loop error notices", () => {
     } finally {
       process.stderr.write = originalWrite as typeof process.stderr.write;
       if (originalFlag === undefined) {
-        delete process.env.LETTA_DESKTOP_MODE;
+        delete process.env.HARUYUKI_DESKTOP_MODE;
       } else {
-        process.env.LETTA_DESKTOP_MODE = originalFlag;
+        process.env.HARUYUKI_DESKTOP_MODE = originalFlag;
       }
     }
 
@@ -5515,8 +5515,8 @@ describe("listen-client edit_file command", () => {
 describe("listen-client skill enable/disable command handling", () => {
   test("enables a skill by creating a symlink and disables it by removing it", async () => {
     const tempRoot = await mkdtemp(join(os.tmpdir(), "letta-listen-skill-"));
-    const originalLettaHome = process.env.LETTA_HOME;
-    process.env.LETTA_HOME = tempRoot;
+    const originalLettaHome = process.env.HARUYUKI_HOME;
+    process.env.HARUYUKI_HOME = tempRoot;
 
     try {
       // Create a fake skill directory with SKILL.md
@@ -5585,9 +5585,9 @@ describe("listen-client skill enable/disable command handling", () => {
       expect(existsSync(linkPath)).toBe(false);
     } finally {
       if (originalLettaHome) {
-        process.env.LETTA_HOME = originalLettaHome;
+        process.env.HARUYUKI_HOME = originalLettaHome;
       } else {
-        delete process.env.LETTA_HOME;
+        delete process.env.HARUYUKI_HOME;
       }
       await rm(tempRoot, { recursive: true, force: true });
     }
@@ -5595,8 +5595,8 @@ describe("listen-client skill enable/disable command handling", () => {
 
   test("rejects enable when path does not exist", async () => {
     const tempRoot = await mkdtemp(join(os.tmpdir(), "letta-listen-skill-"));
-    const originalLettaHome = process.env.LETTA_HOME;
-    process.env.LETTA_HOME = tempRoot;
+    const originalLettaHome = process.env.HARUYUKI_HOME;
+    process.env.HARUYUKI_HOME = tempRoot;
 
     try {
       const socket = new MockSocket(WebSocket.OPEN);
@@ -5619,9 +5619,9 @@ describe("listen-client skill enable/disable command handling", () => {
       expect(messages[0].error).toContain("does not exist");
     } finally {
       if (originalLettaHome) {
-        process.env.LETTA_HOME = originalLettaHome;
+        process.env.HARUYUKI_HOME = originalLettaHome;
       } else {
-        delete process.env.LETTA_HOME;
+        delete process.env.HARUYUKI_HOME;
       }
       await rm(tempRoot, { recursive: true, force: true });
     }
@@ -5629,8 +5629,8 @@ describe("listen-client skill enable/disable command handling", () => {
 
   test("rejects enable when SKILL.md is missing", async () => {
     const tempRoot = await mkdtemp(join(os.tmpdir(), "letta-listen-skill-"));
-    const originalLettaHome = process.env.LETTA_HOME;
-    process.env.LETTA_HOME = tempRoot;
+    const originalLettaHome = process.env.HARUYUKI_HOME;
+    process.env.HARUYUKI_HOME = tempRoot;
 
     try {
       // Create a directory without SKILL.md
@@ -5657,9 +5657,9 @@ describe("listen-client skill enable/disable command handling", () => {
       expect(messages[0].error).toContain("No SKILL.md");
     } finally {
       if (originalLettaHome) {
-        process.env.LETTA_HOME = originalLettaHome;
+        process.env.HARUYUKI_HOME = originalLettaHome;
       } else {
-        delete process.env.LETTA_HOME;
+        delete process.env.HARUYUKI_HOME;
       }
       await rm(tempRoot, { recursive: true, force: true });
     }
@@ -5667,8 +5667,8 @@ describe("listen-client skill enable/disable command handling", () => {
 
   test("rejects disable when skill is not a symlink", async () => {
     const tempRoot = await mkdtemp(join(os.tmpdir(), "letta-listen-skill-"));
-    const originalLettaHome = process.env.LETTA_HOME;
-    process.env.LETTA_HOME = tempRoot;
+    const originalLettaHome = process.env.HARUYUKI_HOME;
+    process.env.HARUYUKI_HOME = tempRoot;
 
     try {
       // Create a real directory (not a symlink) in skills/
@@ -5695,9 +5695,9 @@ describe("listen-client skill enable/disable command handling", () => {
       expect(messages[0].error).toContain("not a symlink");
     } finally {
       if (originalLettaHome) {
-        process.env.LETTA_HOME = originalLettaHome;
+        process.env.HARUYUKI_HOME = originalLettaHome;
       } else {
-        delete process.env.LETTA_HOME;
+        delete process.env.HARUYUKI_HOME;
       }
       await rm(tempRoot, { recursive: true, force: true });
     }

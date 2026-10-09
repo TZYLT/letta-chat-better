@@ -50,18 +50,18 @@ afterEach(async () => {
 test("external tool launches a prepared child through the real App Server and child CLI", async () => {
   home = await mkdtemp(join(tmpdir(), "launch-subagent-"));
   setEnv("HOME", home);
-  setEnv("LETTA_SCRATCHPAD", home);
-  setEnv("LETTA_DISABLE_MODS", "1");
-  setEnv("LETTA_DISABLE_CRON_SCHEDULER", "1");
+  setEnv("HARUYUKI_SCRATCHPAD", home);
+  setEnv("HARUYUKI_DISABLE_MODS", "1");
+  setEnv("HARUYUKI_DISABLE_CRON_SCHEDULER", "1");
   setEnv("LETTA_LOCAL_BACKEND_DIR", join(home, "store"));
-  setEnv("LETTA_LOCAL_BACKEND_EXECUTOR", "deterministic");
+  setEnv("HARUYUKI_LOCAL_BACKEND_EXECUTOR", "deterministic");
   setEnv(
-    "LETTA_CODE_BIN",
-    process.env.LETTA_TEST_SUBAGENT_BIN ?? process.execPath,
+    "HARUYUKI_CODE_BIN",
+    process.env.HARUYUKI_TEST_SUBAGENT_BIN ?? process.execPath,
   );
   setEnv(
-    "LETTA_CODE_BIN_ARGS_JSON",
-    process.env.LETTA_TEST_SUBAGENT_ARGS_JSON ??
+    "HARUYUKI_CODE_BIN_ARGS_JSON",
+    process.env.HARUYUKI_TEST_SUBAGENT_ARGS_JSON ??
       JSON.stringify([
         "--loader=.md:text",
         "--loader=.mdx:text",

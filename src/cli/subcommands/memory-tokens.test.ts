@@ -41,11 +41,11 @@ describe("letta memory tokens", () => {
   beforeEach(() => {
     tmpRoot = mkdtempSync(join(tmpdir(), "memory-tokens-"));
     priorMemoryDir = process.env.MEMORY_DIR;
-    priorAgentId = process.env.LETTA_AGENT_ID;
-    priorLocalBackend = process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+    priorAgentId = process.env.HARUYUKI_AGENT_ID;
+    priorLocalBackend = process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
     delete process.env.MEMORY_DIR;
-    delete process.env.LETTA_AGENT_ID;
-    delete process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+    delete process.env.HARUYUKI_AGENT_ID;
+    delete process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
   });
 
   afterEach(() => {
@@ -56,14 +56,14 @@ describe("letta memory tokens", () => {
       delete process.env.MEMORY_DIR;
     }
     if (priorAgentId !== undefined) {
-      process.env.LETTA_AGENT_ID = priorAgentId;
+      process.env.HARUYUKI_AGENT_ID = priorAgentId;
     } else {
-      delete process.env.LETTA_AGENT_ID;
+      delete process.env.HARUYUKI_AGENT_ID;
     }
     if (priorLocalBackend !== undefined) {
-      process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL = priorLocalBackend;
+      process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL = priorLocalBackend;
     } else {
-      delete process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+      delete process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
     }
   });
 
@@ -147,7 +147,7 @@ describe("letta memory tokens", () => {
   });
 
   test("uses root MEMORY.md to select v2 for local MemFS", async () => {
-    process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL = "1";
+    process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL = "1";
     writeRootFile("MEMORY.md", "a".repeat(100));
     writeSystemFile("persona.md", "abcd");
     const { capture, restore } = captureConsole();

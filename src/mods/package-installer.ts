@@ -15,7 +15,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { isModFileExtension } from "@/mods/file-extensions";
 import {
-  LETTA_PACKAGE_MANIFEST_VERSION,
+  HARUYUKI_PACKAGE_MANIFEST_VERSION,
   type LettaPackageCapability,
   readLettaPackageManifest,
 } from "@/mods/package-manifest";
@@ -906,7 +906,7 @@ function writeCompatibilityPackageManifest(params: {
         name: params.packageName,
         version: params.version,
         letta: {
-          manifestVersion: LETTA_PACKAGE_MANIFEST_VERSION,
+          manifestVersion: HARUYUKI_PACKAGE_MANIFEST_VERSION,
           mods: params.entries,
         },
       },

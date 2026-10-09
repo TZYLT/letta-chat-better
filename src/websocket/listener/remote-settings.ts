@@ -289,7 +289,7 @@ function writeCwdRepairJournal(
     renameSync(tempPath, journalPath);
     return id;
   } catch {
-    if (process.env.LETTA_DEBUG) {
+    if (process.env.HARUYUKI_DEBUG) {
       console.warn("[Remote Settings] Unable to persist cwd repair journal");
     }
     return null;

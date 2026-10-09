@@ -171,7 +171,7 @@ function shouldStartPermissionWatchers(): boolean {
   // with non-persistent watchers.
   return (
     process.env.NODE_ENV !== "test" &&
-    process.env.LETTA_DISABLE_PERMISSION_WATCHERS !== "1"
+    process.env.HARUYUKI_DISABLE_PERMISSION_WATCHERS !== "1"
   );
 }
 

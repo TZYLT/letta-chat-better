@@ -7,10 +7,11 @@ import { settingsManager } from "@/settings-manager";
 
 const originalHome = process.env.HOME;
 const originalCwd = process.cwd();
-const originalLocalBackendFlag = process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+const originalLocalBackendFlag =
+  process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
 const originalLocalBackendDir = process.env.LETTA_LOCAL_BACKEND_DIR;
 const originalBaseUrl = process.env.LETTA_BASE_URL;
-const originalMemfsBaseUrl = process.env.LETTA_MEMFS_BASE_URL;
+const originalMemfsBaseUrl = process.env.HARUYUKI_MEMFS_BASE_URL;
 
 let testHomeDir: string;
 let testProjectDir: string;
@@ -78,10 +79,10 @@ beforeEach(async () => {
   testHomeDir = await mkdtemp(join(tmpdir(), "letta-startup-home-"));
   testProjectDir = await mkdtemp(join(tmpdir(), "letta-startup-project-"));
   process.env.HOME = testHomeDir;
-  delete process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+  delete process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
   delete process.env.LETTA_LOCAL_BACKEND_DIR;
   delete process.env.LETTA_BASE_URL;
-  delete process.env.LETTA_MEMFS_BASE_URL;
+  delete process.env.HARUYUKI_MEMFS_BASE_URL;
   process.chdir(testProjectDir);
 });
 
@@ -90,9 +91,9 @@ afterEach(async () => {
   process.chdir(originalCwd);
   process.env.HOME = originalHome;
   if (originalLocalBackendFlag === undefined) {
-    delete process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+    delete process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
   } else {
-    process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL = originalLocalBackendFlag;
+    process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL = originalLocalBackendFlag;
   }
   if (originalLocalBackendDir === undefined) {
     delete process.env.LETTA_LOCAL_BACKEND_DIR;
@@ -105,9 +106,9 @@ afterEach(async () => {
     process.env.LETTA_BASE_URL = originalBaseUrl;
   }
   if (originalMemfsBaseUrl === undefined) {
-    delete process.env.LETTA_MEMFS_BASE_URL;
+    delete process.env.HARUYUKI_MEMFS_BASE_URL;
   } else {
-    process.env.LETTA_MEMFS_BASE_URL = originalMemfsBaseUrl;
+    process.env.HARUYUKI_MEMFS_BASE_URL = originalMemfsBaseUrl;
   }
   await rm(testHomeDir, { recursive: true, force: true });
   await rm(testProjectDir, { recursive: true, force: true });
@@ -446,7 +447,7 @@ describe("startup resolution from settings files", () => {
   test("local backend sessions are keyed by storage directory, not api.letta.com", async () => {
     const storageDir = join(testHomeDir, "lc-local-backend-a");
     const localKey = `local:${resolve(storageDir)}`;
-    process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL = "1";
+    process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL = "1";
     process.env.LETTA_LOCAL_BACKEND_DIR = storageDir;
 
     await settingsManager.initialize();
@@ -479,7 +480,7 @@ describe("startup resolution from settings files", () => {
     const storageDirB = join(testHomeDir, "lc-local-backend-b");
     const localKeyA = `local:${resolve(storageDirA)}`;
     const localKeyB = `local:${resolve(storageDirB)}`;
-    process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL = "1";
+    process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL = "1";
     process.env.LETTA_LOCAL_BACKEND_DIR = storageDirB;
 
     await writeLocalSettings({
@@ -514,7 +515,7 @@ describe("startup resolution from settings files", () => {
 
   test("local backend ignores legacy API agent fallbacks", async () => {
     const storageDir = join(testHomeDir, "lc-local-backend");
-    process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL = "1";
+    process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL = "1";
     process.env.LETTA_LOCAL_BACKEND_DIR = storageDir;
 
     await writeLocalSettings({

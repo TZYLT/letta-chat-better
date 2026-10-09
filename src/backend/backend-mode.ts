@@ -26,7 +26,7 @@ export function resolveBackendMode(): BackendMode {
 /**
  * Retained so mode-threading callers keep compiling. There is no longer a mode
  * to configure, and this deliberately does NOT write
- * `LETTA_LOCAL_BACKEND_EXPERIMENTAL`: that variable is frozen as the
+ * `HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL`: that variable is frozen as the
  * settings-bucket predicate (`isLocalBackendEnvEnabled`).
  */
 export function setConfiguredBackendMode(_mode: BackendMode): void {

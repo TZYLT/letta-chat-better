@@ -32,10 +32,10 @@ import {
 } from "@/backend/api/client";
 
 const ORIGINAL_LETTA_BASE_URL = process.env.LETTA_BASE_URL;
-const ORIGINAL_LETTA_MEMFS_BASE_URL = process.env.LETTA_MEMFS_BASE_URL;
-const ORIGINAL_LETTA_DESKTOP_MODE = process.env.LETTA_DESKTOP_MODE;
+const ORIGINAL_LETTA_MEMFS_BASE_URL = process.env.HARUYUKI_MEMFS_BASE_URL;
+const ORIGINAL_LETTA_DESKTOP_MODE = process.env.HARUYUKI_DESKTOP_MODE;
 const ORIGINAL_LETTA_MEMFS_GIT_PROXY_BASE_URL =
-  process.env.LETTA_MEMFS_GIT_PROXY_BASE_URL;
+  process.env.HARUYUKI_MEMFS_GIT_PROXY_BASE_URL;
 const ORIGINAL_LETTA_API_KEY = process.env.LETTA_API_KEY;
 
 let tempDirs: string[] = [];
@@ -55,21 +55,21 @@ afterEach(() => {
   }
 
   if (ORIGINAL_LETTA_MEMFS_BASE_URL === undefined) {
-    delete process.env.LETTA_MEMFS_BASE_URL;
+    delete process.env.HARUYUKI_MEMFS_BASE_URL;
   } else {
-    process.env.LETTA_MEMFS_BASE_URL = ORIGINAL_LETTA_MEMFS_BASE_URL;
+    process.env.HARUYUKI_MEMFS_BASE_URL = ORIGINAL_LETTA_MEMFS_BASE_URL;
   }
 
   if (ORIGINAL_LETTA_DESKTOP_MODE === undefined) {
-    delete process.env.LETTA_DESKTOP_MODE;
+    delete process.env.HARUYUKI_DESKTOP_MODE;
   } else {
-    process.env.LETTA_DESKTOP_MODE = ORIGINAL_LETTA_DESKTOP_MODE;
+    process.env.HARUYUKI_DESKTOP_MODE = ORIGINAL_LETTA_DESKTOP_MODE;
   }
 
   if (ORIGINAL_LETTA_MEMFS_GIT_PROXY_BASE_URL === undefined) {
-    delete process.env.LETTA_MEMFS_GIT_PROXY_BASE_URL;
+    delete process.env.HARUYUKI_MEMFS_GIT_PROXY_BASE_URL;
   } else {
-    process.env.LETTA_MEMFS_GIT_PROXY_BASE_URL =
+    process.env.HARUYUKI_MEMFS_GIT_PROXY_BASE_URL =
       ORIGINAL_LETTA_MEMFS_GIT_PROXY_BASE_URL;
   }
 
@@ -151,18 +151,18 @@ describe("normalizeCredentialBaseUrl", () => {
       );
     });
 
-    test("prefers LETTA_MEMFS_BASE_URL over LETTA_BASE_URL when base URL is omitted", () => {
+    test("prefers HARUYUKI_MEMFS_BASE_URL over LETTA_BASE_URL when base URL is omitted", () => {
       process.env.LETTA_BASE_URL = "http://localhost:51338";
-      process.env.LETTA_MEMFS_BASE_URL = "https://selfhost.example.com";
+      process.env.HARUYUKI_MEMFS_BASE_URL = "https://selfhost.example.com";
       expect(getGitRemoteUrl("agent-123")).toBe(
         "https://selfhost.example.com/v1/git/agent-123/state.git",
       );
     });
 
-    test("defaults to the local server when LETTA_MEMFS_BASE_URL is unset, even if LETTA_BASE_URL is a Desktop proxy", () => {
+    test("defaults to the local server when HARUYUKI_MEMFS_BASE_URL is unset, even if LETTA_BASE_URL is a Desktop proxy", () => {
       process.env.LETTA_BASE_URL = "http://localhost:51338";
-      delete process.env.LETTA_MEMFS_BASE_URL;
-      delete process.env.LETTA_DESKTOP_MODE;
+      delete process.env.HARUYUKI_MEMFS_BASE_URL;
+      delete process.env.HARUYUKI_DESKTOP_MODE;
       expect(getGitRemoteUrl("agent-123")).toBe(
         "http://localhost:8283/v1/git/agent-123/state.git",
       );
@@ -170,9 +170,9 @@ describe("normalizeCredentialBaseUrl", () => {
 
     test("keeps canonical memfs URL stable in desktop proxy transport sessions", () => {
       process.env.LETTA_BASE_URL = "http://localhost:51338";
-      delete process.env.LETTA_MEMFS_BASE_URL;
-      process.env.LETTA_DESKTOP_MODE = "1";
-      process.env.LETTA_MEMFS_GIT_PROXY_BASE_URL = "http://localhost:51338";
+      delete process.env.HARUYUKI_MEMFS_BASE_URL;
+      process.env.HARUYUKI_DESKTOP_MODE = "1";
+      process.env.HARUYUKI_MEMFS_GIT_PROXY_BASE_URL = "http://localhost:51338";
 
       expect(getMemfsServerUrl()).toBe("http://localhost:8283");
       expect(getGitRemoteUrl("agent-123")).toBe(
@@ -182,8 +182,8 @@ describe("normalizeCredentialBaseUrl", () => {
 
     test("uses desktop proxy as a transient git transport rewrite for network commands", () => {
       process.env.LETTA_BASE_URL = "http://localhost:51338";
-      process.env.LETTA_MEMFS_BASE_URL = "https://api.letta.com";
-      process.env.LETTA_MEMFS_GIT_PROXY_BASE_URL = "http://localhost:51338";
+      process.env.HARUYUKI_MEMFS_BASE_URL = "https://api.letta.com";
+      process.env.HARUYUKI_MEMFS_GIT_PROXY_BASE_URL = "http://localhost:51338";
 
       expect(buildMemfsGitProxyArgs(["push"])).toEqual([
         "-c",
@@ -196,8 +196,8 @@ describe("normalizeCredentialBaseUrl", () => {
     });
 
     test("does not apply desktop proxy rewrite to local git config reads", () => {
-      delete process.env.LETTA_MEMFS_BASE_URL;
-      process.env.LETTA_MEMFS_GIT_PROXY_BASE_URL = "http://localhost:51338";
+      delete process.env.HARUYUKI_MEMFS_BASE_URL;
+      process.env.HARUYUKI_MEMFS_GIT_PROXY_BASE_URL = "http://localhost:51338";
 
       expect(buildMemfsGitProxyArgs(["remote", "get-url", "origin"])).toEqual(
         [],
@@ -209,8 +209,8 @@ describe("normalizeCredentialBaseUrl", () => {
     });
 
     test("does not proxy explicit self-hosted memfs URLs", () => {
-      process.env.LETTA_MEMFS_BASE_URL = "https://selfhost.example.com";
-      process.env.LETTA_MEMFS_GIT_PROXY_BASE_URL = "http://localhost:51338";
+      process.env.HARUYUKI_MEMFS_BASE_URL = "https://selfhost.example.com";
+      process.env.HARUYUKI_MEMFS_GIT_PROXY_BASE_URL = "http://localhost:51338";
 
       expect(buildMemfsGitProxyArgs(["push"])).toEqual([]);
       expect(getGitRemoteUrl("agent-123")).toBe(
@@ -219,8 +219,8 @@ describe("normalizeCredentialBaseUrl", () => {
     });
 
     test("does not persist credential helpers when desktop proxy transport is active", () => {
-      process.env.LETTA_MEMFS_BASE_URL = "https://api.letta.com";
-      process.env.LETTA_MEMFS_GIT_PROXY_BASE_URL = "http://localhost:51338";
+      process.env.HARUYUKI_MEMFS_BASE_URL = "https://api.letta.com";
+      process.env.HARUYUKI_MEMFS_GIT_PROXY_BASE_URL = "http://localhost:51338";
 
       expect(shouldConfigurePersistentMemfsCredentialHelper()).toBe(false);
     });
@@ -321,24 +321,24 @@ describe("git auth hardening", () => {
     expect(args.join("\n")).toContain("http.extraHeader=Authorization: Basic");
   });
 
-  test("does NOT add hosted routing header when LETTA_MEMFS_BACKEND is unset", () => {
+  test("does NOT add hosted routing header when HARUYUKI_MEMFS_BACKEND is unset", () => {
     const args = buildGitAuthArgs("token-123", { PATH: "/usr/bin" });
     expect(args.join("\n")).not.toContain("x-letta-memfs-backend");
   });
 
-  test("adds hosted routing header when LETTA_MEMFS_BACKEND=hosted", () => {
+  test("adds hosted routing header when HARUYUKI_MEMFS_BACKEND=hosted", () => {
     const args = buildGitAuthArgs("token-123", {
-      LETTA_MEMFS_BACKEND: "hosted",
+      HARUYUKI_MEMFS_BACKEND: "hosted",
     });
     expect(args.join("\n")).toContain(
       "http.extraHeader=x-letta-memfs-backend: hosted",
     );
   });
 
-  test("does NOT add hosted routing header for other LETTA_MEMFS_BACKEND values", () => {
+  test("does NOT add hosted routing header for other HARUYUKI_MEMFS_BACKEND values", () => {
     for (const value of ["memfs-py", "dual", "HOSTED", ""]) {
       const args = buildGitAuthArgs("token-123", {
-        LETTA_MEMFS_BACKEND: value,
+        HARUYUKI_MEMFS_BACKEND: value,
       });
       expect(args.join("\n")).not.toContain("x-letta-memfs-backend");
     }
@@ -388,7 +388,7 @@ describe("maybeUpdateMemoryRemoteOrigin", () => {
     const expectedOrigin = getGitRemoteUrl(agentId, "https://api.letta.com");
 
     process.env.LETTA_BASE_URL = "https://api.letta.com";
-    process.env.LETTA_MEMFS_BASE_URL = "https://api.letta.com";
+    process.env.HARUYUKI_MEMFS_BASE_URL = "https://api.letta.com";
     git(repo, `remote add origin ${staleOrigin}`);
     git(repo, `config --local remote.origin.pushurl ${staleOrigin}`);
 
@@ -408,8 +408,8 @@ describe("maybeUpdateMemoryRemoteOrigin", () => {
     const staleOrigin = getGitRemoteUrl(agentId, "http://localhost:50864");
 
     process.env.LETTA_BASE_URL = "http://localhost:54085";
-    process.env.LETTA_MEMFS_GIT_PROXY_BASE_URL = "http://localhost:54085";
-    process.env.LETTA_MEMFS_BASE_URL = "https://api.letta.com";
+    process.env.HARUYUKI_MEMFS_GIT_PROXY_BASE_URL = "http://localhost:54085";
+    process.env.HARUYUKI_MEMFS_BASE_URL = "https://api.letta.com";
     git(repo, `remote add origin ${staleOrigin}`);
 
     await maybeUpdateMemoryRemoteOrigin(repo, agentId);
@@ -424,8 +424,8 @@ describe("maybeUpdateMemoryRemoteOrigin", () => {
     const agentId = "agent-123";
 
     process.env.LETTA_BASE_URL = "http://localhost:54085";
-    process.env.LETTA_MEMFS_GIT_PROXY_BASE_URL = "http://localhost:54085";
-    process.env.LETTA_MEMFS_BASE_URL = "https://api.letta.com";
+    process.env.HARUYUKI_MEMFS_GIT_PROXY_BASE_URL = "http://localhost:54085";
+    process.env.HARUYUKI_MEMFS_BASE_URL = "https://api.letta.com";
     git(repo, "remote add origin http://localhost:54085/v1/git");
 
     await maybeUpdateMemoryRemoteOrigin(repo, agentId);
@@ -440,7 +440,7 @@ describe("maybeUpdateMemoryRemoteOrigin", () => {
     const agentId = "agent-123";
 
     process.env.LETTA_BASE_URL = "https://api.letta.com";
-    process.env.LETTA_MEMFS_BASE_URL = "https://api.letta.com";
+    process.env.HARUYUKI_MEMFS_BASE_URL = "https://api.letta.com";
     git(repo, "remote add origin https://api.letta.com/v1/git/agent-123");
 
     await maybeUpdateMemoryRemoteOrigin(repo, agentId);
@@ -457,7 +457,7 @@ describe("maybeUpdateMemoryRemoteOrigin", () => {
     const stalePushUrl = getGitRemoteUrl(agentId, "http://localhost:50864");
 
     process.env.LETTA_BASE_URL = "https://api.letta.com";
-    process.env.LETTA_MEMFS_BASE_URL = "https://api.letta.com";
+    process.env.HARUYUKI_MEMFS_BASE_URL = "https://api.letta.com";
     git(repo, `remote add origin ${expectedOrigin}`);
     git(repo, `config --local remote.origin.pushurl ${stalePushUrl}`);
 
@@ -477,7 +477,7 @@ describe("maybeUpdateMemoryRemoteOrigin", () => {
     const expectedOrigin = getGitRemoteUrl(agentId, "https://api.letta.com");
 
     process.env.LETTA_BASE_URL = "https://api.letta.com";
-    process.env.LETTA_MEMFS_BASE_URL = "https://api.letta.com";
+    process.env.HARUYUKI_MEMFS_BASE_URL = "https://api.letta.com";
     git(repo, `remote add origin ${expectedOrigin}`);
     git(
       repo,
@@ -512,7 +512,7 @@ describe("maybeUpdateMemoryRemoteOrigin", () => {
     ).toBe(pushUrl);
   });
 
-  test("updates stale memfs origin to LETTA_MEMFS_BASE_URL when proxy LETTA_BASE_URL differs", async () => {
+  test("updates stale memfs origin to HARUYUKI_MEMFS_BASE_URL when proxy LETTA_BASE_URL differs", async () => {
     const repo = makeGitRepo();
     const agentId = "agent-123";
     const staleOrigin = getGitRemoteUrl(agentId, "http://localhost:50864");
@@ -522,7 +522,7 @@ describe("maybeUpdateMemoryRemoteOrigin", () => {
     );
 
     process.env.LETTA_BASE_URL = "http://localhost:54085";
-    process.env.LETTA_MEMFS_BASE_URL = "https://selfhost.example.com";
+    process.env.HARUYUKI_MEMFS_BASE_URL = "https://selfhost.example.com";
     git(repo, `remote add origin ${staleOrigin}`);
     git(repo, `config --local remote.origin.pushurl ${staleOrigin}`);
 
@@ -610,12 +610,12 @@ describe("credential helper reset", () => {
     process.env.LETTA_BASE_URL = "https://api.letta.com";
     // The memory server is what names the credential-helper key git looks up, so
     // the scenario has to name it: the local default is a loopback URL.
-    process.env.LETTA_MEMFS_BASE_URL = "https://api.letta.com";
-    delete process.env.LETTA_DESKTOP_MODE;
+    process.env.HARUYUKI_MEMFS_BASE_URL = "https://api.letta.com";
+    delete process.env.HARUYUKI_DESKTOP_MODE;
     if (options.proxy) {
-      process.env.LETTA_MEMFS_GIT_PROXY_BASE_URL = "http://localhost:51338";
+      process.env.HARUYUKI_MEMFS_GIT_PROXY_BASE_URL = "http://localhost:51338";
     } else {
-      delete process.env.LETTA_MEMFS_GIT_PROXY_BASE_URL;
+      delete process.env.HARUYUKI_MEMFS_GIT_PROXY_BASE_URL;
     }
     process.env.LETTA_API_KEY = "fresh-token";
     __testOverrideGetClient(async () => ({

@@ -345,7 +345,7 @@ async function launchSession(
   const env = {
     ...(deps.env ?? process.env),
     AGENT_ID: options.parentAgentId,
-    LETTA_AGENT_ID: options.parentAgentId,
+    HARUYUKI_AGENT_ID: options.parentAgentId,
   };
   const abortController = new AbortController();
   const abortFromUpstream = () =>

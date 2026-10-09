@@ -21,10 +21,10 @@ import {
 
 function withTemporaryAgentEnv<T>(agentId: string, fn: () => T): T {
   const originalAgentId = process.env.AGENT_ID;
-  const originalLettaAgentId = process.env.LETTA_AGENT_ID;
+  const originalLettaAgentId = process.env.HARUYUKI_AGENT_ID;
 
   process.env.AGENT_ID = agentId;
-  process.env.LETTA_AGENT_ID = agentId;
+  process.env.HARUYUKI_AGENT_ID = agentId;
 
   try {
     return fn();
@@ -36,9 +36,9 @@ function withTemporaryAgentEnv<T>(agentId: string, fn: () => T): T {
     }
 
     if (originalLettaAgentId === undefined) {
-      delete process.env.LETTA_AGENT_ID;
+      delete process.env.HARUYUKI_AGENT_ID;
     } else {
-      process.env.LETTA_AGENT_ID = originalLettaAgentId;
+      process.env.HARUYUKI_AGENT_ID = originalLettaAgentId;
     }
   }
 }
@@ -76,8 +76,8 @@ describe("shellEnv letta shim", () => {
   test("resolveLettaInvocation prefers explicit launcher env", () => {
     const invocation = resolveLettaInvocation(
       {
-        LETTA_CODE_BIN: "/tmp/custom-letta",
-        LETTA_CODE_BIN_ARGS_JSON: JSON.stringify(["/tmp/entry.ts"]),
+        HARUYUKI_CODE_BIN: "/tmp/custom-letta",
+        HARUYUKI_CODE_BIN_ARGS_JSON: JSON.stringify(["/tmp/entry.ts"]),
       },
       ["bun", "/something/else.ts"],
       "/opt/homebrew/bin/bun",
@@ -89,10 +89,10 @@ describe("shellEnv letta shim", () => {
     });
   });
 
-  test("resolveLettaInvocation strips accidental wrapping quotes in LETTA_CODE_BIN", () => {
+  test("resolveLettaInvocation strips accidental wrapping quotes in HARUYUKI_CODE_BIN", () => {
     const invocation = resolveLettaInvocation(
       {
-        LETTA_CODE_BIN:
+        HARUYUKI_CODE_BIN:
           '"C:\\Users\\Example User\\AppData\\Roaming\\npm\\letta.cmd"',
       },
       ["node", "/irrelevant/script.js"],
@@ -282,30 +282,30 @@ describe("shellEnv letta shim", () => {
   });
 
   test("getShellEnv sets launcher metadata when explicit launcher env is provided", () => {
-    const originalBin = process.env.LETTA_CODE_BIN;
-    const originalArgs = process.env.LETTA_CODE_BIN_ARGS_JSON;
+    const originalBin = process.env.HARUYUKI_CODE_BIN;
+    const originalArgs = process.env.HARUYUKI_CODE_BIN_ARGS_JSON;
 
-    process.env.LETTA_CODE_BIN = "/tmp/explicit-bin";
-    process.env.LETTA_CODE_BIN_ARGS_JSON = JSON.stringify([
+    process.env.HARUYUKI_CODE_BIN = "/tmp/explicit-bin";
+    process.env.HARUYUKI_CODE_BIN_ARGS_JSON = JSON.stringify([
       "/tmp/entrypoint.js",
     ]);
 
     try {
       const env = getShellEnv();
-      expect(env.LETTA_CODE_BIN).toBe("/tmp/explicit-bin");
-      expect(env.LETTA_CODE_BIN_ARGS_JSON).toBe(
+      expect(env.HARUYUKI_CODE_BIN).toBe("/tmp/explicit-bin");
+      expect(env.HARUYUKI_CODE_BIN_ARGS_JSON).toBe(
         JSON.stringify(["/tmp/entrypoint.js"]),
       );
     } finally {
       if (originalBin === undefined) {
-        delete process.env.LETTA_CODE_BIN;
+        delete process.env.HARUYUKI_CODE_BIN;
       } else {
-        process.env.LETTA_CODE_BIN = originalBin;
+        process.env.HARUYUKI_CODE_BIN = originalBin;
       }
       if (originalArgs === undefined) {
-        delete process.env.LETTA_CODE_BIN_ARGS_JSON;
+        delete process.env.HARUYUKI_CODE_BIN_ARGS_JSON;
       } else {
-        process.env.LETTA_CODE_BIN_ARGS_JSON = originalArgs;
+        process.env.HARUYUKI_CODE_BIN_ARGS_JSON = originalArgs;
       }
     }
   });
@@ -316,7 +316,7 @@ test("getShellEnv injects AGENT_ID aliases", () => {
     const env = getShellEnv();
 
     expect(env.AGENT_ID).toBeTruthy();
-    expect(env.LETTA_AGENT_ID).toBe(env.AGENT_ID);
+    expect(env.HARUYUKI_AGENT_ID).toBe(env.AGENT_ID);
   });
 });
 
@@ -336,11 +336,11 @@ test("getShellEnv prefers runtime-scoped agent, conversation, and cwd", () => {
     );
 
     expect(env.AGENT_ID).toBe("agent-runtime-scope");
-    expect(env.LETTA_AGENT_ID).toBe("agent-runtime-scope");
+    expect(env.HARUYUKI_AGENT_ID).toBe("agent-runtime-scope");
     expect(env.AGENT_NAME).toBe("Runtime Scope Agent");
     expect(env.CONVERSATION_ID).toBe("conv-runtime-scope");
-    expect(env.LETTA_CONVERSATION_ID).toBe("conv-runtime-scope");
-    expect(env.LETTA_RUNTIME_ENVIRONMENT_DEVICE_ID).toBe(
+    expect(env.HARUYUKI_CONVERSATION_ID).toBe("conv-runtime-scope");
+    expect(env.HARUYUKI_RUNTIME_ENVIRONMENT_DEVICE_ID).toBe(
       "device-runtime-scope",
     );
     expect(env.USER_CWD).toBe(runtimeCwd);
@@ -351,14 +351,14 @@ test("getShellEnv prefers runtime-scoped agent, conversation, and cwd", () => {
 
 test("getShellEnv prefers the active listener device over inherited process state", () => {
   withTemporaryEnv(
-    { LETTA_RUNTIME_ENVIRONMENT_DEVICE_ID: "device-stale-installation" },
+    { HARUYUKI_RUNTIME_ENVIRONMENT_DEVICE_ID: "device-stale-installation" },
     () => {
       const env = runWithRuntimeContext(
         { environmentDeviceId: "device-active-listener" },
         () => getShellEnv(),
       );
 
-      expect(env.LETTA_RUNTIME_ENVIRONMENT_DEVICE_ID).toBe(
+      expect(env.HARUYUKI_RUNTIME_ENVIRONMENT_DEVICE_ID).toBe(
         "device-active-listener",
       );
     },
@@ -456,7 +456,7 @@ test("getShellEnv honors an explicit MEMORY_DIR scope outside the memory store",
       {
         MEMORY_DIR: "/tmp/dream-batch-clone/output",
         LETTA_MEMORY_DIR: "/tmp/dream-batch-clone/output",
-        LETTA_MEMORY_DIR_EXPLICIT: "1",
+        HARUYUKI_MEMORY_DIR_EXPLICIT: "1",
       },
       () => {
         const originalIsMemfsEnabled =
@@ -489,7 +489,7 @@ test("getShellEnv strips an explicit scope pointing into another agent's memory"
       {
         MEMORY_DIR: otherAgentMemory,
         LETTA_MEMORY_DIR: otherAgentMemory,
-        LETTA_MEMORY_DIR_EXPLICIT: "1",
+        HARUYUKI_MEMORY_DIR_EXPLICIT: "1",
       },
       () => {
         const originalIsMemfsEnabled =
@@ -523,8 +523,8 @@ test("getShellEnv preserves inherited parent MEMORY_DIR for subagents", () => {
   withTemporaryAgentEnv(childAgentId, () => {
     withTemporaryEnv(
       {
-        LETTA_CODE_AGENT_ROLE: "subagent",
-        LETTA_PARENT_AGENT_ID: parentAgentId,
+        HARUYUKI_CODE_AGENT_ROLE: "subagent",
+        HARUYUKI_PARENT_AGENT_ID: parentAgentId,
         MEMORY_DIR: parentMemoryDir,
         LETTA_MEMORY_DIR: parentMemoryDir,
       },
@@ -566,8 +566,8 @@ test("getShellEnv preserves inherited parent memory worktree dir for subagents",
   withTemporaryAgentEnv(childAgentId, () => {
     withTemporaryEnv(
       {
-        LETTA_CODE_AGENT_ROLE: "subagent",
-        LETTA_PARENT_AGENT_ID: parentAgentId,
+        HARUYUKI_CODE_AGENT_ROLE: "subagent",
+        HARUYUKI_PARENT_AGENT_ID: parentAgentId,
         MEMORY_DIR: worktreeMemoryDir,
         LETTA_MEMORY_DIR: worktreeMemoryDir,
       },
@@ -685,8 +685,8 @@ test("getShellEnv injects transient MemFS git proxy config for Desktop Bash comm
   const env = withTemporaryEnv(
     {
       LETTA_BASE_URL: "http://localhost:57294",
-      LETTA_MEMFS_BASE_URL: "https://api.letta.com",
-      LETTA_MEMFS_GIT_PROXY_BASE_URL: "http://localhost:57294",
+      HARUYUKI_MEMFS_BASE_URL: "https://api.letta.com",
+      HARUYUKI_MEMFS_GIT_PROXY_BASE_URL: "http://localhost:57294",
       GIT_CONFIG_COUNT: undefined,
       GIT_CONFIG_KEY_0: undefined,
       GIT_CONFIG_VALUE_0: undefined,
@@ -708,8 +708,8 @@ test("getShellEnv injects transient MemFS git proxy config for Desktop Bash comm
 test("getShellEnv appends MemFS git proxy config without clobbering existing git config env", () => {
   const env = withTemporaryEnv(
     {
-      LETTA_MEMFS_BASE_URL: "https://api.letta.com",
-      LETTA_MEMFS_GIT_PROXY_BASE_URL: "http://localhost:57294",
+      HARUYUKI_MEMFS_BASE_URL: "https://api.letta.com",
+      HARUYUKI_MEMFS_GIT_PROXY_BASE_URL: "http://localhost:57294",
       GIT_CONFIG_COUNT: "1",
       GIT_CONFIG_KEY_0: "safe.directory",
       GIT_CONFIG_VALUE_0: "*",
@@ -731,9 +731,9 @@ test("getShellEnv appends MemFS git proxy config without clobbering existing git
 test("getShellEnv injects hosted MemFS git header for Bash git commands", () => {
   const env = withTemporaryEnv(
     {
-      LETTA_MEMFS_BACKEND: "hosted",
-      LETTA_MEMFS_BASE_URL: "https://api.letta.com",
-      LETTA_MEMFS_GIT_PROXY_BASE_URL: undefined,
+      HARUYUKI_MEMFS_BACKEND: "hosted",
+      HARUYUKI_MEMFS_BASE_URL: "https://api.letta.com",
+      HARUYUKI_MEMFS_GIT_PROXY_BASE_URL: undefined,
       GIT_CONFIG_COUNT: undefined,
       GIT_CONFIG_KEY_0: undefined,
       GIT_CONFIG_VALUE_0: undefined,
@@ -751,9 +751,9 @@ test("getShellEnv injects hosted MemFS git header for Bash git commands", () => 
 test("getShellEnv injects hosted MemFS git header for Desktop proxy git commands", () => {
   const env = withTemporaryEnv(
     {
-      LETTA_MEMFS_BACKEND: "hosted",
-      LETTA_MEMFS_BASE_URL: "https://api.letta.com",
-      LETTA_MEMFS_GIT_PROXY_BASE_URL: "http://localhost:57294",
+      HARUYUKI_MEMFS_BACKEND: "hosted",
+      HARUYUKI_MEMFS_BASE_URL: "https://api.letta.com",
+      HARUYUKI_MEMFS_GIT_PROXY_BASE_URL: "http://localhost:57294",
       GIT_CONFIG_COUNT: undefined,
       GIT_CONFIG_KEY_0: undefined,
       GIT_CONFIG_VALUE_0: undefined,
@@ -783,9 +783,9 @@ test("getShellEnv injects hosted MemFS git header for Desktop proxy git commands
 test("getShellEnv does not inject hosted MemFS git header for other backends", () => {
   const env = withTemporaryEnv(
     {
-      LETTA_MEMFS_BACKEND: "memfs",
-      LETTA_MEMFS_BASE_URL: undefined,
-      LETTA_MEMFS_GIT_PROXY_BASE_URL: undefined,
+      HARUYUKI_MEMFS_BACKEND: "memfs",
+      HARUYUKI_MEMFS_BASE_URL: undefined,
+      HARUYUKI_MEMFS_GIT_PROXY_BASE_URL: undefined,
       GIT_CONFIG_COUNT: undefined,
       GIT_CONFIG_KEY_0: undefined,
       GIT_CONFIG_VALUE_0: undefined,

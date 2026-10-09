@@ -137,7 +137,7 @@ const OLLAMA_MODEL_LOAD_TIMEOUT_MS = 120_000;
  * the empty generate returns, so `/api/ps` cannot see it.
  */
 const OLLAMA_PREFLIGHT_KEEP_ALIVE = "5m";
-const OLLAMA_SERVED_CONTEXT_OVERRIDE_ENV = "LETTA_OLLAMA_CONTEXT_LENGTH";
+const OLLAMA_SERVED_CONTEXT_OVERRIDE_ENV = "HARUYUKI_OLLAMA_CONTEXT_LENGTH";
 
 export interface ResolveOllamaServedContextOptions {
   baseURL: string;
@@ -244,7 +244,7 @@ async function fetchOllamaNative<T>(
  *
  * The generate request pins `keep_alive` so `OLLAMA_KEEP_ALIVE=0` cannot unload
  * the model before `/api/ps`. A missing `context_length` is not replaced with
- * GGUF metadata. `LETTA_OLLAMA_CONTEXT_LENGTH` is the only override, and only
+ * GGUF metadata. `HARUYUKI_OLLAMA_CONTEXT_LENGTH` is the only override, and only
  * when the user states the window the daemon actually serves.
  */
 export async function resolveOllamaServedContext(

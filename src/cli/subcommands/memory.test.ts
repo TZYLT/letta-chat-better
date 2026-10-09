@@ -8,8 +8,8 @@ describe("letta memory pull", () => {
   let errorSpy: ReturnType<typeof spyOn>;
 
   beforeEach(() => {
-    priorLocalBackend = process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
-    delete process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+    priorLocalBackend = process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
+    delete process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
     logSpy = spyOn(console, "log").mockImplementation(() => {});
     errorSpy = spyOn(console, "error").mockImplementation(() => {});
   });
@@ -18,9 +18,9 @@ describe("letta memory pull", () => {
     logSpy.mockRestore();
     errorSpy.mockRestore();
     if (priorLocalBackend !== undefined) {
-      process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL = priorLocalBackend;
+      process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL = priorLocalBackend;
     } else {
-      delete process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+      delete process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
     }
   });
 
@@ -83,7 +83,7 @@ describe("letta memory pull", () => {
   });
 
   test("does not initialize settings for the local backend short-circuit", async () => {
-    process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL = "1";
+    process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL = "1";
     let initialized = false;
 
     const code = await runMemorySubcommand(["pull", "--agent", agentId], {

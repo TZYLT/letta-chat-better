@@ -4,9 +4,9 @@ import { dirname } from "node:path";
 const TUI_PERF_FLUSH_INTERVAL_MS = 1_000;
 const TUI_PERF_ENV_VALUES = new Set(["1", "true", "yes"]);
 const TUI_PERF_ENABLED = TUI_PERF_ENV_VALUES.has(
-  (process.env.LETTA_TUI_PERF ?? "").toLowerCase(),
+  (process.env.HARUYUKI_TUI_PERF ?? "").toLowerCase(),
 );
-const TUI_PERF_FILE = process.env.LETTA_TUI_PERF_FILE?.trim() || null;
+const TUI_PERF_FILE = process.env.HARUYUKI_TUI_PERF_FILE?.trim() || null;
 
 type TuiPerfBucket = {
   count: number;
@@ -158,7 +158,7 @@ function flushTuiPerfTelemetry(): void {
     if (!tuiPerfWarningEmitted) {
       tuiPerfWarningEmitted = true;
       console.error(
-        `[TUI Perf] Failed to write LETTA_TUI_PERF_FILE=${filePath}`,
+        `[TUI Perf] Failed to write HARUYUKI_TUI_PERF_FILE=${filePath}`,
         error,
       );
     }

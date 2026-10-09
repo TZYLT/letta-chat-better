@@ -810,7 +810,7 @@ export async function handleHeadlessCommand(
   const skillSourcesRaw = values["skill-sources"];
   const memfsFlag = values.memfs;
   const statelessFlag = values.stateless;
-  const isSubagentRole = process.env.LETTA_CODE_AGENT_ROLE === "subagent";
+  const isSubagentRole = process.env.HARUYUKI_CODE_AGENT_ROLE === "subagent";
   // Fresh subagents are stateless by role. --stateless extends only the
   // MemFS-less session behavior to an existing --agent/--conversation launch;
   // it does not change that agent's model, prompt, tools, or sampling config.
@@ -907,7 +907,7 @@ export async function handleHeadlessCommand(
   }
 
   const ambientAgentId = (
-    process.env.LETTA_AGENT_ID ||
+    process.env.HARUYUKI_AGENT_ID ||
     process.env.AGENT_ID ||
     ""
   ).trim();
@@ -1245,7 +1245,7 @@ export async function handleHeadlessCommand(
       createsConversation:
         !specifiedConversationId &&
         (forceNewConversation ||
-          process.env.LETTA_CODE_AGENT_ROLE !== "subagent"),
+          process.env.HARUYUKI_CODE_AGENT_ROLE !== "subagent"),
       localModelCatalog: backend.capabilities.localModelCatalog,
     });
     agent = prepared.agent;
@@ -1257,7 +1257,7 @@ export async function handleHeadlessCommand(
   let conversationOpenReason: ModConversationOpenReason = "startup";
   let effectiveReflectionSettings: ReflectionSettings;
 
-  const isSubagent = process.env.LETTA_CODE_AGENT_ROLE === "subagent";
+  const isSubagent = process.env.HARUYUKI_CODE_AGENT_ROLE === "subagent";
 
   // Init secrets cache.
   const secretsAgentId = ephemeralFlag ? undefined : agent?.id;
@@ -1871,8 +1871,8 @@ export async function handleHeadlessCommand(
         disable_memory_guard: cliPermissions.isMemoryGuardDisabled(),
         max_turns: maxTurns,
         preload_skills: parseCsvListFlag(preLoadSkillsRaw),
-        parent_agent_id: process.env.LETTA_PARENT_AGENT_ID,
-        ...(process.env.LETTA_CODE_AGENT_ROLE === "subagent"
+        parent_agent_id: process.env.HARUYUKI_PARENT_AGENT_ID,
+        ...(process.env.HARUYUKI_CODE_AGENT_ROLE === "subagent"
           ? { agent_role: "subagent" as const }
           : {}),
         ...(!environmentSelector
@@ -3196,7 +3196,7 @@ async function runBidirectionalMode(
   let turnStarting = false;
   const reminderContextTracker = createContextTracker();
   const sharedReminderState = createSharedReminderState();
-  const isSubagent = process.env.LETTA_CODE_AGENT_ROLE === "subagent";
+  const isSubagent = process.env.HARUYUKI_CODE_AGENT_ROLE === "subagent";
   const maybeLaunchReflectionSubagent = async (
     triggerSource: Exclude<ReflectionTrigger, "off">,
   ): Promise<boolean> => {

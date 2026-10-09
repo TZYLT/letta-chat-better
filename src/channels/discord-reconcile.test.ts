@@ -447,10 +447,10 @@ describe("Discord route reconciliation", () => {
   // ── Log assertions ───────────────────────────────────────────
 
   test("blocked-delivery debug diagnostics contain key identifiers and reason", async () => {
-    const debug = process.env.LETTA_DEBUG;
-    const debugFile = process.env.LETTA_DEBUG_FILE;
-    process.env.LETTA_DEBUG = "1";
-    delete process.env.LETTA_DEBUG_FILE;
+    const debug = process.env.HARUYUKI_DEBUG;
+    const debugFile = process.env.HARUYUKI_DEBUG_FILE;
+    process.env.HARUYUKI_DEBUG = "1";
+    delete process.env.HARUYUKI_DEBUG_FILE;
     const logSpy = spyOn(console, "error").mockImplementation(() => {});
     const stdoutSpy = spyOn(console, "log").mockImplementation(() => {});
 
@@ -546,10 +546,10 @@ describe("Discord route reconciliation", () => {
     } finally {
       logSpy.mockRestore();
       stdoutSpy.mockRestore();
-      if (debug === undefined) delete process.env.LETTA_DEBUG;
-      else process.env.LETTA_DEBUG = debug;
-      if (debugFile === undefined) delete process.env.LETTA_DEBUG_FILE;
-      else process.env.LETTA_DEBUG_FILE = debugFile;
+      if (debug === undefined) delete process.env.HARUYUKI_DEBUG;
+      else process.env.HARUYUKI_DEBUG = debug;
+      if (debugFile === undefined) delete process.env.HARUYUKI_DEBUG_FILE;
+      else process.env.HARUYUKI_DEBUG_FILE = debugFile;
     }
   });
 });

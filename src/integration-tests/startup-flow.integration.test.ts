@@ -288,7 +288,7 @@ describe("Startup Flow - Integration", () => {
             includeMemfsStartup: false,
             env: createIsolatedCliTestEnv({
               HOME: homeDir,
-              LETTA_SKIP_KEYCHAIN_CHECK: "1",
+              HARUYUKI_SKIP_KEYCHAIN_CHECK: "1",
             }),
           },
         );
@@ -334,8 +334,8 @@ describe("Startup Flow - Integration", () => {
             env: createIsolatedCliTestEnv({
               HOME: homeDir,
               LETTA_LOCAL_BACKEND_DIR: storageDir,
-              LETTA_LOCAL_BACKEND_EXECUTOR: "deterministic",
-              LETTA_SKIP_KEYCHAIN_CHECK: "1",
+              HARUYUKI_LOCAL_BACKEND_EXECUTOR: "deterministic",
+              HARUYUKI_SKIP_KEYCHAIN_CHECK: "1",
             }),
           },
         );

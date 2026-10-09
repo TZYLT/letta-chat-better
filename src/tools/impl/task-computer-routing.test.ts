@@ -90,9 +90,9 @@ beforeEach(() => {
     retrieveAgent,
   } as unknown as Backend);
   setCurrentAgentId("agent-routing-parent");
-  previousScratchpad = process.env.LETTA_SCRATCHPAD;
+  previousScratchpad = process.env.HARUYUKI_SCRATCHPAD;
   scratchpad = mkdtempSync(join(tmpdir(), "task-computer-routing-"));
-  process.env.LETTA_SCRATCHPAD = scratchpad;
+  process.env.HARUYUKI_SCRATCHPAD = scratchpad;
 });
 
 afterEach(() => {
@@ -101,9 +101,9 @@ afterEach(() => {
   setCurrentAgentId(null);
   __testSetBackend(null);
   if (previousScratchpad === undefined) {
-    delete process.env.LETTA_SCRATCHPAD;
+    delete process.env.HARUYUKI_SCRATCHPAD;
   } else {
-    process.env.LETTA_SCRATCHPAD = previousScratchpad;
+    process.env.HARUYUKI_SCRATCHPAD = previousScratchpad;
   }
   rmSync(scratchpad, { recursive: true, force: true });
 });

@@ -42,14 +42,14 @@ describe("Skill tool memory filesystem lookup", () => {
   const originalMemoryDir = process.env.MEMORY_DIR;
   const originalLettaMemoryDir = process.env.LETTA_MEMORY_DIR;
   const originalLocalBackendExperimental =
-    process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+    process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
   const originalHome = process.env.HOME;
   const originalUserCwd = process.env.USER_CWD;
 
   beforeEach(() => {
     tempRoot = mkdtempSync(join(tmpdir(), "letta-skill-tool-"));
     currentSkillsDirectory = join(tempRoot, ".skills");
-    delete process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+    delete process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
     consumeQueuedSkillContent();
   });
 
@@ -71,9 +71,9 @@ describe("Skill tool memory filesystem lookup", () => {
     }
 
     if (originalLocalBackendExperimental === undefined) {
-      delete process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+      delete process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
     } else {
-      process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL =
+      process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL =
         originalLocalBackendExperimental;
     }
 

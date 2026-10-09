@@ -40,7 +40,7 @@ export class LSPManager {
    */
   async initialize(projectRoot: string): Promise<void> {
     // Check if LSP is enabled
-    if (!process.env.LETTA_ENABLE_LSP) {
+    if (!process.env.HARUYUKI_ENABLE_LSP) {
       return;
     }
 

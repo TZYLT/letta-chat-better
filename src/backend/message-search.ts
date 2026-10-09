@@ -27,7 +27,7 @@ export async function searchMessagesForBackend<T = MessageSearchResponse>(
       {
         currentConversationId:
           getRuntimeContext()?.conversationId ??
-          process.env.LETTA_CONVERSATION_ID ??
+          process.env.HARUYUKI_CONVERSATION_ID ??
           process.env.CONVERSATION_ID,
       },
     ) as T;

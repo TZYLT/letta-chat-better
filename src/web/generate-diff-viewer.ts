@@ -382,7 +382,7 @@ export async function generateAndOpenDiffViewer(
 
   const jsonPayload = JSON.stringify(payload).replace(/</g, "\\u003c");
   const html = diffViewerTemplate.replace(
-    "<!--LETTA_DIFF_DATA_PLACEHOLDER-->",
+    "<!--HARUYUKI_DIFF_DATA_PLACEHOLDER-->",
     () => jsonPayload,
   );
 

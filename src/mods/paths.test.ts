@@ -5,8 +5,8 @@ import path from "node:path";
 import {
   getGlobalModsDirectory,
   getLegacyGlobalExtensionsDirectory,
+  HARUYUKI_MODS_DIR_ENV,
   LEGACY_LETTA_EXTENSIONS_DIR_ENV,
-  LETTA_MODS_DIR_ENV,
   resolveDefaultGlobalModsDirectory,
 } from "@/mods/paths";
 
@@ -15,14 +15,14 @@ function createTempDir(): string {
 }
 
 describe("mod paths", () => {
-  test("uses LETTA_MODS_DIR when present", () => {
+  test("uses HARUYUKI_MODS_DIR when present", () => {
     const root = createTempDir();
     try {
       const envDirectory = path.join(root, "candidate-mods");
 
       expect(
         resolveDefaultGlobalModsDirectory(root, {
-          [LETTA_MODS_DIR_ENV]: envDirectory,
+          [HARUYUKI_MODS_DIR_ENV]: envDirectory,
         }),
       ).toBe(envDirectory);
     } finally {
@@ -30,7 +30,7 @@ describe("mod paths", () => {
     }
   });
 
-  test("uses legacy LETTA_EXTENSIONS_DIR when mods env is absent", () => {
+  test("uses legacy HARUYUKI_EXTENSIONS_DIR when mods env is absent", () => {
     const root = createTempDir();
     try {
       const envDirectory = path.join(root, "candidate-extensions");

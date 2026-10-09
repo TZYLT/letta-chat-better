@@ -332,7 +332,7 @@ function resolveSecretsAgentId(explicitAgentId?: string): string | null {
   }
 
   const envAgentId = (
-    process.env.LETTA_AGENT_ID ||
+    process.env.HARUYUKI_AGENT_ID ||
     process.env.AGENT_ID ||
     ""
   ).trim();

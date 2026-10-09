@@ -75,7 +75,7 @@ test.each([
 test("Read and Write wait after home and environment expansion", async () => {
   const agent = crypto.randomUUID();
   const root = join(homedir(), agent);
-  const key = "LETTA_CHECKOUT_TEST_PATH";
+  const key = "HARUYUKI_CHECKOUT_TEST_PATH";
   const previous = process.env[key];
   process.env[key] = root;
   let release!: () => void;

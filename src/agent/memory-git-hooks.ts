@@ -85,7 +85,7 @@ validate_memory_constraints() {
 validate_memory_files() {
   [ "$1" = "legacy" ] && [ "\${#memory_files[@]}" -eq 0 ] && return
   local result
-  result=$(run_memory_node - "$1" "$memory_layout_policy" "\${memory_files[@]}" <<'LETTA_MEMORY_FRONTMATTER'
+  result=$(run_memory_node - "$1" "$memory_layout_policy" "\${memory_files[@]}" <<'HARUYUKI_MEMORY_FRONTMATTER'
 const { execFileSync, spawnSync } = require("node:child_process");
 const validateMemoryFileFrontmatter = ${validateMemoryFileFrontmatter.toString()};
 const [format, policy, ...stagedPaths] = process.argv.slice(2);
@@ -127,7 +127,7 @@ try {
   console.error("Memory validation could not read Git contents. No files were committed.");
   process.exit(1);
 }
-LETTA_MEMORY_FRONTMATTER
+HARUYUKI_MEMORY_FRONTMATTER
   ) || exit $?
   if [ -n "$result" ]; then
     errors="$errors\\n$result"

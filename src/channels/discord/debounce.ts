@@ -12,7 +12,7 @@ const DISCORD_DEBOUNCE_MAX_MS = 10000;
 export function resolveDiscordInboundDebounceMs(
   config: Pick<DiscordChannelAccount, "inboundDebounceMs">,
 ): number {
-  const raw = process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS;
+  const raw = process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS;
   if (typeof raw === "string" && raw.trim() !== "") {
     const envOverride = Number(raw);
     if (Number.isFinite(envOverride) && envOverride >= 0) {

@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   GIT_MEMORY_ENABLED_TAG,
-  LETTA_CODE_ORIGIN_TAG,
+  HARUYUKI_CODE_ORIGIN_TAG,
   ONBOARDING_ORIGIN_TAG,
 } from "@/agent/agent-tags";
 import {
@@ -11,7 +11,7 @@ import {
   buildCreateAgentRequestForPersonality,
   DEFAULT_CREATED_AGENT_BASE_TOOLS,
   DEFAULT_ROOT_MEMORY_BLOCK,
-  LETTA_CODE_AGENT_TYPE,
+  HARUYUKI_CODE_AGENT_TYPE,
 } from "@/agent/create-agent-request";
 import { getDefaultModel } from "@/agent/model-catalog";
 import { updateAgentSystemPromptMemfs } from "@/agent/modify";
@@ -37,7 +37,7 @@ describe("buildCreateAgentRequest", () => {
     });
 
     expect(request).toMatchObject({
-      agent_type: LETTA_CODE_AGENT_TYPE,
+      agent_type: HARUYUKI_CODE_AGENT_TYPE,
       model: "openai/gpt-5.2",
       system: buildSystemPrompt("default", "root-memfs"),
       memory_blocks: [
@@ -45,7 +45,7 @@ describe("buildCreateAgentRequest", () => {
         { label: "persona", value: "You are Ezra." },
         { label: "human", value: "The human reads the docs." },
       ],
-      tags: [LETTA_CODE_ORIGIN_TAG, GIT_MEMORY_ENABLED_TAG],
+      tags: [HARUYUKI_CODE_ORIGIN_TAG, GIT_MEMORY_ENABLED_TAG],
       tools: DEFAULT_CREATED_AGENT_BASE_TOOLS,
       include_base_tools: false,
       include_base_tool_rules: false,
@@ -91,7 +91,7 @@ describe("buildCreateAgentRequest", () => {
     });
 
     expect(request.system).toBe(buildSystemPrompt("default", "standard"));
-    expect(request.tags).toEqual([LETTA_CODE_ORIGIN_TAG, "role:subagent"]);
+    expect(request.tags).toEqual([HARUYUKI_CODE_ORIGIN_TAG, "role:subagent"]);
     expect(request.tags).not.toContain(GIT_MEMORY_ENABLED_TAG);
     expect(request.hidden).toBe(true);
     expect(request).not.toHaveProperty("memory_blocks");
@@ -185,7 +185,7 @@ describe("buildCreateAgentRequest", () => {
       system: "Custom prompt",
       memory_blocks: [],
       block_ids: ["block-1"],
-      tags: [LETTA_CODE_ORIGIN_TAG, "role:worker"],
+      tags: [HARUYUKI_CODE_ORIGIN_TAG, "role:worker"],
       tools: [],
       include_base_tools: false,
       include_base_tool_rules: false,
@@ -243,9 +243,9 @@ describe("buildCreateAgentRequestForPersonality", () => {
       expect(cliOptions.memoryPromptMode).toBe("local-memfs");
       expect(request.system).toBeNull();
 
-      expect(request.agent_type).toBe(LETTA_CODE_AGENT_TYPE);
+      expect(request.agent_type).toBe(HARUYUKI_CODE_AGENT_TYPE);
       expect(request.tags).toEqual([
-        LETTA_CODE_ORIGIN_TAG,
+        HARUYUKI_CODE_ORIGIN_TAG,
         GIT_MEMORY_ENABLED_TAG,
         ...getPersonalityCreationTags(personalityId),
       ]);
@@ -307,7 +307,7 @@ describe("buildCreateAgentRequestForPersonality", () => {
       extraTags: [ONBOARDING_ORIGIN_TAG, "favorite:user:user-1"],
     });
     expect(request.tags).toEqual([
-      LETTA_CODE_ORIGIN_TAG,
+      HARUYUKI_CODE_ORIGIN_TAG,
       GIT_MEMORY_ENABLED_TAG,
       ONBOARDING_ORIGIN_TAG,
       "favorite:user:user-1",

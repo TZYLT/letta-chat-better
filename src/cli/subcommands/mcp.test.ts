@@ -127,7 +127,7 @@ function cloudHarness(
     stderr,
     posts,
     deps: {
-      env: { LETTA_AGENT_ID: "agent-cloud" },
+      env: { HARUYUKI_AGENT_ID: "agent-cloud" },
       initializeSettings: async () => {},
       isServerMcpAvailable: () => true,
       getLocalServers: () => [],
@@ -176,7 +176,7 @@ describe("mcp subcommand", () => {
       error: {
         code: "agent_id_required",
         message: "No agent context found",
-        hint: "Pass --agent <agent-id> or set LETTA_AGENT_ID.",
+        hint: "Pass --agent <agent-id> or set HARUYUKI_AGENT_ID.",
       },
     });
   });

@@ -30,7 +30,7 @@ import { resolvePersonalityId } from "./agent/personality-presets";
 import type { MemoryPromptMode } from "./agent/prompt-assets";
 import { resolveSkillSourcesSelection } from "./agent/skill-sources";
 import { initializeDesktopCredentials } from "./auth/desktop-credentials";
-import { LETTA_CLOUD_API_URL } from "./auth/oauth";
+import { HARUYUKI_CLOUD_API_URL } from "./auth/oauth";
 import {
   type Backend,
   type BackendMode,
@@ -290,7 +290,7 @@ function getStartupTargetLookupOrderForCredentials({
   hasRefreshToken: boolean;
 }): BackendMode[] {
   if (explicitBackendMode) return lookupOrder;
-  if (baseURL !== LETTA_CLOUD_API_URL || apiKey || hasRefreshToken) {
+  if (baseURL !== HARUYUKI_CLOUD_API_URL || apiKey || hasRefreshToken) {
     return lookupOrder;
   }
   return lookupOrder.filter((mode) => mode !== "api");
@@ -542,8 +542,8 @@ async function main(): Promise<void> {
       baseURL:
         process.env.LETTA_BASE_URL ||
         savedBackendSettings.envBaseUrl ||
-        LETTA_CLOUD_API_URL,
-      cloudBaseURL: LETTA_CLOUD_API_URL,
+        HARUYUKI_CLOUD_API_URL,
+      cloudBaseURL: HARUYUKI_CLOUD_API_URL,
     });
     if (backendMode) {
       configureBackendMode(backendMode);
@@ -562,7 +562,7 @@ async function main(): Promise<void> {
   markMilestone("SETTINGS_LOADED");
 
   // Initialize LSP infrastructure for type checking
-  if (process.env.LETTA_ENABLE_LSP) {
+  if (process.env.HARUYUKI_ENABLE_LSP) {
     try {
       const { lspManager } = await import("@/lsp/manager.js");
       await lspManager.initialize(process.cwd());
@@ -734,7 +734,7 @@ async function main(): Promise<void> {
   const baseURL =
     process.env.LETTA_BASE_URL ||
     settings.env?.LETTA_BASE_URL ||
-    LETTA_CLOUD_API_URL;
+    HARUYUKI_CLOUD_API_URL;
 
   const startupTargetLookupOrder = getStartupTargetLookupOrderForCredentials({
     baseURL,
@@ -744,7 +744,7 @@ async function main(): Promise<void> {
     hasRefreshToken: Boolean(settings.refreshToken),
   });
 
-  // Initialize telemetry (enabled by default, opt-out via LETTA_CODE_TELEM=0)
+  // Initialize telemetry (enabled by default, opt-out via HARUYUKI_CODE_TELEM=0)
   // Surface is set here so session_start captures the correct mode.
   telemetry.setSurface(getTerminalTelemetrySurface(isHeadless));
   telemetry.init({ handleSigint: !isHeadless });
@@ -812,15 +812,15 @@ async function main(): Promise<void> {
 
   // Validate system prompt preset if provided.
   // Known preset IDs are always accepted. Subagent names are only accepted
-  // for internal subagent launches (LETTA_CODE_AGENT_ROLE=subagent).
+  // for internal subagent launches (HARUYUKI_CODE_AGENT_ROLE=subagent).
   if (systemPromptPreset) {
     const { validateSystemPromptPreset } = await import(
       "@/agent/system-prompt-resolution"
     );
-    const allowSubagentNames = process.env.LETTA_CODE_AGENT_ROLE === "subagent";
+    const isSubagent = process.env.HARUYUKI_CODE_AGENT_ROLE === "subagent";
     try {
       await validateSystemPromptPreset(systemPromptPreset, {
-        allowSubagentNames,
+        allowSubagentNames: isSubagent,
       });
     } catch (err) {
       trackCliBoundaryError(

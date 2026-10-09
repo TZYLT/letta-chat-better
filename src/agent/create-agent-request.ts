@@ -25,7 +25,7 @@ import {
 import { buildSystemPrompt, type MemoryPromptMode } from "./prompt-assets";
 
 /** Agent type used for all Letta Code agents. */
-export const LETTA_CODE_AGENT_TYPE = "letta_v1_agent";
+export const HARUYUKI_CODE_AGENT_TYPE = "letta_v1_agent";
 
 /**
  * Server-side tools attached to created agents. Client-side tools (Read,
@@ -76,7 +76,7 @@ export interface BuildCreateAgentRequestOptions {
 }
 
 export interface CreateAgentRequest {
-  agent_type: typeof LETTA_CODE_AGENT_TYPE;
+  agent_type: typeof HARUYUKI_CODE_AGENT_TYPE;
   name?: string;
   description?: string;
   model: string;
@@ -185,7 +185,7 @@ export async function buildCreateAgentRequest(
   const blockIds = options.isSubagent ? undefined : options.blockIds;
 
   return {
-    agent_type: LETTA_CODE_AGENT_TYPE,
+    agent_type: HARUYUKI_CODE_AGENT_TYPE,
     ...(options.name !== undefined || personality
       ? { name: options.name ?? personality?.label }
       : {}),

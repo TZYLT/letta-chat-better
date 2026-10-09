@@ -51,7 +51,7 @@ describe("MCP server details", () => {
     };
     const stdout: string[] = [];
     const deps: McpSubcommandDependencies = {
-      env: { LETTA_AGENT_ID: "agent-cloud" },
+      env: { HARUYUKI_AGENT_ID: "agent-cloud" },
       initializeSettings: async () => {},
       isServerMcpAvailable: () => true,
       getLocalServers: () => [],
@@ -123,7 +123,7 @@ describe("MCP server details", () => {
     };
     const stdout: string[] = [];
     const deps: McpSubcommandDependencies = {
-      env: { LETTA_AGENT_ID: "agent-cloud" },
+      env: { HARUYUKI_AGENT_ID: "agent-cloud" },
       initializeSettings: async () => {},
       isServerMcpAvailable: () => true,
       getLocalServers: () => [],

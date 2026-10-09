@@ -307,11 +307,11 @@ export function appendBackgroundProcessOutput(
 
 /**
  * Get a temp directory for background task output files.
- * Uses LETTA_SCRATCHPAD if set. Otherwise creates one private temp directory
+ * Uses HARUYUKI_SCRATCHPAD if set. Otherwise creates one private temp directory
  * for this process so fixed log filenames do not collide across users or runs.
  */
 export function getBackgroundOutputDir(): string {
-  const scratchpad = process.env.LETTA_SCRATCHPAD;
+  const scratchpad = process.env.HARUYUKI_SCRATCHPAD;
   if (scratchpad) {
     return scratchpad;
   }
@@ -331,7 +331,7 @@ export function __resetBackgroundOutputDirForTests(): void {
 function ensureBackgroundOutputDir(dir: string): void {
   mkdirSync(dir, { recursive: true, mode: 0o700 });
 
-  if (!process.env.LETTA_SCRATCHPAD) {
+  if (!process.env.HARUYUKI_SCRATCHPAD) {
     chmodSync(dir, 0o700);
   }
 }

@@ -16,7 +16,7 @@ const MEMORY_MODE = buildFsSandboxPolicy({
   restrictWrites: true,
 });
 
-const LETTA_SCOPED = buildFsSandboxPolicy({
+const HARUYUKI_SCOPED = buildFsSandboxPolicy({
   baseWritableRoots: ["/home/u/.haruyuki"],
   deniedRoots: ["/home/u/.haruyuki/agents"],
   readonlyRoots: ["/home/u/.haruyuki/agents/self"],
@@ -69,7 +69,7 @@ test("carveouts are restored after the tmpfs mask (with -try so missing roots do
 });
 
 test("base writable is bound BEFORE the tmpfs mask, self memory after", () => {
-  const args = buildBwrapArgs(LETTA_SCOPED);
+  const args = buildBwrapArgs(HARUYUKI_SCOPED);
   const base = tripleIndex(
     args,
     "--bind-try",

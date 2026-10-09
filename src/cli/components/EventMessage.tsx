@@ -88,12 +88,12 @@ export const EventMessage = memo(({ line }: { line: EventLine }) => {
         </Box>
       </Box>
 
-      {/* Result section (only when finished and LETTA_DEBUG is enabled) */}
+      {/* Result section (only when finished and HARUYUKI_DEBUG is enabled) */}
       {/* By default, hide the verbose summary to avoid overwhelming users */}
       {!isRunning &&
         line.summary &&
-        (process.env.LETTA_DEBUG === "1" ||
-          process.env.LETTA_DEBUG === "true") && (
+        (process.env.HARUYUKI_DEBUG === "1" ||
+          process.env.HARUYUKI_DEBUG === "true") && (
           <>
             {/* Header line with L-bracket */}
             <Box flexDirection="row">

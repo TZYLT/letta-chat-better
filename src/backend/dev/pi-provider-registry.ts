@@ -464,7 +464,7 @@ export function stripProviderHandlePrefix(
   model: string | undefined,
   provider: PiProvider,
 ): string | undefined {
-  if (!model) return process.env.LETTA_CODE_DEV_PI_MODEL;
+  if (!model) return process.env.HARUYUKI_CODE_DEV_PI_MODEL;
   const spec = getPiProviderSpec(provider);
   const prefix = spec.handlePrefixes.find((prefix) => model.startsWith(prefix));
   return prefix ? model.slice(prefix.length) : model;

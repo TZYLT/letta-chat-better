@@ -6,8 +6,8 @@ import { buildHeadlessSenderReminder } from "./headless-message-sender";
 
 test("nested launches use the immediate parent scope", () => {
   const inherited = {
-    LETTA_PARENT_AGENT_ID: "agent-grandparent",
-    LETTA_PARENT_CONVERSATION_ID: "conv-grandparent",
+    HARUYUKI_PARENT_AGENT_ID: "agent-grandparent",
+    HARUYUKI_PARENT_CONVERSATION_ID: "conv-grandparent",
     AGENT_ID: "agent-unrelated",
     CONVERSATION_ID: "conv-unrelated",
   };
@@ -30,20 +30,20 @@ test("nested launches use the immediate parent scope", () => {
   expect(
     buildHeadlessSenderReminder(consumeSubagentLaunch(env), undefined, env),
   ).toBe("");
-  expect(inherited.LETTA_PARENT_AGENT_ID).toBe("agent-grandparent");
+  expect(inherited.HARUYUKI_PARENT_AGENT_ID).toBe("agent-grandparent");
 });
 
 test("unknown parent scope never inherits a grandparent address", () => {
   const env = composeSubagentChildEnv({
     parentProcessEnv: {
-      LETTA_PARENT_AGENT_ID: "agent-grandparent",
-      LETTA_PARENT_CONVERSATION_ID: "conv-grandparent",
+      HARUYUKI_PARENT_AGENT_ID: "agent-grandparent",
+      HARUYUKI_PARENT_CONVERSATION_ID: "conv-grandparent",
     },
     parentAgentId: undefined,
     launchProfile: "default",
     inheritedPrimaryRoot: null,
   });
-  expect(env.LETTA_PARENT_CONVERSATION_ID).toBeUndefined();
+  expect(env.HARUYUKI_PARENT_CONVERSATION_ID).toBeUndefined();
   expect(buildHeadlessSenderReminder(true, undefined, env)).toBe("");
 });
 

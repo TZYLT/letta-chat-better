@@ -23,7 +23,7 @@ import { settingsManager } from "@/settings-manager";
 const tempDirs: string[] = [];
 const originalLocalBackendDir = process.env.LETTA_LOCAL_BACKEND_DIR;
 const originalLocalBackendExperimental =
-  process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+  process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
 const originalSetMemfsEnabled =
   settingsManager.setMemfsEnabled.bind(settingsManager);
 
@@ -54,9 +54,9 @@ afterEach(() => {
     process.env.LETTA_LOCAL_BACKEND_DIR = originalLocalBackendDir;
   }
   if (originalLocalBackendExperimental === undefined) {
-    delete process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+    delete process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
   } else {
-    process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL =
+    process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL =
       originalLocalBackendExperimental;
   }
   settingsManager.setMemfsEnabled = originalSetMemfsEnabled;
@@ -227,7 +227,7 @@ describe("Tutor default profile picture", () => {
   test("seeds through the shared MemFS initialization path", async () => {
     const storageDir = mkdtempSync(join(tmpdir(), "tutor-profile-storage-"));
     tempDirs.push(storageDir);
-    process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL = "1";
+    process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL = "1";
     process.env.LETTA_LOCAL_BACKEND_DIR = storageDir;
     configureBackendMode("local");
     settingsManager.setMemfsEnabled = () => undefined;

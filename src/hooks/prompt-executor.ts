@@ -122,7 +122,7 @@ function getAgentId(input: HookInput): string | undefined {
     // Context not available
   }
   // 3. Last resort: env var (set by shell env for subprocesses)
-  return process.env.LETTA_AGENT_ID;
+  return process.env.HARUYUKI_AGENT_ID;
 }
 
 /**
@@ -170,7 +170,7 @@ export async function executePromptHook(
     if (!agentId) {
       throw new Error(
         "Prompt hooks require an agent_id. Ensure the hook event provides an agent_id " +
-          "or set the LETTA_AGENT_ID environment variable.",
+          "or set the HARUYUKI_AGENT_ID environment variable.",
       );
     }
 

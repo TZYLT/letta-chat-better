@@ -197,7 +197,7 @@ async function runLiveBidirectionalCli(paths: {
           HOME: paths.homeDir,
           LETTA_TRANSCRIPT_ROOT: paths.transcriptRoot,
           USER_CWD: paths.projectDir,
-          LETTA_DEBUG: "1",
+          HARUYUKI_DEBUG: "1",
           NO_COLOR: "1",
         }),
       },

@@ -254,14 +254,14 @@ export function getOutboundQueueStats(transport: ListenerTransport): {
 
 // ----- Wire perf telemetry (moved from protocol-outbound.ts) -----
 // Aggregates per-message-type send metrics into 1s windows, flushed to stderr
-// or LETTA_LISTENER_PERF_FILE when LETTA_LISTENER_PERF is enabled.
+// or HARUYUKI_LISTENER_PERF_FILE when HARUYUKI_LISTENER_PERF is enabled.
 
 const PERF_FLUSH_INTERVAL_MS = 1_000;
 const PERF_ENV_VALUES = new Set(["1", "true", "yes"]);
 const PERF_ENABLED = PERF_ENV_VALUES.has(
-  (process.env.LETTA_LISTENER_PERF ?? "").toLowerCase(),
+  (process.env.HARUYUKI_LISTENER_PERF ?? "").toLowerCase(),
 );
-const PERF_FILE = process.env.LETTA_LISTENER_PERF_FILE?.trim() || null;
+const PERF_FILE = process.env.HARUYUKI_LISTENER_PERF_FILE?.trim() || null;
 
 type WirePerfBucket = {
   count: number;
@@ -379,7 +379,7 @@ function writeWirePerfFile(
     if (!wirePerfFileWarningEmitted) {
       wirePerfFileWarningEmitted = true;
       console.error(
-        `[Listen Perf] Failed to write LETTA_LISTENER_PERF_FILE=${filePath}`,
+        `[Listen Perf] Failed to write HARUYUKI_LISTENER_PERF_FILE=${filePath}`,
         error,
       );
     }

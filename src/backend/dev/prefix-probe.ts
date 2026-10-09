@@ -8,7 +8,7 @@ import { isRecord } from "@/utils/type-guards";
 /**
  * Strict prefix freeze payload probe (D-008).
  *
- * When `LETTA_PREFIX_PROBE_DIR` is set, every provider request payload is
+ * When `HARUYUKI_PREFIX_PROBE_DIR` is set, every provider request payload is
  * written to `<dir>/payload-<conversationId>-<seq>.json` so adjacent turns can
  * be compared offline: the system segment hash, the tools-field hash, and the
  * shared message prefix length (implementation route §5.1). Disabled by
@@ -19,7 +19,7 @@ import { isRecord } from "@/utils/type-guards";
  */
 
 function prefixProbeDir(): string | undefined {
-  const raw = process.env.LETTA_PREFIX_PROBE_DIR;
+  const raw = process.env.HARUYUKI_PREFIX_PROBE_DIR;
   const dir = raw?.trim();
   return dir && dir.length > 0 ? dir : undefined;
 }
@@ -37,7 +37,7 @@ export function resetPrefixProbeSequence(): void {
 }
 
 /** Wrap the existing `onPayload` hook with the probe writer. No-op unless the
- * `LETTA_PREFIX_PROBE_DIR` environment variable is set.
+ * `HARUYUKI_PREFIX_PROBE_DIR` environment variable is set.
  */
 export function withPrefixProbe(
   existing: SimpleStreamOptions["onPayload"] | undefined,

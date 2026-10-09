@@ -219,11 +219,11 @@ Per-account fields (in `accounts.json`, snake_case):
 
 Env vars (comma-separated user IDs; merged with account config):
 
-- `LETTA_CHANNELS_ALLOWED_USERS` / `LETTA_<CHANNEL>_ALLOWED_USERS` — global /
+- `HARUYUKI_CHANNELS_ALLOWED_USERS` / `HARUYUKI_<CHANNEL>_ALLOWED_USERS` — global /
   per-channel allowlists. Once configured, they restrict all scopes (DMs and
   groups) on the affected channels.
-- `LETTA_CHANNELS_ADMIN_USERS` / `LETTA_<CHANNEL>_ADMIN_USERS` — admin tiers.
-- `LETTA_CHANNELS_ALLOW_ALL_USERS=1` / `LETTA_<CHANNEL>_ALLOW_ALL_USERS=1` —
+- `HARUYUKI_CHANNELS_ADMIN_USERS` / `HARUYUKI_<CHANNEL>_ADMIN_USERS` — admin tiers.
+- `HARUYUKI_CHANNELS_ALLOW_ALL_USERS=1` / `HARUYUKI_<CHANNEL>_ALLOW_ALL_USERS=1` —
   explicit opt-out of sender gating.
 
 Pairing approvals are a union with the allowlists: a paired sender stays

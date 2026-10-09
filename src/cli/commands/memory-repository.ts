@@ -39,7 +39,7 @@ function resolveAgentId(): string | null {
     // Fall through to env.
   }
   const fromEnv = (
-    process.env.LETTA_AGENT_ID ||
+    process.env.HARUYUKI_AGENT_ID ||
     process.env.AGENT_ID ||
     ""
   ).trim();

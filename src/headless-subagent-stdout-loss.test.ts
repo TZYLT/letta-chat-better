@@ -5,7 +5,7 @@
 //
 // The harness runs the real CLI headless against an in-process mock
 // OpenAI-compatible provider that forces one Agent tool call. The subagent
-// child binary is overridden (LETTA_CODE_BIN) with a script that simulates
+// child binary is overridden (HARUYUKI_CODE_BIN) with a script that simulates
 // the failure on its first spawn and succeeds on the second, so the whole
 // spawn → detect-loss → retry → collect-result path is exercised for real.
 import { afterAll, describe, expect, test } from "bun:test";
@@ -126,11 +126,11 @@ async function runStdoutLossScenario(
         USERPROFILE: homeDir,
         LETTA_LOCAL_BACKEND_DIR: localBackendDir,
         LMSTUDIO_BASE_URL: `http://127.0.0.1:${provider.port}/v1`,
-        LETTA_CODE_BIN: process.execPath,
-        LETTA_CODE_BIN_ARGS_JSON: JSON.stringify(["run", childScript]),
+        HARUYUKI_CODE_BIN: process.execPath,
+        HARUYUKI_CODE_BIN_ARGS_JSON: JSON.stringify(["run", childScript]),
         CHILD_STATE_DIR: childStateDir,
         CHILD_FAIL_MODE: mode,
-        LETTA_FS_SANDBOX: "0",
+        HARUYUKI_FS_SANDBOX: "0",
         USER_CWD: projectDir,
         NO_COLOR: "1",
         DO_NOT_TRACK: "1",
@@ -182,7 +182,7 @@ async function runStdoutLossScenario(
 }
 
 /**
- * The script standing in for the spawned subagent CLI (via LETTA_CODE_BIN).
+ * The script standing in for the spawned subagent CLI (via HARUYUKI_CODE_BIN).
  * First spawn simulates #3257 according to CHILD_FAIL_MODE:
  *   - truncate-result: emits the result envelope cut mid-JSON and exits 0
  *     (the child believed it succeeded; the parent sees a truncated stream).

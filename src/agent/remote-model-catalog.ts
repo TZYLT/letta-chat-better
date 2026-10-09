@@ -45,7 +45,7 @@ interface RemoteCatalogEntry {
 
 function catalogCachePath(): string {
   const dir =
-    process.env.LETTA_MODEL_CATALOG_CACHE_DIR ||
+    process.env.HARUYUKI_MODEL_CATALOG_CACHE_DIR ||
     join(homedir(), APP_DIR_NAME, APP_SUBDIRS.cache);
   return join(dir, "model-catalog.json");
 }

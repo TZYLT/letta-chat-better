@@ -9,7 +9,7 @@ import {
 export type ChannelCredentialsStoreMode = "file" | "keyring" | "auto";
 export type ActiveChannelCredentialsStoreMode = "file" | "keyring";
 
-const CHANNEL_CREDENTIALS_STORE_ENV = "LETTA_CHANNEL_CREDENTIALS_STORE";
+const CHANNEL_CREDENTIALS_STORE_ENV = "HARUYUKI_CHANNEL_CREDENTIALS_STORE";
 const CHANNEL_SECRET_PREFIX = "channel";
 
 let activeModeCache: ActiveChannelCredentialsStoreMode | null = null;

@@ -27,7 +27,7 @@ letta messages search --query <text> [options]
 | `--end-date <date>` | Filter messages before this date (ISO format) |
 | `--limit <n>` | Max results (default: 10) |
 | `--all-agents` | Search all agents, not just current agent |
-| `--agent <id>` | Explicit agent ID (overrides LETTA_AGENT_ID) |
+| `--agent <id>` | Explicit agent ID (overrides HARUYUKI_AGENT_ID) |
 
 ### Search Modes
 

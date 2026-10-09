@@ -8,20 +8,20 @@ type TelemetryTestState = {
 };
 
 const telemetryState = telemetry as unknown as TelemetryTestState;
-const originalTelemetrySetting = process.env.LETTA_CODE_TELEM;
+const originalTelemetrySetting = process.env.HARUYUKI_CODE_TELEM;
 
 describe("telemetry agent origin", () => {
   beforeEach(() => {
     telemetryState.currentAgentId = null;
     telemetryState.currentAgentOrigin = null;
-    process.env.LETTA_CODE_TELEM = "1";
+    process.env.HARUYUKI_CODE_TELEM = "1";
   });
 
   afterEach(() => {
     if (originalTelemetrySetting === undefined) {
-      delete process.env.LETTA_CODE_TELEM;
+      delete process.env.HARUYUKI_CODE_TELEM;
     } else {
-      process.env.LETTA_CODE_TELEM = originalTelemetrySetting;
+      process.env.HARUYUKI_CODE_TELEM = originalTelemetrySetting;
     }
   });
 

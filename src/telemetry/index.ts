@@ -174,7 +174,7 @@ export interface ReflectionWorktreeCleanupData {
 export function isLettaCodeDesktopRuntime(
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
-  return env.LETTA_DESKTOP_MODE === "1";
+  return env.HARUYUKI_DESKTOP_MODE === "1";
 }
 
 export function getTerminalTelemetrySurface(
@@ -253,9 +253,9 @@ class TelemetryManager {
    * Enabled by default unless explicitly disabled.
    */
   private isTelemetryEnabled(): boolean {
-    // LETTA_CODE_TELEM is Letta Code's specific opt-out. DO_NOT_TRACK is a
+    // HARUYUKI_CODE_TELEM is Letta Code's specific opt-out. DO_NOT_TRACK is a
     // broader convention also honored by install-time analytics packages.
-    const envValue = process.env.LETTA_CODE_TELEM;
+    const envValue = process.env.HARUYUKI_CODE_TELEM;
     if (envValue === "0" || envValue === "false") {
       return false;
     }

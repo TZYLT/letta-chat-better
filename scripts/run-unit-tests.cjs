@@ -95,7 +95,7 @@ function runTests(files, timeoutMs, env = {}) {
     stdio: "inherit",
     // Unit tests must never emit product telemetry or make test fixtures look
     // like real users. Only isolated telemetry contract tests may opt back in.
-    env: { ...process.env, LETTA_CODE_TELEM: "0", ...env },
+    env: { ...process.env, HARUYUKI_CODE_TELEM: "0", ...env },
   });
 }
 

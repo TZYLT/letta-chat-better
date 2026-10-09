@@ -829,9 +829,9 @@ test("Shell alias tools match Bash permission patterns", () => {
   expect(result.matchedRule).toBe("Bash(curl:*)");
 });
 
-test("LETTA_PERMISSIONS_V2=0 preserves legacy alias mismatch behavior", () => {
-  const original = process.env.LETTA_PERMISSIONS_V2;
-  process.env.LETTA_PERMISSIONS_V2 = "0";
+test("HARUYUKI_PERMISSIONS_V2=0 preserves legacy alias mismatch behavior", () => {
+  const original = process.env.HARUYUKI_PERMISSIONS_V2;
+  process.env.HARUYUKI_PERMISSIONS_V2 = "0";
 
   try {
     const permissions: PermissionRules = {
@@ -850,16 +850,16 @@ test("LETTA_PERMISSIONS_V2=0 preserves legacy alias mismatch behavior", () => {
     expect(result.decision).toBe("ask");
   } finally {
     if (original === undefined) {
-      delete process.env.LETTA_PERMISSIONS_V2;
+      delete process.env.HARUYUKI_PERMISSIONS_V2;
     } else {
-      process.env.LETTA_PERMISSIONS_V2 = original;
+      process.env.HARUYUKI_PERMISSIONS_V2 = original;
     }
   }
 });
 
-test("permission trace is attached for ask decisions when LETTA_PERMISSION_TRACE=1", () => {
-  const originalTrace = process.env.LETTA_PERMISSION_TRACE;
-  process.env.LETTA_PERMISSION_TRACE = "1";
+test("permission trace is attached for ask decisions when HARUYUKI_PERMISSION_TRACE=1", () => {
+  const originalTrace = process.env.HARUYUKI_PERMISSION_TRACE;
+  process.env.HARUYUKI_PERMISSION_TRACE = "1";
 
   try {
     const result = checkPermission(
@@ -875,22 +875,22 @@ test("permission trace is attached for ask decisions when LETTA_PERMISSION_TRACE
     expect(result.trace?.events.length).toBeGreaterThan(0);
   } finally {
     if (originalTrace === undefined) {
-      delete process.env.LETTA_PERMISSION_TRACE;
+      delete process.env.HARUYUKI_PERMISSION_TRACE;
     } else {
-      process.env.LETTA_PERMISSION_TRACE = originalTrace;
+      process.env.HARUYUKI_PERMISSION_TRACE = originalTrace;
     }
   }
 });
 
 test("dual eval attaches shadow decision when enabled", () => {
-  const originalTrace = process.env.LETTA_PERMISSION_TRACE;
-  const originalTraceAll = process.env.LETTA_PERMISSION_TRACE_ALL;
-  const originalDual = process.env.LETTA_PERMISSIONS_DUAL_EVAL;
-  const originalV2 = process.env.LETTA_PERMISSIONS_V2;
-  delete process.env.LETTA_PERMISSIONS_V2;
-  process.env.LETTA_PERMISSION_TRACE = "0";
-  process.env.LETTA_PERMISSION_TRACE_ALL = "1";
-  process.env.LETTA_PERMISSIONS_DUAL_EVAL = "1";
+  const originalTrace = process.env.HARUYUKI_PERMISSION_TRACE;
+  const originalTraceAll = process.env.HARUYUKI_PERMISSION_TRACE_ALL;
+  const originalDual = process.env.HARUYUKI_PERMISSIONS_DUAL_EVAL;
+  const originalV2 = process.env.HARUYUKI_PERMISSIONS_V2;
+  delete process.env.HARUYUKI_PERMISSIONS_V2;
+  process.env.HARUYUKI_PERMISSION_TRACE = "0";
+  process.env.HARUYUKI_PERMISSION_TRACE_ALL = "1";
+  process.env.HARUYUKI_PERMISSIONS_DUAL_EVAL = "1";
 
   try {
     const permissions: PermissionRules = {
@@ -911,24 +911,24 @@ test("dual eval attaches shadow decision when enabled", () => {
     expect(result.trace?.shadow?.decision).toBe("ask");
   } finally {
     if (originalTrace === undefined) {
-      delete process.env.LETTA_PERMISSION_TRACE;
+      delete process.env.HARUYUKI_PERMISSION_TRACE;
     } else {
-      process.env.LETTA_PERMISSION_TRACE = originalTrace;
+      process.env.HARUYUKI_PERMISSION_TRACE = originalTrace;
     }
     if (originalTraceAll === undefined) {
-      delete process.env.LETTA_PERMISSION_TRACE_ALL;
+      delete process.env.HARUYUKI_PERMISSION_TRACE_ALL;
     } else {
-      process.env.LETTA_PERMISSION_TRACE_ALL = originalTraceAll;
+      process.env.HARUYUKI_PERMISSION_TRACE_ALL = originalTraceAll;
     }
     if (originalDual === undefined) {
-      delete process.env.LETTA_PERMISSIONS_DUAL_EVAL;
+      delete process.env.HARUYUKI_PERMISSIONS_DUAL_EVAL;
     } else {
-      process.env.LETTA_PERMISSIONS_DUAL_EVAL = originalDual;
+      process.env.HARUYUKI_PERMISSIONS_DUAL_EVAL = originalDual;
     }
     if (originalV2 === undefined) {
-      delete process.env.LETTA_PERMISSIONS_V2;
+      delete process.env.HARUYUKI_PERMISSIONS_V2;
     } else {
-      process.env.LETTA_PERMISSIONS_V2 = originalV2;
+      process.env.HARUYUKI_PERMISSIONS_V2 = originalV2;
     }
   }
 });

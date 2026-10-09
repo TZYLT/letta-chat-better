@@ -22,7 +22,7 @@ const root = mkdtempSync(join(tmpdir(), "memory-update-e2e-"));
 const originalEnv = {
   HOME: process.env.HOME,
   LETTA_API_KEY: process.env.LETTA_API_KEY,
-  LETTA_MEMFS_BASE_URL: process.env.LETTA_MEMFS_BASE_URL,
+  HARUYUKI_MEMFS_BASE_URL: process.env.HARUYUKI_MEMFS_BASE_URL,
 };
 const originalFetch = globalThis.fetch;
 
@@ -43,7 +43,7 @@ function git(cwd: string, args: string[]): string {
 beforeAll(async () => {
   process.env.HOME = root;
   process.env.LETTA_API_KEY = "memory-update-test-token";
-  process.env.LETTA_MEMFS_BASE_URL = root;
+  process.env.HARUYUKI_MEMFS_BASE_URL = root;
   await settingsManager.reset();
   await settingsManager.initialize();
   __testSetBackend({

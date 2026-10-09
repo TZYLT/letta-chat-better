@@ -15,7 +15,7 @@ export function resolveTelegramInboundDebounceMs(
   const raw =
     typeof process === "undefined"
       ? undefined
-      : process.env.LETTA_TELEGRAM_INBOUND_DEBOUNCE_MS;
+      : process.env.HARUYUKI_TELEGRAM_INBOUND_DEBOUNCE_MS;
   if (typeof raw === "string" && raw.trim() !== "") {
     const envOverride = Number(raw);
     if (Number.isFinite(envOverride) && envOverride >= 0) {

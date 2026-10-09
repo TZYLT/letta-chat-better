@@ -17,7 +17,7 @@ import {
   createHeadlessModContext,
   HEADLESS_MOD_CAPABILITIES,
 } from "@/headless-mod-adapter";
-import { LETTA_DISABLE_MODS_ENV } from "@/mods/disable";
+import { HARUYUKI_DISABLE_MODS_ENV } from "@/mods/disable";
 import { clearModTools, getModToolDefinition } from "@/mods/tool-registry";
 import { settingsManager } from "@/settings-manager";
 import { executeTool } from "@/tools/manager";
@@ -204,7 +204,7 @@ describe("headless mod adapter", () => {
     const root = mkdtempSync(path.join(tmpdir(), "letta-headless-agent-mods-"));
     const originalIsMemfsEnabled = settingsManager.isMemfsEnabled;
     const originalLocalBackendFlag =
-      process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+      process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
     const originalLocalBackendDir = process.env.LETTA_LOCAL_BACKEND_DIR;
     const agent = {
       id: "agent-1",
@@ -226,7 +226,7 @@ describe("headless mod adapter", () => {
     const modPath = path.join(agentModsDir, "headless-agent-tool.ts");
 
     try {
-      process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL = "1";
+      process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL = "1";
       process.env.LETTA_LOCAL_BACKEND_DIR = storageDir;
       (settingsManager as typeof settingsManager).isMemfsEnabled = (agentId) =>
         agentId === agent.id;
@@ -271,9 +271,10 @@ describe("headless mod adapter", () => {
       (settingsManager as typeof settingsManager).isMemfsEnabled =
         originalIsMemfsEnabled;
       if (originalLocalBackendFlag === undefined) {
-        delete process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+        delete process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
       } else {
-        process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL = originalLocalBackendFlag;
+        process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL =
+          originalLocalBackendFlag;
       }
       if (originalLocalBackendDir === undefined) {
         delete process.env.LETTA_LOCAL_BACKEND_DIR;
@@ -288,7 +289,7 @@ describe("headless mod adapter", () => {
     const root = mkdtempSync(
       path.join(tmpdir(), "letta-headless-ext-disabled-"),
     );
-    const originalDisableEnv = process.env[LETTA_DISABLE_MODS_ENV];
+    const originalDisableEnv = process.env[HARUYUKI_DISABLE_MODS_ENV];
     const modDir = path.join(root, "global-mods");
     const toolName = "disabled_headless_tool";
     const agent = {
@@ -338,14 +339,14 @@ describe("headless mod adapter", () => {
       expect(snapshot.registry.commands).toEqual({});
       expect(snapshot.registry.tools).toEqual({});
       expect(getModToolDefinition(toolName)).toBeUndefined();
-      expect(process.env[LETTA_DISABLE_MODS_ENV]).toBe("1");
+      expect(process.env[HARUYUKI_DISABLE_MODS_ENV]).toBe("1");
 
       adapter.dispose();
     } finally {
       if (originalDisableEnv === undefined) {
-        delete process.env[LETTA_DISABLE_MODS_ENV];
+        delete process.env[HARUYUKI_DISABLE_MODS_ENV];
       } else {
-        process.env[LETTA_DISABLE_MODS_ENV] = originalDisableEnv;
+        process.env[HARUYUKI_DISABLE_MODS_ENV] = originalDisableEnv;
       }
       rmSync(root, { force: true, recursive: true });
     }

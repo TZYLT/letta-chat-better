@@ -17,7 +17,7 @@ import {
   setSecretOnServer,
 } from "@/utils/secrets-store";
 
-const ORIGINAL_SKIP_KEYCHAIN_CHECK = process.env.LETTA_SKIP_KEYCHAIN_CHECK;
+const ORIGINAL_SKIP_KEYCHAIN_CHECK = process.env.HARUYUKI_SKIP_KEYCHAIN_CHECK;
 const ORIGINAL_LOCAL_BACKEND_DIR = process.env.LETTA_LOCAL_BACKEND_DIR;
 const tempDirs: string[] = [];
 
@@ -50,7 +50,7 @@ describe("/secret command", () => {
     __testOverrideLocalSecretStorage(null);
     setCurrentAgentId(null);
     clearSecretsCache(null);
-    resetEnv("LETTA_SKIP_KEYCHAIN_CHECK", ORIGINAL_SKIP_KEYCHAIN_CHECK);
+    resetEnv("HARUYUKI_SKIP_KEYCHAIN_CHECK", ORIGINAL_SKIP_KEYCHAIN_CHECK);
     resetEnv("LETTA_LOCAL_BACKEND_DIR", ORIGINAL_LOCAL_BACKEND_DIR);
     for (const dir of tempDirs.splice(0)) {
       rmSync(dir, { force: true, recursive: true });
@@ -149,7 +149,7 @@ describe("/secret command", () => {
     const localAgentId = "agent-local-file-secret-command";
     const storageRoot = mkdtempSync(join(tmpdir(), "letta-local-secrets-"));
     tempDirs.push(storageRoot);
-    process.env.LETTA_SKIP_KEYCHAIN_CHECK = "1";
+    process.env.HARUYUKI_SKIP_KEYCHAIN_CHECK = "1";
     process.env.LETTA_LOCAL_BACKEND_DIR = storageRoot;
     setCurrentAgentId(localAgentId);
     clearSecretsCache(localAgentId);

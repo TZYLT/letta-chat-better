@@ -6,7 +6,7 @@ export type ReflectionMergeMode = "auto" | "explicit";
 export function isAutoReflectionEnabled(): boolean {
   return (
     process.platform !== "win32" ||
-    process.env.LETTA_ENABLE_WINDOWS_AUTO_REFLECTION === "1"
+    process.env.HARUYUKI_ENABLE_WINDOWS_AUTO_REFLECTION === "1"
   );
 }
 

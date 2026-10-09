@@ -3,7 +3,7 @@ import { createInterface } from "node:readline";
 import type { Readable, Writable } from "node:stream";
 import type { SubagentResult } from "@/agent/subagents";
 
-declare const LETTA_VERSION: string | undefined;
+declare const HARUYUKI_VERSION: string | undefined;
 
 interface JsonRpcMessage {
   id?: number;
@@ -190,7 +190,8 @@ class CodexAppServerClient {
     await this.request("initialize", {
       clientInfo: {
         name: "letta-code",
-        version: typeof LETTA_VERSION === "undefined" ? "0" : LETTA_VERSION,
+        version:
+          typeof HARUYUKI_VERSION === "undefined" ? "0" : HARUYUKI_VERSION,
       },
       capabilities: null,
     });
@@ -355,7 +356,7 @@ async function createSession(
   const env = {
     ...(deps.env ?? process.env),
     AGENT_ID: options.parentAgentId,
-    LETTA_AGENT_ID: options.parentAgentId,
+    HARUYUKI_AGENT_ID: options.parentAgentId,
   };
   const transport = (deps.createTransport ?? spawnTransport)({
     cwd: options.cwd,

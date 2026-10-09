@@ -12,7 +12,7 @@ export {
 } from "@/utils/local-backend-paths";
 
 export const LOCAL_BACKEND_EXPERIMENTAL_ENV =
-  "LETTA_LOCAL_BACKEND_EXPERIMENTAL";
+  "HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL";
 
 function isTruthyEnv(value: string | undefined): boolean {
   return value === "1" || value?.toLowerCase() === "true";
@@ -26,7 +26,7 @@ export function isLocalBackendEnvEnabled(
 
 // Internal process-level memfs kill switch for the local backend.
 //
-// Only used for stateless subagent processes (LETTA_CODE_AGENT_ROLE=subagent
+// Only used for stateless subagent processes (HARUYUKI_CODE_AGENT_ROLE=subagent
 // spawning a fresh agent): they skip local memfs setup entirely. This is NOT
 // user-configurable — there is no CLI flag or environment variable. All
 // user-facing agents are memfs-enabled unconditionally.

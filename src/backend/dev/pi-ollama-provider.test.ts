@@ -244,7 +244,7 @@ describe("resolveOllamaServedContext", () => {
         env: {},
       }),
     ).rejects.toThrow(
-      /does not list it[\s\S]*OLLAMA_KEEP_ALIVE=0[\s\S]*Running models: gemma4:latest[\s\S]*LETTA_OLLAMA_CONTEXT_LENGTH/,
+      /does not list it[\s\S]*OLLAMA_KEEP_ALIVE=0[\s\S]*Running models: gemma4:latest[\s\S]*HARUYUKI_OLLAMA_CONTEXT_LENGTH/,
     );
   });
 
@@ -261,7 +261,7 @@ describe("resolveOllamaServedContext", () => {
         env: {},
       }),
     ).rejects.toThrow(
-      /did not report context_length[\s\S]*0\.10\.0[\s\S]*LETTA_OLLAMA_CONTEXT_LENGTH/,
+      /did not report context_length[\s\S]*0\.10\.0[\s\S]*HARUYUKI_OLLAMA_CONTEXT_LENGTH/,
     );
     expect(scripted.urls.some((url) => url.endsWith("/api/show"))).toBe(false);
   });
@@ -281,7 +281,7 @@ describe("resolveOllamaServedContext", () => {
     ).rejects.toThrow(/did not report context_length/);
   });
 
-  test("uses LETTA_OLLAMA_CONTEXT_LENGTH without calling Ollama", async () => {
+  test("uses HARUYUKI_OLLAMA_CONTEXT_LENGTH without calling Ollama", async () => {
     let called = false;
     const fetchImpl = (async () => {
       called = true;
@@ -293,13 +293,13 @@ describe("resolveOllamaServedContext", () => {
         baseURL: "http://localhost:11434",
         modelId: "qwen3.6:27b",
         fetchImpl,
-        env: { LETTA_OLLAMA_CONTEXT_LENGTH: " 32768 " },
+        env: { HARUYUKI_OLLAMA_CONTEXT_LENGTH: " 32768 " },
       }),
     ).resolves.toBe(32768);
     expect(called).toBe(false);
   });
 
-  test("rejects a non-integer LETTA_OLLAMA_CONTEXT_LENGTH before calling Ollama", async () => {
+  test("rejects a non-integer HARUYUKI_OLLAMA_CONTEXT_LENGTH before calling Ollama", async () => {
     let called = false;
     const fetchImpl = (async () => {
       called = true;
@@ -311,7 +311,7 @@ describe("resolveOllamaServedContext", () => {
         baseURL: "http://localhost:11434",
         modelId: "qwen3.6:27b",
         fetchImpl,
-        env: { LETTA_OLLAMA_CONTEXT_LENGTH: "32k" },
+        env: { HARUYUKI_OLLAMA_CONTEXT_LENGTH: "32k" },
       }),
     ).rejects.toThrow(/not a positive integer token count/);
     expect(called).toBe(false);

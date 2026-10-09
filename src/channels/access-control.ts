@@ -30,13 +30,13 @@ export function resolveChannelAccessScope(
 
 // ── Env-var allowlists ────────────────────────────────────────────
 
-const GLOBAL_ALLOWED_USERS_ENV = "LETTA_CHANNELS_ALLOWED_USERS";
-const GLOBAL_ADMIN_USERS_ENV = "LETTA_CHANNELS_ADMIN_USERS";
-const GLOBAL_ALLOW_ALL_ENV = "LETTA_CHANNELS_ALLOW_ALL_USERS";
+const GLOBAL_ALLOWED_USERS_ENV = "HARUYUKI_CHANNELS_ALLOWED_USERS";
+const GLOBAL_ADMIN_USERS_ENV = "HARUYUKI_CHANNELS_ADMIN_USERS";
+const GLOBAL_ALLOW_ALL_ENV = "HARUYUKI_CHANNELS_ALLOW_ALL_USERS";
 
 function channelEnvKey(channelId: string, suffix: string): string {
   const normalized = channelId.toUpperCase().replace(/[^A-Z0-9]+/g, "_");
-  return `LETTA_${normalized}_${suffix}`;
+  return `HARUYUKI_${normalized}_${suffix}`;
 }
 
 function parseUserList(raw: string | undefined): string[] {
@@ -68,7 +68,7 @@ export function getChannelEnvAdminUsers(channelId: string): string[] {
   ];
 }
 
-/** Explicit opt-out of sender gating (LETTA_CHANNELS_ALLOW_ALL_USERS=1). */
+/** Explicit opt-out of sender gating (HARUYUKI_CHANNELS_ALLOW_ALL_USERS=1). */
 export function isChannelAllowAllUsersEnabled(channelId: string): boolean {
   return (
     isEnvFlagEnabled(process.env[GLOBAL_ALLOW_ALL_ENV]) ||

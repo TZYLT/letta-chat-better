@@ -109,7 +109,7 @@ function buildLocalIntrospectionScript(): string {
 \`\`\`bash
 # Bash/Unix only - on Windows, describe what you observe in your context instead
 set -e
-AGENT_ID="\${LETTA_AGENT_ID:-\$AGENT_ID}"
+AGENT_ID="\${HARUYUKI_AGENT_ID:-\$AGENT_ID}"
 CONV_ID="\${CONVERSATION_ID:-default}"
 BASE="$HOME/.haruyuki/lc-local-backend"
 MEMFS="$BASE/memfs/$AGENT_ID/memory"
@@ -130,9 +130,9 @@ function buildApiIntrospectionScript(): string {
   return `
 \`\`\`bash
 set -e
-echo "=== CORE IDENTITY ===" && curl -s "$LETTA_BASE_URL/v1/agents/$LETTA_AGENT_ID" -H "Authorization: Bearer $LETTA_API_KEY" | jq '{id, name, model}'
-echo "=== SYSTEM PROMPT ===" && curl -s "$LETTA_BASE_URL/v1/agents/$LETTA_AGENT_ID" -H "Authorization: Bearer $LETTA_API_KEY" | jq '{chars: (.system_prompt | length), estimated_tokens: ((.system_prompt | length) / 4 | floor)}'
-echo "=== MEMORY BLOCKS ===" && curl -s "$LETTA_BASE_URL/v1/agents/$LETTA_AGENT_ID/core-memory/blocks" -H "Authorization: Bearer $LETTA_API_KEY" | jq '.[] | {label, chars: (.value | length), estimated_tokens: ((.value | length) / 4 | floor)}'
+echo "=== CORE IDENTITY ===" && curl -s "$LETTA_BASE_URL/v1/agents/$HARUYUKI_AGENT_ID" -H "Authorization: Bearer $LETTA_API_KEY" | jq '{id, name, model}'
+echo "=== SYSTEM PROMPT ===" && curl -s "$LETTA_BASE_URL/v1/agents/$HARUYUKI_AGENT_ID" -H "Authorization: Bearer $LETTA_API_KEY" | jq '{chars: (.system_prompt | length), estimated_tokens: ((.system_prompt | length) / 4 | floor)}'
+echo "=== MEMORY BLOCKS ===" && curl -s "$LETTA_BASE_URL/v1/agents/$HARUYUKI_AGENT_ID/core-memory/blocks" -H "Authorization: Bearer $LETTA_API_KEY" | jq '.[] | {label, chars: (.value | length), estimated_tokens: ((.value | length) / 4 | floor)}'
 echo "=== CONTEXT BUFFER ===" && curl -s "$LETTA_BASE_URL/v1/conversations/$CONVERSATION_ID" -H "Authorization: Bearer $LETTA_API_KEY" | jq '{messages: (.in_context_message_ids | length)}'
 echo "=== USER MESSAGES ===" && curl -s "$LETTA_BASE_URL/v1/conversations/$CONVERSATION_ID/messages?limit=30&order=asc" -H "Authorization: Bearer $LETTA_API_KEY" | jq '[.[] | select(.message_type == "user_message")][-10:] | .[] | {id, date: .created_at, preview: ((.content // [])[0].text // "[non-text]")[:60]}'
 \`\`\``;
@@ -140,7 +140,7 @@ echo "=== USER MESSAGES ===" && curl -s "$LETTA_BASE_URL/v1/conversations/$CONVE
 
 // Entry reminder: includes introspection script for initial diagnostic dump
 function buildEntryReminder(event: { agentId?: string; conversationId?: string }): string {
-  const agentId = event.agentId || process.env.LETTA_AGENT_ID || process.env.AGENT_ID || "unknown";
+  const agentId = event.agentId || process.env.HARUYUKI_AGENT_ID || process.env.AGENT_ID || "unknown";
   const conversationId = event.conversationId || process.env.CONVERSATION_ID || "unknown";
   const isLocal = agentId.startsWith("agent-local-");
 
@@ -233,7 +233,7 @@ BEHAVIORAL CONSTRAINTS ACTIVE:
 
 // Follow-up reminder: shorter, no script (already ran on entry)
 function buildFollowUpReminder(event: { agentId?: string; conversationId?: string }): string {
-  const agentId = event.agentId || process.env.LETTA_AGENT_ID || process.env.AGENT_ID || "unknown";
+  const agentId = event.agentId || process.env.HARUYUKI_AGENT_ID || process.env.AGENT_ID || "unknown";
   const conversationId = event.conversationId || process.env.CONVERSATION_ID || "unknown";
 
   return `<system-reminder>

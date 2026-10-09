@@ -15,9 +15,10 @@ const originalConsoleLog = console.log;
 const originalConsoleError = console.error;
 const originalBaseUrl = process.env.LETTA_BASE_URL;
 const originalApiKey = process.env.LETTA_API_KEY;
-const originalRuntimeDeviceId = process.env.LETTA_RUNTIME_ENVIRONMENT_DEVICE_ID;
-const originalConversationId = process.env.LETTA_CONVERSATION_ID;
-const originalLettaHome = process.env.LETTA_HOME;
+const originalRuntimeDeviceId =
+  process.env.HARUYUKI_RUNTIME_ENVIRONMENT_DEVICE_ID;
+const originalConversationId = process.env.HARUYUKI_CONVERSATION_ID;
+const originalLettaHome = process.env.HARUYUKI_HOME;
 
 const addArgs = [
   "add",
@@ -81,8 +82,8 @@ beforeEach(() => {
   setConfiguredBackendMode("api");
   process.env.LETTA_BASE_URL = "https://example.test";
   process.env.LETTA_API_KEY = "test-key";
-  delete process.env.LETTA_RUNTIME_ENVIRONMENT_DEVICE_ID;
-  delete process.env.LETTA_CONVERSATION_ID;
+  delete process.env.HARUYUKI_RUNTIME_ENVIRONMENT_DEVICE_ID;
+  delete process.env.HARUYUKI_CONVERSATION_ID;
   settingsManager.initialize = mock(
     async () => {},
   ) as typeof settingsManager.initialize;
@@ -112,9 +113,9 @@ afterEach(() => {
   for (const [key, value] of [
     ["LETTA_BASE_URL", originalBaseUrl],
     ["LETTA_API_KEY", originalApiKey],
-    ["LETTA_RUNTIME_ENVIRONMENT_DEVICE_ID", originalRuntimeDeviceId],
-    ["LETTA_CONVERSATION_ID", originalConversationId],
-    ["LETTA_HOME", originalLettaHome],
+    ["HARUYUKI_RUNTIME_ENVIRONMENT_DEVICE_ID", originalRuntimeDeviceId],
+    ["HARUYUKI_CONVERSATION_ID", originalConversationId],
+    ["HARUYUKI_HOME", originalLettaHome],
   ] as const) {
     if (value === undefined) delete process.env[key];
     else process.env[key] = value;
@@ -124,8 +125,8 @@ afterEach(() => {
 describe("cron add execution targeting", () => {
   test("local schedules default to a new conversation per fire and ignore ambient conversation state", async () => {
     const home = mkdtempSync(join(tmpdir(), "letta-cron-conversation-test-"));
-    process.env.LETTA_HOME = home;
-    process.env.LETTA_CONVERSATION_ID = "ambient-conversation";
+    process.env.HARUYUKI_HOME = home;
+    process.env.HARUYUKI_CONVERSATION_ID = "ambient-conversation";
     installCloudApiTripwire();
     const logs: string[] = [];
     console.log = mock((line: string) => {
@@ -146,8 +147,8 @@ describe("cron add execution targeting", () => {
 
   test("--conversation self captures the current conversation", async () => {
     const home = mkdtempSync(join(tmpdir(), "letta-cron-self-test-"));
-    process.env.LETTA_HOME = home;
-    process.env.LETTA_CONVERSATION_ID = "current-conversation";
+    process.env.HARUYUKI_HOME = home;
+    process.env.HARUYUKI_CONVERSATION_ID = "current-conversation";
     installCloudApiTripwire();
     const logs: string[] = [];
     console.log = mock((line: string) => logs.push(String(line)));
@@ -182,15 +183,15 @@ describe("cron add execution targeting", () => {
     ).toBe(1);
 
     expect(errors).toContain(
-      "Error: --conversation self requires an active conversation (LETTA_CONVERSATION_ID is not set).",
+      "Error: --conversation self requires an active conversation (HARUYUKI_CONVERSATION_ID is not set).",
     );
     expect(requests).toHaveLength(0);
   });
 
   test("API-backend local execution creates a local schedule without calling a schedule API", async () => {
     const home = mkdtempSync(join(tmpdir(), "letta-cron-local-environment-"));
-    process.env.LETTA_HOME = home;
-    process.env.LETTA_RUNTIME_ENVIRONMENT_DEVICE_ID = "registered-device";
+    process.env.HARUYUKI_HOME = home;
+    process.env.HARUYUKI_RUNTIME_ENVIRONMENT_DEVICE_ID = "registered-device";
     const requests = installCloudApiTripwire();
     const logs: string[] = [];
     console.log = mock((line: string) => logs.push(String(line)));
@@ -212,7 +213,7 @@ describe("cron add execution targeting", () => {
 
   test("rejects --computer without touching the schedule API", async () => {
     const home = mkdtempSync(join(tmpdir(), "letta-cron-target-test-"));
-    process.env.LETTA_HOME = home;
+    process.env.HARUYUKI_HOME = home;
     const requests = installCloudApiTripwire();
     try {
       expect(
@@ -226,8 +227,8 @@ describe("cron add execution targeting", () => {
 
   test("unregistered local execution still creates a local schedule", async () => {
     const home = mkdtempSync(join(tmpdir(), "letta-cron-local-test-"));
-    process.env.LETTA_HOME = home;
-    process.env.LETTA_RUNTIME_ENVIRONMENT_DEVICE_ID = "unregistered-device";
+    process.env.HARUYUKI_HOME = home;
+    process.env.HARUYUKI_RUNTIME_ENVIRONMENT_DEVICE_ID = "unregistered-device";
     const requests = installCloudApiTripwire();
     const logs: string[] = [];
     console.log = mock((line: string) => logs.push(String(line)));

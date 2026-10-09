@@ -11,7 +11,7 @@ import { join } from "node:path";
 import { type BackendMode, getLocalBackendStorageDir } from "@/backend";
 import { getLocalBackendMemoryFilesystemRoot } from "@/backend/local/paths";
 import {
-  LETTA_MOD_CAPABILITY_PROFILE_ENV,
+  HARUYUKI_MOD_CAPABILITY_PROFILE_ENV,
   PROVIDERS_ONLY_MOD_CAPABILITY_PROFILE,
 } from "@/mods/capabilities";
 import { getCurrentWorkingDirectory } from "@/runtime-context";
@@ -138,7 +138,7 @@ export interface ComposeSubagentChildEnvOptions {
   backendMode?: BackendMode;
   /** Local backend flatfile root to forward when backendMode="local". */
   localBackendStorageDir?: string | null;
-  /** Parent agent ID. When present, sets LETTA_PARENT_AGENT_ID so prompts,
+  /** Parent agent ID. When present, sets HARUYUKI_PARENT_AGENT_ID so prompts,
    * scripts, and the cross-agent guard can identify the immediate parent. */
   parentAgentId: string | undefined;
   parentConversationId?: string;
@@ -173,7 +173,7 @@ function resolveMemorySubagentScratchpad(
   parentProcessEnv: NodeJS.ProcessEnv,
   subagentId?: string,
 ): string {
-  const configuredScratchpad = parentProcessEnv.LETTA_SCRATCHPAD;
+  const configuredScratchpad = parentProcessEnv.HARUYUKI_SCRATCHPAD;
   if (configuredScratchpad?.trim()) {
     return configuredScratchpad;
   }
@@ -198,7 +198,7 @@ function resolveMemorySubagentScratchpad(
  * The parent identity marker and filesystem pointer are intentionally
  * decoupled:
  *
- *   - LETTA_PARENT_AGENT_ID identifies the immediate parent. Subagents never
+ *   - HARUYUKI_PARENT_AGENT_ID identifies the immediate parent. Subagents never
  *     inherit a broad cross-agent memory-guard opt-out from the parent.
  *
  *   - MEMORY_DIR / LETTA_MEMORY_DIR are only overridden when the subagent
@@ -230,16 +230,17 @@ export function composeSubagentChildEnv(
     ...parentProcessEnv,
     ...(inheritedApiKey && { LETTA_API_KEY: inheritedApiKey }),
     ...(inheritedBaseUrl && { LETTA_BASE_URL: inheritedBaseUrl }),
-    LETTA_CODE_AGENT_ROLE: "subagent",
+    HARUYUKI_CODE_AGENT_ROLE: "subagent",
     [MEMORY_WORKER_SESSION_ENV]: subagentType === "memory" ? "1" : undefined,
     [SUBAGENT_LAUNCH_ENV]: "1",
     [SUBAGENT_LAUNCH_PROFILE_ENV]: launchProfile ?? "default",
     ...((subagentType === "reflection" || subagentType === "memory") && {
-      [LETTA_MOD_CAPABILITY_PROFILE_ENV]: PROVIDERS_ONLY_MOD_CAPABILITY_PROFILE,
+      [HARUYUKI_MOD_CAPABILITY_PROFILE_ENV]:
+        PROVIDERS_ONLY_MOD_CAPABILITY_PROFILE,
     }),
     // Replace inherited parent addresses even when the new scope is unknown.
-    LETTA_PARENT_AGENT_ID: parentAgentId,
-    LETTA_PARENT_CONVERSATION_ID: options.parentConversationId,
+    HARUYUKI_PARENT_AGENT_ID: parentAgentId,
+    HARUYUKI_PARENT_CONVERSATION_ID: options.parentConversationId,
     ...(transcriptPath && { TRANSCRIPT_PATH: transcriptPath }),
   };
 
@@ -248,19 +249,19 @@ export function composeSubagentChildEnv(
   if (options.subagentName) childEnv[SUBAGENT_NAME_ENV] = options.subagentName;
 
   if (backendMode === "local") {
-    childEnv.LETTA_LOCAL_BACKEND_EXPERIMENTAL = "1";
+    childEnv.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL = "1";
     if (localBackendStorageDir) {
       childEnv.LETTA_LOCAL_BACKEND_DIR = localBackendStorageDir;
     }
   } else if (backendMode === "api") {
-    childEnv.LETTA_LOCAL_BACKEND_EXPERIMENTAL = "0";
+    childEnv.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL = "0";
   }
 
   // Only subagents with the memory-subagent profile get MEMORY_DIR pointed at the parent. Other
   // subagents either have their own memfs (if memfs-enabled) or no MEMORY_DIR
   // at all — their tools will surface resolution errors appropriately.
   if (launchProfile === "memory-subagent") {
-    childEnv.LETTA_SCRATCHPAD = resolveMemorySubagentScratchpad(
+    childEnv.HARUYUKI_SCRATCHPAD = resolveMemorySubagentScratchpad(
       parentProcessEnv,
       options.subagentId,
     );
@@ -300,7 +301,7 @@ export function shouldLaunchThroughListener(options: {
     return false;
   }
   // An explicit `--computer` route is the only way to a listener: the ambient
-  // `LETTA_RUNTIME_LISTENER_CONNECTION_ID` route existed for Cloud relay
+  // `HARUYUKI_RUNTIME_LISTENER_CONNECTION_ID` route existed for Cloud relay
   // sandboxes, which no longer exist here.
   return Boolean(options.computer);
 }

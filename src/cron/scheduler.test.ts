@@ -35,18 +35,18 @@ import type { StartListenerOptions } from "@/websocket/listener/types";
 // ── Test setup ──────────────────────────────────────────────────────
 
 const TEST_DIR = path.join(import.meta.dir, "__scheduler_test_tmp__");
-const origHome = process.env.LETTA_HOME;
+const origHome = process.env.HARUYUKI_HOME;
 const origCronScope = process.env[CRON_SCHEDULER_SCOPE_ENV];
-const origSandboxId = process.env.LETTA_MANAGED_CLOUD_RUNTIME;
+const origSandboxId = process.env.HARUYUKI_MANAGED_CLOUD_RUNTIME;
 
 beforeEach(() => {
   if (existsSync(TEST_DIR)) {
     rmSync(TEST_DIR, { recursive: true });
   }
   mkdirSync(TEST_DIR, { recursive: true });
-  process.env.LETTA_HOME = TEST_DIR;
+  process.env.HARUYUKI_HOME = TEST_DIR;
   delete process.env[CRON_SCHEDULER_SCOPE_ENV];
-  delete process.env.LETTA_MANAGED_CLOUD_RUNTIME;
+  delete process.env.HARUYUKI_MANAGED_CLOUD_RUNTIME;
 });
 
 afterEach(() => {
@@ -56,11 +56,11 @@ afterEach(() => {
   if (existsSync(TEST_DIR)) {
     rmSync(TEST_DIR, { recursive: true });
   }
-  if (origHome) process.env.LETTA_HOME = origHome;
-  else delete process.env.LETTA_HOME;
+  if (origHome) process.env.HARUYUKI_HOME = origHome;
+  else delete process.env.HARUYUKI_HOME;
   if (origCronScope) process.env[CRON_SCHEDULER_SCOPE_ENV] = origCronScope;
   else delete process.env[CRON_SCHEDULER_SCOPE_ENV];
-  if (origSandboxId) process.env.LETTA_MANAGED_CLOUD_RUNTIME = origSandboxId;
+  if (origSandboxId) process.env.HARUYUKI_MANAGED_CLOUD_RUNTIME = origSandboxId;
 });
 
 test("routes scheduler lease failures through the listener logger", () => {

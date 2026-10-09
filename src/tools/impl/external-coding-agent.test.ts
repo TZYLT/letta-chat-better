@@ -258,7 +258,7 @@ describe("external coding agent output and preflight", () => {
         type === "claude-code" ? "c1" : "x1",
       );
       expect(receivedEnv?.AGENT_ID).toBe("parent");
-      expect(receivedEnv?.LETTA_AGENT_ID).toBe("parent");
+      expect(receivedEnv?.HARUYUKI_AGENT_ID).toBe("parent");
     },
   );
 });

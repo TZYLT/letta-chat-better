@@ -135,7 +135,7 @@ const GC_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 // ── Paths ───────────────────────────────────────────────────────────
 
 function getLettaDir(): string {
-  if (process.env.LETTA_HOME) return process.env.LETTA_HOME;
+  if (process.env.HARUYUKI_HOME) return process.env.HARUYUKI_HOME;
   return appHomeRoot(process.env.HOME ?? process.env.USERPROFILE ?? "~");
 }
 

@@ -169,15 +169,15 @@ describe("buildTopLevelSlackConversationKey", () => {
 });
 
 describe("resolveSlackInboundDebounceMs", () => {
-  const originalEnv = process.env.LETTA_SLACK_INBOUND_DEBOUNCE_MS;
+  const originalEnv = process.env.HARUYUKI_SLACK_INBOUND_DEBOUNCE_MS;
 
   function clearEnv() {
-    delete process.env.LETTA_SLACK_INBOUND_DEBOUNCE_MS;
+    delete process.env.HARUYUKI_SLACK_INBOUND_DEBOUNCE_MS;
   }
 
   function restoreEnv() {
     if (originalEnv === undefined) clearEnv();
-    else process.env.LETTA_SLACK_INBOUND_DEBOUNCE_MS = originalEnv;
+    else process.env.HARUYUKI_SLACK_INBOUND_DEBOUNCE_MS = originalEnv;
   }
 
   test("defaults to 0 when no env var and no config value", () => {
@@ -202,7 +202,7 @@ describe("resolveSlackInboundDebounceMs", () => {
 
   test("env var overrides config", () => {
     clearEnv();
-    process.env.LETTA_SLACK_INBOUND_DEBOUNCE_MS = "2500";
+    process.env.HARUYUKI_SLACK_INBOUND_DEBOUNCE_MS = "2500";
     expect(resolveSlackInboundDebounceMs({ inboundDebounceMs: 1500 })).toBe(
       2500,
     );
@@ -211,28 +211,28 @@ describe("resolveSlackInboundDebounceMs", () => {
 
   test("env var of 0 is respected (disables debounce even with config set)", () => {
     clearEnv();
-    process.env.LETTA_SLACK_INBOUND_DEBOUNCE_MS = "0";
+    process.env.HARUYUKI_SLACK_INBOUND_DEBOUNCE_MS = "0";
     expect(resolveSlackInboundDebounceMs({ inboundDebounceMs: 1500 })).toBe(0);
     restoreEnv();
   });
 
   test("invalid env var falls back to config", () => {
     clearEnv();
-    process.env.LETTA_SLACK_INBOUND_DEBOUNCE_MS = "not-a-number";
+    process.env.HARUYUKI_SLACK_INBOUND_DEBOUNCE_MS = "not-a-number";
     expect(resolveSlackInboundDebounceMs({ inboundDebounceMs: 800 })).toBe(800);
     restoreEnv();
   });
 
   test("invalid env var falls back to disabled when config is absent", () => {
     clearEnv();
-    process.env.LETTA_SLACK_INBOUND_DEBOUNCE_MS = "not-a-number";
+    process.env.HARUYUKI_SLACK_INBOUND_DEBOUNCE_MS = "not-a-number";
     expect(resolveSlackInboundDebounceMs({})).toBe(0);
     restoreEnv();
   });
 
   test("negative env var falls back to config or disabled", () => {
     clearEnv();
-    process.env.LETTA_SLACK_INBOUND_DEBOUNCE_MS = "-1";
+    process.env.HARUYUKI_SLACK_INBOUND_DEBOUNCE_MS = "-1";
     expect(resolveSlackInboundDebounceMs({ inboundDebounceMs: 800 })).toBe(800);
     expect(resolveSlackInboundDebounceMs({})).toBe(0);
     restoreEnv();
@@ -249,7 +249,7 @@ describe("resolveSlackInboundDebounceMs", () => {
 
   test("empty-string env var is treated as unset", () => {
     clearEnv();
-    process.env.LETTA_SLACK_INBOUND_DEBOUNCE_MS = "";
+    process.env.HARUYUKI_SLACK_INBOUND_DEBOUNCE_MS = "";
     expect(resolveSlackInboundDebounceMs({ inboundDebounceMs: 1234 })).toBe(
       1234,
     );

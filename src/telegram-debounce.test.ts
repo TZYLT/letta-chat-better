@@ -25,52 +25,52 @@ describe("buildTelegramDebounceKey", () => {
 });
 
 describe("resolveTelegramInboundDebounceMs", () => {
-  const originalEnv = process.env.LETTA_TELEGRAM_INBOUND_DEBOUNCE_MS;
+  const originalEnv = process.env.HARUYUKI_TELEGRAM_INBOUND_DEBOUNCE_MS;
 
   afterEach(() => {
     if (originalEnv === undefined) {
-      delete process.env.LETTA_TELEGRAM_INBOUND_DEBOUNCE_MS;
+      delete process.env.HARUYUKI_TELEGRAM_INBOUND_DEBOUNCE_MS;
     } else {
-      process.env.LETTA_TELEGRAM_INBOUND_DEBOUNCE_MS = originalEnv;
+      process.env.HARUYUKI_TELEGRAM_INBOUND_DEBOUNCE_MS = originalEnv;
     }
   });
 
   test("defaults to 0", () => {
-    delete process.env.LETTA_TELEGRAM_INBOUND_DEBOUNCE_MS;
+    delete process.env.HARUYUKI_TELEGRAM_INBOUND_DEBOUNCE_MS;
     expect(resolveTelegramInboundDebounceMs({})).toBe(0);
   });
 
   test("uses account config when env is unset", () => {
-    delete process.env.LETTA_TELEGRAM_INBOUND_DEBOUNCE_MS;
+    delete process.env.HARUYUKI_TELEGRAM_INBOUND_DEBOUNCE_MS;
     expect(resolveTelegramInboundDebounceMs({ inboundDebounceMs: 1500 })).toBe(
       1500,
     );
   });
 
   test("env var overrides config", () => {
-    process.env.LETTA_TELEGRAM_INBOUND_DEBOUNCE_MS = "2500";
+    process.env.HARUYUKI_TELEGRAM_INBOUND_DEBOUNCE_MS = "2500";
     expect(resolveTelegramInboundDebounceMs({ inboundDebounceMs: 1500 })).toBe(
       2500,
     );
   });
 
   test("clamps config and env values", () => {
-    delete process.env.LETTA_TELEGRAM_INBOUND_DEBOUNCE_MS;
+    delete process.env.HARUYUKI_TELEGRAM_INBOUND_DEBOUNCE_MS;
     expect(
       resolveTelegramInboundDebounceMs({ inboundDebounceMs: 50_000 }),
     ).toBe(10_000);
-    process.env.LETTA_TELEGRAM_INBOUND_DEBOUNCE_MS = "50000";
+    process.env.HARUYUKI_TELEGRAM_INBOUND_DEBOUNCE_MS = "50000";
     expect(resolveTelegramInboundDebounceMs({ inboundDebounceMs: 1500 })).toBe(
       10_000,
     );
   });
 
   test("invalid and negative values fall back", () => {
-    process.env.LETTA_TELEGRAM_INBOUND_DEBOUNCE_MS = "nope";
+    process.env.HARUYUKI_TELEGRAM_INBOUND_DEBOUNCE_MS = "nope";
     expect(resolveTelegramInboundDebounceMs({ inboundDebounceMs: 800 })).toBe(
       800,
     );
-    delete process.env.LETTA_TELEGRAM_INBOUND_DEBOUNCE_MS;
+    delete process.env.HARUYUKI_TELEGRAM_INBOUND_DEBOUNCE_MS;
     expect(resolveTelegramInboundDebounceMs({ inboundDebounceMs: -1 })).toBe(0);
   });
 });

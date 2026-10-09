@@ -259,7 +259,7 @@ export const CLI_FLAG_CATALOG = {
   // subagents with --no-memfs, and after an upgrade the child binary on
   // disk is newer than the still-running parent. Rejecting the flag broke
   // reflection subagents during that version skew (LET-9436). Subagent
-  // statelessness now derives from LETTA_CODE_AGENT_ROLE=subagent, so the
+  // statelessness now derives from HARUYUKI_CODE_AGENT_ROLE=subagent, so the
   // flag is simply ignored.
   "no-memfs": {
     parser: { type: "boolean" },
@@ -301,7 +301,7 @@ export const CLI_FLAG_CATALOG = {
     mode: "both",
     help: {
       description: "Disable local mods for this session",
-      continuationLines: ["Recovery alias: LETTA_DISABLE_MODS=1 letta"],
+      continuationLines: ["Recovery alias: HARUYUKI_DISABLE_MODS=1 letta"],
     },
   },
   "reflection-trigger": {

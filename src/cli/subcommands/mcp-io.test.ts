@@ -3,7 +3,7 @@ import { loadMcpToolArgs, resolveMcpAgentId } from "./mcp-io";
 
 describe("MCP command input", () => {
   test("resolves agent ids in flag and environment precedence", () => {
-    const env = { LETTA_AGENT_ID: "agent-letta", AGENT_ID: "agent-generic" };
+    const env = { HARUYUKI_AGENT_ID: "agent-letta", AGENT_ID: "agent-generic" };
     expect(resolveMcpAgentId("agent-flag", undefined, env)).toBe("agent-flag");
     expect(resolveMcpAgentId(undefined, "agent-alias", env)).toBe(
       "agent-alias",

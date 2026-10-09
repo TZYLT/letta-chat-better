@@ -103,7 +103,7 @@ function getMemoryRepositoryRepoDir(agentId: string): string {
  *
  * Git credential config lookup is sensitive to URL key shape. We normalize to
  * origin form (scheme + host + optional port) and remove trailing slashes so
- * pull/push flows remain resilient when LETTA_MEMFS_BASE_URL /
+ * pull/push flows remain resilient when HARUYUKI_MEMFS_BASE_URL /
  * LETTA_BASE_URL has path/trailing-slash variations.
  */
 export function normalizeCredentialBaseUrl(serverUrl: string): string {
@@ -466,7 +466,7 @@ function getMemoryRemoteUrl(agentId: string): string {
  * Header sent on every git smart-HTTP request so cloud-api can route this
  * agent's repo through hosted MemFS instead of the default memfs-py path.
  *
- * Opt-in via `LETTA_MEMFS_BACKEND=hosted` in the letta-code process env.
+ * Opt-in via `HARUYUKI_MEMFS_BACKEND=hosted` in the letta-code process env.
  * If unset (or set to anything else), no header is added and cloud-api
  * falls through to the existing Python proxy.
  */
@@ -476,7 +476,7 @@ const HOSTED_BACKEND_VALUE = "hosted";
 function isHostedBackendRequested(
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
-  return env.LETTA_MEMFS_BACKEND === HOSTED_BACKEND_VALUE;
+  return env.HARUYUKI_MEMFS_BACKEND === HOSTED_BACKEND_VALUE;
 }
 
 export function buildGitAuthArgs(

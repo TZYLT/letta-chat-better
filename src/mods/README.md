@@ -106,7 +106,7 @@ The goal is not to avoid breaking mods. The goal is for an agent to see the diag
 
 Kernel-style only works if recovery is strong. Changes in this directory should preserve or improve:
 
-- `--no-mods` / `LETTA_DISABLE_MODS=1`
+- `--no-mods` / `HARUYUKI_DISABLE_MODS=1`
 - disabled mode clearing mod-owned tools, permissions, and providers
 - `/reload` invalidating stale activations by generation
 - actionable diagnostics with owner, capability, phase, and path

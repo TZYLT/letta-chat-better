@@ -48,7 +48,7 @@ describe("Secrets utilities", () => {
   });
 
   test("uses a test-scoped keyring service", async () => {
-    const prefix = process.env.LETTA_TEST_SECRETS_SERVICE_PREFIX;
+    const prefix = process.env.HARUYUKI_TEST_SECRETS_SERVICE_PREFIX;
     if (!prefix) throw new Error("Test keyring namespace was not configured");
     let service: string | undefined;
     __setSecretGetOverrideForTests(async (options) => {

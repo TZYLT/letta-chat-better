@@ -43,7 +43,7 @@ async function runIsolatedClientScript(
     ...process.env,
     HOME: homeDir,
     USERPROFILE: homeDir,
-    LETTA_CODE_AGENT_ROLE: "subagent",
+    HARUYUKI_CODE_AGENT_ROLE: "subagent",
   };
   delete env.LETTA_API_KEY;
   // The credential and refresh failure modes these scripts exercise only exist

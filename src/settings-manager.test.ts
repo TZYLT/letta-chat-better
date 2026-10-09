@@ -28,7 +28,7 @@ const keychainAvailablePrecompute = await isKeychainAvailable();
 
 // Store original HOME to restore after tests
 const originalHome = process.env.HOME;
-const originalLocalBackendFlag = process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+const originalLocalFlag = process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
 const originalLocalBackendDir = process.env.LETTA_LOCAL_BACKEND_DIR;
 let testHomeDir: string;
 let testProjectDir: string;
@@ -46,7 +46,7 @@ beforeEach(async () => {
 
   // Override HOME for tests (must be done BEFORE initialize is called)
   process.env.HOME = testHomeDir;
-  delete process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+  delete process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
   delete process.env.LETTA_LOCAL_BACKEND_DIR;
 });
 
@@ -61,10 +61,10 @@ afterEach(async () => {
 
   // Restore original HOME AFTER reset completes
   process.env.HOME = originalHome;
-  if (originalLocalBackendFlag === undefined) {
-    delete process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL;
+  if (originalLocalFlag === undefined) {
+    delete process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL;
   } else {
-    process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL = originalLocalBackendFlag;
+    process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL = originalLocalFlag;
   }
   if (originalLocalBackendDir === undefined) {
     delete process.env.LETTA_LOCAL_BACKEND_DIR;
@@ -1020,13 +1020,13 @@ describe("Settings Manager - Edge Cases", () => {
 // ============================================================================
 
 describe("Settings Manager - Agents Array Migration", () => {
-  const originalSubagentRole = process.env.LETTA_CODE_AGENT_ROLE;
+  const originalSubagentRole = process.env.HARUYUKI_CODE_AGENT_ROLE;
 
   afterEach(() => {
     if (originalSubagentRole === undefined) {
-      delete process.env.LETTA_CODE_AGENT_ROLE;
+      delete process.env.HARUYUKI_CODE_AGENT_ROLE;
     } else {
-      process.env.LETTA_CODE_AGENT_ROLE = originalSubagentRole;
+      process.env.HARUYUKI_CODE_AGENT_ROLE = originalSubagentRole;
     }
   });
 
@@ -1046,7 +1046,7 @@ describe("Settings Manager - Agents Array Migration", () => {
         }),
       );
 
-      process.env.LETTA_CODE_AGENT_ROLE = "subagent";
+      process.env.HARUYUKI_CODE_AGENT_ROLE = "subagent";
 
       await settingsManager.initialize();
       const settings = settingsManager.getSettings();
@@ -1082,7 +1082,7 @@ describe("Settings Manager - Agents Array Migration", () => {
     expect(settingsManager.isMemfsEnabled("agent-test")).toBe(false);
   });
 
-  test("isMemfsEnabled uses LETTA_MEMFS_BASE_URL before LETTA_BASE_URL", async () => {
+  test("isMemfsEnabled uses HARUYUKI_MEMFS_BASE_URL before LETTA_BASE_URL", async () => {
     await settingsManager.initialize();
 
     settingsManager.updateSettings({
@@ -1096,9 +1096,9 @@ describe("Settings Manager - Agents Array Migration", () => {
     });
 
     const originalBaseUrl = process.env.LETTA_BASE_URL;
-    const originalMemfsBaseUrl = process.env.LETTA_MEMFS_BASE_URL;
+    const originalMemfsBaseUrl = process.env.HARUYUKI_MEMFS_BASE_URL;
     process.env.LETTA_BASE_URL = "http://localhost:54085";
-    process.env.LETTA_MEMFS_BASE_URL = "https://selfhost.example.com";
+    process.env.HARUYUKI_MEMFS_BASE_URL = "https://selfhost.example.com";
 
     try {
       expect(settingsManager.isMemfsEnabled("agent-memfs-url")).toBe(true);
@@ -1109,14 +1109,14 @@ describe("Settings Manager - Agents Array Migration", () => {
         process.env.LETTA_BASE_URL = originalBaseUrl;
       }
       if (originalMemfsBaseUrl === undefined) {
-        delete process.env.LETTA_MEMFS_BASE_URL;
+        delete process.env.HARUYUKI_MEMFS_BASE_URL;
       } else {
-        process.env.LETTA_MEMFS_BASE_URL = originalMemfsBaseUrl;
+        process.env.HARUYUKI_MEMFS_BASE_URL = originalMemfsBaseUrl;
       }
     }
   });
 
-  test("isMemfsEnabled ignores LETTA_BASE_URL when LETTA_MEMFS_BASE_URL is unset", async () => {
+  test("isMemfsEnabled ignores LETTA_BASE_URL when HARUYUKI_MEMFS_BASE_URL is unset", async () => {
     await settingsManager.initialize();
 
     settingsManager.updateSettings({
@@ -1131,9 +1131,9 @@ describe("Settings Manager - Agents Array Migration", () => {
     });
 
     const originalBaseUrl = process.env.LETTA_BASE_URL;
-    const originalMemfsBaseUrl = process.env.LETTA_MEMFS_BASE_URL;
+    const originalMemfsBaseUrl = process.env.HARUYUKI_MEMFS_BASE_URL;
     process.env.LETTA_BASE_URL = "http://localhost:54085";
-    delete process.env.LETTA_MEMFS_BASE_URL;
+    delete process.env.HARUYUKI_MEMFS_BASE_URL;
 
     try {
       expect(settingsManager.isMemfsEnabled("agent-cloud-memfs")).toBe(true);
@@ -1145,20 +1145,20 @@ describe("Settings Manager - Agents Array Migration", () => {
         process.env.LETTA_BASE_URL = originalBaseUrl;
       }
       if (originalMemfsBaseUrl === undefined) {
-        delete process.env.LETTA_MEMFS_BASE_URL;
+        delete process.env.HARUYUKI_MEMFS_BASE_URL;
       } else {
-        process.env.LETTA_MEMFS_BASE_URL = originalMemfsBaseUrl;
+        process.env.HARUYUKI_MEMFS_BASE_URL = originalMemfsBaseUrl;
       }
     }
   });
 
-  test("setMemfsEnabled stores agent settings under LETTA_MEMFS_BASE_URL server key", async () => {
+  test("setMemfsEnabled stores agent settings under HARUYUKI_MEMFS_BASE_URL server key", async () => {
     await settingsManager.initialize();
 
     const originalBaseUrl = process.env.LETTA_BASE_URL;
-    const originalMemfsBaseUrl = process.env.LETTA_MEMFS_BASE_URL;
+    const originalMemfsBaseUrl = process.env.HARUYUKI_MEMFS_BASE_URL;
     process.env.LETTA_BASE_URL = "http://localhost:54085";
-    process.env.LETTA_MEMFS_BASE_URL = "https://selfhost.example.com";
+    process.env.HARUYUKI_MEMFS_BASE_URL = "https://selfhost.example.com";
 
     try {
       settingsManager.setMemfsEnabled("agent-memfs-write", true);
@@ -1183,20 +1183,20 @@ describe("Settings Manager - Agents Array Migration", () => {
         process.env.LETTA_BASE_URL = originalBaseUrl;
       }
       if (originalMemfsBaseUrl === undefined) {
-        delete process.env.LETTA_MEMFS_BASE_URL;
+        delete process.env.HARUYUKI_MEMFS_BASE_URL;
       } else {
-        process.env.LETTA_MEMFS_BASE_URL = originalMemfsBaseUrl;
+        process.env.HARUYUKI_MEMFS_BASE_URL = originalMemfsBaseUrl;
       }
     }
   });
 
-  test("setMemfsEnabled defaults to api.letta.com key when LETTA_MEMFS_BASE_URL is unset", async () => {
+  test("setMemfsEnabled defaults to api.letta.com key when HARUYUKI_MEMFS_BASE_URL is unset", async () => {
     await settingsManager.initialize();
 
     const originalBaseUrl = process.env.LETTA_BASE_URL;
-    const originalMemfsBaseUrl = process.env.LETTA_MEMFS_BASE_URL;
+    const originalMemfsBaseUrl = process.env.HARUYUKI_MEMFS_BASE_URL;
     process.env.LETTA_BASE_URL = "http://localhost:54085";
-    delete process.env.LETTA_MEMFS_BASE_URL;
+    delete process.env.HARUYUKI_MEMFS_BASE_URL;
 
     try {
       settingsManager.setMemfsEnabled("agent-memfs-default-cloud", true);
@@ -1220,9 +1220,9 @@ describe("Settings Manager - Agents Array Migration", () => {
         process.env.LETTA_BASE_URL = originalBaseUrl;
       }
       if (originalMemfsBaseUrl === undefined) {
-        delete process.env.LETTA_MEMFS_BASE_URL;
+        delete process.env.HARUYUKI_MEMFS_BASE_URL;
       } else {
-        process.env.LETTA_MEMFS_BASE_URL = originalMemfsBaseUrl;
+        process.env.HARUYUKI_MEMFS_BASE_URL = originalMemfsBaseUrl;
       }
     }
   });
@@ -1232,7 +1232,7 @@ describe("Settings Manager - Agents Array Migration", () => {
 
     const storageDir = join(testHomeDir, "lc-local-backend");
     const localKey = `local:${resolve(storageDir)}`;
-    process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL = "1";
+    process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL = "1";
     process.env.LETTA_LOCAL_BACKEND_DIR = storageDir;
 
     settingsManager.setMemfsEnabled("agent-local-memfs-write", true);
@@ -1285,7 +1285,7 @@ describe("Settings Manager - Pinned Agents", () => {
 
     const storageDir = join(testHomeDir, "lc-local-backend");
     const localKey = `local:${resolve(storageDir)}`;
-    process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL = "1";
+    process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL = "1";
     process.env.LETTA_LOCAL_BACKEND_DIR = storageDir;
 
     // Both pins land in the local bucket (baseUrl === localKey), but the
@@ -1524,8 +1524,8 @@ describe("Settings Manager - Managed Keys Preservation", () => {
   });
 
   test("Auth-only token updates preserve unrelated env settings", async () => {
-    const previousSkipKeychain = process.env.LETTA_SKIP_KEYCHAIN_CHECK;
-    process.env.LETTA_SKIP_KEYCHAIN_CHECK = "1";
+    const previousSkipKeychain = process.env.HARUYUKI_SKIP_KEYCHAIN_CHECK;
+    process.env.HARUYUKI_SKIP_KEYCHAIN_CHECK = "1";
 
     try {
       const { writeFile, readFile, mkdir } = await import("@/utils/fs.js");
@@ -1561,9 +1561,9 @@ describe("Settings Manager - Managed Keys Preservation", () => {
       expect(raw.tokenExpiresAt).toBe(123);
     } finally {
       if (previousSkipKeychain === undefined) {
-        delete process.env.LETTA_SKIP_KEYCHAIN_CHECK;
+        delete process.env.HARUYUKI_SKIP_KEYCHAIN_CHECK;
       } else {
-        process.env.LETTA_SKIP_KEYCHAIN_CHECK = previousSkipKeychain;
+        process.env.HARUYUKI_SKIP_KEYCHAIN_CHECK = previousSkipKeychain;
       }
     }
   });

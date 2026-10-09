@@ -1,6 +1,6 @@
 /**
  * LSP-enhanced Read tool - wraps the base Read tool and adds LSP diagnostics
- * This is used when LETTA_ENABLE_LSP is set
+ * This is used when HARUYUKI_ENABLE_LSP is set
  */
 import { getCurrentWorkingDirectory } from "@/runtime-context";
 import { read as baseRead, type ToolReturnContent } from "./read.js";
@@ -39,7 +39,7 @@ export async function read_lsp(args: ReadLSPArgs): Promise<ReadLSPResult> {
   const result = await baseRead(args);
 
   // Skip LSP if not enabled (shouldn't happen since we only load this when enabled)
-  if (!process.env.LETTA_ENABLE_LSP) {
+  if (!process.env.HARUYUKI_ENABLE_LSP) {
     return result;
   }
 

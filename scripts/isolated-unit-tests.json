@@ -78,7 +78,7 @@
     {
       "path": "src/channels/service.test.ts",
       "timeoutMs": 15000,
-      "env": { "LETTA_SKIP_KEYCHAIN_CHECK": "1" },
+      "env": { "HARUYUKI_SKIP_KEYCHAIN_CHECK": "1" },
       "reason": "Mutates shared channel stores and credential mode; local fixtures must not use the macOS keychain."
     },
     {
@@ -104,7 +104,7 @@
     {
       "path": "src/cli/helpers/pinned-agent-listing.test.ts",
       "timeoutMs": 15000,
-      "env": { "LETTA_SKIP_KEYCHAIN_CHECK": "1" },
+      "env": { "HARUYUKI_SKIP_KEYCHAIN_CHECK": "1" },
       "reason": "Mutates HOME, local-backend paths, the settings singleton, and the keychain service name."
     },
     {

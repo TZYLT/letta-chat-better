@@ -109,7 +109,7 @@ function getExplicitEnvRoots(env: NodeJS.ProcessEnv): ExplicitEnvRoots {
 
 /**
  * Resolve the current agent ID from: (1) the explicit argument, (2) the
- * `AGENT_ID` / `LETTA_AGENT_ID` env vars, or (3) the in-process agent
+ * `AGENT_ID` / `HARUYUKI_AGENT_ID` env vars, or (3) the in-process agent
  * context. Returns null when none of those sources yields a non-empty ID.
  */
 export function deriveAgentId(
@@ -123,7 +123,7 @@ export function deriveAgentId(
     const fromContext = getCurrentAgentId().trim();
     return fromContext || null;
   } catch {
-    const envAgentId = (env.AGENT_ID || env.LETTA_AGENT_ID || "").trim();
+    const envAgentId = (env.AGENT_ID || env.HARUYUKI_AGENT_ID || "").trim();
     return envAgentId || null;
   }
 }
@@ -143,7 +143,9 @@ function getFallbackRoots(
 
   const resolvedCurrentAgentId = deriveAgentId(env, currentAgentId);
   const envParentAgentId =
-    env.LETTA_CODE_AGENT_ROLE === "subagent" ? env.LETTA_PARENT_AGENT_ID : "";
+    env.HARUYUKI_CODE_AGENT_ROLE === "subagent"
+      ? env.HARUYUKI_PARENT_AGENT_ID
+      : "";
   const resolvedParentAgentId =
     (parentAgentId || envParentAgentId || "").trim() || null;
 

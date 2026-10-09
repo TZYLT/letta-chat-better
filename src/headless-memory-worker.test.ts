@@ -63,10 +63,10 @@ for (const mode of [
         parentProcessEnv: createIsolatedCliTestEnv({
           HOME: home,
           USER_CWD: home,
-          LETTA_LOCAL_BACKEND_EXECUTOR: "deterministic",
-          LETTA_SKIP_KEYCHAIN_CHECK: "1",
-          LETTA_DISABLE_MODS: "1",
-          LETTA_FS_SANDBOX: "0",
+          HARUYUKI_LOCAL_BACKEND_EXECUTOR: "deterministic",
+          HARUYUKI_SKIP_KEYCHAIN_CHECK: "1",
+          HARUYUKI_DISABLE_MODS: "1",
+          HARUYUKI_FS_SANDBOX: "0",
         }),
         parentAgentId: agentId,
         parentConversationId: original.id,
@@ -77,8 +77,8 @@ for (const mode of [
         inheritedPrimaryRoot: memoryDir,
         memoryScope: { primaryRoot: memoryDir, writableRoots: [memoryDir] },
       });
-      const invocation = process.env.LETTA_TEST_BUILT_CLI
-        ? ["node", process.env.LETTA_TEST_BUILT_CLI]
+      const invocation = process.env.HARUYUKI_TEST_BUILT_CLI
+        ? ["node", process.env.HARUYUKI_TEST_BUILT_CLI]
         : [
             process.execPath,
             `--config=${resolve(import.meta.dir, "..", "bunfig.toml")}`,

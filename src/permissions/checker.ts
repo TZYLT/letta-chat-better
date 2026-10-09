@@ -73,16 +73,16 @@ function envFlagEnabled(name: string): boolean {
 }
 
 function isPermissionsV2Enabled(): boolean {
-  const value = process.env.LETTA_PERMISSIONS_V2;
+  const value = process.env.HARUYUKI_PERMISSIONS_V2;
   if (!value) return true;
   return !(value === "0" || value.toLowerCase() === "false");
 }
 
 function shouldAttachTrace(result: PermissionCheckResult): boolean {
-  if (envFlagEnabled("LETTA_PERMISSION_TRACE_ALL")) {
+  if (envFlagEnabled("HARUYUKI_PERMISSION_TRACE_ALL")) {
     return true;
   }
-  if (!envFlagEnabled("LETTA_PERMISSION_TRACE")) {
+  if (!envFlagEnabled("HARUYUKI_PERMISSION_TRACE")) {
     return false;
   }
   return (
@@ -156,7 +156,7 @@ export function checkPermission(
     );
   }
 
-  if (envFlagEnabled("LETTA_PERMISSIONS_DUAL_EVAL")) {
+  if (envFlagEnabled("HARUYUKI_PERMISSIONS_DUAL_EVAL")) {
     const shadowEngine: PermissionEngine = engine === "v2" ? "v1" : "v2";
     const shadow = checkPermissionForEngine(
       shadowEngine,

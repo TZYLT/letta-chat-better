@@ -71,7 +71,7 @@ describe("Prompt Hook Executor", () => {
 
   afterEach(() => {
     // Clean up env vars
-    delete process.env.LETTA_AGENT_ID;
+    delete process.env.HARUYUKI_AGENT_ID;
   });
 
   afterAll(() => {
@@ -242,8 +242,8 @@ describe("Prompt Hook Executor", () => {
       expect(path).toBe("/v1/agents/agent-from-context/generate");
     });
 
-    test("falls back to LETTA_AGENT_ID env var when context unavailable", async () => {
-      process.env.LETTA_AGENT_ID = "agent-from-env";
+    test("falls back to HARUYUKI_AGENT_ID env var when context unavailable", async () => {
+      process.env.HARUYUKI_AGENT_ID = "agent-from-env";
 
       const hook = {
         type: "prompt" as const,
@@ -264,7 +264,7 @@ describe("Prompt Hook Executor", () => {
     });
 
     test("returns ERROR when no agent_id available", async () => {
-      delete process.env.LETTA_AGENT_ID;
+      delete process.env.HARUYUKI_AGENT_ID;
 
       const hook = {
         type: "prompt" as const,

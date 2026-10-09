@@ -306,7 +306,7 @@ function localBackendExecutionMode():
   | "deterministic"
   | "deterministic-reflection"
   | "pi" {
-  const configuredMode = process.env.LETTA_LOCAL_BACKEND_EXECUTOR;
+  const configuredMode = process.env.HARUYUKI_LOCAL_BACKEND_EXECUTOR;
   if (configuredMode === "deterministic") return "deterministic";
   if (configuredMode === "deterministic-reflection") {
     return "deterministic-reflection";
@@ -357,7 +357,7 @@ export function getBackendForMode(_mode: BackendMode): Backend {
  * Select which *namespace* this process reads and writes, and point the process
  * at the matching backend instance.
  *
- * Namespace selection is not cosmetic: `LETTA_LOCAL_BACKEND_EXPERIMENTAL` is the
+ * Namespace selection is not cosmetic: `HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL` is the
  * predicate behind `isLocalBackendEnvEnabled()`, which in turn picks
  *  - the settings bucket (`local:<dir>` vs `api.letta.com`) that namespaces
  *    pins, per-agent settings and last-session refs, and
@@ -402,7 +402,7 @@ export function isLocalBackendEnabled(): boolean {
 }
 
 function devBackendStoreOptions() {
-  return { storageDir: process.env.LETTA_CODE_DEV_BACKEND_DIR };
+  return { storageDir: process.env.HARUYUKI_CODE_DEV_BACKEND_DIR };
 }
 
 async function createPiDevBackend(): Promise<Backend> {

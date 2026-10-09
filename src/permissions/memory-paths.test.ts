@@ -10,15 +10,15 @@ afterEach(() => {
   delete process.env.MEMORY_DIR;
   delete process.env.LETTA_MEMORY_DIR;
   delete process.env.AGENT_ID;
-  delete process.env.LETTA_AGENT_ID;
-  delete process.env.LETTA_PARENT_AGENT_ID;
-  delete process.env.LETTA_CODE_AGENT_ROLE;
+  delete process.env.HARUYUKI_AGENT_ID;
+  delete process.env.HARUYUKI_PARENT_AGENT_ID;
+  delete process.env.HARUYUKI_CODE_AGENT_ROLE;
 });
 
 test("explicit env roots are authoritative over fallback inference", () => {
   process.env.MEMORY_DIR = "/tmp/explicit-memory";
   process.env.AGENT_ID = "agent-fallback";
-  process.env.LETTA_PARENT_AGENT_ID = "agent-parent-fallback";
+  process.env.HARUYUKI_PARENT_AGENT_ID = "agent-parent-fallback";
 
   const scope = resolveAllowedMemoryRoots({ homeDir: "/Users/test" });
 
@@ -34,8 +34,8 @@ test("explicit env roots are authoritative over fallback inference", () => {
 
 test("falls back to agent-derived roots when no explicit env roots exist", () => {
   process.env.AGENT_ID = "agent-self";
-  process.env.LETTA_PARENT_AGENT_ID = "agent-parent";
-  process.env.LETTA_CODE_AGENT_ROLE = "subagent";
+  process.env.HARUYUKI_PARENT_AGENT_ID = "agent-parent";
+  process.env.HARUYUKI_CODE_AGENT_ROLE = "subagent";
 
   const scope = resolveAllowedMemoryRoots({ homeDir: "/Users/test" });
   const selfRoot = normalizeMemoryPath(

@@ -134,12 +134,12 @@ function plannedExecutor(
 }
 
 test("a queued local App Server input retains its own reply mode", async () => {
-  const originalDisableMods = process.env.LETTA_DISABLE_MODS;
-  const originalDisableCron = process.env.LETTA_DISABLE_CRON_SCHEDULER;
+  const originalDisableMods = process.env.HARUYUKI_DISABLE_MODS;
+  const originalDisableCron = process.env.HARUYUKI_DISABLE_CRON_SCHEDULER;
   const originalIsMemfsExplicitlyDisabled =
     settingsManager.isMemfsExplicitlyDisabled;
-  process.env.LETTA_DISABLE_MODS = "1";
-  process.env.LETTA_DISABLE_CRON_SCHEDULER = "1";
+  process.env.HARUYUKI_DISABLE_MODS = "1";
+  process.env.HARUYUKI_DISABLE_CRON_SCHEDULER = "1";
   settingsManager.isMemfsExplicitlyDisabled = (agentId) =>
     agentId === AGENT_ID ||
     originalIsMemfsExplicitlyDisabled.call(settingsManager, agentId);
@@ -263,14 +263,14 @@ test("a queued local App Server input retains its own reply mode", async () => {
     settingsManager.isMemfsExplicitlyDisabled =
       originalIsMemfsExplicitlyDisabled;
     if (originalDisableMods === undefined) {
-      delete process.env.LETTA_DISABLE_MODS;
+      delete process.env.HARUYUKI_DISABLE_MODS;
     } else {
-      process.env.LETTA_DISABLE_MODS = originalDisableMods;
+      process.env.HARUYUKI_DISABLE_MODS = originalDisableMods;
     }
     if (originalDisableCron === undefined) {
-      delete process.env.LETTA_DISABLE_CRON_SCHEDULER;
+      delete process.env.HARUYUKI_DISABLE_CRON_SCHEDULER;
     } else {
-      process.env.LETTA_DISABLE_CRON_SCHEDULER = originalDisableCron;
+      process.env.HARUYUKI_DISABLE_CRON_SCHEDULER = originalDisableCron;
     }
     try {
       await gateway?.close();

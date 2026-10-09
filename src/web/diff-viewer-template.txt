@@ -422,7 +422,7 @@ h1 {
   <main id="app"></main>
   <div class="footer">Rendered with <strong>@pierre/diffs</strong> via Letta Code.</div>
 </div>
-<script type="application/json" id="payload"><!--LETTA_DIFF_DATA_PLACEHOLDER--></script>
+<script type="application/json" id="payload"><!--HARUYUKI_DIFF_DATA_PLACEHOLDER--></script>
 <script>
 const data = JSON.parse(document.getElementById("payload").textContent);
 const app = document.getElementById("app");

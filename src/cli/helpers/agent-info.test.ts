@@ -126,7 +126,7 @@ describe("agent info reminder", () => {
     ).isMemfsEnabled = () => false;
 
     try {
-      withTemporaryEnv({ LETTA_LOCAL_BACKEND_EXPERIMENTAL: "1" }, () => {
+      withTemporaryEnv({ HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL: "1" }, () => {
         const context = buildAgentInfo({
           agentInfo: {
             id: agentId,

@@ -105,7 +105,7 @@ async function runScenario(options: {
       cwd: repoRoot,
       env: createIsolatedCliTestEnv({
         HOME: home,
-        LETTA_FS_SANDBOX: "0",
+        HARUYUKI_FS_SANDBOX: "0",
         NO_COLOR: "1",
         RESPONSE_STATE_READ_FILE: readFile,
         RESPONSE_STATE_BIDIRECTIONAL: options.bidirectional ? "1" : "0",

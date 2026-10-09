@@ -4,7 +4,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const TESTS_DIR_ENV = "LETTA_MOCK_ISOLATION_TESTS_DIR";
+const TESTS_DIR_ENV = "HARUYUKI_MOCK_ISOLATION_TESTS_DIR";
 
 const rootDir = process.cwd();
 const scriptDir = dirname(fileURLToPath(import.meta.url));

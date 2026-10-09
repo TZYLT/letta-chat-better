@@ -40,7 +40,7 @@ async function runCli(
         cwd: projectRoot,
         env: createIsolatedCliTestEnv({
           HOME: homeDir,
-          LETTA_DISABLE_MODS: "1",
+          HARUYUKI_DISABLE_MODS: "1",
         }),
       });
       proc.stdin?.end();
@@ -189,11 +189,11 @@ async function runMcpEcho(
           env: createIsolatedCliTestEnv({
             HOME: homeDir,
             AGENT_ID: MCP_TEST_AGENT_ID,
-            LETTA_AGENT_ID: MCP_TEST_AGENT_ID,
-            LETTA_DEBUG: "0",
-            LETTA_DISABLE_MODS: "1",
+            HARUYUKI_AGENT_ID: MCP_TEST_AGENT_ID,
+            HARUYUKI_DEBUG: "0",
+            HARUYUKI_DISABLE_MODS: "1",
             LETTA_LOCAL_BACKEND_DIR: storageDir,
-            LETTA_LOCAL_BACKEND_EXPERIMENTAL: "1",
+            HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL: "1",
           }),
           stdio: ["ignore", stdoutFile?.fd ?? "pipe", "pipe"],
         },

@@ -1,6 +1,6 @@
 // Package-manager detection for global install operations (e.g. installing
 // channel runtime dependencies). Path heuristics on the resolved entrypoint
-// decide which manager installed the running binary; LETTA_PACKAGE_MANAGER
+// decide which manager installed the running binary; HARUYUKI_PACKAGE_MANAGER
 // overrides the result.
 
 import { realpathSync } from "node:fs";
@@ -20,19 +20,19 @@ function getResolvedEntrypoint(): string {
 }
 
 export function detectPackageManager(): PackageManager {
-  const envOverride = process.env.LETTA_PACKAGE_MANAGER;
+  const envOverride = process.env.HARUYUKI_PACKAGE_MANAGER;
   if (envOverride) {
     if (VALID_PACKAGE_MANAGERS.has(envOverride)) {
       debugLog(
         "package-manager",
-        "Package manager from LETTA_PACKAGE_MANAGER:",
+        "Package manager from HARUYUKI_PACKAGE_MANAGER:",
         envOverride,
       );
       return envOverride as PackageManager;
     }
     debugLog(
       "package-manager",
-      `Invalid LETTA_PACKAGE_MANAGER="${envOverride}", falling back to path detection`,
+      `Invalid HARUYUKI_PACKAGE_MANAGER="${envOverride}", falling back to path detection`,
     );
   }
 

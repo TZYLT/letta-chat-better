@@ -282,7 +282,7 @@ async function runOneShotAgainstConversation(
 
 describe("pre-stream approval recovery", () => {
   const maybeTest =
-    process.env.LETTA_RUN_PRESTREAM_APPROVAL_RECOVERY_TEST === "1"
+    process.env.HARUYUKI_RUN_PRESTREAM_APPROVAL_RECOVERY_TEST === "1"
       ? test
       : test.skip;
 

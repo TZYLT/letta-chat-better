@@ -34,7 +34,7 @@ export interface ShellSandboxContext {
  * wrapped (not opted in, already sandboxed, no backend, cwd inside the agents
  * tree, or no resolvable self roots).
  *
- * Opt-in via `LETTA_FS_SANDBOX=1`: by default only memory subagents are
+ * Opt-in via `HARUYUKI_FS_SANDBOX=1`: by default only memory subagents are
  * sandboxed (as whole processes) and agent shells run unconfined. When opted
  * in, the kernel sandbox is the sole cross-agent enforcement for spawned shells
  * (the static cross-agent guard no longer analyzes shell commands), so this is

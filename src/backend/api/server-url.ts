@@ -1,4 +1,4 @@
-import { LETTA_CLOUD_API_URL } from "@/auth/oauth";
+import { HARUYUKI_CLOUD_API_URL } from "@/auth/oauth";
 import { settingsManager } from "@/settings-manager";
 
 /**
@@ -51,7 +51,7 @@ export function isCloudServerUrl(serverUrl?: string): boolean {
   }
   try {
     const parsed = new URL(resolved);
-    const cloud = new URL(LETTA_CLOUD_API_URL);
+    const cloud = new URL(HARUYUKI_CLOUD_API_URL);
     return parsed.hostname === cloud.hostname;
   } catch {
     return false;

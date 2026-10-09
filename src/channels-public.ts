@@ -53,7 +53,7 @@ export type {
 export {
   collectLettaSseAssistantText,
   formatLettaStreamCoreErrorForChannel,
-  LETTA_STREAM_NO_ASSISTANT_MESSAGE_ERROR,
+  HARUYUKI_STREAM_NO_ASSISTANT_MESSAGE_ERROR,
   LettaStreamCoreError,
   LettaStreamNoAssistantMessageError,
 } from "./channels/core-stream";

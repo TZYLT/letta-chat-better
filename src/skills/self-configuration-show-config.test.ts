@@ -35,8 +35,8 @@ const isolatedEnvKeys = [
   "CONVERSATION_ID",
   "LETTA_API_KEY",
   "LETTA_BASE_URL",
-  "LETTA_SETTINGS_BASE_URL",
-  "LETTA_BACKEND",
+  "HARUYUKI_SETTINGS_BASE_URL",
+  "HARUYUKI_BACKEND",
   "MEMORY_DIR",
   "HOME",
   "USERPROFILE",
@@ -173,13 +173,13 @@ test.skipIf(!pythonAvailable)(
       env: {
         LETTA_API_KEY: "settings-secret",
         LETTA_BASE_URL: "https://settings-base.example",
-        LETTA_BACKEND: "api",
+        HARUYUKI_BACKEND: "api",
       },
     });
     writeJson(join(cwd, ".haruyuki", "settings.local.json"), {
       preferredBackendMode: "local",
       env: {
-        LETTA_SETTINGS_BASE_URL: "https://settings-scope.example",
+        HARUYUKI_SETTINGS_BASE_URL: "https://settings-scope.example",
       },
     });
 
@@ -192,7 +192,7 @@ test.skipIf(!pythonAvailable)(
         CONVERSATION_ID: "conv-test",
         LETTA_API_KEY: "runtime-secret",
         LETTA_BASE_URL: "https://runtime-base.example",
-        LETTA_BACKEND: "local",
+        HARUYUKI_BACKEND: "local",
         MEMORY_DIR: memoryDir,
       },
     );

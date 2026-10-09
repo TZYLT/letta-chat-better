@@ -10,16 +10,16 @@ describe("DebugLogFile", () => {
 
   beforeEach(() => {
     dir = mkdtempSync(join(tmpdir(), "letta-debug-log-"));
-    // The test preload sets LETTA_CODE_TELEM=0, which disables file logging.
-    previousTelem = process.env.LETTA_CODE_TELEM;
-    process.env.LETTA_CODE_TELEM = "1";
+    // The test preload sets HARUYUKI_CODE_TELEM=0, which disables file logging.
+    previousTelem = process.env.HARUYUKI_CODE_TELEM;
+    process.env.HARUYUKI_CODE_TELEM = "1";
   });
 
   afterEach(() => {
     if (previousTelem === undefined) {
-      delete process.env.LETTA_CODE_TELEM;
+      delete process.env.HARUYUKI_CODE_TELEM;
     } else {
-      process.env.LETTA_CODE_TELEM = previousTelem;
+      process.env.HARUYUKI_CODE_TELEM = previousTelem;
     }
     rmSync(dir, { recursive: true, force: true });
   });

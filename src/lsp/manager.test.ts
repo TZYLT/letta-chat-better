@@ -12,9 +12,9 @@ try {
 }
 
 // Enable LSP for tests
-process.env.LETTA_ENABLE_LSP = "true";
+process.env.HARUYUKI_ENABLE_LSP = "true";
 // Disable auto-download to avoid hanging in CI
-process.env.LETTA_DISABLE_LSP_DOWNLOAD = "true";
+process.env.HARUYUKI_DISABLE_LSP_DOWNLOAD = "true";
 
 beforeAll(async () => {
   // Initialize LSP for the project

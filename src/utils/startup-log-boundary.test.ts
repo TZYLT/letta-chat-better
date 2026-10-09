@@ -22,11 +22,11 @@ import { writeSync } from "node:fs";
 import { spawn, spawnSync } from "node:child_process";
 import assert from "node:assert/strict";
 
-assert.equal(process.env.LETTA_STARTUP_LOG_MARKER, undefined);
-assert.equal(process.env.LETTA_STARTUP_LOG_OWNER_PID, undefined);
+assert.equal(process.env.HARUYUKI_STARTUP_LOG_MARKER, undefined);
+assert.equal(process.env.HARUYUKI_STARTUP_LOG_OWNER_PID, undefined);
 if (process.argv[2] === "owned-child") {
   // Intentionally omit env: Bun inherits both original env vars despite deletion.
-  const code = 'const raw = { marker: process.env.LETTA_STARTUP_LOG_MARKER, owner: process.env.LETTA_STARTUP_LOG_OWNER_PID }; import(' + JSON.stringify(process.argv[3]) + ').then(({ sealStartupLogs }) => { sealStartupLogs(); sealStartupLogs(); if (process.env.LETTA_STARTUP_LOG_MARKER !== undefined || process.env.LETTA_STARTUP_LOG_OWNER_PID !== undefined) throw new Error("env not consumed"); process.stdout.write(JSON.stringify(raw)); });';
+  const code = 'const raw = { marker: process.env.HARUYUKI_STARTUP_LOG_MARKER, owner: process.env.HARUYUKI_STARTUP_LOG_OWNER_PID }; import(' + JSON.stringify(process.argv[3]) + ').then(({ sealStartupLogs }) => { sealStartupLogs(); sealStartupLogs(); if (process.env.HARUYUKI_STARTUP_LOG_MARKER !== undefined || process.env.HARUYUKI_STARTUP_LOG_OWNER_PID !== undefined) throw new Error("env not consumed"); process.stdout.write(JSON.stringify(raw)); });';
   const child = spawnSync(process.execPath, ["-e", code], { encoding: "utf8" });
   assert.equal(child.status, 0, child.stderr);
   // Any marker emitted by the child makes this JSON parse fail.
@@ -39,7 +39,7 @@ if (process.argv[2] === "owned-child") {
   }
   writeSync(1, "child did not seal\\n");
 }
-const args = ["-e", 'process.stdout.write(JSON.stringify([process.env.LETTA_STARTUP_LOG_MARKER, process.env.LETTA_STARTUP_LOG_OWNER_PID]))'];
+const args = ["-e", 'process.stdout.write(JSON.stringify([process.env.HARUYUKI_STARTUP_LOG_MARKER, process.env.HARUYUKI_STARTUP_LOG_OWNER_PID]))'];
 // Explicit-env sync and default async children observe both env deletions.
 const child = spawnSync(process.execPath, args, { encoding: "utf8", env: process.env });
 assert.equal(child.stdout, "[null,null]");
@@ -59,8 +59,8 @@ if (process.argv[2] === "failure" || process.argv[2] === "invalid") {
 } else {
   sealStartupLogs();
   writeSync(2, "user stderr\\n");
-  process.env.LETTA_STARTUP_LOG_MARKER = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
-  process.env.LETTA_STARTUP_LOG_OWNER_PID = String(process.pid);
+  process.env.HARUYUKI_STARTUP_LOG_MARKER = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+  process.env.HARUYUKI_STARTUP_LOG_OWNER_PID = String(process.pid);
   sealStartupLogs();
   writeSync(1, "user stdout\\n");
 }
@@ -92,18 +92,20 @@ for (const runtime of ["bun", "node"]) {
   unixDescribe(`${runtime} process startup boundary`, () => {
     function run(mode: string, value?: string, owner?: string) {
       const env = { ...process.env };
-      delete env.LETTA_STARTUP_LOG_MARKER;
-      delete env.LETTA_STARTUP_LOG_OWNER_PID;
-      if (value !== undefined) env.LETTA_STARTUP_LOG_MARKER = value;
+      delete env.HARUYUKI_STARTUP_LOG_MARKER;
+      delete env.HARUYUKI_STARTUP_LOG_OWNER_PID;
+      if (value !== undefined) env.HARUYUKI_STARTUP_LOG_MARKER = value;
       if (owner !== undefined && owner !== "self") {
-        env.LETTA_STARTUP_LOG_OWNER_PID = owner;
+        env.HARUYUKI_STARTUP_LOG_OWNER_PID = owner;
       }
       // Both descriptors point at the SAME pipe, as in a Cloud launch.
       const result = spawnSync(
         "sh",
         [
           "-c",
-          (owner === "self" ? "export LETTA_STARTUP_LOG_OWNER_PID=$$; " : "") +
+          (owner === "self"
+            ? "export HARUYUKI_STARTUP_LOG_OWNER_PID=$$; "
+            : "") +
             (mode === "failure"
               ? 'exec "$@" 2>&1 1</dev/null'
               : 'exec "$@" 2>&1'),

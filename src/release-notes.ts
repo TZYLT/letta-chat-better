@@ -110,11 +110,11 @@ export function getPendingReleaseNotes(
  *
  * Also updates settings to mark notes as seen up to the current base version.
  *
- * Debug: Set LETTA_SHOW_RELEASE_NOTES=1 to force display.
+ * Debug: Set HARUYUKI_SHOW_RELEASE_NOTES=1 to force display.
  */
 export async function checkReleaseNotes(): Promise<string | null> {
   // Skip for subagents (background processes)
-  if (process.env.LETTA_CODE_AGENT_ROLE === "subagent") {
+  if (process.env.HARUYUKI_CODE_AGENT_ROLE === "subagent") {
     return null;
   }
 
@@ -122,7 +122,7 @@ export async function checkReleaseNotes(): Promise<string | null> {
   const baseVersion = getBaseVersion(currentVersion);
 
   // Debug flag to force show (still respects whether notes exist)
-  if (process.env.LETTA_SHOW_RELEASE_NOTES === "1") {
+  if (process.env.HARUYUKI_SHOW_RELEASE_NOTES === "1") {
     return getReleaseNotes(baseVersion);
   }
 

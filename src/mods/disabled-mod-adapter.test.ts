@@ -5,7 +5,7 @@ import {
   registerPiProvider,
 } from "@/backend/dev/pi-provider-mod-registry";
 import { DISABLED_MOD_CAPABILITIES } from "@/mods/capabilities";
-import { LETTA_DISABLE_MODS_ENV } from "@/mods/disable";
+import { HARUYUKI_DISABLE_MODS_ENV } from "@/mods/disable";
 import { createDisabledModAdapter } from "@/mods/disabled-mod-adapter";
 import {
   clearModPermissions,
@@ -83,10 +83,10 @@ function registerTestPiProvider(name: string): void {
 
 describe("disabled mod adapter", () => {
   test("clears mod registries and exposes no-op adapter surfaces", async () => {
-    const originalDisableEnv = process.env[LETTA_DISABLE_MODS_ENV];
+    const originalDisableEnv = process.env[HARUYUKI_DISABLE_MODS_ENV];
 
     try {
-      delete process.env[LETTA_DISABLE_MODS_ENV];
+      delete process.env[HARUYUKI_DISABLE_MODS_ENV];
       registerTestModPermission("stale-permission");
       registerTestModTool("stale_mod_tool");
       registerTestPiProvider("stale-provider");
@@ -143,9 +143,9 @@ describe("disabled mod adapter", () => {
       clearModTools();
       clearRegisteredPiProviders();
       if (originalDisableEnv === undefined) {
-        delete process.env[LETTA_DISABLE_MODS_ENV];
+        delete process.env[HARUYUKI_DISABLE_MODS_ENV];
       } else {
-        process.env[LETTA_DISABLE_MODS_ENV] = originalDisableEnv;
+        process.env[HARUYUKI_DISABLE_MODS_ENV] = originalDisableEnv;
       }
     }
   });

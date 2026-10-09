@@ -198,16 +198,16 @@ const DEFAULT_LOCAL_PROJECT_SETTINGS: LocalProjectSettings = {
 };
 
 const SERVER_KEY_CLOUD = "api.letta.com"; // frozen storage key, not the URL default
-const SETTINGS_BASE_URL_ENV = "LETTA_SETTINGS_BASE_URL";
+const SETTINGS_BASE_URL_ENV = "HARUYUKI_SETTINGS_BASE_URL";
 
 function isSubagentProcess(): boolean {
-  return process.env.LETTA_CODE_AGENT_ROLE === "subagent";
+  return process.env.HARUYUKI_CODE_AGENT_ROLE === "subagent";
 }
 
 export function shouldPersistSessionState(): boolean {
   return (
-    process.env.LETTA_CODE_AGENT_ROLE !== "subagent" &&
-    process.env.LETTA_DISABLE_SESSION_PERSIST !== "1"
+    process.env.HARUYUKI_CODE_AGENT_ROLE !== "subagent" &&
+    process.env.HARUYUKI_DISABLE_SESSION_PERSIST !== "1"
   );
 }
 
@@ -270,7 +270,7 @@ function shouldSkipLegacyLocalBackendSessionFallback(): boolean {
 /**
  * Get the current server key for indexing settings.
  * Uses the local backend storage path when local backend mode is active,
- * otherwise LETTA_SETTINGS_BASE_URL, LETTA_BASE_URL, or
+ * otherwise HARUYUKI_SETTINGS_BASE_URL, LETTA_BASE_URL, or
  * settings.env.LETTA_BASE_URL, defaulting to api.letta.com.
  * @param settings - Optional settings object to check for env overrides
  * @returns Normalized server key (e.g., "api.letta.com", "localhost:8283", "local:/path/to/store")
@@ -308,7 +308,7 @@ function serverKeyForBackendMode(
 
 /**
  * Get the current memfs server key for memfs-related agent settings.
- * Uses LETTA_MEMFS_BASE_URL and falls back to api.letta.com.
+ * Uses HARUYUKI_MEMFS_BASE_URL and falls back to api.letta.com.
  * @param settings - Optional settings object to check for env overrides
  * @returns Normalized server key (e.g., "api.letta.com", "localhost:8283")
  */
@@ -318,8 +318,8 @@ function getCurrentMemfsServerKey(settings?: Settings | null): string {
   }
 
   const baseUrl =
-    process.env.LETTA_MEMFS_BASE_URL ||
-    settings?.env?.LETTA_MEMFS_BASE_URL ||
+    process.env.HARUYUKI_MEMFS_BASE_URL ||
+    settings?.env?.HARUYUKI_MEMFS_BASE_URL ||
     SERVER_KEY_CLOUD;
   return normalizeBaseUrl(baseUrl);
 }

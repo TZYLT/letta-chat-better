@@ -14,7 +14,7 @@ import { resolveTaskName } from "./cron-task-ref";
 
 const TEST_DIR = path.join(import.meta.dir, "__cron_task_ref_test_tmp__");
 
-const origHome = process.env.LETTA_HOME;
+const origHome = process.env.HARUYUKI_HOME;
 const origXdg = process.env.XDG_CONFIG_HOME;
 
 beforeEach(() => {
@@ -22,15 +22,15 @@ beforeEach(() => {
     rmSync(TEST_DIR, { recursive: true });
   }
   mkdirSync(TEST_DIR, { recursive: true });
-  process.env.LETTA_HOME = TEST_DIR;
+  process.env.HARUYUKI_HOME = TEST_DIR;
 });
 
 afterEach(() => {
   if (existsSync(TEST_DIR)) {
     rmSync(TEST_DIR, { recursive: true });
   }
-  if (origHome) process.env.LETTA_HOME = origHome;
-  else delete process.env.LETTA_HOME;
+  if (origHome) process.env.HARUYUKI_HOME = origHome;
+  else delete process.env.HARUYUKI_HOME;
   if (origXdg) process.env.XDG_CONFIG_HOME = origXdg;
   else delete process.env.XDG_CONFIG_HOME;
 });

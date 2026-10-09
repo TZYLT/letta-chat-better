@@ -22,13 +22,13 @@ test("false by default: the shell sandbox is opt-in, even with roots and a backe
 });
 
 test("false when the flag is explicitly off", () => {
-  const env = { LETTA_FS_SANDBOX: "0", MEMORY_DIR: MEM };
+  const env = { HARUYUKI_FS_SANDBOX: "0", MEMORY_DIR: MEM };
   expect(willSandboxShell(REPO_CWD, env, SEATBELT)).toBe(false);
 });
 
 test("false when already inside a sandbox", () => {
   const env = {
-    LETTA_FS_SANDBOX: "1",
+    HARUYUKI_FS_SANDBOX: "1",
     [SANDBOX_ENV_VAR]: "seatbelt",
     MEMORY_DIR: MEM,
   };
@@ -37,8 +37,8 @@ test("false when already inside a sandbox", () => {
 
 test("true for an unsandboxed subagent process", () => {
   const env = {
-    LETTA_FS_SANDBOX: "1",
-    LETTA_CODE_AGENT_ROLE: "subagent",
+    HARUYUKI_FS_SANDBOX: "1",
+    HARUYUKI_CODE_AGENT_ROLE: "subagent",
     MEMORY_DIR: MEM,
   };
   expect(willSandboxShell(REPO_CWD, env, SEATBELT)).toBe(true);
@@ -46,8 +46,8 @@ test("true for an unsandboxed subagent process", () => {
 
 test("false for an already sandboxed subagent process", () => {
   const env = {
-    LETTA_FS_SANDBOX: "1",
-    LETTA_CODE_AGENT_ROLE: "subagent",
+    HARUYUKI_FS_SANDBOX: "1",
+    HARUYUKI_CODE_AGENT_ROLE: "subagent",
     [SANDBOX_ENV_VAR]: "bwrap",
     MEMORY_DIR: MEM,
   };
@@ -55,13 +55,13 @@ test("false for an already sandboxed subagent process", () => {
 });
 
 test("false when no backend is available", () => {
-  const env = { LETTA_FS_SANDBOX: "1", MEMORY_DIR: MEM };
+  const env = { HARUYUKI_FS_SANDBOX: "1", MEMORY_DIR: MEM };
   expect(willSandboxShell(REPO_CWD, env, NO_BACKEND)).toBe(false);
 });
 
 test("false when cwd is inside the agents tree", () => {
   const cwdInTree = join(homedir(), ".haruyuki", "agents", "self", "memory");
-  const env = { LETTA_FS_SANDBOX: "1", MEMORY_DIR: cwdInTree };
+  const env = { HARUYUKI_FS_SANDBOX: "1", MEMORY_DIR: cwdInTree };
   expect(willSandboxShell(cwdInTree, env, SEATBELT)).toBe(false);
 });
 
@@ -73,8 +73,8 @@ test("false when local backend cwd is inside the memfs tree", () => {
     "memory",
   );
   const env = {
-    LETTA_FS_SANDBOX: "1",
-    LETTA_LOCAL_BACKEND_EXPERIMENTAL: "1",
+    HARUYUKI_FS_SANDBOX: "1",
+    HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL: "1",
     LETTA_LOCAL_BACKEND_DIR: storageDir,
     MEMORY_DIR: cwdInTree,
   };
@@ -89,7 +89,7 @@ test("false when api backend cwd is inside the local memfs tree", () => {
     "memory",
   );
   const env = {
-    LETTA_FS_SANDBOX: "1",
+    HARUYUKI_FS_SANDBOX: "1",
     LETTA_LOCAL_BACKEND_DIR: storageDir,
     MEMORY_DIR: join(homedir(), ".haruyuki", "agents", "self", "memory"),
   };
@@ -97,6 +97,6 @@ test("false when api backend cwd is inside the local memfs tree", () => {
 });
 
 test("true for a parent with the flag on, a backend, cwd outside the tree, and self roots", () => {
-  const env = { LETTA_FS_SANDBOX: "1", MEMORY_DIR: MEM };
+  const env = { HARUYUKI_FS_SANDBOX: "1", MEMORY_DIR: MEM };
   expect(willSandboxShell(REPO_CWD, env, SEATBELT)).toBe(true);
 });

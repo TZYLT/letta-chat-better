@@ -38,12 +38,12 @@ const _LOCK_PATH = path.join(TEST_DIR, "crons.lock");
 
 // Override the internal paths used by cronFile.ts for testing.
 // We need to use the module's own path resolution, so we'll set
-// LETTA_HOME to point to our test directory.
-const origHome = process.env.LETTA_HOME;
+// HARUYUKI_HOME to point to our test directory.
+const origHome = process.env.HARUYUKI_HOME;
 const origXdg = process.env.XDG_CONFIG_HOME;
 
 beforeEach(() => {
-  // Point LETTA_HOME to test dir so cronFile uses our temp path
+  // Point HARUYUKI_HOME to test dir so cronFile uses our temp path
   if (existsSync(TEST_DIR)) {
     rmSync(TEST_DIR, { recursive: true });
   }
@@ -51,8 +51,8 @@ beforeEach(() => {
   // Note: cronFile.ts reads from ~/.haruyuki/crons.json.
   // For unit tests we need to test the pure logic functions.
   // We'll test addTask/listTasks/deleteTask through the public API
-  // by setting LETTA_HOME.
-  process.env.LETTA_HOME = TEST_DIR;
+  // by setting HARUYUKI_HOME.
+  process.env.HARUYUKI_HOME = TEST_DIR;
 });
 
 afterEach(() => {
@@ -62,8 +62,8 @@ afterEach(() => {
   if (existsSync(TEST_DIR)) {
     rmSync(TEST_DIR, { recursive: true });
   }
-  if (origHome) process.env.LETTA_HOME = origHome;
-  else delete process.env.LETTA_HOME;
+  if (origHome) process.env.HARUYUKI_HOME = origHome;
+  else delete process.env.HARUYUKI_HOME;
   if (origXdg) process.env.XDG_CONFIG_HOME = origXdg;
   else delete process.env.XDG_CONFIG_HOME;
 });

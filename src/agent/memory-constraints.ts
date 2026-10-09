@@ -27,7 +27,8 @@ import {
 
 export { MEMORY_CONSTRAINTS_CONFIG_PATH } from "@/memory-constraints";
 export const MEMORY_CONSTRAINTS_VALIDATOR_NAME = "letta-memory-constraints.cjs";
-export const MEMORY_CONSTRAINTS_UPDATE_ENV = "LETTA_MEMORY_CONSTRAINTS_UPDATE";
+export const MEMORY_CONSTRAINTS_UPDATE_ENV =
+  "HARUYUKI_MEMORY_CONSTRAINTS_UPDATE";
 
 export const MEMORY_CONSTRAINTS_VALIDATOR_SCRIPT = String.raw`"use strict";
 

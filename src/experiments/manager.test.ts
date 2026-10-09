@@ -7,7 +7,7 @@ import { settingsManager } from "@/settings-manager";
 
 const originalHome = process.env.HOME;
 const originalUserProfile = process.env.USERPROFILE;
-const originalArtifactsFlag = process.env.LETTA_ARTIFACTS;
+const originalArtifactsFlag = process.env.HARUYUKI_ARTIFACTS;
 
 let testHomeDir = "";
 
@@ -16,7 +16,7 @@ beforeEach(async () => {
   testHomeDir = await mkdtemp(join(tmpdir(), "letta-experiments-home-"));
   process.env.HOME = testHomeDir;
   process.env.USERPROFILE = testHomeDir;
-  delete process.env.LETTA_ARTIFACTS;
+  delete process.env.HARUYUKI_ARTIFACTS;
   await settingsManager.initialize();
 });
 
@@ -35,15 +35,15 @@ afterEach(async () => {
   }
 
   if (originalArtifactsFlag === undefined) {
-    delete process.env.LETTA_ARTIFACTS;
+    delete process.env.HARUYUKI_ARTIFACTS;
   } else {
-    process.env.LETTA_ARTIFACTS = originalArtifactsFlag;
+    process.env.HARUYUKI_ARTIFACTS = originalArtifactsFlag;
   }
 });
 
 describe("experimentManager", () => {
-  test("falls back to LETTA_ARTIFACTS when no override is stored", () => {
-    process.env.LETTA_ARTIFACTS = "true";
+  test("falls back to HARUYUKI_ARTIFACTS when no override is stored", () => {
+    process.env.HARUYUKI_ARTIFACTS = "true";
 
     expect(experimentManager.getSnapshot("artifacts")).toMatchObject({
       id: "artifacts",
@@ -54,7 +54,7 @@ describe("experimentManager", () => {
   });
 
   test("persists explicit overrides and lets them beat the env flag", async () => {
-    process.env.LETTA_ARTIFACTS = "1";
+    process.env.HARUYUKI_ARTIFACTS = "1";
 
     expect(experimentManager.set("artifacts", false)).toMatchObject({
       id: "artifacts",

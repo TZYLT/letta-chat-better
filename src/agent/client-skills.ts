@@ -81,7 +81,7 @@ function advanceCacheGeneration(): void {
 function shouldStartSkillWatchers(): boolean {
   return (
     process.env.NODE_ENV !== "test" &&
-    process.env.LETTA_DISABLE_SKILL_WATCHERS !== "1"
+    process.env.HARUYUKI_DISABLE_SKILL_WATCHERS !== "1"
   );
 }
 

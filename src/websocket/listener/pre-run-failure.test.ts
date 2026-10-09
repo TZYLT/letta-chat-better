@@ -207,9 +207,9 @@ test.each([
       if (!failure) throw new Error("Expected one emitted loop error");
       expect(idleIndex).toBeGreaterThan(frames.indexOf(failure));
       expect(runtime.turnLifecycle.kind).toBe("idle");
-      if (process.env.LETTA_TEST_PRE_RUN_FRAMES) {
+      if (process.env.HARUYUKI_TEST_PRE_RUN_FRAMES) {
         await writeFile(
-          `${process.env.LETTA_TEST_PRE_RUN_FRAMES}${afterTool ? "-after-tool" : ""}-${backpressure}.json`,
+          `${process.env.HARUYUKI_TEST_PRE_RUN_FRAMES}${afterTool ? "-after-tool" : ""}-${backpressure}.json`,
           JSON.stringify(frames, null, 2),
         );
       }

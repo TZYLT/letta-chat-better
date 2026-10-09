@@ -39,7 +39,7 @@ Usage:
   letta secret unset KEY                  Unset a secret (aliases: delete | remove | rm)
 
 Options:
-  --agent <agent-id>   Target agent (defaults to LETTA_AGENT_ID / AGENT_ID)
+  --agent <agent-id>   Target agent (defaults to HARUYUKI_AGENT_ID / AGENT_ID)
   --env <VAR>          Read the secret value from this environment variable
   --stdin              Read the secret value from stdin
   -h, --help           Show this help
@@ -142,7 +142,7 @@ export async function runSecretSubcommand(
           error.message.includes("No agent context")
         ) {
           console.error(
-            "Specify --agent <agent-id>, or run inside a session where LETTA_AGENT_ID or AGENT_ID is set.",
+            "Specify --agent <agent-id>, or run inside a session where HARUYUKI_AGENT_ID or AGENT_ID is set.",
           );
         }
         return 1;
@@ -215,7 +215,7 @@ export async function runSecretSubcommand(
           error.message.includes("No agent context")
         ) {
           console.error(
-            "Specify --agent <agent-id>, or run inside a session where LETTA_AGENT_ID or AGENT_ID is set.",
+            "Specify --agent <agent-id>, or run inside a session where HARUYUKI_AGENT_ID or AGENT_ID is set.",
           );
         }
         return 1;
@@ -243,7 +243,7 @@ export async function runSecretSubcommand(
           error.message.includes("No agent context")
         ) {
           console.error(
-            "Specify --agent <agent-id>, or run inside a session where LETTA_AGENT_ID or AGENT_ID is set.",
+            "Specify --agent <agent-id>, or run inside a session where HARUYUKI_AGENT_ID or AGENT_ID is set.",
           );
         }
         return 1;

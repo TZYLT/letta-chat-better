@@ -111,7 +111,7 @@ describe("recompileAgentSystemPrompt", () => {
 // The three cases that used to live here drove `reconcileCloudPromptForMemoryMode`
 // through a `{ remoteMemfs: true }` backend: resetting an old bundled Cloud
 // prompt, reporting a Cloud server that did not persist a null prompt, and
-// honouring `LETTA_CODE_PRESERVE_CLOUD_SYSTEM_PROMPT`. That module and its call
+// honouring `HARUYUKI_CODE_PRESERVE_CLOUD_SYSTEM_PROMPT`. That module and its call
 // site are gone with the Cloud backend, so only the local case remains.
 describe("prompt memory mode without a Cloud backend", () => {
   test("does not turn a null Cloud system prompt into an empty override", async () => {

@@ -196,7 +196,7 @@ const toolDefinitions = {
     description: WakeDescription.trim(),
     impl: wake,
   }),
-  // LSP-enhanced Read - used when LETTA_ENABLE_LSP is set
+  // LSP-enhanced Read - used when HARUYUKI_ENABLE_LSP is set
   ReadLSP: defineTool({
     schema: ReadLSPSchema,
     description: ReadLSPDescription.trim(),

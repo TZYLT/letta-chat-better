@@ -92,11 +92,11 @@ export interface ConnectMcpServerOptions {
   signal?: AbortSignal;
 }
 
-declare const LETTA_VERSION: string | undefined;
+declare const HARUYUKI_VERSION: string | undefined;
 
 const DEFAULT_CLIENT_INFO = {
   name: "letta-code",
-  version: typeof LETTA_VERSION === "undefined" ? "0" : LETTA_VERSION,
+  version: typeof HARUYUKI_VERSION === "undefined" ? "0" : HARUYUKI_VERSION,
 };
 
 /**

@@ -7,16 +7,16 @@ describe("detectPackageManager", () => {
 
   beforeEach(() => {
     originalArgv1 = process.argv[1] || "";
-    originalEnv = process.env.LETTA_PACKAGE_MANAGER;
-    delete process.env.LETTA_PACKAGE_MANAGER;
+    originalEnv = process.env.HARUYUKI_PACKAGE_MANAGER;
+    delete process.env.HARUYUKI_PACKAGE_MANAGER;
   });
 
   afterEach(() => {
     process.argv[1] = originalArgv1;
     if (originalEnv !== undefined) {
-      process.env.LETTA_PACKAGE_MANAGER = originalEnv;
+      process.env.HARUYUKI_PACKAGE_MANAGER = originalEnv;
     } else {
-      delete process.env.LETTA_PACKAGE_MANAGER;
+      delete process.env.HARUYUKI_PACKAGE_MANAGER;
     }
   });
 
@@ -56,23 +56,23 @@ describe("detectPackageManager", () => {
     expect(detectPackageManager()).toBe("bun");
   });
 
-  test("LETTA_PACKAGE_MANAGER override returns specified PM", () => {
-    process.env.LETTA_PACKAGE_MANAGER = "bun";
+  test("HARUYUKI_PACKAGE_MANAGER override returns specified PM", () => {
+    process.env.HARUYUKI_PACKAGE_MANAGER = "bun";
     // Even with an npm-style path, env var wins
     process.argv[1] =
       "/usr/local/lib/node_modules/@letta-ai/letta-code/dist/index.js";
     expect(detectPackageManager()).toBe("bun");
   });
 
-  test("invalid LETTA_PACKAGE_MANAGER falls back to path detection", () => {
-    process.env.LETTA_PACKAGE_MANAGER = "invalid";
+  test("invalid HARUYUKI_PACKAGE_MANAGER falls back to path detection", () => {
+    process.env.HARUYUKI_PACKAGE_MANAGER = "invalid";
     process.argv[1] =
       "/Users/test/.bun/install/global/node_modules/@letta-ai/letta-code/dist/index.js";
     expect(detectPackageManager()).toBe("bun");
   });
 
-  test("invalid LETTA_PACKAGE_MANAGER with npm path falls back to npm", () => {
-    process.env.LETTA_PACKAGE_MANAGER = "yarn";
+  test("invalid HARUYUKI_PACKAGE_MANAGER with npm path falls back to npm", () => {
+    process.env.HARUYUKI_PACKAGE_MANAGER = "yarn";
     process.argv[1] =
       "/usr/local/lib/node_modules/@letta-ai/letta-code/dist/index.js";
     expect(detectPackageManager()).toBe("npm");

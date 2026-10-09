@@ -168,14 +168,14 @@ async function runBidirectionalReflectionScenario(): Promise<BidirectionalReflec
         LETTA_LOCAL_BACKEND_DIR: localBackendDir,
         // Ordinary turns still return pong, while reflection turns execute a
         // real Bash read of TRANSCRIPT_PATH before returning success.
-        LETTA_LOCAL_BACKEND_EXECUTOR: "deterministic-reflection",
-        LETTA_ENABLE_WINDOWS_AUTO_REFLECTION: "1",
+        HARUYUKI_LOCAL_BACKEND_EXECUTOR: "deterministic-reflection",
+        HARUYUKI_ENABLE_WINDOWS_AUTO_REFLECTION: "1",
         LETTA_TRANSCRIPT_ROOT: transcriptRoot,
         // This test exercises transcript-driven reflection, not kernel sandbox
         // behavior. Keep it independent of host bwrap/seatbelt availability.
-        LETTA_FS_SANDBOX: "0",
+        HARUYUKI_FS_SANDBOX: "0",
         USER_CWD: projectDir,
-        LETTA_DEBUG: "1",
+        HARUYUKI_DEBUG: "1",
         NO_COLOR: "1",
       }),
       stdio: ["pipe", "pipe", "pipe"],

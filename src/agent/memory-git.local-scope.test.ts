@@ -43,7 +43,7 @@ describe("memoryGit local backend scoping", () => {
     try {
       withTemporaryEnv(
         {
-          LETTA_LOCAL_BACKEND_EXPERIMENTAL: "1",
+          HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL: "1",
           LETTA_LOCAL_BACKEND_DIR: storageDir,
         },
         () => {

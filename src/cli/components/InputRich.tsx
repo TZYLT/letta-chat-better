@@ -1005,7 +1005,7 @@ export function Input({
   const [footerRightColumnWidth, setFooterRightColumnWidth] = useState(
     computedFooterRightColumnWidth,
   );
-  const debugFlicker = process.env.LETTA_DEBUG_FLICKER === "1";
+  const debugFlicker = process.env.HARUYUKI_DEBUG_FLICKER === "1";
 
   useEffect(() => {
     if (!streaming) {
@@ -1280,7 +1280,7 @@ export function Input({
   useInput((_input, key) => {
     if (!interactionEnabled) return;
     // Debug logging for escape key detection
-    if (process.env.LETTA_DEBUG_KEYS === "1" && key.escape) {
+    if (process.env.HARUYUKI_DEBUG_KEYS === "1" && key.escape) {
       // eslint-disable-next-line no-console
       console.error(
         `[debug:InputRich:escape] escape=${key.escape} visible=${visible} onEscapeCancel=${!!onEscapeCancel} streaming=${streaming}`,
@@ -1396,7 +1396,7 @@ export function Input({
     }
 
     // Debug logging for shift+tab detection
-    if (process.env.LETTA_DEBUG_KEYS === "1" && (key.shift || key.tab)) {
+    if (process.env.HARUYUKI_DEBUG_KEYS === "1" && (key.shift || key.tab)) {
       // eslint-disable-next-line no-console
       console.error(
         `[debug:InputRich] shift=${key.shift} tab=${key.tab} visible=${visible}`,

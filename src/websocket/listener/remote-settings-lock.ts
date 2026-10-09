@@ -210,7 +210,7 @@ function recoverStaleLockSync(
       if (isLockOwnerProcessAlive(claimOwner)) return false;
     }
     if (ownedClaimDepth === -1) {
-      if (process.env.LETTA_DEBUG) {
+      if (process.env.HARUYUKI_DEBUG) {
         console.warn("[Remote Settings] Lock recovery claim chain exhausted");
       }
       return false;
@@ -259,7 +259,7 @@ async function recoverStaleLock(
       if (isLockOwnerProcessAlive(claimOwner)) return false;
     }
     if (ownedClaimDepth === -1) {
-      if (process.env.LETTA_DEBUG) {
+      if (process.env.HARUYUKI_DEBUG) {
         console.warn("[Remote Settings] Lock recovery claim chain exhausted");
       }
       return false;

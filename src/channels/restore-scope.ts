@@ -4,9 +4,9 @@ import type { ChannelAccount } from "./types";
 export type ChannelRestoreAgentScope = "all" | "cloud" | "local";
 
 export const RESTORE_CHANNEL_AGENT_SCOPE_ENV =
-  "LETTA_RESTORE_CHANNEL_AGENT_SCOPE";
+  "HARUYUKI_RESTORE_CHANNEL_AGENT_SCOPE";
 export const RESTORE_ENABLED_CHANNELS_AGENT_SCOPE_ENV =
-  "LETTA_RESTORE_ENABLED_CHANNELS_AGENT_SCOPE";
+  "HARUYUKI_RESTORE_ENABLED_CHANNELS_AGENT_SCOPE";
 
 type AccountAgentBinding = {
   agentId?: string | null;

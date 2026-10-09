@@ -83,9 +83,9 @@ async function runCli(
       env: {
         ...process.env,
         HOME: env.fakeHome,
-        LETTA_CODE_AGENT_ROLE: "subagent",
+        HARUYUKI_CODE_AGENT_ROLE: "subagent",
         // Skip keychain check since we're using a fake HOME directory
-        LETTA_SKIP_KEYCHAIN_CHECK: "1",
+        HARUYUKI_SKIP_KEYCHAIN_CHECK: "1",
       },
     });
 

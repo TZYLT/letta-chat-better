@@ -3,7 +3,7 @@ import path from "node:path";
 import { isModCapabilityId, type ModCapabilityId } from "@/mods/capabilities";
 import { isModFileExtension } from "@/mods/file-extensions";
 
-export const LETTA_PACKAGE_MANIFEST_VERSION = 1;
+export const HARUYUKI_PACKAGE_MANIFEST_VERSION = 1;
 
 export type LettaPackageCapability = ModCapabilityId;
 
@@ -13,7 +13,7 @@ export interface LettaPackageEngines {
 }
 
 export interface LettaPackageManifest {
-  manifestVersion: typeof LETTA_PACKAGE_MANIFEST_VERSION;
+  manifestVersion: typeof HARUYUKI_PACKAGE_MANIFEST_VERSION;
   mods: string[];
   capabilities?: LettaPackageCapability[];
   engines?: LettaPackageEngines;
@@ -275,11 +275,11 @@ export function parseLettaPackageManifest(
     addError(errors, `letta.${key}`, `unknown manifest field '${key}'`);
   }
 
-  if (rawManifest.manifestVersion !== LETTA_PACKAGE_MANIFEST_VERSION) {
+  if (rawManifest.manifestVersion !== HARUYUKI_PACKAGE_MANIFEST_VERSION) {
     addError(
       errors,
       "letta.manifestVersion",
-      `manifestVersion must be ${LETTA_PACKAGE_MANIFEST_VERSION}`,
+      `manifestVersion must be ${HARUYUKI_PACKAGE_MANIFEST_VERSION}`,
     );
   }
 
@@ -294,7 +294,7 @@ export function parseLettaPackageManifest(
   return {
     errors: [],
     manifest: {
-      manifestVersion: LETTA_PACKAGE_MANIFEST_VERSION,
+      manifestVersion: HARUYUKI_PACKAGE_MANIFEST_VERSION,
       mods,
       ...(capabilities && capabilities.length > 0 ? { capabilities } : {}),
       ...(engines ? { engines } : {}),

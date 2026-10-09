@@ -835,7 +835,7 @@ export async function runMcpSubcommand(
       new McpCliError(
         "agent_id_required",
         "No agent context found",
-        "Pass --agent <agent-id> or set LETTA_AGENT_ID.",
+        "Pass --agent <agent-id> or set HARUYUKI_AGENT_ID.",
       ),
     );
     return 1;

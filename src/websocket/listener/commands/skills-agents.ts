@@ -52,9 +52,9 @@ export async function handleSkillCommand(
   } = await import("node:fs");
   const { basename, join } = await import("node:path");
 
-  // Compute skills dir dynamically to respect LETTA_HOME (important for tests)
+  // Compute skills dir dynamically to respect HARUYUKI_HOME (important for tests)
   const lettaHome =
-    process.env.LETTA_HOME ||
+    process.env.HARUYUKI_HOME ||
     appHomeRoot(process.env.HOME || process.env.USERPROFILE || "~");
   const globalSkillsDir = join(lettaHome, "skills");
 

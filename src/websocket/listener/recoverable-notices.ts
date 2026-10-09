@@ -41,7 +41,7 @@ export interface LoopErrorNoticeDecision {
 }
 
 export const DESKTOP_DEBUG_PANEL_INFO_PREFIX =
-  "[LETTA_DESKTOP_DEBUG_PANEL_INFO]";
+  "[HARUYUKI_DESKTOP_DEBUG_PANEL_INFO]";
 
 export function getRecoverableStatusNoticeVisibility(
   kind: RecoverableStatusNoticeKind,
@@ -66,7 +66,7 @@ export function getRecoverableRetryNoticeVisibility(
 }
 
 function isDesktopDebugPanelMirrorEnabled(): boolean {
-  return process.env.LETTA_DESKTOP_MODE === "1";
+  return process.env.HARUYUKI_DESKTOP_MODE === "1";
 }
 
 function mirrorRecoverableNoticeToDesktopDebugPanel(message: string): void {

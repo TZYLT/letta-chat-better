@@ -39,13 +39,13 @@ This is the recommended flow:
 
    Example:
    ```bash
-   cp -r /tmp/letta-memory-agent-abc123/system/project ~/.haruyuki/agents/$LETTA_AGENT_ID/memory/system/
-   cp /tmp/letta-memory-agent-abc123/notes.md ~/.haruyuki/agents/$LETTA_AGENT_ID/memory/
+   cp -r /tmp/letta-memory-agent-abc123/system/project ~/.haruyuki/agents/$HARUYUKI_AGENT_ID/memory/system/
+   cp /tmp/letta-memory-agent-abc123/notes.md ~/.haruyuki/agents/$HARUYUKI_AGENT_ID/memory/
    ```
 
 3. **Commit and push the memory repo**
    ```bash
-   cd ~/.haruyuki/agents/$LETTA_AGENT_ID/memory
+   cd ~/.haruyuki/agents/$HARUYUKI_AGENT_ID/memory
    git add system/project notes.md
    git commit -m "Import memory from source agent"
    git push
@@ -86,12 +86,12 @@ Scenario: You're a new agent and want to inherit memory from an existing agent "
 
 3. **Copy the relevant files into your memfs:**
    ```bash
-   cp -r /tmp/letta-memory-agent-abc123/system/project ~/.haruyuki/agents/$LETTA_AGENT_ID/memory/system/
+   cp -r /tmp/letta-memory-agent-abc123/system/project ~/.haruyuki/agents/$HARUYUKI_AGENT_ID/memory/system/
    ```
 
 4. **Commit and push:**
    ```bash
-   cd ~/.haruyuki/agents/$LETTA_AGENT_ID/memory
+   cd ~/.haruyuki/agents/$HARUYUKI_AGENT_ID/memory
    git add system/project
    git commit -m "Import project memory"
    git push

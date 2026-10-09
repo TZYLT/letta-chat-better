@@ -18,7 +18,7 @@ import {
 } from "@/utils/message-queue-bridge";
 
 const GIB = 1024 ** 3;
-const SANDBOX_ENV = { LETTA_MANAGED_CLOUD_RUNTIME: "1" };
+const SANDBOX_ENV = { HARUYUKI_MANAGED_CLOUD_RUNTIME: "1" };
 
 function fakeStatfs(totalBytes: number, availableBytes: number) {
   const calls: string[] = [];
@@ -196,7 +196,7 @@ describe("evaluateDiskSpaceReminder", () => {
 });
 
 describe("watchDiskSpaceDuring", () => {
-  const managed = { LETTA_MANAGED_CLOUD_RUNTIME: "1" } as NodeJS.ProcessEnv;
+  const managed = { HARUYUKI_MANAGED_CLOUD_RUNTIME: "1" } as NodeJS.ProcessEnv;
   afterEach(() => {
     resetDiskSpaceAlertForTests();
     setMessageQueueAdder(null);

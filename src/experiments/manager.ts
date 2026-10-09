@@ -17,7 +17,7 @@ const EXPERIMENT_DEFINITIONS: readonly ExperimentDefinition[] = [
     label: "artifacts",
     description:
       "Expose Letta Code Desktop artifact creation tools and artifact UI surfaces.",
-    envVar: "LETTA_ARTIFACTS",
+    envVar: "HARUYUKI_ARTIFACTS",
   },
   {
     id: "conversation_titles",
@@ -41,7 +41,7 @@ const EXPERIMENT_DEFINITIONS: readonly ExperimentDefinition[] = [
     label: "memory palace",
     description:
       "Opt-in memory palace experiment flag for disposable local listener runs. Disabled by default; no behavior changes unless consumers gate on it.",
-    envVar: "LETTA_MEMORY_PALACE",
+    envVar: "HARUYUKI_MEMORY_PALACE",
   },
   {
     id: "tui_cron",

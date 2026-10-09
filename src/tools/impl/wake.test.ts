@@ -224,8 +224,8 @@ describe("Wake", () => {
 
   test("uses the real local scheduler for local-backend conversations", async () => {
     const directory = mkdtempSync(join(tmpdir(), "letta-wake-test-"));
-    const previousHome = process.env.LETTA_HOME;
-    process.env.LETTA_HOME = directory;
+    const previousHome = process.env.HARUYUKI_HOME;
+    process.env.HARUYUKI_HOME = directory;
     try {
       const scope = {
         agentId: "agent-local-test",
@@ -259,8 +259,8 @@ describe("Wake", () => {
       );
       expect(cancelled.status).toBe("success");
     } finally {
-      if (previousHome === undefined) delete process.env.LETTA_HOME;
-      else process.env.LETTA_HOME = previousHome;
+      if (previousHome === undefined) delete process.env.HARUYUKI_HOME;
+      else process.env.HARUYUKI_HOME = previousHome;
       rmSync(directory, { recursive: true, force: true });
     }
   });

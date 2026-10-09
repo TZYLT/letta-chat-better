@@ -14,7 +14,7 @@ import { runListenerTurnCleanup } from "./turn-cleanup";
 const AGENT_ID = `agent-shared-memory-post-turn-e2e-${randomUUID()}`;
 const REPOSITORY_NAME = "shared-notes";
 const originalFetch = globalThis.fetch;
-const originalMemfsBaseUrl = process.env.LETTA_MEMFS_BASE_URL;
+const originalMemfsBaseUrl = process.env.HARUYUKI_MEMFS_BASE_URL;
 const originalApiKey = process.env.LETTA_API_KEY;
 const tempDirs: string[] = [];
 
@@ -50,9 +50,9 @@ beforeAll(async () => {
 
 afterEach(() => {
   if (originalMemfsBaseUrl === undefined) {
-    delete process.env.LETTA_MEMFS_BASE_URL;
+    delete process.env.HARUYUKI_MEMFS_BASE_URL;
   } else {
-    process.env.LETTA_MEMFS_BASE_URL = originalMemfsBaseUrl;
+    process.env.HARUYUKI_MEMFS_BASE_URL = originalMemfsBaseUrl;
   }
   __testSetBackend(null);
   for (const dir of tempDirs.splice(0)) {
@@ -107,7 +107,7 @@ test("completed listener turn cleanup pushes an attached shared-memory commit", 
       localMemfs: false,
     },
   } as unknown as Backend);
-  process.env.LETTA_MEMFS_BASE_URL = root;
+  process.env.HARUYUKI_MEMFS_BASE_URL = root;
   git(mount, [
     "remote",
     "set-url",

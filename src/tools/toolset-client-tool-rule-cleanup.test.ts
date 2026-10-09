@@ -25,13 +25,13 @@ const mockGetClient = mock(() =>
 );
 
 function getMockMemfsServerUrl(): string {
-  return process.env.LETTA_MEMFS_BASE_URL || "https://api.letta.com";
+  return process.env.HARUYUKI_MEMFS_BASE_URL || "https://api.letta.com";
 }
 
 function getMockMemfsGitProxyRewriteConfig(
   env: NodeJS.ProcessEnv = process.env,
 ) {
-  const rawProxyBaseUrl = env.LETTA_MEMFS_GIT_PROXY_BASE_URL?.trim();
+  const rawProxyBaseUrl = env.HARUYUKI_MEMFS_GIT_PROXY_BASE_URL?.trim();
   const memfsBaseUrl = getMockMemfsServerUrl().replace(/\/+$/, "");
   if (!rawProxyBaseUrl || !memfsBaseUrl.includes("api.letta.com")) {
     return null;
@@ -55,7 +55,7 @@ mock.module("../backend/api/client", () => ({
   getServerUrl: () => "http://localhost:8283",
   getMemfsServerUrl: getMockMemfsServerUrl,
   getMemfsGitProxyRewriteConfig: getMockMemfsGitProxyRewriteConfig,
-  LETTA_MEMFS_GIT_PROXY_BASE_URL_ENV: "LETTA_MEMFS_GIT_PROXY_BASE_URL",
+  HARUYUKI_MEMFS_GIT_PROXY_BASE_URL_ENV: "HARUYUKI_MEMFS_GIT_PROXY_BASE_URL",
 }));
 
 const { clearPersistedClientToolRules, shouldClearPersistedToolRules } =

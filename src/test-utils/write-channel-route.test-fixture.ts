@@ -4,7 +4,7 @@ import { getChannelRoutingPath } from "@/channels/config";
 import { addRoute } from "@/channels/routing";
 
 test("writes fixture state through production path resolvers", () => {
-  const testHome = process.env.LETTA_TEST_HOME;
+  const testHome = process.env.HARUYUKI_TEST_HOME;
   if (!testHome) throw new Error("Test home preload did not run");
   mock.restore();
   addRoute("slack", {

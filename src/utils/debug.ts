@@ -2,8 +2,8 @@ import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 // src/utils/debug.ts
 // Debug logging utility.
 //
-// Screen output: controlled by LETTA_DEBUG=1 (or DEBUG=1 for legacy compatibility),
-// or LETTA_DEBUG_FILE for a custom path.
+// Screen output: controlled by HARUYUKI_DEBUG=1 (or DEBUG=1 for legacy compatibility),
+// or HARUYUKI_DEBUG_FILE for a custom path.
 // File output:   always written to ~/.haruyuki/logs/debug/{agent-id}/{session-id}.log
 //                once debugLogFile.init() has been called.  Before init, lines are
 //                silently dropped (no file path yet).
@@ -25,11 +25,11 @@ import { format } from "node:util";
 // ---------------------------------------------------------------------------
 
 /**
- * Check if debug mode is enabled via LETTA_DEBUG env var.
+ * Check if debug mode is enabled via HARUYUKI_DEBUG env var.
  * Also accepts DEBUG=1|true for legacy compatibility.
  */
 export function isDebugEnabled(): boolean {
-  const lettaDebug = process.env.LETTA_DEBUG;
+  const lettaDebug = process.env.HARUYUKI_DEBUG;
   const legacyDebug = process.env.DEBUG;
   return (
     lettaDebug === "1" ||
@@ -40,11 +40,11 @@ export function isDebugEnabled(): boolean {
 }
 
 function getDebugFile(): string | null {
-  const path = process.env.LETTA_DEBUG_FILE;
+  const path = process.env.HARUYUKI_DEBUG_FILE;
   return path && path.trim().length > 0 ? path : null;
 }
 
-/** Print to screen (or LETTA_DEBUG_FILE). Only called when LETTA_DEBUG=1. */
+/** Print to screen (or HARUYUKI_DEBUG_FILE). Only called when HARUYUKI_DEBUG=1. */
 function printDebugLine(line: string, level: "log" | "warn" = "log"): void {
   const debugFile = getDebugFile();
   if (debugFile) {
@@ -89,14 +89,14 @@ class DebugLogFile {
   /**
    * Initialize for an agent + session. Call once at session start.
    * After this, every debugLog/debugWarn call is persisted to disk.
-   * Respects LETTA_CODE_TELEM=0 — skips file logging when telemetry is disabled.
+   * Respects HARUYUKI_CODE_TELEM=0 — skips file logging when telemetry is disabled.
    */
   init(
     agentId: string,
     sessionId: string,
     options: DebugLogFileOptions = {},
   ): void {
-    const telem = process.env.LETTA_CODE_TELEM;
+    const telem = process.env.HARUYUKI_CODE_TELEM;
     if (telem === "0" || telem === "false") return;
 
     this.agentDir = join(options.dir ?? DEBUG_LOG_DIR, agentId);
@@ -205,7 +205,7 @@ function writeDebugLine(
   // Always persist to the session log file
   debugLogFile.appendLine(line);
 
-  // Screen output only when LETTA_DEBUG is on
+  // Screen output only when HARUYUKI_DEBUG is on
   if (isDebugEnabled()) {
     printDebugLine(line, level);
   }
@@ -217,7 +217,7 @@ function writeDebugLine(
 
 /**
  * Log a debug message. Always written to the session log file.
- * Only printed to screen when LETTA_DEBUG=1.
+ * Only printed to screen when HARUYUKI_DEBUG=1.
  */
 export function debugLog(
   prefix: string,
@@ -229,7 +229,7 @@ export function debugLog(
 
 /**
  * Log a debug warning. Always written to the session log file.
- * Only printed to screen when LETTA_DEBUG=1.
+ * Only printed to screen when HARUYUKI_DEBUG=1.
  */
 export function debugWarn(
   prefix: string,

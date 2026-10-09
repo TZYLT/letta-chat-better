@@ -216,7 +216,7 @@ async function promptForAgent(statusMessage: string): Promise<string> {
     const instance = render(
       React.createElement(AgentSelector, {
         currentAgentId:
-          process.env.LETTA_AGENT_ID || process.env.AGENT_ID || "",
+          process.env.HARUYUKI_AGENT_ID || process.env.AGENT_ID || "",
         command: "letta skills",
         title: "Select an agent",
         showNewTab: false,
@@ -262,7 +262,7 @@ async function resolveAgentId(
     return resolveAgentByName(nameOrId);
   }
 
-  const envAgent = process.env.LETTA_AGENT_ID || process.env.AGENT_ID;
+  const envAgent = process.env.HARUYUKI_AGENT_ID || process.env.AGENT_ID;
   if (envAgent?.trim()) return envAgent.trim();
 
   return promptForAgent(promptStatusMessage);

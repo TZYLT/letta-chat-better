@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { AgentState } from "@letta-ai/letta-client/resources/agents/agents";
-import { LETTA_CODE_SUBAGENT_TAG } from "@/agent/agent-tags";
+import { HARUYUKI_CODE_SUBAGENT_TAG } from "@/agent/agent-tags";
 import type { AgentCreateBody } from "@/backend/backend";
 import { isRecord } from "@/utils/type-guards";
 import {
@@ -29,7 +29,7 @@ function normalizeAgentHiddenFlag(
 }
 
 function isSubagentTags(tags: string[]): boolean {
-  return tags.includes(LETTA_CODE_SUBAGENT_TAG);
+  return tags.includes(HARUYUKI_CODE_SUBAGENT_TAG);
 }
 
 export function isHiddenLocalAgentRecord(record: {

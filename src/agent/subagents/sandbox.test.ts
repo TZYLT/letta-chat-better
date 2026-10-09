@@ -77,7 +77,7 @@ function baseInput(): WrapSubagentLauncherInput {
     backendMode: "api",
     memoryRoots: ["/home/u/.haruyuki/agents/parent/memory"],
     inheritedPrimaryRoot: "/home/u/.haruyuki/agents/parent/memory",
-    env: { LETTA_FS_SANDBOX: "1" } as NodeJS.ProcessEnv,
+    env: { HARUYUKI_FS_SANDBOX: "1" } as NodeJS.ProcessEnv,
     availability: SEATBELT,
   };
 }
@@ -91,28 +91,28 @@ function defineValues(args: string[], prefix: string): string[] {
 test("isFsSandboxEnabled is on by default and only an explicit off-switch disables it", () => {
   // Default on (unset / empty).
   expect(isFsSandboxEnabled({})).toBe(true);
-  expect(isFsSandboxEnabled({ LETTA_FS_SANDBOX: "" })).toBe(true);
+  expect(isFsSandboxEnabled({ HARUYUKI_FS_SANDBOX: "" })).toBe(true);
   // Explicit on values still on.
-  expect(isFsSandboxEnabled({ LETTA_FS_SANDBOX: "1" })).toBe(true);
-  expect(isFsSandboxEnabled({ LETTA_FS_SANDBOX: "true" })).toBe(true);
-  expect(isFsSandboxEnabled({ LETTA_FS_SANDBOX: "TRUE" })).toBe(true);
+  expect(isFsSandboxEnabled({ HARUYUKI_FS_SANDBOX: "1" })).toBe(true);
+  expect(isFsSandboxEnabled({ HARUYUKI_FS_SANDBOX: "true" })).toBe(true);
+  expect(isFsSandboxEnabled({ HARUYUKI_FS_SANDBOX: "TRUE" })).toBe(true);
   // Only the off-switch turns it off.
-  expect(isFsSandboxEnabled({ LETTA_FS_SANDBOX: "0" })).toBe(false);
-  expect(isFsSandboxEnabled({ LETTA_FS_SANDBOX: "false" })).toBe(false);
-  expect(isFsSandboxEnabled({ LETTA_FS_SANDBOX: "FALSE" })).toBe(false);
+  expect(isFsSandboxEnabled({ HARUYUKI_FS_SANDBOX: "0" })).toBe(false);
+  expect(isFsSandboxEnabled({ HARUYUKI_FS_SANDBOX: "false" })).toBe(false);
+  expect(isFsSandboxEnabled({ HARUYUKI_FS_SANDBOX: "FALSE" })).toBe(false);
 });
 
 test("isShellSandboxEnabled is off by default and only an explicit on-switch enables it", () => {
   // Default off (unset / empty): only memory subagents are sandboxed.
   expect(isShellSandboxEnabled({})).toBe(false);
-  expect(isShellSandboxEnabled({ LETTA_FS_SANDBOX: "" })).toBe(false);
+  expect(isShellSandboxEnabled({ HARUYUKI_FS_SANDBOX: "" })).toBe(false);
   // Explicit off values stay off.
-  expect(isShellSandboxEnabled({ LETTA_FS_SANDBOX: "0" })).toBe(false);
-  expect(isShellSandboxEnabled({ LETTA_FS_SANDBOX: "false" })).toBe(false);
+  expect(isShellSandboxEnabled({ HARUYUKI_FS_SANDBOX: "0" })).toBe(false);
+  expect(isShellSandboxEnabled({ HARUYUKI_FS_SANDBOX: "false" })).toBe(false);
   // Only the on-switch turns it on.
-  expect(isShellSandboxEnabled({ LETTA_FS_SANDBOX: "1" })).toBe(true);
-  expect(isShellSandboxEnabled({ LETTA_FS_SANDBOX: "true" })).toBe(true);
-  expect(isShellSandboxEnabled({ LETTA_FS_SANDBOX: "TRUE" })).toBe(true);
+  expect(isShellSandboxEnabled({ HARUYUKI_FS_SANDBOX: "1" })).toBe(true);
+  expect(isShellSandboxEnabled({ HARUYUKI_FS_SANDBOX: "true" })).toBe(true);
+  expect(isShellSandboxEnabled({ HARUYUKI_FS_SANDBOX: "TRUE" })).toBe(true);
 });
 
 test("wraps an API subagent with the memory-subagent profile under the backend", () => {
@@ -138,7 +138,7 @@ test("wraps an API subagent with the memory-subagent profile under the backend",
 
 test("returns null when the flag is off", () => {
   expect(
-    wrapSubagentLauncher({ ...baseInput(), env: { LETTA_FS_SANDBOX: "0" } }),
+    wrapSubagentLauncher({ ...baseInput(), env: { HARUYUKI_FS_SANDBOX: "0" } }),
   ).toBeNull();
 });
 

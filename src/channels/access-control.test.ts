@@ -14,12 +14,12 @@ import { tryHandleChannelSlashCommand } from "@/channels/commands";
 import type { ChannelAdapter, ChannelChatType } from "@/channels/types";
 
 const ENV_KEYS = [
-  "LETTA_CHANNELS_ALLOWED_USERS",
-  "LETTA_CHANNELS_ADMIN_USERS",
-  "LETTA_CHANNELS_ALLOW_ALL_USERS",
-  "LETTA_TESTCHAN_ALLOWED_USERS",
-  "LETTA_TESTCHAN_ADMIN_USERS",
-  "LETTA_TESTCHAN_ALLOW_ALL_USERS",
+  "HARUYUKI_CHANNELS_ALLOWED_USERS",
+  "HARUYUKI_CHANNELS_ADMIN_USERS",
+  "HARUYUKI_CHANNELS_ALLOW_ALL_USERS",
+  "HARUYUKI_TESTCHAN_ALLOWED_USERS",
+  "HARUYUKI_TESTCHAN_ADMIN_USERS",
+  "HARUYUKI_TESTCHAN_ALLOW_ALL_USERS",
 ];
 
 const savedEnv = new Map<string, string | undefined>(
@@ -155,7 +155,7 @@ describe("evaluateChannelSenderAccess — group scope", () => {
 
 describe("evaluateChannelSenderAccess — env allowlists", () => {
   test("global env allowlist restricts every scope once configured", () => {
-    process.env.LETTA_CHANNELS_ALLOWED_USERS = "user-9";
+    process.env.HARUYUKI_CHANNELS_ALLOWED_USERS = "user-9";
     const account = makeAccount();
     expect(evaluate({ account })).toBe("deny");
     expect(evaluate({ account, chatType: "channel" })).toBe("deny");
@@ -166,7 +166,7 @@ describe("evaluateChannelSenderAccess — env allowlists", () => {
   });
 
   test("per-channel env allowlist merges with account allowlist", () => {
-    process.env.LETTA_TESTCHAN_ALLOWED_USERS = "user-7, user-8";
+    process.env.HARUYUKI_TESTCHAN_ALLOWED_USERS = "user-7, user-8";
     const account = makeAccount({
       dmPolicy: "allowlist",
       allowedUsers: ["user-2"],
@@ -177,13 +177,13 @@ describe("evaluateChannelSenderAccess — env allowlists", () => {
   });
 
   test("env allowlist overrides slack legacy-open pairing default", () => {
-    process.env.LETTA_CHANNELS_ALLOWED_USERS = "user-9";
+    process.env.HARUYUKI_CHANNELS_ALLOWED_USERS = "user-9";
     const account = makeAccount({ dmPolicy: "pairing" });
     expect(evaluate({ account, channelId: "slack" })).toBe("deny");
   });
 
   test("allow-all env flag bypasses every restriction", () => {
-    process.env.LETTA_TESTCHAN_ALLOW_ALL_USERS = "1";
+    process.env.HARUYUKI_TESTCHAN_ALLOW_ALL_USERS = "1";
     const account = makeAccount({
       dmPolicy: "allowlist",
       groupPolicy: "allowlist",
@@ -248,7 +248,7 @@ describe("channel command tiers", () => {
   });
 
   test("env admin lists activate gating", () => {
-    process.env.LETTA_TESTCHAN_ADMIN_USERS = "admin-9";
+    process.env.HARUYUKI_TESTCHAN_ADMIN_USERS = "admin-9";
     const gate = resolveChannelCommandGate({
       account: makeAccount(),
       channelId: "testchan",

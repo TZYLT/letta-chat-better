@@ -238,7 +238,7 @@ export async function createAgent(
   const embeddingModelVal = options.embeddingModel;
   const parallelToolCallsVal = options.parallelToolCalls ?? true;
   // Subagents are ephemeral and don't carry memory blocks of their own.
-  const isSubagent = process.env.LETTA_CODE_AGENT_ROLE === "subagent";
+  const isSubagent = process.env.HARUYUKI_CODE_AGENT_ROLE === "subagent";
   const name = resolveCreatedAgentName(
     options.name,
     isSubagent,

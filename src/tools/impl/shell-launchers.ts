@@ -9,7 +9,7 @@ type ShellLaunchOptions = {
   preservePowerShellExitCode?: boolean;
 };
 
-export const STRICT_SHELL_ENV_VAR = "LETTA_BASH_STRICT";
+export const STRICT_SHELL_ENV_VAR = "HARUYUKI_BASH_STRICT";
 export const STRICT_SHELL_PRELUDE = "set -euo pipefail";
 export const POWERSHELL_UTF8_OUTPUT_PREFIX =
   "try { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8 } catch {}\n";
@@ -29,10 +29,10 @@ const POWERSHELL_ENV_ALIASES = [
   "MEMORY_DIR",
   "LETTA_MEMORY_DIR",
   "AGENT_ID",
-  "LETTA_AGENT_ID",
-  "LETTA_PARENT_AGENT_ID",
+  "HARUYUKI_AGENT_ID",
+  "HARUYUKI_PARENT_AGENT_ID",
   "CONVERSATION_ID",
-  "LETTA_CONVERSATION_ID",
+  "HARUYUKI_CONVERSATION_ID",
   "USER_CWD",
 ];
 

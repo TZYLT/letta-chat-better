@@ -137,7 +137,7 @@ export async function runDiscordSetup(): Promise<boolean> {
 
     // Agent binding — required for account-bound DMs and guild @mentions.
     // Without this, the bot won't know which agent to create conversations for.
-    const envAgentId = process.env.LETTA_AGENT_ID || "";
+    const envAgentId = process.env.HARUYUKI_AGENT_ID || "";
     let agentId: string | null = null;
 
     if (envAgentId) {

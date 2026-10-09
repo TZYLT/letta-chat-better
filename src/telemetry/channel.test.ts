@@ -4,11 +4,11 @@ import { telemetry } from "./index";
 
 const state = telemetry as unknown as { messageCount: number };
 const originalMessageCount = state.messageCount;
-const originalSetting = process.env.LETTA_CODE_TELEM;
+const originalSetting = process.env.HARUYUKI_CODE_TELEM;
 afterEach(() => {
   state.messageCount = originalMessageCount;
-  if (originalSetting === undefined) delete process.env.LETTA_CODE_TELEM;
-  else process.env.LETTA_CODE_TELEM = originalSetting;
+  if (originalSetting === undefined) delete process.env.HARUYUKI_CODE_TELEM;
+  else process.env.HARUYUKI_CODE_TELEM = originalSetting;
 });
 
 const notification = (channel: string) =>
@@ -47,7 +47,7 @@ describe("channel telemetry", () => {
     ).toBe("mixed");
 
     const before = state.messageCount;
-    process.env.LETTA_CODE_TELEM = "1";
+    process.env.HARUYUKI_CODE_TELEM = "1";
     telemetry.trackUserInput(
       `${notification("slack")}\n${notification("slack")}`,
       "user",

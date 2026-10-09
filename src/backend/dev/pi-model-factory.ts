@@ -221,7 +221,7 @@ function inferDefaultProviderFromStandardKeys(): PiProvider {
 }
 
 export function resolvePiProvider(
-  provider = process.env.LETTA_CODE_DEV_PI_PROVIDER ??
+  provider = process.env.HARUYUKI_CODE_DEV_PI_PROVIDER ??
     inferDefaultProviderFromStandardKeys(),
 ): PiProvider {
   if (isPiProvider(provider)) return provider;
@@ -503,7 +503,7 @@ export async function resolvePiModelForAgent(
     (spec?.defaultModel
       ? resolvePiModelFromAgent(spec.defaultModel, spec.id)
       : undefined) ??
-    process.env.LETTA_CODE_DEV_PI_MODEL ??
+    process.env.HARUYUKI_CODE_DEV_PI_MODEL ??
     "";
   const storageDir = options.localProviderAuthStorageDir;
   // Every resolution goes through a pi-ai Models runtime: the backend's

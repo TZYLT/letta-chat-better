@@ -2,8 +2,8 @@ import { describe, expect, test } from "bun:test";
 import {
   buildCreatedAgentTags,
   GIT_MEMORY_ENABLED_TAG,
-  LETTA_CODE_ORIGIN_TAG,
-  LETTA_CODE_SUBAGENT_TAG,
+  HARUYUKI_CODE_ORIGIN_TAG,
+  HARUYUKI_CODE_SUBAGENT_TAG,
 } from "@/agent/agent-tags";
 import {
   resolveCreatedAgentMemfsConfig,
@@ -130,33 +130,33 @@ describe("created agent system prompt defaults", () => {
 describe("created agent tags", () => {
   test("adds Letta Code origin and MemFS tags without dropping user tags", () => {
     const tags = buildCreatedAgentTags({
-      tags: ["project:alpha", LETTA_CODE_ORIGIN_TAG, GIT_MEMORY_ENABLED_TAG],
+      tags: ["project:alpha", HARUYUKI_CODE_ORIGIN_TAG, GIT_MEMORY_ENABLED_TAG],
       enableMemfs: true,
     });
 
     expect(tags).toEqual([
-      LETTA_CODE_ORIGIN_TAG,
+      HARUYUKI_CODE_ORIGIN_TAG,
       GIT_MEMORY_ENABLED_TAG,
       "project:alpha",
     ]);
-    expect(countTags(tags, LETTA_CODE_ORIGIN_TAG)).toBe(1);
+    expect(countTags(tags, HARUYUKI_CODE_ORIGIN_TAG)).toBe(1);
     expect(countTags(tags, GIT_MEMORY_ENABLED_TAG)).toBe(1);
   });
 
   test("adds the subagent tag once", () => {
     const tags = buildCreatedAgentTags({
-      tags: [LETTA_CODE_SUBAGENT_TAG, "purpose:review"],
+      tags: [HARUYUKI_CODE_SUBAGENT_TAG, "purpose:review"],
       isSubagent: true,
       enableMemfs: true,
     });
 
     expect(tags).toEqual([
-      LETTA_CODE_ORIGIN_TAG,
-      LETTA_CODE_SUBAGENT_TAG,
+      HARUYUKI_CODE_ORIGIN_TAG,
+      HARUYUKI_CODE_SUBAGENT_TAG,
       GIT_MEMORY_ENABLED_TAG,
       "purpose:review",
     ]);
-    expect(countTags(tags, LETTA_CODE_SUBAGENT_TAG)).toBe(1);
+    expect(countTags(tags, HARUYUKI_CODE_SUBAGENT_TAG)).toBe(1);
   });
 
   test("does not add the MemFS tag when explicitly disabled", () => {
@@ -165,7 +165,7 @@ describe("created agent tags", () => {
       enableMemfs: false,
     });
 
-    expect(tags).toEqual([LETTA_CODE_ORIGIN_TAG, "project:alpha"]);
+    expect(tags).toEqual([HARUYUKI_CODE_ORIGIN_TAG, "project:alpha"]);
     expect(tags).not.toContain(GIT_MEMORY_ENABLED_TAG);
   });
 });

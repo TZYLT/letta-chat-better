@@ -22,7 +22,7 @@ const MEMORY_MODE = buildFsSandboxPolicy({
 
 // Writes scoped to ~/.haruyuki: base carve, cross-agent tree denied inside it, self
 // memory re-carved. The three must be emitted in nesting order to layer right.
-const LETTA_SCOPED = buildFsSandboxPolicy({
+const HARUYUKI_SCOPED = buildFsSandboxPolicy({
   baseWritableRoots: ["/home/u/.haruyuki"],
   deniedRoots: ["/home/u/.haruyuki/agents"],
   readonlyRoots: ["/home/u/.haruyuki/agents/self"],
@@ -90,7 +90,7 @@ test("write-scoped profile denies all writes but keeps /dev and restores writabl
 });
 
 test("base writable is layered: after global write-deny, before the deny, self after", () => {
-  const { profile } = buildSeatbeltProfile(LETTA_SCOPED);
+  const { profile } = buildSeatbeltProfile(HARUYUKI_SCOPED);
   const globalDeny = profile.indexOf('(deny file-write* (subpath "/"))');
   const base = profile.indexOf(
     '(allow file-write* (subpath (param "BASEWRITABLE_0")))',

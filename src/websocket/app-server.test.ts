@@ -21,8 +21,8 @@ import {
 import { getActiveRuntime } from "@/websocket/listener/runtime";
 
 const TEST_TIMEOUT_MS = 30_000;
-const ORIGINAL_DISABLE_MODS = process.env.LETTA_DISABLE_MODS;
-const ORIGINAL_DISABLE_CRON = process.env.LETTA_DISABLE_CRON_SCHEDULER;
+const ORIGINAL_DISABLE_MODS = process.env.HARUYUKI_DISABLE_MODS;
+const ORIGINAL_DISABLE_CRON = process.env.HARUYUKI_DISABLE_CRON_SCHEDULER;
 
 function waitForOpen(socket: WebSocket): Promise<void> {
   if (socket.readyState === WebSocket.OPEN) {
@@ -203,21 +203,21 @@ function signedBearerToken(
 }
 
 beforeEach(() => {
-  process.env.LETTA_DISABLE_MODS = "1";
-  process.env.LETTA_DISABLE_CRON_SCHEDULER = "1";
+  process.env.HARUYUKI_DISABLE_MODS = "1";
+  process.env.HARUYUKI_DISABLE_CRON_SCHEDULER = "1";
 });
 
 afterEach(() => {
   __testSetBackend(null);
   if (ORIGINAL_DISABLE_MODS === undefined) {
-    delete process.env.LETTA_DISABLE_MODS;
+    delete process.env.HARUYUKI_DISABLE_MODS;
   } else {
-    process.env.LETTA_DISABLE_MODS = ORIGINAL_DISABLE_MODS;
+    process.env.HARUYUKI_DISABLE_MODS = ORIGINAL_DISABLE_MODS;
   }
   if (ORIGINAL_DISABLE_CRON === undefined) {
-    delete process.env.LETTA_DISABLE_CRON_SCHEDULER;
+    delete process.env.HARUYUKI_DISABLE_CRON_SCHEDULER;
   } else {
-    process.env.LETTA_DISABLE_CRON_SCHEDULER = ORIGINAL_DISABLE_CRON;
+    process.env.HARUYUKI_DISABLE_CRON_SCHEDULER = ORIGINAL_DISABLE_CRON;
   }
 });
 

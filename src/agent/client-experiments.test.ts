@@ -8,7 +8,7 @@ import { settingsManager } from "@/settings-manager";
 const originalHome = process.env.HOME;
 const originalUserProfile = process.env.USERPROFILE;
 const originalApiKey = process.env.LETTA_API_KEY;
-const originalMemfsBackend = process.env.LETTA_MEMFS_BACKEND;
+const originalMemfsBackend = process.env.HARUYUKI_MEMFS_BACKEND;
 
 let testHomeDir = "";
 
@@ -18,7 +18,7 @@ beforeEach(async () => {
   process.env.HOME = testHomeDir;
   process.env.USERPROFILE = testHomeDir;
   process.env.LETTA_API_KEY = "test-api-key";
-  delete process.env.LETTA_MEMFS_BACKEND;
+  delete process.env.HARUYUKI_MEMFS_BACKEND;
   await settingsManager.initialize();
 });
 
@@ -43,15 +43,15 @@ afterEach(async () => {
   }
 
   if (originalMemfsBackend === undefined) {
-    delete process.env.LETTA_MEMFS_BACKEND;
+    delete process.env.HARUYUKI_MEMFS_BACKEND;
   } else {
-    process.env.LETTA_MEMFS_BACKEND = originalMemfsBackend;
+    process.env.HARUYUKI_MEMFS_BACKEND = originalMemfsBackend;
   }
 });
 
 describe("getClient experiment headers", () => {
   test("sends hosted backend header when requested", () => {
-    process.env.LETTA_MEMFS_BACKEND = "hosted";
+    process.env.HARUYUKI_MEMFS_BACKEND = "hosted";
 
     expect(getClientDefaultHeaders()["x-letta-memfs-backend"]).toBe("hosted");
   });

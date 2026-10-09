@@ -39,7 +39,7 @@ test.skipIf(!process.env.LETTA_API_KEY)(
       return ((await response.json()) as { sandboxes: Sandbox[] }).sandboxes;
     }
     async function cli(args: string[], ambient: NodeJS.ProcessEnv = {}) {
-      const artifact = process.env.LETTA_TEST_CLI_PATH;
+      const artifact = process.env.HARUYUKI_TEST_CLI_PATH;
       const child = Bun.spawn(
         [
           artifact ? "node" : process.execPath,
@@ -63,9 +63,9 @@ test.skipIf(!process.env.LETTA_API_KEY)(
           env: createAuthenticatedCliTestEnv({
             HOME: home,
             LETTA_BASE_URL: baseURL,
-            LETTA_DISABLE_MODS: "1",
-            LETTA_AGENT_ID: `agent-local-${randomUUID()}`,
-            LETTA_CONVERSATION_ID: `conv-${randomUUID()}`,
+            HARUYUKI_DISABLE_MODS: "1",
+            HARUYUKI_AGENT_ID: `agent-local-${randomUUID()}`,
+            HARUYUKI_CONVERSATION_ID: `conv-${randomUUID()}`,
             AGENT_ID: `agent-${randomUUID()}`,
             CONVERSATION_ID: `conv-${randomUUID()}`,
             ...ambient,
@@ -173,8 +173,8 @@ test.skipIf(!process.env.LETTA_API_KEY)(
         expect(await readFile(destination)).toEqual(payload);
       }
       const ambient = {
-        LETTA_AGENT_ID: agentId,
-        LETTA_CONVERSATION_ID: conversationId,
+        HARUYUKI_AGENT_ID: agentId,
+        HARUYUKI_CONVERSATION_ID: conversationId,
         AGENT_ID: agentId,
         CONVERSATION_ID: conversationId,
       };

@@ -68,9 +68,9 @@ def main():
         raise SystemExit("Only glibc Linux is supported (not musl/Alpine)")
     # Do not falsely label artifacts built on a newer glibc as manylinux_2_28.
     if platform.system() == "Linux" and platform.libc_ver()[1] != "2.28":
-        if os.environ.get("LETTA_PYPI_LOCAL_TEST") != "1":
+        if os.environ.get("HARUYUKI_PYPI_LOCAL_TEST") != "1":
             raise SystemExit(
-                "Use the manylinux_2_28 CI image, or LETTA_PYPI_LOCAL_TEST=1 for a non-publishable local wheel"
+                "Use the manylinux_2_28 CI image, or HARUYUKI_PYPI_LOCAL_TEST=1 for a non-publishable local wheel"
             )
         wheel_platform = "linux_" + platform.machine()
     version = json.loads((ROOT / "package.json").read_text())["version"]

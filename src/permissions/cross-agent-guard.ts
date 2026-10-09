@@ -11,7 +11,7 @@
 // Spawned shell commands are intentionally no longer analyzed here (the old
 // token/raw-command scanner is gone — it was bypassable by symlinks, command
 // substitution, globbing, and subprocesses). When the opt-in cross-agent shell
-// sandbox is enabled (`LETTA_FS_SANDBOX=1`), the kernel confines spawned
+// sandbox is enabled (`HARUYUKI_FS_SANDBOX=1`), the kernel confines spawned
 // shells instead; by default agent shells run unconfined. Subagents with the
 // memory-subagent profile are confined as whole processes (default-on) and
 // skip the guard entirely when the sandbox sentinel is set. The guard is the
@@ -23,7 +23,7 @@
 //
 // Guarded access is limited to:
 //   - self:   current AGENT_ID
-//   - parent: explicit LETTA_PARENT_AGENT_ID for subagent processes
+//   - parent: explicit HARUYUKI_PARENT_AGENT_ID for subagent processes
 //
 // Enabled by default for parent processes and subagents. --disable-memory-guard
 // is parent-process only; subagents always evaluate the guard unless they are
@@ -54,12 +54,12 @@ export interface CrossAgentGuardOptions {
 }
 
 function isSubagentProcess(env: NodeJS.ProcessEnv): boolean {
-  return env.LETTA_CODE_AGENT_ROLE === "subagent";
+  return env.HARUYUKI_CODE_AGENT_ROLE === "subagent";
 }
 
 function deriveParentAgentId(env: NodeJS.ProcessEnv): string | null {
   if (!isSubagentProcess(env)) return null;
-  const parent = env.LETTA_PARENT_AGENT_ID?.trim();
+  const parent = env.HARUYUKI_PARENT_AGENT_ID?.trim();
   return parent || null;
 }
 
@@ -408,7 +408,7 @@ export function evaluateCrossAgentGuard(
   // A subagent confined as a whole process by the kernel sandbox (sentinel set)
   // has cross-agent isolation enforced for *every* tool — including in-process
   // file ops — so the static guard is fully redundant.
-  if (env.LETTA_CODE_AGENT_ROLE === "subagent" && env[SANDBOX_ENV_VAR]) {
+  if (env.HARUYUKI_CODE_AGENT_ROLE === "subagent" && env[SANDBOX_ENV_VAR]) {
     return null;
   }
 

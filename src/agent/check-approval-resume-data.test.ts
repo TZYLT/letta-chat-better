@@ -131,13 +131,13 @@ function datedMessage(
 async function captureDebugOutput<T>(
   run: () => Promise<T>,
 ): Promise<{ output: string; result: T }> {
-  const previousDebug = process.env.LETTA_DEBUG;
-  const previousDebugFile = process.env.LETTA_DEBUG_FILE;
+  const previousDebug = process.env.HARUYUKI_DEBUG;
+  const previousDebugFile = process.env.HARUYUKI_DEBUG_FILE;
   const debugDir = mkdtempSync(join(tmpdir(), "letta-debug-"));
   const debugFile = join(debugDir, "debug.log");
 
-  process.env.LETTA_DEBUG = "1";
-  process.env.LETTA_DEBUG_FILE = debugFile;
+  process.env.HARUYUKI_DEBUG = "1";
+  process.env.HARUYUKI_DEBUG_FILE = debugFile;
 
   try {
     const result = await run();
@@ -145,15 +145,15 @@ async function captureDebugOutput<T>(
     return { output, result };
   } finally {
     if (previousDebug === undefined) {
-      delete process.env.LETTA_DEBUG;
+      delete process.env.HARUYUKI_DEBUG;
     } else {
-      process.env.LETTA_DEBUG = previousDebug;
+      process.env.HARUYUKI_DEBUG = previousDebug;
     }
 
     if (previousDebugFile === undefined) {
-      delete process.env.LETTA_DEBUG_FILE;
+      delete process.env.HARUYUKI_DEBUG_FILE;
     } else {
-      process.env.LETTA_DEBUG_FILE = previousDebugFile;
+      process.env.HARUYUKI_DEBUG_FILE = previousDebugFile;
     }
 
     rmSync(debugDir, { recursive: true, force: true });

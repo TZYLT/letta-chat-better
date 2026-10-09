@@ -501,7 +501,8 @@ describe("channel slash commands", () => {
         message: entry?.expectedMessage,
         feature: "letta-code-channel-feedback",
         submission_source: "slash_command",
-        client_type: process.env.LETTA_DESKTOP_MODE === "1" ? "desktop" : "cli",
+        client_type:
+          process.env.HARUYUKI_DESKTOP_MODE === "1" ? "desktop" : "cli",
         channel: entry?.channel,
         account_id: `acct-${entry?.channel}`,
         agent_id: `agent-${entry?.channel}`,

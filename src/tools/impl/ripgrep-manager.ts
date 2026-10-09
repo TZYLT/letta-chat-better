@@ -16,8 +16,8 @@ import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
 import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 
-const TOOLS_DIR_ENV = "LETTA_CODE_TOOLS_DIR";
-const OFFLINE_ENV = "LETTA_CODE_OFFLINE";
+const TOOLS_DIR_ENV = "HARUYUKI_CODE_TOOLS_DIR";
+const OFFLINE_ENV = "HARUYUKI_CODE_OFFLINE";
 const NETWORK_TIMEOUT_MS = 10_000;
 const DOWNLOAD_TIMEOUT_MS = 120_000;
 const APP_USER_AGENT = "letta-code";

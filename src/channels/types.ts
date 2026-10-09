@@ -634,7 +634,7 @@ export interface DiscordChannelConfig {
    * (trailing edge). Default `0` (disabled). Only applies to
    * open-channel messages; DMs, @mentions, attachments, and reactions always
    * bypass.
-   * The env var `LETTA_DISCORD_INBOUND_DEBOUNCE_MS` takes precedence if set.
+   * The env var `HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS` takes precedence if set.
    * Clamped to `0..10000`.
    */
   inboundDebounceMs?: number;
@@ -732,7 +732,7 @@ export interface TelegramChannelAccount extends ChannelAccountBase {
    * greater than `0`, short back-to-back text messages in the same chat/topic
    * stack into a single combined dispatch (trailing edge). Default `0`
    * (disabled). DMs, attachments, and reactions bypass. The env var
-   * `LETTA_TELEGRAM_INBOUND_DEBOUNCE_MS` takes precedence if set. Clamped to
+   * `HARUYUKI_TELEGRAM_INBOUND_DEBOUNCE_MS` takes precedence if set. Clamped to
    * `0..10000`.
    */
   inboundDebounceMs?: number;
@@ -761,7 +761,7 @@ export interface SlackChannelAccount extends ChannelAccountBase {
    * `0`, short back-to-back messages from the same sender in the same
    * chat/thread stack into a single combined dispatch (trailing edge).
    * Default `0` (disabled). Messages with attachments bypass the debounce.
-   * The env var `LETTA_SLACK_INBOUND_DEBOUNCE_MS` takes precedence if set.
+   * The env var `HARUYUKI_SLACK_INBOUND_DEBOUNCE_MS` takes precedence if set.
    */
   inboundDebounceMs?: number;
 }
@@ -820,7 +820,7 @@ export interface DiscordChannelAccount extends ChannelAccountBase {
    * (trailing edge). Default `0` (disabled). Only applies to
    * open-channel messages; DMs, @mentions, attachments, and reactions always
    * bypass.
-   * The env var `LETTA_DISCORD_INBOUND_DEBOUNCE_MS` takes precedence if set.
+   * The env var `HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS` takes precedence if set.
    * Clamped to `0..10000`.
    */
   inboundDebounceMs?: number;

@@ -1,10 +1,10 @@
 import { writeSync } from "node:fs";
 
 // Cloud alone opts in. Capture at module load, before startup can spawn children.
-let marker = process.env.LETTA_STARTUP_LOG_MARKER;
-const ownerPid = process.env.LETTA_STARTUP_LOG_OWNER_PID;
-delete process.env.LETTA_STARTUP_LOG_MARKER;
-delete process.env.LETTA_STARTUP_LOG_OWNER_PID;
+let marker = process.env.HARUYUKI_STARTUP_LOG_MARKER;
+const ownerPid = process.env.HARUYUKI_STARTUP_LOG_OWNER_PID;
+delete process.env.HARUYUKI_STARTUP_LOG_MARKER;
+delete process.env.HARUYUKI_STARTUP_LOG_OWNER_PID;
 let failure: Error | undefined;
 
 if (ownerPid !== undefined) {
@@ -15,7 +15,7 @@ if (ownerPid !== undefined) {
     // Reject malformed managed launches at the content boundary, not at import.
     failure = new Error("Failed to seal startup logs", {
       cause: new Error(
-        "LETTA_STARTUP_LOG_OWNER_PID must be a positive integer",
+        "HARUYUKI_STARTUP_LOG_OWNER_PID must be a positive integer",
       ),
     });
   } else if (Number(ownerPid) !== process.pid) {
@@ -36,7 +36,7 @@ export function sealStartupLogs(): void {
         marker,
       )
     ) {
-      throw new Error("LETTA_STARTUP_LOG_MARKER must be a UUID");
+      throw new Error("HARUYUKI_STARTUP_LOG_MARKER must be a UUID");
     }
     const bytes = Buffer.from(`\n[letta-startup-end:${marker}]\n`);
     // Do not use stdout.write: Node pipes can buffer it past content on stderr.

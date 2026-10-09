@@ -378,7 +378,7 @@ export async function runExternalCodingAgent(
   const env = {
     ...(deps.env ?? process.env),
     AGENT_ID: options.parentAgentId,
-    LETTA_AGENT_ID: options.parentAgentId,
+    HARUYUKI_AGENT_ID: options.parentAgentId,
   };
   const cwd = options.cwd ?? getCurrentWorkingDirectory();
   const scope = options.parentConversationId

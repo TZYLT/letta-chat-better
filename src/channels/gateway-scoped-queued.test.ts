@@ -90,11 +90,11 @@ async function runQueuedScenario(
     },
   };
 
-  const originalDisableMods = process.env.LETTA_DISABLE_MODS;
-  const originalDisableCron = process.env.LETTA_DISABLE_CRON_SCHEDULER;
+  const originalDisableMods = process.env.HARUYUKI_DISABLE_MODS;
+  const originalDisableCron = process.env.HARUYUKI_DISABLE_CRON_SCHEDULER;
   const originalMemfs = settingsManager.isMemfsExplicitlyDisabled;
-  process.env.LETTA_DISABLE_MODS = "1";
-  process.env.LETTA_DISABLE_CRON_SCHEDULER = "1";
+  process.env.HARUYUKI_DISABLE_MODS = "1";
+  process.env.HARUYUKI_DISABLE_CRON_SCHEDULER = "1";
   settingsManager.isMemfsExplicitlyDisabled = () => true;
 
   const backend = new HeadlessBackend(AGENT_ID, executor);
@@ -186,12 +186,12 @@ async function runQueuedScenario(
     __testSetBackend(null);
     settingsManager.isMemfsExplicitlyDisabled = originalMemfs;
     if (originalDisableMods === undefined)
-      delete process.env.LETTA_DISABLE_MODS;
-    else process.env.LETTA_DISABLE_MODS = originalDisableMods;
+      delete process.env.HARUYUKI_DISABLE_MODS;
+    else process.env.HARUYUKI_DISABLE_MODS = originalDisableMods;
     if (originalDisableCron === undefined) {
-      delete process.env.LETTA_DISABLE_CRON_SCHEDULER;
+      delete process.env.HARUYUKI_DISABLE_CRON_SCHEDULER;
     } else {
-      process.env.LETTA_DISABLE_CRON_SCHEDULER = originalDisableCron;
+      process.env.HARUYUKI_DISABLE_CRON_SCHEDULER = originalDisableCron;
     }
   }
 }

@@ -177,5 +177,5 @@ to synchronize MemFS itself.
    existing merge or rebase.
 6. Leave memory commits local; do not add a remote or push to fix a memory
    problem.
-7. If the command still fails, rerun it with `LETTA_DEBUG=1` and report the
+7. If the command still fails, rerun it with `HARUYUKI_DEBUG=1` and report the
    redacted error. Never print or copy credential-helper values.

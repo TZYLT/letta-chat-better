@@ -4,7 +4,10 @@ import { getBackend } from "@/backend";
 import { settingsManager } from "@/settings-manager";
 import { debugLog, debugWarn } from "@/utils/debug";
 import { getVersion } from "@/version";
-import { LETTA_CODE_ORIGIN_TAG, LETTA_CODE_SUBAGENT_TAG } from "./agent-tags";
+import {
+  HARUYUKI_CODE_ORIGIN_TAG,
+  HARUYUKI_CODE_SUBAGENT_TAG,
+} from "./agent-tags";
 import { LEGACY_CLOUD_DEFAULT_PROMPT_HASHES } from "./legacy-default-system-prompt-hashes";
 import { resolveScopedMemoryDir } from "./memory-filesystem";
 import { detectMemoryFormat } from "./memory-format";
@@ -119,8 +122,8 @@ export function getMemoryPromptModeForAgent(agentId: string): MemoryPromptMode {
 function isLettaCodePrimaryAgent(agent: AgentState): boolean {
   const tags = agent.tags ?? [];
   return (
-    tags.includes(LETTA_CODE_ORIGIN_TAG) &&
-    !tags.includes(LETTA_CODE_SUBAGENT_TAG)
+    tags.includes(HARUYUKI_CODE_ORIGIN_TAG) &&
+    !tags.includes(HARUYUKI_CODE_SUBAGENT_TAG)
   );
 }
 
@@ -201,7 +204,7 @@ export function decideManagedSystemPromptUpdate(input: {
   // prompt or an explicitly selected non-default preset (including SDK prompts).
   if (
     isLettaCloud &&
-    !(agent.tags ?? []).includes(LETTA_CODE_SUBAGENT_TAG) &&
+    !(agent.tags ?? []).includes(HARUYUKI_CODE_SUBAGENT_TAG) &&
     (storedPreset === undefined ||
       storedPreset === "default" ||
       storedPreset === "custom") &&
@@ -292,7 +295,7 @@ export function decideManagedSystemPromptUpdate(input: {
     };
   }
 
-  if ((agent.tags ?? []).includes(LETTA_CODE_SUBAGENT_TAG)) {
+  if ((agent.tags ?? []).includes(HARUYUKI_CODE_SUBAGENT_TAG)) {
     return { kind: "noop", reason: "agent is a Letta Code subagent" };
   }
 
@@ -334,11 +337,11 @@ export async function ensureLettaCodeOriginTag(
     : await backend.retrieveAgent(agent.id, { include: ["agent.tags"] });
   const tags = agentWithTags.tags ?? [];
 
-  if (tags.includes(LETTA_CODE_ORIGIN_TAG)) {
+  if (tags.includes(HARUYUKI_CODE_ORIGIN_TAG)) {
     return agentWithTags;
   }
 
-  const nextTags = [...tags, LETTA_CODE_ORIGIN_TAG];
+  const nextTags = [...tags, HARUYUKI_CODE_ORIGIN_TAG];
   const updatedAgent = await backend.updateAgent(agent.id, { tags: nextTags });
 
   return {
@@ -363,7 +366,7 @@ export function scheduleManagedSystemPromptUpdate({
     memoryMode,
     isLettaCloud: isCloudPromptBackend(),
     preserveCloudSystemPrompt:
-      process.env.LETTA_CODE_PRESERVE_CLOUD_SYSTEM_PROMPT === "1",
+      process.env.HARUYUKI_CODE_PRESERVE_CLOUD_SYSTEM_PROMPT === "1",
     storedPreset: settingsManager.getSystemPromptPreset(agent.id),
     storedHash: settingsManager.getSystemPromptHash(agent.id),
     storedVersion: settingsManager.getSystemPromptVersion(agent.id),

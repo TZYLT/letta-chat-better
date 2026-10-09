@@ -10,7 +10,7 @@ from pathlib import Path
 
 ARGUMENT_PROBE = r"""
 import assert from 'node:assert/strict';
-assert.equal(process.env.LETTA_CODE_DISTRIBUTION, 'pypi');
+assert.equal(process.env.HARUYUKI_CODE_DISTRIBUTION, 'pypi');
 assert.deepEqual(process.argv.slice(2), ['space argument', 'unicode-λ', '--literal=$HOME']);
 assert.ok(process.execPath.includes('_payload'));
 process.exit(23); // Verify the Python launcher preserves child exit status.
@@ -29,7 +29,7 @@ const app = path.dirname(cli);
 const req = createRequire(cli);
 const env = {...process.env};
 delete env.NODE_OPTIONS;
-assert.equal(process.env.LETTA_CODE_DISTRIBUTION, 'pypi');
+assert.equal(process.env.HARUYUKI_CODE_DISTRIBUTION, 'pypi');
 assert.ok(process.execPath.includes('_payload'));
 const child = spawnSync('node', ['-p', 'process.execPath'], {env, encoding:'utf8'});
 assert.equal(child.status, 0, child.stderr);
@@ -56,8 +56,8 @@ assert.equal(typeof req('ws').WebSocketServer, 'function');
   const image = JSON.parse(resized.stdout);
   assert.ok(image.width > 0 && image.width < 3000, JSON.stringify(image));
   const ptyCommand = process.platform === 'win32' ? process.env.ComSpec : process.execPath;
-  const ptyArgs = process.platform === 'win32' ? ['/d', '/s', '/c', 'echo LETTA_PTY_OK'] : [cli, '--help'];
-  const ptyExpected = process.platform === 'win32' ? /LETTA_PTY_OK/ : /USAGE/;
+  const ptyArgs = process.platform === 'win32' ? ['/d', '/s', '/c', 'echo HARUYUKI_PTY_OK'] : [cli, '--help'];
+  const ptyExpected = process.platform === 'win32' ? /HARUYUKI_PTY_OK/ : /USAGE/;
   const pty = req('node-pty').spawn(ptyCommand, ptyArgs, {env, cols:100, rows:30});
   let output = '';
   pty.onData(data => { output += data; });
@@ -103,7 +103,7 @@ def main():
         env = {
             k: v
             for k, v in os.environ.items()
-            if not k.startswith(("LETTA", "NODE_", "NPM_"))
+            if not k.startswith(("HARUYUKI", "LETTA", "NODE_", "NPM_"))
             and k not in ("AGENT_ID", "CONVERSATION_ID", "MEMORY_DIR")
         }
         env.update(
@@ -132,8 +132,8 @@ def main():
             assert expected in result.stdout + result.stderr, result
         env.update(
             LETTA_LOCAL_BACKEND_DIR=str(root / "local-store"),
-            LETTA_LOCAL_BACKEND_EXECUTOR="deterministic",
-            LETTA_SKIP_KEYCHAIN_CHECK="1",
+            HARUYUKI_LOCAL_BACKEND_EXECUTOR="deterministic",
+            HARUYUKI_SKIP_KEYCHAIN_CHECK="1",
         )
         result = subprocess.run(
             [
@@ -188,7 +188,7 @@ def main():
         runtime_probe = root / "runtime-probe.mjs"
         runtime_probe.write_text(RUNTIME_PROBE, encoding="utf-8")
         env["PATH"] = str(node.parent) + os.pathsep + env["PATH"]
-        env["LETTA_CODE_DISTRIBUTION"] = "pypi"
+        env["HARUYUKI_CODE_DISTRIBUTION"] = "pypi"
         result = subprocess.run(
             [str(node), str(runtime_probe), str(installed_cli)],
             cwd=root,

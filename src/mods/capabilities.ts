@@ -62,7 +62,8 @@ export const PROVIDERS_ONLY_MOD_CAPABILITIES: ModCapabilities = {
   ui: { ...DISABLED_MOD_CAPABILITIES.ui },
 };
 
-export const LETTA_MOD_CAPABILITY_PROFILE_ENV = "LETTA_MOD_CAPABILITY_PROFILE";
+export const HARUYUKI_MOD_CAPABILITY_PROFILE_ENV =
+  "HARUYUKI_MOD_CAPABILITY_PROFILE";
 export const PROVIDERS_ONLY_MOD_CAPABILITY_PROFILE = "providers-only";
 
 export function resolveProcessModCapabilities(
@@ -70,7 +71,7 @@ export function resolveProcessModCapabilities(
   env: NodeJS.ProcessEnv = process.env,
 ): ModCapabilities {
   if (
-    env[LETTA_MOD_CAPABILITY_PROFILE_ENV] ===
+    env[HARUYUKI_MOD_CAPABILITY_PROFILE_ENV] ===
     PROVIDERS_ONLY_MOD_CAPABILITY_PROFILE
   ) {
     return cloneModCapabilities(PROVIDERS_ONLY_MOD_CAPABILITIES);

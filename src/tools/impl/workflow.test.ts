@@ -145,10 +145,10 @@ describe("Workflow tool (background launch)", () => {
   }
 
   beforeEach(() => {
-    previousScratchpad = process.env.LETTA_SCRATCHPAD;
+    previousScratchpad = process.env.HARUYUKI_SCRATCHPAD;
     previousHome = process.env.HOME;
     scratchpad = mkdtempSync(join(tmpdir(), "workflow-tool-test-"));
-    process.env.LETTA_SCRATCHPAD = scratchpad;
+    process.env.HARUYUKI_SCRATCHPAD = scratchpad;
     // Executions journal under ~/.haruyuki; keep the test's out of the real home.
     process.env.HOME = scratchpad;
     queuedMessages = [];
@@ -175,9 +175,9 @@ describe("Workflow tool (background launch)", () => {
     setMessageQueueAdder(null);
     clearPendingMessages();
     if (previousScratchpad === undefined) {
-      delete process.env.LETTA_SCRATCHPAD;
+      delete process.env.HARUYUKI_SCRATCHPAD;
     } else {
-      process.env.LETTA_SCRATCHPAD = previousScratchpad;
+      process.env.HARUYUKI_SCRATCHPAD = previousScratchpad;
     }
     if (previousHome === undefined) {
       delete process.env.HOME;

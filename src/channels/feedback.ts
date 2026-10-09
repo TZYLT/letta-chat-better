@@ -85,7 +85,7 @@ export function buildChannelFeedbackPayload(
     message: submission.message,
     feature: CHANNEL_FEEDBACK_FEATURE,
     submission_source: "slash_command",
-    client_type: process.env.LETTA_DESKTOP_MODE === "1" ? "desktop" : "cli",
+    client_type: process.env.HARUYUKI_DESKTOP_MODE === "1" ? "desktop" : "cli",
     version: getVersion(),
     platform: process.platform,
     channel: submission.channel,

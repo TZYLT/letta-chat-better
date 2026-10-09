@@ -61,7 +61,7 @@ interface LettaInvocation {
   args: string[];
 }
 
-const LETTA_BIN_ARGS_ENV = "LETTA_CODE_BIN_ARGS_JSON";
+const HARUYUKI_BIN_ARGS_ENV = "HARUYUKI_CODE_BIN_ARGS_JSON";
 
 function normalizeInvocationCommand(raw: string | undefined): string | null {
   if (!raw) return null;
@@ -125,11 +125,11 @@ export function resolveLettaInvocation(
   execPath: string = process.execPath,
   cwd: string = process.cwd(),
 ): LettaInvocation | null {
-  const explicitBin = normalizeInvocationCommand(env.LETTA_CODE_BIN);
+  const explicitBin = normalizeInvocationCommand(env.HARUYUKI_CODE_BIN);
   if (explicitBin) {
     return {
       command: explicitBin,
-      args: parseInvocationArgs(env[LETTA_BIN_ARGS_ENV]),
+      args: parseInvocationArgs(env[HARUYUKI_BIN_ARGS_ENV]),
     };
   }
 
@@ -216,7 +216,8 @@ export function ensureLettaShimDir(
   return shimDir;
 }
 
-const LETTA_MEMFS_GIT_PROXY_BASE_URL_ENV = "LETTA_MEMFS_GIT_PROXY_BASE_URL";
+const HARUYUKI_MEMFS_GIT_PROXY_BASE_URL_ENV =
+  "HARUYUKI_MEMFS_GIT_PROXY_BASE_URL";
 const HOSTED_BACKEND_HEADER = "x-letta-memfs-backend";
 const HOSTED_BACKEND_VALUE = "hosted";
 
@@ -239,7 +240,7 @@ function getShellMemfsBaseUrl(env: NodeJS.ProcessEnv): string {
   // This keeps Desktop's transient LETTA_BASE_URL proxy from affecting the
   // canonical MemFS git remote, while still allowing an explicit MemFS base
   // override to opt out of the Cloud rewrite.
-  return env.LETTA_MEMFS_BASE_URL || DEFAULT_LOCAL_SERVER_URL;
+  return env.HARUYUKI_MEMFS_BASE_URL || DEFAULT_LOCAL_SERVER_URL;
 }
 
 function getShellMemfsGitProxyRewriteConfig(env: NodeJS.ProcessEnv): {
@@ -248,7 +249,7 @@ function getShellMemfsGitProxyRewriteConfig(env: NodeJS.ProcessEnv): {
   proxyPrefix: string;
   memfsPrefix: string;
 } | null {
-  const rawProxyBaseUrl = env[LETTA_MEMFS_GIT_PROXY_BASE_URL_ENV]?.trim();
+  const rawProxyBaseUrl = env[HARUYUKI_MEMFS_GIT_PROXY_BASE_URL_ENV]?.trim();
   if (!rawProxyBaseUrl || !isLocalhostUrl(rawProxyBaseUrl)) {
     return null;
   }
@@ -296,7 +297,7 @@ function applyMemfsGitProxyEnv(env: NodeJS.ProcessEnv): void {
 }
 
 function isHostedMemfsBackendRequested(env: NodeJS.ProcessEnv): boolean {
-  return env.LETTA_MEMFS_BACKEND === HOSTED_BACKEND_VALUE;
+  return env.HARUYUKI_MEMFS_BACKEND === HOSTED_BACKEND_VALUE;
 }
 
 function applyHostedMemfsGitHeaderEnv(env: NodeJS.ProcessEnv): void {
@@ -337,8 +338,8 @@ export function getShellEnv(): NodeJS.ProcessEnv {
 
   const lettaInvocation = resolveLettaInvocation(env);
   if (lettaInvocation) {
-    env.LETTA_CODE_BIN = lettaInvocation.command;
-    env[LETTA_BIN_ARGS_ENV] = JSON.stringify(lettaInvocation.args);
+    env.HARUYUKI_CODE_BIN = lettaInvocation.command;
+    env[HARUYUKI_BIN_ARGS_ENV] = JSON.stringify(lettaInvocation.args);
     const shimDir = ensureLettaShimDir(lettaInvocation);
     if (shimDir) {
       pathPrefixes.push(shimDir);
@@ -364,7 +365,7 @@ export function getShellEnv(): NodeJS.ProcessEnv {
   // device identity, not a stale installation id from the child CLI settings.
   const environmentDeviceId = getRuntimeContext()?.environmentDeviceId?.trim();
   if (environmentDeviceId) {
-    env.LETTA_RUNTIME_ENVIRONMENT_DEVICE_ID = environmentDeviceId;
+    env.HARUYUKI_RUNTIME_ENVIRONMENT_DEVICE_ID = environmentDeviceId;
   }
 
   // Add Letta context for skill scripts.
@@ -380,14 +381,14 @@ export function getShellEnv(): NodeJS.ProcessEnv {
   }
 
   if (!agentId) {
-    const fallbackAgentId = env.AGENT_ID || env.LETTA_AGENT_ID;
+    const fallbackAgentId = env.AGENT_ID || env.HARUYUKI_AGENT_ID;
     if (typeof fallbackAgentId === "string" && fallbackAgentId.trim()) {
       agentId = fallbackAgentId.trim();
     }
   }
 
   if (agentId) {
-    env.LETTA_AGENT_ID = agentId;
+    env.HARUYUKI_AGENT_ID = agentId;
     env.AGENT_ID = agentId;
 
     const agentName = getCurrentAgentName()?.trim() || env.AGENT_NAME?.trim();
@@ -398,8 +399,9 @@ export function getShellEnv(): NodeJS.ProcessEnv {
     try {
       const localBackendNoMemfs = isLocalBackendMemfsDisabledForProcess();
       const localBackendEnabled =
-        process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL === "1" ||
-        process.env.LETTA_LOCAL_BACKEND_EXPERIMENTAL?.toLowerCase() === "true";
+        process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL === "1" ||
+        process.env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL?.toLowerCase() ===
+          "true";
       if (
         !localBackendNoMemfs &&
         (settingsManager.isMemfsEnabled(agentId) || localBackendEnabled)
@@ -413,7 +415,7 @@ export function getShellEnv(): NodeJS.ProcessEnv {
       } else {
         const inheritedMemoryDir = executionEnv.MEMORY_DIR?.trim();
         const inheritedLettaMemoryDir = executionEnv.LETTA_MEMORY_DIR?.trim();
-        const parentAgentId = executionEnv.LETTA_PARENT_AGENT_ID?.trim();
+        const parentAgentId = executionEnv.HARUYUKI_PARENT_AGENT_ID?.trim();
         const inheritedParentMemoryDir = parentAgentId
           ? getScopedMemoryFilesystemRoot(parentAgentId)
           : null;
@@ -433,7 +435,7 @@ export function getShellEnv(): NodeJS.ProcessEnv {
                   ),
               )
             : false;
-        // An EXPLICIT memory scope (LETTA_MEMORY_DIR_EXPLICIT=1, set by a
+        // An EXPLICIT memory scope (HARUYUKI_MEMORY_DIR_EXPLICIT=1, set by a
         // launcher that deliberately points this session's memory at an
         // isolated copy — e.g. an SDK dream batch's memfs clone) is honored
         // when it lies outside the agents' memory store: such a path cannot
@@ -441,7 +443,7 @@ export function getShellEnv(): NodeJS.ProcessEnv {
         // Without the marker, a non-parent-scoped inherited value is treated
         // as stale leakage and stripped, as before.
         const inheritedMemoryExplicit =
-          process.env.LETTA_MEMORY_DIR_EXPLICIT === "1";
+          process.env.HARUYUKI_MEMORY_DIR_EXPLICIT === "1";
         const memoryStoreDir = path.dirname(
           path.dirname(getScopedMemoryFilesystemRoot(agentId)),
         );
@@ -479,13 +481,13 @@ export function getShellEnv(): NodeJS.ProcessEnv {
     // Not set yet
   }
   if (!convId) {
-    const fallback = env.LETTA_CONVERSATION_ID;
+    const fallback = env.HARUYUKI_CONVERSATION_ID;
     if (typeof fallback === "string" && fallback.trim()) {
       convId = fallback.trim();
     }
   }
   if (convId) {
-    env.LETTA_CONVERSATION_ID = convId;
+    env.HARUYUKI_CONVERSATION_ID = convId;
     env.CONVERSATION_ID = convId;
   }
 

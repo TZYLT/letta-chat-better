@@ -1798,8 +1798,8 @@ function createScenarioSuiteEvaluator(params: {
               cwd: context.repoRoot,
               env: {
                 ...context.baseEnv,
-                LETTA_EXTENSIONS_DIR: context.candidate.dir,
-                LETTA_MODS_DIR: context.candidate.dir,
+                HARUYUKI_EXTENSIONS_DIR: context.candidate.dir,
+                HARUYUKI_MODS_DIR: context.candidate.dir,
                 MEMORY_DIR: scenarioMemoryDir,
               },
               timeoutMs: scenarioSpec.timeoutMs ?? 15 * 60 * 1000,
@@ -2094,8 +2094,8 @@ async function runModLearningCandidate(
       cwd: repoRoot,
       env: {
         ...params.baseEnv,
-        LETTA_DISABLE_EXTENSIONS: "1",
-        LETTA_DISABLE_MODS: "1",
+        HARUYUKI_DISABLE_EXTENSIONS: "1",
+        HARUYUKI_DISABLE_MODS: "1",
       },
       timeoutMs: 15 * 60 * 1000,
     });

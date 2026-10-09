@@ -225,7 +225,7 @@ async function resolveRuntimeStartAgent(
       void enableMemfsIfCloud(agent.id);
     } else {
       // Worker-style agent: no memfs of its own; a memory scope may be
-      // provided per session (MEMORY_DIR + LETTA_MEMORY_DIR_EXPLICIT).
+      // provided per session (MEMORY_DIR + HARUYUKI_MEMORY_DIR_EXPLICIT).
       settingsManager.setMemfsEnabled(agent.id, false);
     }
     created.agent = true;

@@ -29,7 +29,7 @@ If the command represents a reusable agent workflow (for example `/goal`), put t
 
 - Do not include the leading slash. Use `id: "review"`, not `id: "/review"`.
 - Use a lowercase slug with letters, numbers, and hyphens only.
-- Built-in commands like `/reload`, `/model`, `/statusline`, etc. can be overridden by trusted local mods. Do this intentionally and keep recovery in mind: start with `--no-mods` or `LETTA_DISABLE_MODS=1` if an override breaks command handling.
+- Built-in commands like `/reload`, `/model`, `/statusline`, etc. can be overridden by trusted local mods. Do this intentionally and keep recovery in mind: start with `--no-mods` or `HARUYUKI_DISABLE_MODS=1` if an override breaks command handling.
 - Duplicate mod command IDs fail unless `override: true` is intentional.
 
 ## Prompt command

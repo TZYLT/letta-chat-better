@@ -1,15 +1,15 @@
 export function resolveCronAgentId(fromArgs?: string): string {
-  return fromArgs || process.env.LETTA_AGENT_ID || "";
+  return fromArgs || process.env.HARUYUKI_AGENT_ID || "";
 }
 
 function resolveConversationAlias(
   fromArgs?: string,
 ): string | null | undefined {
   if (fromArgs !== "self") return fromArgs;
-  const current = process.env.LETTA_CONVERSATION_ID?.trim();
+  const current = process.env.HARUYUKI_CONVERSATION_ID?.trim();
   if (current) return current;
   console.error(
-    "Error: --conversation self requires an active conversation (LETTA_CONVERSATION_ID is not set).",
+    "Error: --conversation self requires an active conversation (HARUYUKI_CONVERSATION_ID is not set).",
   );
   return null;
 }

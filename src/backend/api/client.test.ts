@@ -2,7 +2,8 @@ import { afterEach, describe, expect, test } from "bun:test";
 import { getClientDefaultHeaders } from "./client";
 import { getLettaCodeHeaders } from "./http-headers";
 
-const RUNTIME_ENVIRONMENT_DEVICE_ID_ENV = "LETTA_RUNTIME_ENVIRONMENT_DEVICE_ID";
+const RUNTIME_ENVIRONMENT_DEVICE_ID_ENV =
+  "HARUYUKI_RUNTIME_ENVIRONMENT_DEVICE_ID";
 const originalRuntimeEnvironmentDeviceId =
   process.env[RUNTIME_ENVIRONMENT_DEVICE_ID_ENV];
 

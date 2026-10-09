@@ -4,7 +4,7 @@ import {
   bindDesktopCredentials,
   getDesktopAccessToken,
 } from "@/auth/desktop-credentials";
-import { LETTA_CLOUD_API_URL } from "@/auth/oauth";
+import { HARUYUKI_CLOUD_API_URL } from "@/auth/oauth";
 import { refreshAccessTokenSingleFlight } from "@/auth/oauth-refresh";
 import { type Settings, settingsManager } from "@/settings-manager";
 import { trackBoundaryError } from "@/telemetry/error-reporting";
@@ -113,11 +113,12 @@ const sdkLogger = {
 export {
   getMemfsGitProxyRewriteConfig,
   getMemfsServerUrl,
-  LETTA_MEMFS_GIT_PROXY_BASE_URL_ENV,
+  HARUYUKI_MEMFS_GIT_PROXY_BASE_URL_ENV,
   type MemfsGitProxyRewriteConfig,
 } from "./memfs-git-proxy";
 
-const RUNTIME_ENVIRONMENT_DEVICE_ID_ENV = "LETTA_RUNTIME_ENVIRONMENT_DEVICE_ID";
+const RUNTIME_ENVIRONMENT_DEVICE_ID_ENV =
+  "HARUYUKI_RUNTIME_ENVIRONMENT_DEVICE_ID";
 
 export function getRuntimeEnvironmentDeviceId(): string {
   // A managed runtime may have an orchestrator-assigned execution identity
@@ -138,7 +139,7 @@ export function getClientDefaultHeaders(): Record<string, string> {
     // restore it on other browsers/sessions. The cloud middleware
     // ignores this header on non-message routes.
     "X-Letta-Environment-Device-Id": getRuntimeEnvironmentDeviceId(),
-    ...(process.env.LETTA_MEMFS_BACKEND === "hosted"
+    ...(process.env.HARUYUKI_MEMFS_BACKEND === "hosted"
       ? { "x-letta-memfs-backend": "hosted" }
       : {}),
   };
@@ -243,7 +244,7 @@ export async function getClient() {
     settings.env?.LETTA_BASE_URL ||
     DEFAULT_LOCAL_SERVER_URL;
 
-  if (!apiKey && baseURL === LETTA_CLOUD_API_URL) {
+  if (!apiKey && baseURL === HARUYUKI_CLOUD_API_URL) {
     console.error("Missing LETTA_API_KEY");
     console.error(
       "Run 'letta' to configure authentication, or set LETTA_API_KEY to your API key",
@@ -260,9 +261,9 @@ export async function getClient() {
     apiKey,
     baseURL,
     logger: sdkLogger,
-    timeout: Number(process.env.LETTA_REQUEST_TIMEOUT_MS) || 10 * 60 * 1000, // default 10 min; override via env for slow local inference
+    timeout: Number(process.env.HARUYUKI_REQUEST_TIMEOUT_MS) || 10 * 60 * 1000, // default 10 min; override via env for slow local inference
     defaultHeaders: getClientDefaultHeaders(),
-    // Use instrumented fetch for timing logs when LETTA_DEBUG_TIMINGS is enabled
+    // Use instrumented fetch for timing logs when HARUYUKI_DEBUG_TIMINGS is enabled
     ...(isTimingsEnabled() && { fetch: createTimingFetch(fetch) }),
   });
 

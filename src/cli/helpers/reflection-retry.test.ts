@@ -45,8 +45,8 @@ async function fixture() {
   const root = mkdtempSync(join(tmpdir(), "reflection-retry-"));
   cleanup.push(() => rmSync(root, { recursive: true, force: true }));
   for (const [key, value] of Object.entries({
-    LETTA_LOCAL_BACKEND_EXPERIMENTAL: "1",
-    LETTA_ENABLE_WINDOWS_AUTO_REFLECTION: "1",
+    HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL: "1",
+    HARUYUKI_ENABLE_WINDOWS_AUTO_REFLECTION: "1",
     LETTA_LOCAL_BACKEND_DIR: root,
     LETTA_TRANSCRIPT_ROOT: join(root, "transcripts"),
   })) {

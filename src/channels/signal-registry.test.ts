@@ -81,14 +81,16 @@ function createPreparingAdapter(): ChannelAdapter {
 describe("signal channel registry", () => {
   let localBackendDir: string | null = null;
   const previousLocalBackendDir = process.env[LOCAL_BACKEND_DIR_ENV];
-  const previousLocalBackendNoMemfs = process.env.LETTA_LOCAL_BACKEND_NO_MEMFS;
-  const previousLocalBackendExecutor = process.env.LETTA_LOCAL_BACKEND_EXECUTOR;
+  const previousLocalBackendNoMemfs =
+    process.env.HARUYUKI_LOCAL_BACKEND_NO_MEMFS;
+  const previousLocalBackendExecutor =
+    process.env.HARUYUKI_LOCAL_BACKEND_EXECUTOR;
 
   beforeEach(() => {
     localBackendDir = mkdtempSync(join(tmpdir(), "signal-registry-local-"));
     process.env[LOCAL_BACKEND_DIR_ENV] = localBackendDir;
-    process.env.LETTA_LOCAL_BACKEND_NO_MEMFS = "1";
-    process.env.LETTA_LOCAL_BACKEND_EXECUTOR = "deterministic";
+    process.env.HARUYUKI_LOCAL_BACKEND_NO_MEMFS = "1";
+    process.env.HARUYUKI_LOCAL_BACKEND_EXECUTOR = "deterministic";
     configureBackendMode("local");
 
     clearChannelAccountStores();
@@ -130,14 +132,15 @@ describe("signal channel registry", () => {
       process.env[LOCAL_BACKEND_DIR_ENV] = previousLocalBackendDir;
     }
     if (previousLocalBackendNoMemfs === undefined) {
-      delete process.env.LETTA_LOCAL_BACKEND_NO_MEMFS;
+      delete process.env.HARUYUKI_LOCAL_BACKEND_NO_MEMFS;
     } else {
-      process.env.LETTA_LOCAL_BACKEND_NO_MEMFS = previousLocalBackendNoMemfs;
+      process.env.HARUYUKI_LOCAL_BACKEND_NO_MEMFS = previousLocalBackendNoMemfs;
     }
     if (previousLocalBackendExecutor === undefined) {
-      delete process.env.LETTA_LOCAL_BACKEND_EXECUTOR;
+      delete process.env.HARUYUKI_LOCAL_BACKEND_EXECUTOR;
     } else {
-      process.env.LETTA_LOCAL_BACKEND_EXECUTOR = previousLocalBackendExecutor;
+      process.env.HARUYUKI_LOCAL_BACKEND_EXECUTOR =
+        previousLocalBackendExecutor;
     }
     if (localBackendDir) {
       rmSync(localBackendDir, { recursive: true, force: true });

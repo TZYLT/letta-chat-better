@@ -52,7 +52,7 @@ beforeEach(() => {
   process.env.LETTA_BASE_URL = "https://api.letta.com";
   process.env.LETTA_API_KEY = "test-key";
   cacheDir = mkdtempSync(join(tmpdir(), "lc-model-catalog-test-"));
-  process.env.LETTA_MODEL_CATALOG_CACHE_DIR = cacheDir;
+  process.env.HARUYUKI_MODEL_CATALOG_CACHE_DIR = cacheDir;
 });
 
 afterEach(() => {
@@ -61,7 +61,7 @@ afterEach(() => {
   clearAvailableModelsCache();
   __testSetBackend(null);
   setConfiguredBackendMode("api");
-  delete process.env.LETTA_MODEL_CATALOG_CACHE_DIR;
+  delete process.env.HARUYUKI_MODEL_CATALOG_CACHE_DIR;
   rmSync(cacheDir, { recursive: true, force: true });
   if (originalBaseUrl === undefined) {
     delete process.env.LETTA_BASE_URL;

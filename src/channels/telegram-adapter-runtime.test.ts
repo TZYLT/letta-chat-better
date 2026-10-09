@@ -427,8 +427,8 @@ test("telegram adapter logs and clears running state when polling exits unexpect
 });
 
 test("telegram adapter rejects startup when polling never becomes live", async () => {
-  const originalStartTimeout = process.env.LETTA_TELEGRAM_START_TIMEOUT_MS;
-  process.env.LETTA_TELEGRAM_START_TIMEOUT_MS = "20";
+  const originalStartTimeout = process.env.HARUYUKI_TELEGRAM_START_TIMEOUT_MS;
+  process.env.HARUYUKI_TELEGRAM_START_TIMEOUT_MS = "20";
   FakeBot.nextStartImpl = async () => {
     await new Promise(() => undefined);
   };
@@ -449,9 +449,9 @@ test("telegram adapter rejects startup when polling never becomes live", async (
     expect(adapter.isRunning()).toBe(false);
   } finally {
     if (originalStartTimeout === undefined) {
-      delete process.env.LETTA_TELEGRAM_START_TIMEOUT_MS;
+      delete process.env.HARUYUKI_TELEGRAM_START_TIMEOUT_MS;
     } else {
-      process.env.LETTA_TELEGRAM_START_TIMEOUT_MS = originalStartTimeout;
+      process.env.HARUYUKI_TELEGRAM_START_TIMEOUT_MS = originalStartTimeout;
     }
   }
 });

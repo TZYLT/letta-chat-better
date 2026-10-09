@@ -9,7 +9,7 @@ import {
   getBackgroundOutputDir,
 } from "@/tools/impl/process_manager";
 
-const originalScratchpad = process.env.LETTA_SCRATCHPAD;
+const originalScratchpad = process.env.HARUYUKI_SCRATCHPAD;
 const originalTmpdir = process.env.TMPDIR;
 const originalTmp = process.env.TMP;
 const originalTemp = process.env.TEMP;
@@ -18,9 +18,9 @@ let tempRoots: string[] = [];
 
 function restoreBackgroundOutputEnv(): void {
   if (originalScratchpad === undefined) {
-    delete process.env.LETTA_SCRATCHPAD;
+    delete process.env.HARUYUKI_SCRATCHPAD;
   } else {
-    process.env.LETTA_SCRATCHPAD = originalScratchpad;
+    process.env.HARUYUKI_SCRATCHPAD = originalScratchpad;
   }
 
   if (originalTmpdir === undefined) {
@@ -75,9 +75,9 @@ describe("background output files", () => {
     tempRoots = [];
   });
 
-  test("uses LETTA_SCRATCHPAD when explicitly configured", () => {
+  test("uses HARUYUKI_SCRATCHPAD when explicitly configured", () => {
     const scratchpad = makeTempRoot("letta-bg-scratch-");
-    process.env.LETTA_SCRATCHPAD = scratchpad;
+    process.env.HARUYUKI_SCRATCHPAD = scratchpad;
 
     const outputFile = createBackgroundOutputFile("task_scratchpad");
 
@@ -97,7 +97,7 @@ describe("background output files", () => {
 
   test("creates one private temp directory for the current process", () => {
     const tempRoot = useTempRootForTmpdir();
-    delete process.env.LETTA_SCRATCHPAD;
+    delete process.env.HARUYUKI_SCRATCHPAD;
 
     const outputDir = getBackgroundOutputDir();
     const outputFile = createBackgroundOutputFile("exec_1");
@@ -115,7 +115,7 @@ describe("background output files", () => {
 
   test("separates reused filenames across independent temp directories", () => {
     const tempRoot = useTempRootForTmpdir();
-    delete process.env.LETTA_SCRATCHPAD;
+    delete process.env.HARUYUKI_SCRATCHPAD;
 
     const firstOutputFile = createBackgroundOutputFile("exec_1");
     const firstOutputDir = dirname(firstOutputFile);

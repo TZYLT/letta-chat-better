@@ -5,7 +5,7 @@
  * Usage:
  *   bun scripts/verify-prefix-probe.ts [probe-dir]
  *
- * Reads `<probe-dir>/payload-*.json` (defaults to $LETTA_PREFIX_PROBE_DIR),
+ * Reads `<probe-dir>/payload-*.json` (defaults to $HARUYUKI_PREFIX_PROBE_DIR),
  * compares adjacent turns per conversation, and exits non-zero when the system
  * segment or tools field drifted between turns. This is the repeatable,
  * script-level form of V0/V1/V12/V13 (implementation route §5.1).
@@ -20,7 +20,7 @@ import {
 
 function resolveDir(): string {
   const fromArgv = process.argv[2]?.trim();
-  const fromEnv = process.env.LETTA_PREFIX_PROBE_DIR?.trim();
+  const fromEnv = process.env.HARUYUKI_PREFIX_PROBE_DIR?.trim();
   const dir =
     fromArgv && fromArgv.length > 0
       ? fromArgv
@@ -29,7 +29,7 @@ function resolveDir(): string {
         : undefined;
   if (!dir) {
     console.error("usage: bun scripts/verify-prefix-probe.ts <probe-dir>");
-    console.error("  (or set LETTA_PREFIX_PROBE_DIR)");
+    console.error("  (or set HARUYUKI_PREFIX_PROBE_DIR)");
     process.exit(2);
   }
   return dir;

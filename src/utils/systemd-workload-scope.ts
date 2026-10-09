@@ -1,4 +1,4 @@
-export const WORKLOAD_SYSTEMD_SLICE_ENV = "LETTA_WORKLOAD_SYSTEMD_SLICE";
+export const WORKLOAD_SYSTEMD_SLICE_ENV = "HARUYUKI_WORKLOAD_SYSTEMD_SLICE";
 
 type WorkloadScopeOptions = {
   env?: NodeJS.ProcessEnv;

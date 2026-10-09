@@ -165,7 +165,7 @@ describe("Bash tool", () => {
       ].join("\n"),
       {
         description: "Test strict mode",
-        secretEnv: { LETTA_BASH_STRICT: "1" },
+        secretEnv: { HARUYUKI_BASH_STRICT: "1" },
       },
     );
 

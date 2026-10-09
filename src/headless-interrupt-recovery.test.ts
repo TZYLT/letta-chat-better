@@ -94,7 +94,7 @@ test("headless interrupt preserves a real Monitor and its queued events", async 
       cwd: repoRoot,
       env: createIsolatedCliTestEnv({
         HOME: home,
-        LETTA_FS_SANDBOX: "0",
+        HARUYUKI_FS_SANDBOX: "0",
         NO_COLOR: "1",
         MONITOR_TEST_URL: `ws://127.0.0.1:${address.port}`,
       }),

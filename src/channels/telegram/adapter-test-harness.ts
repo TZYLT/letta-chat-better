@@ -162,7 +162,8 @@ const originalFetch = globalThis.fetch;
 
 const originalOpenAiApiKey = process.env.OPENAI_API_KEY;
 
-const originalTelegramDebounce = process.env.LETTA_TELEGRAM_INBOUND_DEBOUNCE_MS;
+const originalTelegramDebounce =
+  process.env.HARUYUKI_TELEGRAM_INBOUND_DEBOUNCE_MS;
 
 export async function withTimeout<T>(
   promise: Promise<T>,
@@ -256,9 +257,10 @@ export function installTelegramAdapterTestHooks(): void {
       process.env.OPENAI_API_KEY = originalOpenAiApiKey;
     }
     if (originalTelegramDebounce === undefined) {
-      delete process.env.LETTA_TELEGRAM_INBOUND_DEBOUNCE_MS;
+      delete process.env.HARUYUKI_TELEGRAM_INBOUND_DEBOUNCE_MS;
     } else {
-      process.env.LETTA_TELEGRAM_INBOUND_DEBOUNCE_MS = originalTelegramDebounce;
+      process.env.HARUYUKI_TELEGRAM_INBOUND_DEBOUNCE_MS =
+        originalTelegramDebounce;
     }
     rmSync(channelRoot, { recursive: true, force: true });
   });

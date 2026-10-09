@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { getRipgrepBinDir, getRipgrepPath } from "@/tools/impl/ripgrep-manager";
 
-const TOOLS_DIR_ENV = "LETTA_CODE_TOOLS_DIR";
+const TOOLS_DIR_ENV = "HARUYUKI_CODE_TOOLS_DIR";
 
 function writeFakeRg(dir: string, name: string, body: string): string {
   const filePath = join(dir, name);

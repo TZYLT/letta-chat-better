@@ -7,7 +7,7 @@ import { handleCronCommand } from "@/websocket/listener/commands/cron";
 import type { SafeSocketSend } from "@/websocket/listener/commands/types";
 
 const TEST_DIR = path.join(import.meta.dir, "__cron_command_test_tmp__");
-const originalHome = process.env.LETTA_HOME;
+const originalHome = process.env.HARUYUKI_HOME;
 
 let messages: unknown[];
 const socket = {} as WebSocket;
@@ -19,14 +19,14 @@ const safeSocketSend: SafeSocketSend = (_socket, payload) => {
 beforeEach(() => {
   if (existsSync(TEST_DIR)) rmSync(TEST_DIR, { recursive: true });
   mkdirSync(TEST_DIR, { recursive: true });
-  process.env.LETTA_HOME = TEST_DIR;
+  process.env.HARUYUKI_HOME = TEST_DIR;
   messages = [];
 });
 
 afterEach(() => {
   if (existsSync(TEST_DIR)) rmSync(TEST_DIR, { recursive: true });
-  if (originalHome) process.env.LETTA_HOME = originalHome;
-  else delete process.env.LETTA_HOME;
+  if (originalHome) process.env.HARUYUKI_HOME = originalHome;
+  else delete process.env.HARUYUKI_HOME;
 });
 
 function addRecurringTask() {

@@ -56,7 +56,7 @@ Default to a **tool** when the model should decide when to use the capability. D
 6. Write a single-file mod unless the user asks for something larger.
 7. Return disposers for registered providers/commands/tools/events, timers, subscriptions, and panels that should close on reload.
 8. Do a basic review: valid names, descriptions present, schemas are object schemas, optional capabilities guarded, scoped APIs used, cleanup returned.
-9. Tell the user the absolute file path changed and to run `/reload`. If a mod breaks startup or command handling, recover with `letta --no-mods` or `LETTA_DISABLE_MODS=1 letta`.
+9. Tell the user the absolute file path changed and to run `/reload`. If a mod breaks startup or command handling, recover with `letta --no-mods` or `HARUYUKI_DISABLE_MODS=1 letta`.
 
 ## Core mod shape
 

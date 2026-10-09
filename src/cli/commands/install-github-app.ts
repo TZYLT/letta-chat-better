@@ -233,7 +233,7 @@ export function generateLettaWorkflowYaml(options?: {
   ];
 
   if (options?.includeAgentId) {
-    lines.push("          agent_id: $" + "{{ vars.LETTA_AGENT_ID }}");
+    lines.push("          agent_id: $" + "{{ vars.HARUYUKI_AGENT_ID }}");
   }
 
   return lines.join("\n");
@@ -485,7 +485,7 @@ export async function installGithubApp(
 
     if (resolvedAgentId) {
       progress(onProgress, "Configuring agent");
-      setRepositoryVariable(repo, "LETTA_AGENT_ID", resolvedAgentId);
+      setRepositoryVariable(repo, "HARUYUKI_AGENT_ID", resolvedAgentId);
     }
 
     if (!changed) {

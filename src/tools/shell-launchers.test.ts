@@ -298,9 +298,9 @@ describe("Shell Launchers", () => {
     });
   } else {
     describe("Unix-specific", () => {
-      test("prepends strict shell prelude when LETTA_BASH_STRICT is set", () => {
+      test("prepends strict shell prelude when HARUYUKI_BASH_STRICT is set", () => {
         const launchers = buildShellLaunchers("echo test", {
-          env: { LETTA_BASH_STRICT: "1" },
+          env: { HARUYUKI_BASH_STRICT: "1" },
         });
 
         expect(launchers[0]?.at(-1)).toBe("set -euo pipefail\necho test");

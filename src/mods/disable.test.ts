@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import {
   areModsDisabled,
+  HARUYUKI_DISABLE_MODS_ENV,
   LEGACY_LETTA_DISABLE_EXTENSIONS_ENV,
-  LETTA_DISABLE_MODS_ENV,
   shouldDisableMods,
 } from "@/mods/disable";
 
@@ -12,11 +12,15 @@ describe("mod disable switch", () => {
     expect(shouldDisableMods({ cliFlag: false, env: {} })).toBe(false);
 
     for (const value of ["1", "true", "TRUE", "yes", "on"] as const) {
-      expect(areModsDisabled({ [LETTA_DISABLE_MODS_ENV]: value })).toBe(true);
+      expect(areModsDisabled({ [HARUYUKI_DISABLE_MODS_ENV]: value })).toBe(
+        true,
+      );
     }
 
     for (const value of ["", "0", "false", "off", "no"] as const) {
-      expect(areModsDisabled({ [LETTA_DISABLE_MODS_ENV]: value })).toBe(false);
+      expect(areModsDisabled({ [HARUYUKI_DISABLE_MODS_ENV]: value })).toBe(
+        false,
+      );
     }
   });
 

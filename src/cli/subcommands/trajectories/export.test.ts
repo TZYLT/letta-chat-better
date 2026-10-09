@@ -102,7 +102,7 @@ const CODEX_SESSION = [
   }),
 ].join("\n");
 
-const LETTA_SESSION = [
+const HARUYUKI_SESSION = [
   JSON.stringify({
     kind: "user",
     text: "hello there",
@@ -171,7 +171,10 @@ async function seedStores(baseDir: string): Promise<SeededRoots> {
     "conversation-local-1",
   );
   await mkdir(lettaConversation, { recursive: true });
-  await writeFile(join(lettaConversation, "transcript.jsonl"), LETTA_SESSION);
+  await writeFile(
+    join(lettaConversation, "transcript.jsonl"),
+    HARUYUKI_SESSION,
+  );
 
   const openhandsRoot = join(baseDir, "openhands-sessions");
   const eventsDir = join(openhandsRoot, "conv-1", "events");

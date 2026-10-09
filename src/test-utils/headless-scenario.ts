@@ -200,9 +200,9 @@ async function runCLI(args: Args): Promise<RunResult> {
   const env =
     args.backend === "local"
       ? createIsolatedCliTestEnv({
-          LETTA_LOCAL_BACKEND_EXPERIMENTAL: "true",
+          HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL: "true",
           LETTA_LOCAL_BACKEND_DIR: localStorageDir,
-          LETTA_CODE_DEV_PI_PROVIDER: providerEnvValue(provider),
+          HARUYUKI_CODE_DEV_PI_PROVIDER: providerEnvValue(provider),
         })
       : createAuthenticatedCliTestEnv();
 

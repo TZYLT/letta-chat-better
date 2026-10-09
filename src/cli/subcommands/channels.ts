@@ -67,21 +67,21 @@ Usage:
 Bind options (Slack only):
   --channel slack        Required
   --account-id <id>      Channel account ID (optional; inferred when only one account exists)
-  --agent <id>           Agent ID (defaults to LETTA_AGENT_ID)
+  --agent <id>           Agent ID (defaults to HARUYUKI_AGENT_ID)
 
 Route add options:
   --channel <name>       Channel name (e.g. "telegram")
   --account-id <id>      Channel account ID (required when multiple accounts exist)
   --chat-id <id>         Chat/conversation ID on the platform
-  --agent <id>           Agent ID (defaults to LETTA_AGENT_ID)
-  --conversation <id>    Conversation ID (defaults to LETTA_CONVERSATION_ID)
+  --agent <id>           Agent ID (defaults to HARUYUKI_AGENT_ID)
+  --conversation <id>    Conversation ID (defaults to HARUYUKI_CONVERSATION_ID)
 
 Pair options:
   --channel <name>       Channel name (e.g. "telegram")
   --account-id <id>      Channel account ID (optional; inferred when only one account exists)
   --code <code>          Pairing code from the bot
-  --agent <id>           Agent ID (defaults to LETTA_AGENT_ID)
-  --conversation <id>    Conversation ID (defaults to LETTA_CONVERSATION_ID)
+  --agent <id>           Agent ID (defaults to HARUYUKI_AGENT_ID)
+  --conversation <id>    Conversation ID (defaults to HARUYUKI_CONVERSATION_ID)
 
 Note: "configure" and "status" are standalone-safe. "route add/remove" and
 "pair" modify files but do NOT update a running listener — use the /channels
@@ -153,11 +153,11 @@ function parseChannelsArgs(argv: string[]) {
 }
 
 function getAgentId(fromArgs?: string): string {
-  return fromArgs || process.env.LETTA_AGENT_ID || "";
+  return fromArgs || process.env.HARUYUKI_AGENT_ID || "";
 }
 
 function getConversationId(fromArgs?: string): string {
-  return fromArgs || process.env.LETTA_CONVERSATION_ID || "default";
+  return fromArgs || process.env.HARUYUKI_CONVERSATION_ID || "default";
 }
 
 function assertKnownChannelId(channel: string): SupportedChannelId {
@@ -371,7 +371,7 @@ function handleRouteAdd(
   }
   if (!agentId) {
     console.error(
-      "Error: --agent is required (or set LETTA_AGENT_ID env var).",
+      "Error: --agent is required (or set HARUYUKI_AGENT_ID env var).",
     );
     return 1;
   }
@@ -493,7 +493,7 @@ async function handlePair(
   }
   if (!agentId) {
     console.error(
-      "Error: --agent is required (or set LETTA_AGENT_ID env var).",
+      "Error: --agent is required (or set HARUYUKI_AGENT_ID env var).",
     );
     return 1;
   }
@@ -538,7 +538,7 @@ function handleBind(
   }
   if (!agentId) {
     console.error(
-      "Error: --agent is required (or set LETTA_AGENT_ID env var).",
+      "Error: --agent is required (or set HARUYUKI_AGENT_ID env var).",
     );
     return 1;
   }

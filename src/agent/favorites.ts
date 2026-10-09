@@ -4,8 +4,8 @@ import { type Backend, getBackend } from "@/backend";
 import { apiRequest } from "@/backend/api/request";
 import { settingsManager } from "@/settings-manager";
 
-export const LETTA_CHAT_FAVORITE_TAG_BASE = "view:letta-chat";
-export const LETTA_CHAT_FAVORITE_TAG_PREFIX = "favorite:user:";
+export const HARUYUKI_CHAT_FAVORITE_TAG_BASE = "view:letta-chat";
+export const HARUYUKI_CHAT_FAVORITE_TAG_PREFIX = "favorite:user:";
 export const LOCAL_FAVORITE_OWNER_ID = "local";
 export const LOCAL_DESKTOP_FAVORITE_TAG = generateFavoriteTag(
   LOCAL_FAVORITE_OWNER_ID,
@@ -27,7 +27,7 @@ export function __testSetCurrentUserMetadataFetcher(
 }
 
 export function generateFavoriteTag(ownerId: string): string {
-  return `${LETTA_CHAT_FAVORITE_TAG_PREFIX}${ownerId}`;
+  return `${HARUYUKI_CHAT_FAVORITE_TAG_PREFIX}${ownerId}`;
 }
 
 async function fetchCurrentUserMetadata(): Promise<CurrentUserMetadata> {
@@ -71,7 +71,7 @@ export function removeFavoriteTag(
   favoriteTag: string,
 ): string[] {
   return tags.filter(
-    (tag) => tag !== favoriteTag && tag !== LETTA_CHAT_FAVORITE_TAG_BASE,
+    (tag) => tag !== favoriteTag && tag !== HARUYUKI_CHAT_FAVORITE_TAG_BASE,
   );
 }
 

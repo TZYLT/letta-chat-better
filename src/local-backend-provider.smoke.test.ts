@@ -6,15 +6,16 @@ import { join } from "node:path";
 import { createIsolatedCliTestEnv } from "@/test-utils/test-process-env";
 
 const projectRoot = process.cwd();
-const providerSmokeEnabled = process.env.LETTA_LOCAL_PROVIDER_SMOKE === "true";
+const providerSmokeEnabled =
+  process.env.HARUYUKI_LOCAL_PROVIDER_SMOKE === "true";
 
 async function runLocalProviderCli(
   extraEnv: NodeJS.ProcessEnv,
 ): Promise<{ stdout: string; stderr: string; exitCode: number | null }> {
   const storageDir = await mkdtemp(join(tmpdir(), "lc-local-provider-"));
   const env = createIsolatedCliTestEnv({
-    LETTA_DEBUG: "0",
-    LETTA_LOCAL_BACKEND_EXPERIMENTAL: "true",
+    HARUYUKI_DEBUG: "0",
+    HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL: "true",
     LETTA_LOCAL_BACKEND_DIR: storageDir,
     ...extraEnv,
   });
@@ -25,9 +26,9 @@ async function runLocalProviderCli(
   }
   delete env.LETTA_API_KEY;
   delete env.LETTA_BASE_URL;
-  delete env.LETTA_API_BASE;
-  delete env.LETTA_AGENT_ID;
-  delete env.LETTA_CONVERSATION_ID;
+  delete env.HARUYUKI_API_BASE;
+  delete env.HARUYUKI_AGENT_ID;
+  delete env.HARUYUKI_CONVERSATION_ID;
 
   try {
     return await new Promise((resolve, reject) => {

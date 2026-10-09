@@ -517,7 +517,7 @@ export async function generateAndOpenMemoryViewer(
   // 2. Safely embed JSON - escape < to \u003c to prevent </script> injection
   const jsonPayload = JSON.stringify(data).replace(/</g, "\\u003c");
   const html = memoryViewerTemplate.replace(
-    "<!--LETTA_DATA_PLACEHOLDER-->",
+    "<!--HARUYUKI_DATA_PLACEHOLDER-->",
     () => jsonPayload,
   );
 

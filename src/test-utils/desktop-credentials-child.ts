@@ -39,7 +39,7 @@ writeFileSync(
   probe,
   `console.log(JSON.stringify({type: "result", result: JSON.stringify({
     apiKey: process.env.LETTA_API_KEY,
-    hasIpcMarker: Boolean(process.env.LETTA_DESKTOP_CREDENTIALS_IPC),
+    hasIpcMarker: Boolean(process.env.HARUYUKI_DESKTOP_CREDENTIALS_IPC),
     computer: process.argv.includes("--computer")
   })}));`,
 );
@@ -51,8 +51,8 @@ process.on("message", async (message) => {
     message.type === "spawn_subagent"
   ) {
     // Exercise the real manager and OS spawn, without running an LLM turn.
-    process.env.LETTA_CODE_BIN = process.execPath;
-    process.env.LETTA_CODE_BIN_ARGS_JSON = JSON.stringify([probe]);
+    process.env.HARUYUKI_CODE_BIN = process.execPath;
+    process.env.HARUYUKI_CODE_BIN_ARGS_JSON = JSON.stringify([probe]);
     if ("missing" in message) {
       delete process.env.LETTA_API_KEY;
       settingsManager.updateSettings({ env: { LETTA_API_KEY: "" } });
@@ -94,5 +94,5 @@ process.on("message", async (message) => {
 process.send?.({
   type: "initialized",
   hasInheritedCredential: Boolean(process.env.LETTA_API_KEY),
-  hasIpcMarker: Boolean(process.env.LETTA_DESKTOP_CREDENTIALS_IPC),
+  hasIpcMarker: Boolean(process.env.HARUYUKI_DESKTOP_CREDENTIALS_IPC),
 });

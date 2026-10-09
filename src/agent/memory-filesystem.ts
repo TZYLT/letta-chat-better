@@ -50,7 +50,7 @@ export function getMemoryFilesystemRoot(
 ): string {
   // Resolve through `appHomeRoot` rather than joining `homeDir` directly: the
   // sandbox policy already derives its writable base and denied trees from this
-  // root, so a memory root that ignored a `LETTA_HOME` override would land
+  // root, so a memory root that ignored a `HARUYUKI_HOME` override would land
   // outside the policy and have every memory write silently rejected.
   return join(
     appHomeRoot(homeDir, env),
@@ -130,7 +130,7 @@ export function resolveScopedMemoryDir(
     return resolve(directMemoryDir);
   }
 
-  const envAgentId = (env.LETTA_AGENT_ID || env.AGENT_ID || "").trim();
+  const envAgentId = (env.HARUYUKI_AGENT_ID || env.AGENT_ID || "").trim();
   if (envAgentId) {
     return getScopedMemoryFilesystemRoot(envAgentId, { env, homeDir });
   }
@@ -554,7 +554,7 @@ export async function isLettaCloud(): Promise<boolean> {
 
   return (
     isCloudServerUrl(serverUrl) ||
-    process.env.LETTA_MEMFS_LOCAL === "1" ||
+    process.env.HARUYUKI_MEMFS_LOCAL === "1" ||
     process.env.LETTA_API_KEY === "local-desktop"
   );
 }
@@ -569,7 +569,7 @@ export async function isLettaMemfsServer(): Promise<boolean> {
 
   return (
     isCloudServerUrl(memfsServerUrl) ||
-    process.env.LETTA_MEMFS_LOCAL === "1" ||
+    process.env.HARUYUKI_MEMFS_LOCAL === "1" ||
     process.env.LETTA_API_KEY === "local-desktop"
   );
 }

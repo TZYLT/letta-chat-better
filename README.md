@@ -31,7 +31,7 @@ Letta Code can be used interactively, or to power always-on agents that work pro
 | [Remote computers](https://docs.letta.com/platform/computers/byom) (requires signing in with Letta) | Agents work across multiple computers. Connect any machine by running `letta server --computer-name "..."` |
 | [Secrets](https://docs.letta.com/letta-code/secrets) (requires signing in with Letta) | Make secrets available as environment variables (across machines) while obfuscating their values from context |
 
-Automatic client-side dreaming is disabled by default on native Windows, including when saved `/sleeptime` settings enable it. Manual `/dream` and `/reflect` commands remain available. To opt in, set `LETTA_ENABLE_WINDOWS_AUTO_REFLECTION=1` in the environment of the Letta Code process. This does not affect macOS, Linux (including WSL), or server-side dreaming.
+Automatic client-side dreaming is disabled by default on native Windows, including when saved `/sleeptime` settings enable it. Manual `/dream` and `/reflect` commands remain available. To opt in, set `HARUYUKI_ENABLE_WINDOWS_AUTO_REFLECTION=1` in the environment of the Letta Code process. This does not affect macOS, Linux (including WSL), or server-side dreaming.
 
 See the full list of slash commands in our [documentation](https://docs.letta.com/letta-code/slash-commands).
 
@@ -56,7 +56,7 @@ You can also download the [**desktop app**](https://docs.letta.com/letta-code/de
 
 ## Letta Cloud
 
-Letta Cloud stores agents' memory, identity, and conversations while Letta Code runs on a laptop, [GitHub Actions](https://github.com/letta-ai/letta-code-action), a Cloud sandbox, or a remote computer. Chat with them through [chat.letta.com](https://chat.letta.com/) or Desktop. On resume, bundled default system prompts (including older versions) become Cloud-managed. Custom prompts stay explicit. Set `LETTA_CODE_PRESERVE_CLOUD_SYSTEM_PROMPT=1` to disable automatic prompt updates on Cloud.
+Letta Cloud stores agents' memory, identity, and conversations while Letta Code runs on a laptop, [GitHub Actions](https://github.com/letta-ai/letta-code-action), a Cloud sandbox, or a remote computer. Chat with them through [chat.letta.com](https://chat.letta.com/) or Desktop. On resume, bundled default system prompts (including older versions) become Cloud-managed. Custom prompts stay explicit. Set `HARUYUKI_CODE_PRESERVE_CLOUD_SYSTEM_PROMPT=1` to disable automatic prompt updates on Cloud.
 
 ```mermaid
 graph TD

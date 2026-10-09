@@ -14,14 +14,14 @@ import { getChannelRoutingPath } from "@/channels/config";
 import { addRoute } from "@/channels/routing";
 
 test("unit tests write home-relative state under a disposable home", () => {
-  const testHome = process.env.LETTA_TEST_HOME;
+  const testHome = process.env.HARUYUKI_TEST_HOME;
   if (!testHome) throw new Error("Test home preload did not run");
   expect(homedir()).toBe(testHome);
   expect(process.env.HOME).toBe(testHome);
   expect(process.env.USERPROFILE).toBe(testHome);
 
   for (const key of [
-    "LETTA_HOME",
+    "HARUYUKI_HOME",
     "LETTA_LOCAL_BACKEND_DIR",
     "LETTA_MEMORY_DIR",
     "MEMORY_DIR",
@@ -89,7 +89,7 @@ test.each(["routing.json", "routing.yaml"])(
         USERPROFILE: operatorHome,
         MEMORY_DIR: liveMemoryDir,
       };
-      delete env.LETTA_TEST_HOME;
+      delete env.HARUYUKI_TEST_HOME;
 
       const fixturePath = join(
         process.cwd(),

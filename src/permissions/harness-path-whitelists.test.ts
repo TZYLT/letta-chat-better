@@ -8,7 +8,7 @@
  * silently stops covering the tree that actually holds memory. `bun run check`
  * cannot see either.
  *
- * The case that exposed it: ⑪-A promoted `LETTA_HOME` to a global root override
+ * The case that exposed it: ⑪-A promoted `HARUYUKI_HOME` to a global root override
  * for everything resolved through `app-paths.ts`. Two families of call sites were
  * missed, and both fail silently:
  *
@@ -59,7 +59,7 @@ import {
   projectAppHomePath,
 } from "@/utils/app-paths";
 
-const originalLettaHome = process.env.LETTA_HOME;
+const originalLettaHome = process.env.HARUYUKI_HOME;
 const tempDirs: string[] = [];
 
 function makeTempDir(prefix: string): string {
@@ -75,9 +75,9 @@ function slash(value: string): string {
 
 afterEach(() => {
   if (originalLettaHome === undefined) {
-    delete process.env.LETTA_HOME;
+    delete process.env.HARUYUKI_HOME;
   } else {
-    process.env.LETTA_HOME = originalLettaHome;
+    process.env.HARUYUKI_HOME = originalLettaHome;
   }
   resetPermissionLoaderCacheForTests();
   while (tempDirs.length) {
@@ -87,7 +87,7 @@ afterEach(() => {
 
 test("the shell memory whitelist follows the harness root override", () => {
   const home = makeTempDir("harness-whitelist-");
-  process.env.LETTA_HOME = home;
+  process.env.HARUYUKI_HOME = home;
   const agentId = "agent-whitelist-self";
 
   const memoryRoot = getScopedMemoryFilesystemRoot(agentId);
@@ -110,7 +110,7 @@ test("the shell memory whitelist follows the harness root override", () => {
 test("the sandbox policy's writable base covers the memory root it confines", () => {
   const home = makeTempDir("harness-policy-");
   mkdirSync(join(home, APP_SUBDIRS.agents), { recursive: true });
-  process.env.LETTA_HOME = home;
+  process.env.HARUYUKI_HOME = home;
   const agentId = "agent-whitelist-policy";
 
   const memoryRoot = getScopedMemoryFilesystemRoot(agentId);
@@ -137,7 +137,7 @@ test("the sandbox policy's writable base covers the memory root it confines", ()
 test("project-scoped settings stay in the project under a harness root override", async () => {
   const home = makeTempDir("harness-user-");
   const project = makeTempDir("harness-project-");
-  process.env.LETTA_HOME = home;
+  process.env.HARUYUKI_HOME = home;
   mkdirSync(join(project, APP_DIR_NAME), { recursive: true });
 
   await savePermissionRule("Bash(npm test:*)", "allow", "project", project);
@@ -156,7 +156,7 @@ test("project-scoped settings stay in the project under a harness root override"
 
 test("the user settings file follows the harness root override", () => {
   const home = makeTempDir("harness-settings-");
-  process.env.LETTA_HOME = home;
+  process.env.HARUYUKI_HOME = home;
 
   const paths = getUserSettingsPaths();
   expect(paths.canonical).toBe(appHomePath([APP_SUBDIRS.settingsFile]));

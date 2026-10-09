@@ -10,10 +10,10 @@ import {
   resolveSubagentInheritedPrimaryRoot,
 } from "@/agent/subagents/subagent-launcher";
 import {
-  LETTA_MOD_CAPABILITY_PROFILE_ENV,
+  HARUYUKI_MOD_CAPABILITY_PROFILE_ENV,
   PROVIDERS_ONLY_MOD_CAPABILITY_PROFILE,
 } from "@/mods/capabilities";
-import { LETTA_DISABLE_MODS_ENV } from "@/mods/disable";
+import { HARUYUKI_DISABLE_MODS_ENV } from "@/mods/disable";
 import { SUBAGENT_NAME_ENV } from "@/utils/subagent-launch-marker";
 import { TRANSCRIPT_ROOT_ENV } from "@/utils/transcript-paths";
 
@@ -30,7 +30,7 @@ describe("composeSubagentChildEnv", () => {
       inheritedPrimaryRoot: PARENT_MEMORY_DIR,
     });
     expect(isMemoryWorkerSession(worker)).toBe(true);
-    expect(worker[LETTA_MOD_CAPABILITY_PROFILE_ENV]).toBe(
+    expect(worker[HARUYUKI_MOD_CAPABILITY_PROFILE_ENV]).toBe(
       PROVIDERS_ONLY_MOD_CAPABILITY_PROFILE,
     );
     const other = composeSubagentChildEnv({
@@ -81,9 +81,10 @@ describe("composeSubagentChildEnv", () => {
   test("reflection subagents load only mod providers in the child process", () => {
     const parentProcessEnv: NodeJS.ProcessEnv = {
       HOME: "/home/user",
-      [LETTA_DISABLE_MODS_ENV]: "0",
+      [HARUYUKI_DISABLE_MODS_ENV]: "0",
     };
-    const originalProcessValue = process.env[LETTA_MOD_CAPABILITY_PROFILE_ENV];
+    const originalProcessValue =
+      process.env[HARUYUKI_MOD_CAPABILITY_PROFILE_ENV];
 
     const env = composeSubagentChildEnv({
       parentProcessEnv,
@@ -93,12 +94,14 @@ describe("composeSubagentChildEnv", () => {
       inheritedPrimaryRoot: PARENT_MEMORY_DIR,
     });
 
-    expect(env[LETTA_MOD_CAPABILITY_PROFILE_ENV]).toBe(
+    expect(env[HARUYUKI_MOD_CAPABILITY_PROFILE_ENV]).toBe(
       PROVIDERS_ONLY_MOD_CAPABILITY_PROFILE,
     );
-    expect(env[LETTA_DISABLE_MODS_ENV]).toBe("0");
-    expect(parentProcessEnv[LETTA_MOD_CAPABILITY_PROFILE_ENV]).toBeUndefined();
-    expect(process.env[LETTA_MOD_CAPABILITY_PROFILE_ENV]).toBe(
+    expect(env[HARUYUKI_DISABLE_MODS_ENV]).toBe("0");
+    expect(
+      parentProcessEnv[HARUYUKI_MOD_CAPABILITY_PROFILE_ENV],
+    ).toBeUndefined();
+    expect(process.env[HARUYUKI_MOD_CAPABILITY_PROFILE_ENV]).toBe(
       originalProcessValue,
     );
   });
@@ -112,9 +115,9 @@ describe("composeSubagentChildEnv", () => {
       inheritedPrimaryRoot: PARENT_MEMORY_DIR,
     });
 
-    expect(env[LETTA_DISABLE_MODS_ENV]).toBeUndefined();
-    expect(env[LETTA_MOD_CAPABILITY_PROFILE_ENV]).toBeUndefined();
-    expect(env.LETTA_SUBAGENT_LAUNCH).toBe("1");
+    expect(env[HARUYUKI_DISABLE_MODS_ENV]).toBeUndefined();
+    expect(env[HARUYUKI_MOD_CAPABILITY_PROFILE_ENV]).toBeUndefined();
+    expect(env.HARUYUKI_SUBAGENT_LAUNCH).toBe("1");
   });
 
   test("normal subagent records parent identity without overriding memory dir", () => {
@@ -125,8 +128,8 @@ describe("composeSubagentChildEnv", () => {
       inheritedPrimaryRoot: PARENT_MEMORY_DIR,
     });
 
-    expect(env.LETTA_PARENT_AGENT_ID).toBe(PARENT_ID);
-    expect(env.LETTA_CODE_AGENT_ROLE).toBe("subagent");
+    expect(env.HARUYUKI_PARENT_AGENT_ID).toBe(PARENT_ID);
+    expect(env.HARUYUKI_CODE_AGENT_ROLE).toBe("subagent");
     // Default launch profile: MEMORY_DIR is NOT overridden to parent
     expect(env.MEMORY_DIR).toBeUndefined();
     expect(env.LETTA_MEMORY_DIR).toBeUndefined();
@@ -140,10 +143,10 @@ describe("composeSubagentChildEnv", () => {
       inheritedPrimaryRoot: PARENT_MEMORY_DIR,
     });
 
-    expect(env.LETTA_PARENT_AGENT_ID).toBe(PARENT_ID);
+    expect(env.HARUYUKI_PARENT_AGENT_ID).toBe(PARENT_ID);
     expect(env.MEMORY_DIR).toBe(PARENT_MEMORY_DIR);
     expect(env.LETTA_MEMORY_DIR).toBe(PARENT_MEMORY_DIR);
-    expect(env.LETTA_CODE_AGENT_ROLE).toBe("subagent");
+    expect(env.HARUYUKI_CODE_AGENT_ROLE).toBe("subagent");
   });
 
   test("memory subagent receives a transcript-scoped scratchpad by default", () => {
@@ -158,7 +161,7 @@ describe("composeSubagentChildEnv", () => {
       subagentId: "subagent-123",
     });
 
-    expect(env.LETTA_SCRATCHPAD).toBe(
+    expect(env.HARUYUKI_SCRATCHPAD).toBe(
       join("/sandbox/transcripts", "background", "subagent-123"),
     );
   });
@@ -166,14 +169,14 @@ describe("composeSubagentChildEnv", () => {
   test("memory subagent preserves an explicitly configured scratchpad", () => {
     const env = composeSubagentChildEnv({
       parentProcessEnv: {
-        LETTA_SCRATCHPAD: "/approved/scratchpad",
+        HARUYUKI_SCRATCHPAD: "/approved/scratchpad",
       },
       parentAgentId: PARENT_ID,
       launchProfile: "memory-subagent",
       inheritedPrimaryRoot: PARENT_MEMORY_DIR,
     });
 
-    expect(env.LETTA_SCRATCHPAD).toBe("/approved/scratchpad");
+    expect(env.HARUYUKI_SCRATCHPAD).toBe("/approved/scratchpad");
   });
 
   test("memory subagent with no primaryRoot keeps parent marker but clears dir", () => {
@@ -190,7 +193,7 @@ describe("composeSubagentChildEnv", () => {
       inheritedPrimaryRoot: null,
     });
 
-    expect(env.LETTA_PARENT_AGENT_ID).toBe(PARENT_ID);
+    expect(env.HARUYUKI_PARENT_AGENT_ID).toBe(PARENT_ID);
     expect(env.MEMORY_DIR).toBeUndefined();
     expect(env.LETTA_MEMORY_DIR).toBeUndefined();
   });
@@ -203,7 +206,7 @@ describe("composeSubagentChildEnv", () => {
       inheritedPrimaryRoot: PARENT_MEMORY_DIR,
     });
 
-    expect(env.LETTA_PARENT_AGENT_ID).toBeUndefined();
+    expect(env.HARUYUKI_PARENT_AGENT_ID).toBeUndefined();
     // Even in the memory-subagent profile with an inherited root, without a parent
     // ID the subagent shouldn't claim to operate on parent memory.
     // (We still set MEMORY_DIR here because that's the filesystem pointer
@@ -319,7 +322,7 @@ describe("composeSubagentChildEnv", () => {
     const env = composeSubagentChildEnv({
       parentProcessEnv: {
         HOME: "/home/user",
-        LETTA_LOCAL_BACKEND_EXPERIMENTAL: "0",
+        HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL: "0",
       },
       backendMode: "local",
       localBackendStorageDir: "/tmp/lc-local-backend",
@@ -328,7 +331,7 @@ describe("composeSubagentChildEnv", () => {
       inheritedPrimaryRoot: PARENT_MEMORY_DIR,
     });
 
-    expect(env.LETTA_LOCAL_BACKEND_EXPERIMENTAL).toBe("1");
+    expect(env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL).toBe("1");
     expect(env.LETTA_LOCAL_BACKEND_DIR).toBe("/tmp/lc-local-backend");
   });
 
@@ -351,7 +354,7 @@ describe("composeSubagentChildEnv", () => {
     expect(env.LETTA_BASE_URL).toBe("https://parent.example.com");
   });
 
-  test("LETTA_CODE_AGENT_ROLE is always 'subagent' regardless of launch profile", () => {
+  test("HARUYUKI_CODE_AGENT_ROLE is always 'subagent' regardless of launch profile", () => {
     for (const launchProfile of [
       "memory-subagent",
       "default",
@@ -363,7 +366,7 @@ describe("composeSubagentChildEnv", () => {
         launchProfile,
         inheritedPrimaryRoot: PARENT_MEMORY_DIR,
       });
-      expect(env.LETTA_CODE_AGENT_ROLE).toBe("subagent");
+      expect(env.HARUYUKI_CODE_AGENT_ROLE).toBe("subagent");
     }
   });
 

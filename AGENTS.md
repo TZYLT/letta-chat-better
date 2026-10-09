@@ -234,7 +234,7 @@ Test files live **next to their source** (`local-store.test.ts` next to `local-s
 | Type check only | `bun run typecheck` |
 | Run a single test file | `bun test src/path/to/file.test.ts` |
 | Run all unit tests | `bun test $(find src -name "*.test.ts" \| grep -v integration-tests)` |
-| Dev mode | `bun run dev` (sets `LETTA_DEBUG=1` by default) |
+| Dev mode | `bun run dev` (sets `HARUYUKI_DEBUG=1` by default) |
 
 `bun run fix` only auto-fixes biome violations (format + lint autofixes). The
 architectural checks and TypeScript errors need manual fixes. The pre-commit hook
@@ -261,13 +261,13 @@ also rejects staged parent-relative imports (`../`); use the `@/` alias.
 
 | Variable | Effect |
 |----------|--------|
-| `LETTA_DEBUG=1` | Verbose debug output (default in `bun run dev`) |
-| `LETTA_DEBUG=0` | Suppress debug output even in dev mode |
-| `LETTA_LOCAL_BACKEND_EXPERIMENTAL=1` | Enable local in-process backend |
-| `LETTA_LOCAL_BACKEND_EXECUTOR=deterministic` | Use fake deterministic executor (for tests) |
+| `HARUYUKI_DEBUG=1` | Verbose debug output (default in `bun run dev`) |
+| `HARUYUKI_DEBUG=0` | Suppress debug output even in dev mode |
+| `HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL=1` | Enable local in-process backend |
+| `HARUYUKI_LOCAL_BACKEND_EXECUTOR=deterministic` | Use fake deterministic executor (for tests) |
 | `LETTA_LOCAL_BACKEND_DIR` | Local-backend storage root (defaults to `~/.haruyuki/lc-local-backend`) |
-| `LETTA_HOME` | Overrides the harness root outright, in place of `~/.haruyuki` (every path that resolves through `src/utils/app-paths.ts`) |
-| `LETTA_PREFIX_PROBE_DIR` | Dump each local provider request payload to `payload-<conversationId>-<seq>.json` for the prefix-freeze probe (default off) |
+| `HARUYUKI_HOME` | Overrides the harness root outright, in place of `~/.haruyuki` (every path that resolves through `src/utils/app-paths.ts`) |
+| `HARUYUKI_PREFIX_PROBE_DIR` | Dump each local provider request payload to `payload-<conversationId>-<seq>.json` for the prefix-freeze probe (default off) |
 
 When manually smoke-testing the local backend (`letta --backend local` or
 `bun run dev --backend local`), set `LETTA_LOCAL_BACKEND_DIR` to a temporary
@@ -330,13 +330,13 @@ directory first. Otherwise the run reads and mutates your real
   `appHomeDirName()` for the few places that need the name as a path *segment*.
   `resolveHomeDir()` is the shared `HOME` → `USERPROFILE` → `os.homedir()`
   fallback.
-  **`appHomeRoot` / `appHomePath` honour `LETTA_HOME`, which overrides the root
+  **`appHomeRoot` / `appHomePath` honour `HARUYUKI_HOME`, which overrides the root
   outright — `projectAppHomePath` deliberately does not.** It is the *user*-
   level root that moves; a project's `<repo>/.haruyuki/...` belongs to the
   project and must stay there. Passing a repo directory as `homeDir` to
   `appHomePath` silently redirects project settings, permission rules and
   managed worktrees to the relocated root — the reads and writes then disagree
-  with no error. `LETTA_HOME` is the one supported way tests and operators
+  with no error. `HARUYUKI_HOME` is the one supported way tests and operators
   relocate user-level harness state. Regression coverage for the split lives in
   `src/permissions/harness-path-whitelists.test.ts`.
   A few files still carry the name as a literal. They are the **rename
@@ -385,7 +385,7 @@ re-renders across the entire component tree.
   `React.memo()` for static content. Keep state minimal.
 - **Don't:** Add `useState`/`useReducer` for UI features that update on every
   keystroke, timer tick, or streaming chunk.
-- **Debug:** `LETTA_DEBUG_FLICKER=1` logs re-render triggers to file.
+- **Debug:** `HARUYUKI_DEBUG_FLICKER=1` logs re-render triggers to file.
 - **Review signal:** any PR adding state to App.tsx, modifying `useEffect` deps,
   or touching approval/rendering components.
 
@@ -542,7 +542,7 @@ Key files:
 ### Kill Switch
 
 - `--no-extensions` CLI flag
-- `LETTA_DISABLE_EXTENSIONS=1` environment variable
+- `HARUYUKI_DISABLE_EXTENSIONS=1` environment variable
 
 ### Mod vs Extension Location
 
@@ -732,7 +732,7 @@ Sandbox policy must deny BOTH memory trees:
 
 ### Environment Variables
 
-- `LETTA_FS_SANDBOX=0` , opt-out everywhere
+- `HARUYUKI_FS_SANDBOX=0` , opt-out everywhere
 - `LETTA_SANDBOX=<backend>` , sentinel inside sandboxed children
 
 ---

@@ -94,7 +94,7 @@ export async function runMemoryTokensAction(
   const memoryDir = resolveMemoryDir(options);
   if (!memoryDir) {
     console.error(
-      "Missing memory dir. Set --memory-dir, --agent, $MEMORY_DIR, or $LETTA_AGENT_ID.",
+      "Missing memory dir. Set --memory-dir, --agent, $MEMORY_DIR, or $HARUYUKI_AGENT_ID.",
     );
     return USAGE_EXIT;
   }

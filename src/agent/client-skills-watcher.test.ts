@@ -90,8 +90,8 @@ describe("ClientSkillsWatcher", () => {
       {
         env: createIsolatedCliTestEnv({
           NODE_ENV: "development",
-          LETTA_DISABLE_SKILL_WATCHERS: "0",
-          LETTA_CODE_TELEM: "0",
+          HARUYUKI_DISABLE_SKILL_WATCHERS: "0",
+          HARUYUKI_CODE_TELEM: "0",
         }),
         timeout: 8000,
       },

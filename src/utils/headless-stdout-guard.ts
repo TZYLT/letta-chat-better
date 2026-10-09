@@ -22,7 +22,7 @@ export function installHeadlessStdoutGuard(): void {
         ? (err as { code?: unknown }).code
         : undefined;
 
-    if (process.env.LETTA_PARENT_AGENT_ID) {
+    if (process.env.HARUYUKI_PARENT_AGENT_ID) {
       reportSubagentStdoutLoss(code ?? err);
       process.exit(1);
     }

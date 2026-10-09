@@ -30,7 +30,7 @@ async function runChecker(): Promise<{
     cwd: fixtureRoot,
     env: {
       ...process.env,
-      LETTA_MOCK_ISOLATION_TESTS_DIR: join(fixtureRoot, "src", "tests"),
+      HARUYUKI_MOCK_ISOLATION_TESTS_DIR: join(fixtureRoot, "src", "tests"),
     },
     stdout: "pipe",
     stderr: "pipe",

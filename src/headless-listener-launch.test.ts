@@ -119,8 +119,8 @@ test.each([
       {
         type: "text" as const,
         text: buildHeadlessSenderReminder(true, undefined, {
-          LETTA_PARENT_AGENT_ID: "agent-parent",
-          LETTA_PARENT_CONVERSATION_ID: "conv-parent",
+          HARUYUKI_PARENT_AGENT_ID: "agent-parent",
+          HARUYUKI_PARENT_CONVERSATION_ID: "conv-parent",
         }),
       },
       { type: "text" as const, text: "hello" },

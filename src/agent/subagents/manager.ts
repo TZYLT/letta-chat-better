@@ -186,7 +186,7 @@ export function buildSubagentArgs(
     }
     args.push("--tags", subagentTags.join(","));
     // Newly spawned subagents are stateless (non-memfs). The headless
-    // entrypoint derives this from LETTA_CODE_AGENT_ROLE=subagent — no CLI
+    // entrypoint derives this from HARUYUKI_CODE_AGENT_ROLE=subagent — no CLI
     // flag needed, and no user-facing opt-out exists.
     if (model) {
       args.push("--model", model);
@@ -493,11 +493,11 @@ async function executeSubagent(
 
     if (
       effectiveLaunchProfile === "memory-subagent" &&
-      !parentProcessEnv.LETTA_SCRATCHPAD?.trim() &&
-      childEnv.LETTA_SCRATCHPAD
+      !parentProcessEnv.HARUYUKI_SCRATCHPAD?.trim() &&
+      childEnv.HARUYUKI_SCRATCHPAD
     ) {
       try {
-        rmSync(childEnv.LETTA_SCRATCHPAD, { recursive: true, force: true });
+        rmSync(childEnv.HARUYUKI_SCRATCHPAD, { recursive: true, force: true });
       } catch (error) {
         debugWarn(
           "subagent",

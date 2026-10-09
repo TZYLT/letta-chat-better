@@ -8,7 +8,7 @@ import {
 } from "node:fs";
 import path from "node:path";
 import { isModFileExtension } from "@/mods/file-extensions";
-import { LETTA_PACKAGE_MANIFEST_VERSION } from "@/mods/package-manifest";
+import { HARUYUKI_PACKAGE_MANIFEST_VERSION } from "@/mods/package-manifest";
 import { parseManagedNpmPackageSource } from "@/mods/package-registry";
 
 export interface ScaffoldLocalModPackageOptions {
@@ -30,8 +30,8 @@ export interface ScaffoldLocalModPackageResult {
 }
 
 const DEFAULT_PACKAGE_VERSION = "0.1.0";
-const LETTA_PACKAGE_KEYWORD = "letta-package";
-const LETTA_MOD_KEYWORD = "letta-mod";
+const HARUYUKI_PACKAGE_KEYWORD = "letta-package";
+const HARUYUKI_MOD_KEYWORD = "letta-mod";
 
 function assertValidPackageName(packageName: string): string {
   const trimmed = packageName.trim();
@@ -79,10 +79,10 @@ function createPackageJson(packageName: string, manifestEntry: string) {
     name: packageName,
     version: DEFAULT_PACKAGE_VERSION,
     type: "module",
-    keywords: [LETTA_PACKAGE_KEYWORD, LETTA_MOD_KEYWORD],
+    keywords: [HARUYUKI_PACKAGE_KEYWORD, HARUYUKI_MOD_KEYWORD],
     files: ["README.md", "MOD.md", "mods"],
     letta: {
-      manifestVersion: LETTA_PACKAGE_MANIFEST_VERSION,
+      manifestVersion: HARUYUKI_PACKAGE_MANIFEST_VERSION,
       mods: [manifestEntry],
     },
   };

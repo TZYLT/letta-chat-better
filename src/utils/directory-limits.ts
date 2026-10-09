@@ -3,14 +3,14 @@
  */
 
 export const DIRECTORY_LIMIT_ENV = {
-  memfsTreeMaxLines: "LETTA_MEMFS_TREE_MAX_LINES",
-  memfsTreeMaxChars: "LETTA_MEMFS_TREE_MAX_CHARS",
-  memfsTreeMaxChildrenPerDir: "LETTA_MEMFS_TREE_MAX_CHILDREN_PER_DIR",
-  listDirMaxLimit: "LETTA_LIST_DIR_MAX_LIMIT",
-  listDirMaxDepth: "LETTA_LIST_DIR_MAX_DEPTH",
-  listDirMaxOffset: "LETTA_LIST_DIR_MAX_OFFSET",
-  listDirMaxCollectedEntries: "LETTA_LIST_DIR_MAX_COLLECTED_ENTRIES",
-  listDirMaxChildrenPerDir: "LETTA_LIST_DIR_MAX_CHILDREN_PER_DIR",
+  memfsTreeMaxLines: "HARUYUKI_MEMFS_TREE_MAX_LINES",
+  memfsTreeMaxChars: "HARUYUKI_MEMFS_TREE_MAX_CHARS",
+  memfsTreeMaxChildrenPerDir: "HARUYUKI_MEMFS_TREE_MAX_CHILDREN_PER_DIR",
+  listDirMaxLimit: "HARUYUKI_LIST_DIR_MAX_LIMIT",
+  listDirMaxDepth: "HARUYUKI_LIST_DIR_MAX_DEPTH",
+  listDirMaxOffset: "HARUYUKI_LIST_DIR_MAX_OFFSET",
+  listDirMaxCollectedEntries: "HARUYUKI_LIST_DIR_MAX_COLLECTED_ENTRIES",
+  listDirMaxChildrenPerDir: "HARUYUKI_LIST_DIR_MAX_CHILDREN_PER_DIR",
 } as const;
 
 export const DIRECTORY_LIMIT_DEFAULTS = {

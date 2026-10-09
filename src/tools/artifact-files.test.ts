@@ -15,7 +15,7 @@ import {
 
 const originalHome = process.env.HOME;
 const originalUserProfile = process.env.USERPROFILE;
-const originalArtifactsDir = process.env.LETTA_ARTIFACTS_DIR;
+const originalArtifactsDir = process.env.HARUYUKI_ARTIFACTS_DIR;
 
 let testHomeDir = "";
 
@@ -24,7 +24,11 @@ beforeEach(async () => {
   testHomeDir = await mkdtemp(join(tmpdir(), "letta-artifacts-home-"));
   process.env.HOME = testHomeDir;
   process.env.USERPROFILE = testHomeDir;
-  process.env.LETTA_ARTIFACTS_DIR = join(testHomeDir, ".haruyuki", "artifacts");
+  process.env.HARUYUKI_ARTIFACTS_DIR = join(
+    testHomeDir,
+    ".haruyuki",
+    "artifacts",
+  );
   await settingsManager.initialize();
 });
 
@@ -42,9 +46,9 @@ afterEach(async () => {
     process.env.USERPROFILE = originalUserProfile;
   }
   if (originalArtifactsDir === undefined) {
-    delete process.env.LETTA_ARTIFACTS_DIR;
+    delete process.env.HARUYUKI_ARTIFACTS_DIR;
   } else {
-    process.env.LETTA_ARTIFACTS_DIR = originalArtifactsDir;
+    process.env.HARUYUKI_ARTIFACTS_DIR = originalArtifactsDir;
   }
 });
 

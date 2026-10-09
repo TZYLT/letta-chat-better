@@ -1,9 +1,9 @@
 /**
  * Integration tests for memory filesystem block tagging.
  * These tests hit the real Letta API and require
- * LETTA_RUN_API_INTEGRATION_TESTS=true plus LETTA_API_KEY.
+ * HARUYUKI_RUN_API_INTEGRATION_TESTS=true plus LETTA_API_KEY.
  *
- * Run with: LETTA_RUN_API_INTEGRATION_TESTS=true bun test src/agent/memory-filesystem.integration.test.ts
+ * Run with: HARUYUKI_RUN_API_INTEGRATION_TESTS=true bun test src/agent/memory-filesystem.integration.test.ts
  */
 
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
@@ -14,7 +14,7 @@ const LETTA_API_KEY = process.env.LETTA_API_KEY;
 const LETTA_BASE_URL = process.env.LETTA_BASE_URL || "https://api.letta.com";
 const API_KEY = LETTA_API_KEY ?? "";
 const RUN_API_INTEGRATION_TESTS =
-  process.env.LETTA_RUN_API_INTEGRATION_TESTS === "true";
+  process.env.HARUYUKI_RUN_API_INTEGRATION_TESTS === "true";
 
 const describeIntegration =
   RUN_API_INTEGRATION_TESTS && LETTA_API_KEY ? describe : describe.skip;

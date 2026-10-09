@@ -611,7 +611,7 @@ export class PiStreamAdapter implements ProviderStreamAdapter {
 
     // Prefix-freeze payload probe (D-008): wraps the provider-specific
     // onPayload hooks above so the exact bytes sent are captured last. No-op
-    // unless LETTA_PREFIX_PROBE_DIR is set.
+    // unless HARUYUKI_PREFIX_PROBE_DIR is set.
     const probedOnPayload = withPrefixProbe(options.onPayload, {
       conversationId: input.conversationId,
       modelId: resolved.model.id,

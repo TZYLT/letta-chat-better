@@ -54,8 +54,8 @@ describe("messages subcommand conversation scoping", () => {
   let priorAgentId: string | undefined;
 
   beforeEach(() => {
-    priorAgentId = process.env.LETTA_AGENT_ID;
-    delete process.env.LETTA_AGENT_ID;
+    priorAgentId = process.env.HARUYUKI_AGENT_ID;
+    delete process.env.HARUYUKI_AGENT_ID;
     initializeSettingsMock.mockClear();
     searchMessagesForBackendMock.mockClear();
     backendMock.listAgentMessages.mockClear();
@@ -63,8 +63,8 @@ describe("messages subcommand conversation scoping", () => {
   });
 
   afterEach(() => {
-    if (priorAgentId === undefined) delete process.env.LETTA_AGENT_ID;
-    else process.env.LETTA_AGENT_ID = priorAgentId;
+    if (priorAgentId === undefined) delete process.env.HARUYUKI_AGENT_ID;
+    else process.env.HARUYUKI_AGENT_ID = priorAgentId;
   });
 
   test("search rejects default conversation without an agent", async () => {
@@ -89,7 +89,7 @@ describe("messages subcommand conversation scoping", () => {
   });
 
   test("searching a non-default conversation does not add env agent scope", async () => {
-    process.env.LETTA_AGENT_ID = "agent-current";
+    process.env.HARUYUKI_AGENT_ID = "agent-current";
     const capture = captureConsole();
     try {
       const code = await runMessages([
@@ -115,7 +115,7 @@ describe("messages subcommand conversation scoping", () => {
   });
 
   test("searching default conversation uses the resolved agent", async () => {
-    process.env.LETTA_AGENT_ID = "agent-current";
+    process.env.HARUYUKI_AGENT_ID = "agent-current";
     const capture = captureConsole();
     try {
       const code = await runMessages([

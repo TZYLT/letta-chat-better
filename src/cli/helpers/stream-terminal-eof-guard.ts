@@ -26,7 +26,7 @@ import { debugWarn } from "@/utils/debug";
 const DEFAULT_TERMINAL_EOF_GRACE_MS = 2_000;
 
 function getTerminalEofGraceMs(): number {
-  const raw = process.env.LETTA_STREAM_TERMINAL_EOF_GRACE_MS;
+  const raw = process.env.HARUYUKI_STREAM_TERMINAL_EOF_GRACE_MS;
   if (raw) {
     const parsed = Number(raw);
     if (Number.isFinite(parsed) && parsed > 0) {

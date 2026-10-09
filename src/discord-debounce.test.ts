@@ -47,81 +47,81 @@ describe("resolveDiscordInboundDebounceMs", () => {
   });
 
   test("env var takes precedence over config", () => {
-    const original = process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS;
-    process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS = "300";
+    const original = process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS;
+    process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS = "300";
     try {
       expect(resolveDiscordInboundDebounceMs({ inboundDebounceMs: 500 })).toBe(
         300,
       );
     } finally {
       if (original === undefined) {
-        delete process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS;
+        delete process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS;
       } else {
-        process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS = original;
+        process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS = original;
       }
     }
   });
 
   test("env var 0 disables debounce", () => {
-    const original = process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS;
-    process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS = "0";
+    const original = process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS;
+    process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS = "0";
     try {
       expect(resolveDiscordInboundDebounceMs({ inboundDebounceMs: 500 })).toBe(
         0,
       );
     } finally {
       if (original === undefined) {
-        delete process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS;
+        delete process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS;
       } else {
-        process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS = original;
+        process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS = original;
       }
     }
   });
 
   test("env var clamps to 10000ms max", () => {
-    const original = process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS;
-    process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS = "99999";
+    const original = process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS;
+    process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS = "99999";
     try {
       expect(
         resolveDiscordInboundDebounceMs({ inboundDebounceMs: undefined }),
       ).toBe(10000);
     } finally {
       if (original === undefined) {
-        delete process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS;
+        delete process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS;
       } else {
-        process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS = original;
+        process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS = original;
       }
     }
   });
 
   test("falls back to config when env var is empty string", () => {
-    const original = process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS;
-    process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS = "";
+    const original = process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS;
+    process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS = "";
     try {
       expect(resolveDiscordInboundDebounceMs({ inboundDebounceMs: 800 })).toBe(
         800,
       );
     } finally {
       if (original === undefined) {
-        delete process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS;
+        delete process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS;
       } else {
-        process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS = original;
+        process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS = original;
       }
     }
   });
 
   test("falls back to config when env var is non-numeric", () => {
-    const original = process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS;
-    process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS = "abc";
+    const original = process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS;
+    process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS = "abc";
     try {
       expect(resolveDiscordInboundDebounceMs({ inboundDebounceMs: 800 })).toBe(
         800,
       );
     } finally {
       if (original === undefined) {
-        delete process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS;
+        delete process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS;
       } else {
-        process.env.LETTA_DISCORD_INBOUND_DEBOUNCE_MS = original;
+        process.env.HARUYUKI_DISCORD_INBOUND_DEBOUNCE_MS = original;
       }
     }
   });

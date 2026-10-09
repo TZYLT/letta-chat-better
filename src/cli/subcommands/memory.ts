@@ -29,14 +29,14 @@ Usage:
                      [--format text|json] [--quiet]
 
 Notes:
-  - Most actions require agent id via --agent or LETTA_AGENT_ID and output JSON.
+  - Most actions require agent id via --agent or HARUYUKI_AGENT_ID and output JSON.
   - \`tokens\` additionally accepts --memory-dir or $MEMORY_DIR; reports the
     estimated token size of core memory for the detected MemFS layout. Policy
     (whether a size is concerning) is up to the caller.
   - Memory is git-backed. Use git commands for commit/push.
 
 Examples:
-  LETTA_AGENT_ID=agent-123 letta memory status
+  HARUYUKI_AGENT_ID=agent-123 letta memory status
   letta memory pull --agent agent-123
   letta memory backup --agent agent-123
   letta memory export --agent agent-123 --out /tmp/letta-memory-agent-123
@@ -47,7 +47,9 @@ Examples:
 }
 
 function getAgentId(agentFromArgs?: string, agentIdFromArgs?: string): string {
-  return agentFromArgs || agentIdFromArgs || process.env.LETTA_AGENT_ID || "";
+  return (
+    agentFromArgs || agentIdFromArgs || process.env.HARUYUKI_AGENT_ID || ""
+  );
 }
 
 const MEMORY_OPTIONS = {
@@ -166,7 +168,7 @@ export async function runMemorySubcommand(
 
   if (!agentId) {
     console.error(
-      "Missing agent id. Set LETTA_AGENT_ID or pass --agent/--agent-id.",
+      "Missing agent id. Set HARUYUKI_AGENT_ID or pass --agent/--agent-id.",
     );
     return 1;
   }

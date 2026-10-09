@@ -18,7 +18,7 @@ const LOCAL_AGENT_ID = "agent-local-123";
 
 const originalHome = process.env.HOME;
 const originalUserProfile = process.env.USERPROFILE;
-const originalPalaceFlag = process.env.LETTA_MEMORY_PALACE;
+const originalPalaceFlag = process.env.HARUYUKI_MEMORY_PALACE;
 
 let testHomeDir = "";
 
@@ -27,7 +27,7 @@ beforeEach(async () => {
   testHomeDir = await mkdtemp(join(tmpdir(), "letta-palace-skill-home-"));
   process.env.HOME = testHomeDir;
   process.env.USERPROFILE = testHomeDir;
-  delete process.env.LETTA_MEMORY_PALACE;
+  delete process.env.HARUYUKI_MEMORY_PALACE;
   await settingsManager.initialize();
 });
 
@@ -46,9 +46,9 @@ afterEach(async () => {
   }
 
   if (originalPalaceFlag === undefined) {
-    delete process.env.LETTA_MEMORY_PALACE;
+    delete process.env.HARUYUKI_MEMORY_PALACE;
   } else {
-    process.env.LETTA_MEMORY_PALACE = originalPalaceFlag;
+    process.env.HARUYUKI_MEMORY_PALACE = originalPalaceFlag;
   }
 });
 

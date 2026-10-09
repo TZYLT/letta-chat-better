@@ -19,7 +19,7 @@ letta mcp search <query> [--mode] [--limit]   # ranked tool schemas: [{tool, ran
 letta mcp call <tool-name> [--args | --args-file]  # run a tool, print a CallToolResult
 ```
 
-Every command accepts `--agent <id>`, defaulting to `LETTA_AGENT_ID`/`AGENT_ID` — do not pass it unless targeting another agent.
+Every command accepts `--agent <id>`, defaulting to `HARUYUKI_AGENT_ID`/`AGENT_ID` — do not pass it unless targeting another agent.
 
 ## Search options
 

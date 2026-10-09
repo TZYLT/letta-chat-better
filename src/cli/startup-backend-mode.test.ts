@@ -125,7 +125,7 @@ describe("configured mode selects the process namespace", () => {
   });
 
   // Regression: `configureBackendMode` stopped writing
-  // `LETTA_LOCAL_BACKEND_EXPERIMENTAL`, so `--backend local` (and every startup
+  // `HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL`, so `--backend local` (and every startup
   // path) left the predicate false. The process then namespaced the *legacy
   // Cloud* settings bucket and memory directory while running the local
   // backend: local pins and per-agent settings stayed invisible, and memory

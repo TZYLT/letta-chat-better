@@ -15,7 +15,7 @@ import { validateTelegramToken } from "@/channels/telegram/account-display";
 import { createTelegramAdapter } from "@/channels/telegram/adapter";
 import type { TelegramChannelAccount } from "@/channels/types";
 
-const runLiveSmoke = process.env.LETTA_RUN_LIVE_TELEGRAM_SMOKE === "1";
+const runLiveSmoke = process.env.HARUYUKI_RUN_LIVE_TELEGRAM_SMOKE === "1";
 const liveTest = runLiveSmoke ? test : test.skip;
 
 let smokeRoot: string | null = null;

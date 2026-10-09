@@ -220,8 +220,8 @@ const useInput = (inputHandler, options = {}) => {
                 isPasted: false
             };
 
-            // Debug logging for key parsing (LETTA_DEBUG_KEYS=1)
-            if (process.env.LETTA_DEBUG_KEYS === '1') {
+            // Debug logging for key parsing (HARUYUKI_DEBUG_KEYS=1)
+            if (process.env.HARUYUKI_DEBUG_KEYS === '1') {
                 const rawHex = typeof data === 'string'
                     ? [...data].map(c => '0x' + c.charCodeAt(0).toString(16).padStart(2, '0')).join(' ')
                     : '(non-string)';

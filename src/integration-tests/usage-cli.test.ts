@@ -8,7 +8,7 @@ test("usage CLI reads live credits and model quota and rejects invalid auth", as
   const home = await mkdtemp(join(tmpdir(), "letta-usage-api-"));
   const baseURL = process.env.LETTA_BASE_URL || "https://api.letta.com";
   async function cli(apiKey: string) {
-    const bundle = process.env.LETTA_TEST_CLI_BUNDLE;
+    const bundle = process.env.HARUYUKI_TEST_CLI_BUNDLE;
     const child = Bun.spawn(
       [
         bundle ? "node" : process.execPath,
@@ -25,9 +25,9 @@ test("usage CLI reads live credits and model quota and rejects invalid auth", as
           USERPROFILE: home,
           LETTA_API_KEY: apiKey,
           LETTA_BASE_URL: baseURL,
-          LETTA_DEBUG: "0",
-          LETTA_DISABLE_MODS: "1",
-          LETTA_SKIP_KEYCHAIN_CHECK: "1",
+          HARUYUKI_DEBUG: "0",
+          HARUYUKI_DISABLE_MODS: "1",
+          HARUYUKI_SKIP_KEYCHAIN_CHECK: "1",
         },
         stdout: "pipe",
         stderr: "pipe",

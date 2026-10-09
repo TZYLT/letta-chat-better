@@ -19,12 +19,12 @@ describe("test process env helpers", () => {
       isolateAmbientLettaTestEnv({
         AGENT_ID: "agent-ambient",
         CONVERSATION_ID: "conv-ambient",
-        LETTA_AGENT_ID: "agent-letta",
+        HARUYUKI_AGENT_ID: "agent-letta",
         LETTA_API_KEY: "sk-ambient",
-        LETTA_CODE_AGENT_ROLE: "subagent",
+        HARUYUKI_CODE_AGENT_ROLE: "subagent",
         LETTA_LOCAL_BACKEND_DIR: "/tmp/local-backend",
-        LETTA_LOCAL_BACKEND_EXPERIMENTAL: "1",
-        LETTA_CODE_DEV_PI_PROVIDER: "anthropic",
+        HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL: "1",
+        HARUYUKI_CODE_DEV_PI_PROVIDER: "anthropic",
         LETTA_MEMORY_DIR: "/tmp/letta-memory",
         MEMORY_DIR: "/tmp/memory",
       }),
@@ -34,15 +34,15 @@ describe("test process env helpers", () => {
 
     expect(env.AGENT_ID).toBeUndefined();
     expect(env.CONVERSATION_ID).toBeUndefined();
-    expect(env.LETTA_AGENT_ID).toBeUndefined();
+    expect(env.HARUYUKI_AGENT_ID).toBeUndefined();
     expect(env.LETTA_API_KEY).toBeUndefined();
-    expect(env.LETTA_CODE_AGENT_ROLE).toBeUndefined();
+    expect(env.HARUYUKI_CODE_AGENT_ROLE).toBeUndefined();
     expect(env.LETTA_LOCAL_BACKEND_DIR).toBeUndefined();
-    expect(env.LETTA_LOCAL_BACKEND_EXPERIMENTAL).toBeUndefined();
-    expect(env.LETTA_CODE_DEV_PI_PROVIDER).toBeUndefined();
+    expect(env.HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL).toBeUndefined();
+    expect(env.HARUYUKI_CODE_DEV_PI_PROVIDER).toBeUndefined();
     expect(env.LETTA_MEMORY_DIR).toBeUndefined();
     expect(env.MEMORY_DIR).toBeUndefined();
-    expect(env.LETTA_DISABLE_SESSION_PERSIST).toBe("1");
+    expect(env.HARUYUKI_DISABLE_SESSION_PERSIST).toBe("1");
   });
 
   test("extra env opts back into values deliberately", () => {

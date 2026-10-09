@@ -37,22 +37,22 @@ for (const runtime of ["bun", "node"]) {
       const env: NodeJS.ProcessEnv = {
         ...process.env,
         HOME: directory,
-        LETTA_DEBUG: "1",
-        LETTA_CODE_TELEM: "0",
+        HARUYUKI_DEBUG: "1",
+        HARUYUKI_CODE_TELEM: "0",
         DO_NOT_TRACK: "1",
-        LETTA_DISABLE_CRON_SCHEDULER: "1",
+        HARUYUKI_DISABLE_CRON_SCHEDULER: "1",
       };
-      delete env.LETTA_STARTUP_LOG_MARKER;
-      delete env.LETTA_STARTUP_LOG_OWNER_PID;
-      if (enabled) env.LETTA_STARTUP_LOG_MARKER = token;
+      delete env.HARUYUKI_STARTUP_LOG_MARKER;
+      delete env.HARUYUKI_STARTUP_LOG_OWNER_PID;
+      if (enabled) env.HARUYUKI_STARTUP_LOG_MARKER = token;
       if (mode === "invalid-owner")
-        env.LETTA_STARTUP_LOG_OWNER_PID = "not-a-pid";
+        env.HARUYUKI_STARTUP_LOG_OWNER_PID = "not-a-pid";
       const result = spawnSync(
         "sh",
         [
           "-c",
           (enabled && mode !== "invalid-owner"
-            ? "export LETTA_STARTUP_LOG_OWNER_PID=$$; "
+            ? "export HARUYUKI_STARTUP_LOG_OWNER_PID=$$; "
             : "") +
             (mode === "failure"
               ? 'exec "$@" 2>&1 1</dev/null'

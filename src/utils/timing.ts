@@ -1,12 +1,12 @@
 // src/utils/timing.ts
-// Debug timing utilities - only active when LETTA_DEBUG_TIMINGS env var is set
+// Debug timing utilities - only active when HARUYUKI_DEBUG_TIMINGS env var is set
 
 /**
- * Check if debug timings are enabled via LETTA_DEBUG_TIMINGS env var
- * Set LETTA_DEBUG_TIMINGS=1 or LETTA_DEBUG_TIMINGS=true to enable timing logs
+ * Check if debug timings are enabled via HARUYUKI_DEBUG_TIMINGS env var
+ * Set HARUYUKI_DEBUG_TIMINGS=1 or HARUYUKI_DEBUG_TIMINGS=true to enable timing logs
  */
 export function isTimingsEnabled(): boolean {
-  const val = process.env.LETTA_DEBUG_TIMINGS;
+  const val = process.env.HARUYUKI_DEBUG_TIMINGS;
   return val === "1" || val === "true";
 }
 

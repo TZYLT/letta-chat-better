@@ -44,14 +44,15 @@ export function getRuntimeExecutionEnv(
   if (!settings) return env;
   const scoped = { ...env };
   // Absence is meaningful: a child must not inherit another turn's identity.
-  delete scoped.LETTA_PARENT_AGENT_ID;
-  delete scoped.LETTA_CODE_AGENT_ROLE;
+  delete scoped.HARUYUKI_PARENT_AGENT_ID;
+  delete scoped.HARUYUKI_CODE_AGENT_ROLE;
   delete scoped.TRANSCRIPT_PATH;
   delete scoped.MEMORY_DIR;
   delete scoped.LETTA_MEMORY_DIR;
   if (settings.parent_agent_id)
-    scoped.LETTA_PARENT_AGENT_ID = settings.parent_agent_id;
-  if (settings.agent_role) scoped.LETTA_CODE_AGENT_ROLE = settings.agent_role;
+    scoped.HARUYUKI_PARENT_AGENT_ID = settings.parent_agent_id;
+  if (settings.agent_role)
+    scoped.HARUYUKI_CODE_AGENT_ROLE = settings.agent_role;
   if (settings.transcript_path)
     scoped.TRANSCRIPT_PATH = settings.transcript_path;
   if (settings.memory_directory !== undefined) {

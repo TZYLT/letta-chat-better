@@ -51,7 +51,7 @@ interface LettaSseStopReasonMessage {
   stop_reason?: string;
 }
 
-export const LETTA_STREAM_NO_ASSISTANT_MESSAGE_ERROR =
+export const HARUYUKI_STREAM_NO_ASSISTANT_MESSAGE_ERROR =
   "No assistant message received in stream";
 
 export class LettaStreamCoreError extends Error {
@@ -70,7 +70,7 @@ export class LettaStreamCoreError extends Error {
 
 export class LettaStreamNoAssistantMessageError extends Error {
   constructor() {
-    super(LETTA_STREAM_NO_ASSISTANT_MESSAGE_ERROR);
+    super(HARUYUKI_STREAM_NO_ASSISTANT_MESSAGE_ERROR);
     this.name = "LettaStreamNoAssistantMessageError";
   }
 }

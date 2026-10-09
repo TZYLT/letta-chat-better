@@ -29,7 +29,10 @@ describe("runtime execution settings", () => {
     const permissions = new CliPermissions();
     permissions.setAllowedTools("Bash");
     permissions.setMemoryGuardDisabled(true);
-    const processEnv = { LETTA_PARENT_AGENT_ID: "stale", MEMORY_DIR: "/stale" };
+    const processEnv = {
+      HARUYUKI_PARENT_AGENT_ID: "stale",
+      MEMORY_DIR: "/stale",
+    };
     let release!: () => void;
     const paused = new Promise<void>((resolve) => {
       release = resolve;
@@ -67,7 +70,7 @@ describe("runtime execution settings", () => {
             getRuntimeContext()?.executionSettings,
           ),
         ).toMatchObject({
-          LETTA_PARENT_AGENT_ID: "parent-a",
+          HARUYUKI_PARENT_AGENT_ID: "parent-a",
           MEMORY_DIR: "/parent-a/memory",
           TRANSCRIPT_PATH: "/parent-a/transcript.jsonl",
         });
@@ -96,7 +99,7 @@ describe("runtime execution settings", () => {
     );
     await first;
     expect(processEnv).toEqual({
-      LETTA_PARENT_AGENT_ID: "stale",
+      HARUYUKI_PARENT_AGENT_ID: "stale",
       MEMORY_DIR: "/stale",
     });
     expect(permissions.getAllowedTools()).toEqual(["Bash(:*)"]);
@@ -106,8 +109,8 @@ describe("runtime execution settings", () => {
   test("an empty scoped launch does not inherit another child", () => {
     const env = getRuntimeExecutionEnv(
       {
-        LETTA_PARENT_AGENT_ID: "old",
-        LETTA_CODE_AGENT_ROLE: "subagent",
+        HARUYUKI_PARENT_AGENT_ID: "old",
+        HARUYUKI_CODE_AGENT_ROLE: "subagent",
         MEMORY_DIR: "/old",
         LETTA_MEMORY_DIR: "/old",
         TRANSCRIPT_PATH: "/old/transcript",

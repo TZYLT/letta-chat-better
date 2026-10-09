@@ -37,7 +37,7 @@ configured server reports, which a local-only setup has none of.
 
 The recipient learns who is asking only when the send identifies a sender:
 `--from-agent`, or the caller IDs from the agent's shell environment
-(`AGENT_ID`/`LETTA_AGENT_ID` and `CONVERSATION_ID`/`LETTA_CONVERSATION_ID`).
+(`AGENT_ID`/`HARUYUKI_AGENT_ID` and `CONVERSATION_ID`/`HARUYUKI_CONVERSATION_ID`).
 An identified send attaches a system reminder telling the recipient how to get
 its answer back to you. A `letta -p` with neither carries no sender or reply
 instructions; the recipient receives your text as user input, plus whatever
@@ -74,8 +74,8 @@ message and returning a receipt. Use a waiting send in the background instead
 ## Send and wait
 
 ```bash
-letta -p --from-agent $LETTA_AGENT_ID --agent <agent-id> --output-format json "message"
-letta -p --from-agent $LETTA_AGENT_ID --conversation <conversation-id> --output-format json "follow-up"
+letta -p --from-agent $HARUYUKI_AGENT_ID --agent <agent-id> --output-format json "message"
+letta -p --from-agent $HARUYUKI_AGENT_ID --conversation <conversation-id> --output-format json "follow-up"
 ```
 
 `result` normally holds the recipient's final message; `conversation_id` is
@@ -145,7 +145,7 @@ local-only setup nothing matches, and the send fails instead of routing.
   configured server; `messages status` does not exist. The cross-agent send tool
   was removed with the Cloud path.
 - Do not rely on `--agent` alone to select message delivery. Add
-  `--from-agent $LETTA_AGENT_ID` to deliver and identify yourself;
+  `--from-agent $HARUYUKI_AGENT_ID` to deliver and identify yourself;
   pass `--conversation <id>` to reach an existing thread.
 - Execution flags (`--tools`, `--permission-mode`, `--model`, `--system`, and
   similar) configure a launch when using the `--agent`-only path; the recipient

@@ -1120,7 +1120,7 @@ function replaceRegistry(newTools: ToolRegistry): void {
 }
 
 function maybeApplyLspReadOverride(registry: ToolRegistry): void {
-  if (!process.env.LETTA_ENABLE_LSP || !registry.has("Read")) {
+  if (!process.env.HARUYUKI_ENABLE_LSP || !registry.has("Read")) {
     return;
   }
 

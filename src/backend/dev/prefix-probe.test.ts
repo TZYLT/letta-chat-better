@@ -16,7 +16,7 @@ import {
   withPrefixProbe,
 } from "@/backend/dev/prefix-probe";
 
-const ENV_KEY = "LETTA_PREFIX_PROBE_DIR";
+const ENV_KEY = "HARUYUKI_PREFIX_PROBE_DIR";
 
 function withProbeEnv<T>(dir: string | undefined, run: () => T): T {
   const previous = process.env[ENV_KEY];
@@ -37,7 +37,7 @@ function tempDir(): string {
 }
 
 describe("withPrefixProbe", () => {
-  test("is a no-op when LETTA_PREFIX_PROBE_DIR is unset", () => {
+  test("is a no-op when HARUYUKI_PREFIX_PROBE_DIR is unset", () => {
     withProbeEnv(undefined, () => {
       expect(
         withPrefixProbe(undefined, { conversationId: "c" }),

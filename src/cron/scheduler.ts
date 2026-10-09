@@ -95,7 +95,7 @@ interface SchedulerState {
 
 let schedulerState: SchedulerState | null = null;
 
-export const CRON_SCHEDULER_SCOPE_ENV = "LETTA_CRON_SCHEDULER_SCOPE";
+export const CRON_SCHEDULER_SCOPE_ENV = "HARUYUKI_CRON_SCHEDULER_SCOPE";
 
 export function resolveCronSchedulerScope(
   value = process.env[CRON_SCHEDULER_SCOPE_ENV],

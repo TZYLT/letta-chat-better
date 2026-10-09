@@ -54,7 +54,7 @@ Exactly one of the three is required. `--once` is accepted with `--at` (already 
 
 | Flag | Description |
 |------|-------------|
-| `--agent <id>` | Agent ID (defaults to `LETTA_AGENT_ID` from the current shell/session) |
+| `--agent <id>` | Agent ID (defaults to `HARUYUKI_AGENT_ID` from the current shell/session) |
 | `--conversation <id>` | Conversation target: omit or pass `new` for a fresh conversation per fire; pass `self` for the current conversation; pass `default` for the agent default; or pass a concrete ID |
 
 `--computer` is accepted by the parser only so it can be rejected with a clear error. There is no way to run a schedule anywhere but this computer.
@@ -87,7 +87,7 @@ letta cron runs --id <task-id> [--limit <n>] [--agent <id>]
 
 If exact routing matters, pass both `--agent` and `--conversation` explicitly.
 
-`letta cron add` falls back to `LETTA_AGENT_ID` for the agent. An omitted `--conversation` means `"new"`, so every fire gets a fresh conversation. Pass `--conversation self` to capture the current `LETTA_CONVERSATION_ID`, `--conversation default` for the agent default, or a concrete conversation ID.
+`letta cron add` falls back to `HARUYUKI_AGENT_ID` for the agent. An omitted `--conversation` means `"new"`, so every fire gets a fresh conversation. Pass `--conversation self` to capture the current `HARUYUKI_CONVERSATION_ID`, `--conversation default` for the agent default, or a concrete conversation ID.
 
 Safest pattern:
 
@@ -97,14 +97,14 @@ letta cron add \
   --description "Daily email summary in this conversation" \
   --prompt "Check the user's email and post a summary here." \
   --cron "0 10 * * *" \
-  --agent "$LETTA_AGENT_ID" \
+  --agent "$HARUYUKI_AGENT_ID" \
   --conversation self
 ```
 
 Then verify the binding explicitly:
 
 ```bash
-letta cron list --agent "$LETTA_AGENT_ID" --conversation self
+letta cron list --agent "$HARUYUKI_AGENT_ID" --conversation self
 ```
 
 ### Deleting or Replacing Tasks
@@ -151,7 +151,7 @@ letta cron add \
   --description "One-time check on deployment status" \
   --prompt "Check the deployment status and report the result here." \
   --at "in 30m" \
-  --agent "$LETTA_AGENT_ID" \
+  --agent "$HARUYUKI_AGENT_ID" \
   --conversation self
 ```
 
@@ -199,7 +199,7 @@ Include context about what the user originally asked for, so you can give a help
 - **Minimum granularity**: 1 minute. Intervals under 60 seconds are rounded up.
 - **Recurring tasks**: No longer auto-expire. They remain active until explicitly cancelled.
 - **Terminal task cleanup**: A task that reached a terminal state — fired, missed, or cancelled — is removed 24 hours later.
-- **Default binding**: `letta cron add` uses `--agent` first, then `LETTA_AGENT_ID`. Omit `--conversation` for a fresh conversation per fire; use `--conversation self` to capture `LETTA_CONVERSATION_ID` explicitly.
+- **Default binding**: `letta cron add` uses `--agent` first, then `HARUYUKI_AGENT_ID`. Omit `--conversation` for a fresh conversation per fire; use `--conversation self` to capture `HARUYUKI_CONVERSATION_ID` explicitly.
 - **Scheduler requirement**: A schedule only fires while a Letta session is running on this computer; a fire that comes due while nothing is running is marked missed.
 - **`--at` for specific times**: prefer RFC 3339 with an explicit offset. A bare `--at "3:00pm"` uses the process timezone and schedules tomorrow if that time has already passed there.
 - **Creation failures are loud**: `letta cron add` exits nonzero and prints the reason to stderr, and no task is stored. Check the exit code instead of assuming the task exists.

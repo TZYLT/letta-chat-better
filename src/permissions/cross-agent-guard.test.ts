@@ -44,9 +44,9 @@ function thirdMemory(rel = ""): string {
 
 const ENV_KEYS_TO_RESET = [
   "AGENT_ID",
-  "LETTA_AGENT_ID",
-  "LETTA_PARENT_AGENT_ID",
-  "LETTA_CODE_AGENT_ROLE",
+  "HARUYUKI_AGENT_ID",
+  "HARUYUKI_PARENT_AGENT_ID",
+  "HARUYUKI_CODE_AGENT_ROLE",
   "MEMORY_DIR",
   "LETTA_MEMORY_DIR",
   "LETTA_LOCAL_BACKEND_DIR",
@@ -103,14 +103,14 @@ describe("resolveAllowedAgents", () => {
   });
 
   test("subagent parent ID adds only the parent to the allowed set", () => {
-    process.env.LETTA_CODE_AGENT_ROLE = "subagent";
-    process.env.LETTA_PARENT_AGENT_ID = OTHER;
+    process.env.HARUYUKI_CODE_AGENT_ROLE = "subagent";
+    process.env.HARUYUKI_PARENT_AGENT_ID = OTHER;
     const allowed = resolveAllowedAgents();
     expect(allowed).toEqual(new Set([SELF, OTHER]));
   });
 
   test("parent ID is ignored outside subagent processes", () => {
-    process.env.LETTA_PARENT_AGENT_ID = OTHER;
+    process.env.HARUYUKI_PARENT_AGENT_ID = OTHER;
     const allowed = resolveAllowedAgents();
     expect(allowed).toEqual(new Set([SELF]));
   });
@@ -126,7 +126,7 @@ describe("resolveAllowedAgents", () => {
     cliPermissions.setMemoryGuardDisabled(true);
     expect(isMemoryGuardDisabled()).toBe(true);
 
-    process.env.LETTA_CODE_AGENT_ROLE = "subagent";
+    process.env.HARUYUKI_CODE_AGENT_ROLE = "subagent";
     expect(isMemoryGuardDisabled()).toBe(false);
   });
 
@@ -147,7 +147,7 @@ describe("resolveAllowedAgents", () => {
 
   test("subagents ignore the parent disabled override", () => {
     cliPermissions.setMemoryGuardDisabled(true);
-    process.env.LETTA_CODE_AGENT_ROLE = "subagent";
+    process.env.HARUYUKI_CODE_AGENT_ROLE = "subagent";
     expect(isMemoryGuardDisabled()).toBe(false);
   });
 });
@@ -315,8 +315,8 @@ describe("evaluateCrossAgentGuard", () => {
   });
 
   test("subagent can access its explicit parent memory with guard enabled", () => {
-    process.env.LETTA_CODE_AGENT_ROLE = "subagent";
-    process.env.LETTA_PARENT_AGENT_ID = OTHER;
+    process.env.HARUYUKI_CODE_AGENT_ROLE = "subagent";
+    process.env.HARUYUKI_PARENT_AGENT_ID = OTHER;
     const result = evaluateCrossAgentGuard(
       "Write",
       { file_path: otherMemory("system/a.md") },
@@ -326,8 +326,8 @@ describe("evaluateCrossAgentGuard", () => {
   });
 
   test("subagent with disabled guard request still denies non-parent agents", () => {
-    process.env.LETTA_CODE_AGENT_ROLE = "subagent";
-    process.env.LETTA_PARENT_AGENT_ID = OTHER;
+    process.env.HARUYUKI_CODE_AGENT_ROLE = "subagent";
+    process.env.HARUYUKI_PARENT_AGENT_ID = OTHER;
     cliPermissions.setMemoryGuardDisabled(true);
     const patch = [
       "*** Begin Patch",
@@ -767,8 +767,8 @@ describe("sandboxed subagent defers entirely to the kernel", () => {
   // A subagent confined as a whole process by the kernel sandbox (sentinel set)
   // gets cross-agent isolation enforced for every tool, so the guard skips.
   const subagentEnv = {
-    LETTA_CODE_AGENT_ROLE: "subagent",
-    LETTA_PARENT_AGENT_ID: "agent-parent",
+    HARUYUKI_CODE_AGENT_ROLE: "subagent",
+    HARUYUKI_PARENT_AGENT_ID: "agent-parent",
   } as NodeJS.ProcessEnv;
   const crossAgentRead = { file_path: otherMemory("secret.md") };
 
