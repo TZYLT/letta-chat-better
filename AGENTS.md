@@ -265,14 +265,14 @@ also rejects staged parent-relative imports (`../`); use the `@/` alias.
 | `LETTA_DEBUG=0` | Suppress debug output even in dev mode |
 | `LETTA_LOCAL_BACKEND_EXPERIMENTAL=1` | Enable local in-process backend |
 | `LETTA_LOCAL_BACKEND_EXECUTOR=deterministic` | Use fake deterministic executor (for tests) |
-| `LETTA_LOCAL_BACKEND_DIR` | Local-backend storage root (defaults to `~/.letta/lc-local-backend`) |
-| `LETTA_HOME` | Overrides the harness root outright, in place of `~/.letta` (every path that resolves through `src/utils/app-paths.ts`) |
+| `LETTA_LOCAL_BACKEND_DIR` | Local-backend storage root (defaults to `~/.haruyuki/lc-local-backend`) |
+| `LETTA_HOME` | Overrides the harness root outright, in place of `~/.haruyuki` (every path that resolves through `src/utils/app-paths.ts`) |
 | `LETTA_PREFIX_PROBE_DIR` | Dump each local provider request payload to `payload-<conversationId>-<seq>.json` for the prefix-freeze probe (default off) |
 
 When manually smoke-testing the local backend (`letta --backend local` or
 `bun run dev --backend local`), set `LETTA_LOCAL_BACKEND_DIR` to a temporary
 directory first. Otherwise the run reads and mutates your real
-`~/.letta/lc-local-backend` provider, auth, and transcript state.
+`~/.haruyuki/lc-local-backend` provider, auth, and transcript state.
 
 ### Known Gotchas
 
@@ -321,21 +321,30 @@ directory first. Otherwise the run reads and mutates your real
   letta-code workspace can prune `nx-electron` (installed `--no-save` at repo
   root), breaking the electron IPC bridge. Always use canonical setup steps
   (`just setup-code-desktop`).
-- **Remote log rotation.** `~/.letta/logs/remote/` grows unbounded. Long
+- **Remote log rotation.** `~/.haruyuki/logs/remote/` grows unbounded. Long
   desktop sessions can produce 50GB+ in a single log file. Not yet fixed.
-- **Harness paths come from `src/utils/app-paths.ts`.** Never spell `.letta` (or
+- **Harness paths come from `src/utils/app-paths.ts`.** Never spell `.haruyuki` (or
   a path under it) as a literal in new code. Use `appHomeRoot()` for the harness
   root, `appHomePath([APP_SUBDIRS.x, ...])` for a path inside it,
-  `projectAppHomePath(cwd, ...)` for the project-level `<repo>/.letta/...`, and
+  `projectAppHomePath(cwd, ...)` for the project-level `<repo>/.haruyuki/...`, and
   `appHomeDirName()` for the few places that need the name as a path *segment*.
   `resolveHomeDir()` is the shared `HOME` → `USERPROFILE` → `os.homedir()`
   fallback. All of them honour `LETTA_HOME`, which overrides the root outright —
   that is the one supported way tests and operators relocate harness state.
-  A file that must keep a literal belongs to the rename checklist, not to a
-  random call site: prose in `src/tools/descriptions/*.md`, `.md` code samples
-  under `src/skills/builtin/`, and repo-relative paths such as
-  `mods/learning-harness.ts`'s `path.join(".letta", "mod-learning-runs")`
-  (that one is inside the working tree, not under the home dir).
+  A few files still carry the name as a literal. They are the **rename
+  checklist** — touch them whenever the directory is renamed, and do not add
+  yourself to it casually:
+  - prose and examples: `src/tools/descriptions/*.md`,
+    `src/agent/prompts/*.md`, and the `.md` code samples under
+    `src/skills/builtin/`;
+  - `src/mods/learning-harness.ts`'s `path.join(".haruyuki", "mod-learning-runs")`
+    and its dev-script front-end `scripts/mod-learning/learn-mod.ts`'s `--out`
+    help text — a working-tree scratch dir, and `learning-harness.ts` sits
+    exactly at its size-ratchet cap, so it cannot take the extra import line;
+  - `src/test-utils/startup-setup-pty-runner.cjs`'s `HARNESS_DIR_NAME` — a plain
+    `.cjs` child process that cannot import the TS module.
+
+  Nothing enforces this list, so grep the literal before you commit.
 - **`*Rich.tsx` naming inversion.** The `*Rich.tsx` files are the ACTIVE
   components, not the plain-named siblings. `App.tsx` imports Rich files and
   renames them on import. The non-Rich files were dead stubs. When auditing a
@@ -529,15 +538,15 @@ Key files:
 
 ### Mod vs Extension Location
 
-- **Mods** go in `~/.letta/mods/`, simple `.ts` files, auto-loaded on session
+- **Mods** go in `~/.haruyuki/mods/`, simple `.ts` files, auto-loaded on session
   start or `/reload`.
-- **Extensions** go in `~/.letta/extensions/`, legacy `.ts`/`.tsx` files
+- **Extensions** go in `~/.haruyuki/extensions/`, legacy `.ts`/`.tsx` files
   compiled to `.mjs` via TypeScript transpilation.
-- `resolveDefaultGlobalModsDirectory` prioritizes `~/.letta/mods/` over
-  `~/.letta/extensions/` when both exist. Extensions get silently shadowed.
-- Compiled extensions cached in `~/.letta/extension-cache/`.
+- `resolveDefaultGlobalModsDirectory` prioritizes `~/.haruyuki/mods/` over
+  `~/.haruyuki/extensions/` when both exist. Extensions get silently shadowed.
+- Compiled extensions cached in `~/.haruyuki/extension-cache/`.
 - Feature-checked mod files (checking `letta.capabilities.*` before calling
-  `letta.ui.*`) are safe to leave in `~/.letta/mods/` across different builds.
+  `letta.ui.*`) are safe to leave in `~/.haruyuki/mods/` across different builds.
 
 ### Capabilities
 
@@ -710,7 +719,7 @@ or writing each other's memory.
 ### Cross-Backend Policy
 
 Sandbox policy must deny BOTH memory trees:
-- API/cloud: `~/.letta/agents`
+- API/cloud: `~/.haruyuki/agents`
 - Local backend: `$LETTA_LOCAL_BACKEND_DIR`/memfs
 
 ### Environment Variables

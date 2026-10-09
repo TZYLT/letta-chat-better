@@ -4,15 +4,19 @@ __pycache__/
 *.pyc
 *.whl
 
-# Letta Code local settings
-.letta/settings.local.json
+# Haruyuki local settings
+.haruyuki/settings.local.json
+.haruyuki
+# Pre-rename harness dir. Transitional: the local data migration moves it, and
+# this entry goes away with it.
 .letta
+.letta/settings.local.json
 # User-defined skills
 .skills
 # Local notes (not for repo)
 .notes
-# Letta Code file index exclusions (auto-created per-project, not for repo)
-.lettaignore
+# Haruyuki file index exclusions (auto-created per-project, not for repo)
+.haruyukiignore
 
 # Generated Husky hook machinery (including worktree hook links)
 /.husky/_
