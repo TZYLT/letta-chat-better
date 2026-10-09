@@ -1,5 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { APP_SUBDIRS, appHomePath } from "@/utils/app-paths";
 
 /**
  * Env override for the local-backend storage dir (defaults to
@@ -21,7 +22,8 @@ export function getLocalBackendStorageDir(
   env: NodeJS.ProcessEnv = process.env,
 ): string {
   return (
-    env[LOCAL_BACKEND_DIR_ENV] ?? join(homeDir, ".letta", "lc-local-backend")
+    env[LOCAL_BACKEND_DIR_ENV] ??
+    appHomePath([APP_SUBDIRS.localBackend], { homeDir: homeDir })
   );
 }
 

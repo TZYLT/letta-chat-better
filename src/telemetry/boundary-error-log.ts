@@ -1,3 +1,4 @@
+import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 /**
  * Local JSONL log for boundary errors.
  *
@@ -14,7 +15,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { createJsonlLog } from "./jsonl-log";
 
-const BOUNDARY_LOG_DIR = join(homedir(), ".letta", "logs");
+const BOUNDARY_LOG_DIR = join(homedir(), APP_DIR_NAME, APP_SUBDIRS.logs);
 const BOUNDARY_LOG_BASENAME = "boundary-errors";
 
 /** Per-file byte cap. The active file rotates once it reaches this size. */

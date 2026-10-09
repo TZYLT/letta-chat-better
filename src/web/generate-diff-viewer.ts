@@ -1,3 +1,4 @@
+import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 /**
  * Browser diff viewer for git worktrees.
  *
@@ -16,7 +17,7 @@ import diffViewerTemplate from "./diff-viewer-template.txt";
 
 const execFile = promisify(execFileCb);
 
-const VIEWERS_DIR = join(homedir(), ".letta", "viewers");
+const VIEWERS_DIR = join(homedir(), APP_DIR_NAME, APP_SUBDIRS.viewers);
 const GIT_TIMEOUT_MS = 60_000;
 const GIT_MAX_BUFFER = 50 * 1024 * 1024;
 const MAX_RENDERED_FILES = 100;

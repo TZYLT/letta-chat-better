@@ -18,6 +18,7 @@ import {
   getLocalBackendStorageDir,
   isLocalBackendEnvEnabled,
 } from "@/backend/local/paths";
+import { APP_DIR_NAME } from "@/utils/app-paths";
 import {
   DIRECTORY_LIMIT_DEFAULTS,
   getDirectoryLimits,
@@ -26,7 +27,7 @@ import { getCurrentAgentId } from "./context";
 import { DEFAULT_ROOT_MEMORY_BLOCK } from "./create-agent-request";
 import { installMemoryGitHooks } from "./memory-git-hooks";
 
-export const MEMORY_FS_ROOT = ".letta";
+export const MEMORY_FS_ROOT = APP_DIR_NAME;
 export const MEMORY_FS_AGENTS_DIR = "agents";
 export const MEMORY_FS_MEMORY_DIR = "memory";
 export const MEMORY_SYSTEM_DIR = "system";

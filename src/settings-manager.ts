@@ -3,8 +3,13 @@
 
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { join, resolve } from "node:path";
+import { resolve } from "node:path";
+import {
+  APP_SUBDIRS,
+  appHomePath,
+  appHomeRoot,
+  projectAppHomePath,
+} from "@/utils/app-paths";
 import {
   type AgentBackendMode,
   isAgentIdCompatibleWithBackend,
@@ -875,8 +880,7 @@ class SettingsManager {
     if (!this.settings) return;
 
     const settingsPath = this.getSettingsPath();
-    const home = process.env.HOME || homedir();
-    const dirPath = join(home, ".letta");
+    const dirPath = appHomeRoot();
 
     try {
       if (!exists(dirPath)) {
@@ -941,7 +945,7 @@ class SettingsManager {
     if (!settings) return;
 
     const settingsPath = this.getProjectSettingsPath(workingDirectory);
-    const dirPath = join(workingDirectory, ".letta");
+    const dirPath = appHomeRoot(workingDirectory);
 
     try {
       // Read existing settings (might have permissions, etc.)
@@ -971,12 +975,11 @@ class SettingsManager {
 
   private getSettingsPath(): string {
     // Use ~/.letta/ like other AI tools (.claude, .cursor, etc.)
-    const home = process.env.HOME || homedir();
-    return join(home, ".letta", "settings.json");
+    return appHomePath([APP_SUBDIRS.settingsFile]);
   }
 
   private getProjectSettingsPath(workingDirectory: string): string {
-    return join(workingDirectory, ".letta", "settings.json");
+    return projectAppHomePath(workingDirectory, APP_SUBDIRS.settingsFile);
   }
 
   private isProjectSettingsPathCollidingWithGlobal(
@@ -989,7 +992,7 @@ class SettingsManager {
   }
 
   private getLocalProjectSettingsPath(workingDirectory: string): string {
-    return join(workingDirectory, ".letta", "settings.local.json");
+    return projectAppHomePath(workingDirectory, APP_SUBDIRS.localSettingsFile);
   }
 
   /**
@@ -1098,7 +1101,7 @@ class SettingsManager {
     if (!settings) return;
 
     const settingsPath = this.getLocalProjectSettingsPath(workingDirectory);
-    const dirPath = join(workingDirectory, ".letta");
+    const dirPath = appHomeRoot(workingDirectory);
 
     try {
       // Create directory if needed
@@ -1838,7 +1841,7 @@ class SettingsManager {
    * Check if local .letta directory exists (indicates existing project)
    */
   hasLocalLettaDir(workingDirectory: string = process.cwd()): boolean {
-    const dirPath = join(workingDirectory, ".letta");
+    const dirPath = appHomeRoot(workingDirectory);
     return exists(dirPath);
   }
 

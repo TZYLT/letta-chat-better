@@ -2,7 +2,6 @@
  * Git operations for agent memory. The remote defaults to the configured MemFS
  * server (local when none is set); Desktop's proxy is transport-only.
  */
-
 import { execFile as execFileCb } from "node:child_process";
 import {
   existsSync,
@@ -12,7 +11,7 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
-import { homedir, platform } from "node:os";
+import { platform } from "node:os";
 import { dirname, join } from "node:path";
 import { promisify } from "node:util";
 import { getMemoryGitDir } from "@/agent/memory-git-dir";
@@ -21,6 +20,7 @@ import {
   getMemfsGitProxyRewriteConfig,
   getMemfsServerUrl,
 } from "@/backend/api/memfs-git-proxy";
+import { APP_SUBDIRS, appHomePath } from "@/utils/app-paths";
 import {
   retainCheckouts,
   startCheckout,
@@ -86,7 +86,7 @@ export interface CommitMemoryWriteResult {
 
 /** Get the agent root directory (~/.letta/agents/{id}/) */
 export function getAgentRootDir(agentId: string): string {
-  return join(homedir(), ".letta", "agents", agentId);
+  return appHomePath([APP_SUBDIRS.agents, agentId]);
 }
 
 /** Get the git repo directory for memory (now ~/.letta/agents/{id}/memory/) */

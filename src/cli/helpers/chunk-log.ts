@@ -22,12 +22,18 @@ import {
 import { homedir } from "node:os";
 import { join } from "node:path";
 import type { LettaStreamingResponse } from "@letta-ai/letta-client/resources/agents/messages";
+import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 import { debugWarn } from "@/utils/debug";
 
 const MAX_ENTRIES = 100;
 const CONTENT_TRUNCATE_LEN = 200;
 const MAX_SESSION_FILES = 5;
-const LOG_BASE_DIR = join(homedir(), ".letta", "logs", "chunk-logs");
+const LOG_BASE_DIR = join(
+  homedir(),
+  APP_DIR_NAME,
+  APP_SUBDIRS.logs,
+  "chunk-logs",
+);
 
 // ---------------------------------------------------------------------------
 // Truncation helpers

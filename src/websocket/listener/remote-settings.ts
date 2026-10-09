@@ -20,6 +20,7 @@ import { homedir } from "node:os";
 import path from "node:path";
 import { isConfirmedUnusableDirectory } from "@/helpers/usable-directory";
 import type { PermissionMode } from "@/permissions/mode";
+import { APP_DIR_NAME } from "@/utils/app-paths";
 import {
   flushAbandonedRemoteSettingsLock,
   releaseRemoteSettingsLock,
@@ -89,7 +90,11 @@ function getRemoteSettingsHome(): string {
 }
 
 export function getRemoteSettingsPath(): string {
-  return path.join(getRemoteSettingsHome(), ".letta", "remote-settings.json");
+  return path.join(
+    getRemoteSettingsHome(),
+    APP_DIR_NAME,
+    "remote-settings.json",
+  );
 }
 
 /**
@@ -757,7 +762,7 @@ function loadLegacyCwdCache(): Record<string, string> {
   try {
     const legacyPath = path.join(
       getRemoteSettingsHome(),
-      ".letta",
+      APP_DIR_NAME,
       "cwd-cache.json",
     );
     if (!existsSync(legacyPath)) return {};

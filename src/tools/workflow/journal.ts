@@ -1,3 +1,4 @@
+import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 /**
  * Run persistence: every workflow run gets a directory holding the script it
  * ran, its args, and a JSONL journal with one line per completed subagent
@@ -37,7 +38,7 @@ export type JournalEntry =
     };
 
 export function defaultExecutionsDir(): string {
-  return join(homedir(), ".letta", "workflows", "executions");
+  return join(homedir(), APP_DIR_NAME, APP_SUBDIRS.workflows, "executions");
 }
 
 export function newExecutionId(): string {

@@ -9,6 +9,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { migratePermissionMode } from "@/permissions/mode";
+import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 import {
   isValidDiscordAllowBotsConfigValue,
   normalizeDiscordAllowBotsMode,
@@ -32,7 +33,7 @@ import type { WhatsAppWaitingBehavior } from "./whatsapp/waiting-behavior-config
 
 // ── Paths ─────────────────────────────────────────────────────────
 
-const CHANNELS_ROOT = join(homedir(), ".letta", "channels");
+const CHANNELS_ROOT = join(homedir(), APP_DIR_NAME, APP_SUBDIRS.channels);
 let channelsRootOverride: string | null = null;
 
 function parseWhatsAppWaitingBehavior(value: unknown): WhatsAppWaitingBehavior {

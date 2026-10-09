@@ -20,6 +20,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { isLocalAgentId } from "@/agent/agent-id";
+import { appHomeRoot } from "@/utils/app-paths";
 import { estimatePeriodMs, isValidCron } from "./parse-interval";
 import { captureProcessIdentity, isProcessAlive } from "./process-identity";
 
@@ -135,7 +136,7 @@ const GC_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 function getLettaDir(): string {
   if (process.env.LETTA_HOME) return process.env.LETTA_HOME;
-  return join(process.env.HOME ?? process.env.USERPROFILE ?? "~", ".letta");
+  return appHomeRoot(process.env.HOME ?? process.env.USERPROFILE ?? "~");
 }
 
 export function getCronFilePath(): string {

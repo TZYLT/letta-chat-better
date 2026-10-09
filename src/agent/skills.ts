@@ -12,6 +12,7 @@ import { existsSync } from "node:fs";
 import { readdir, readFile, realpath, stat } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { APP_SUBDIRS, appHomePath } from "@/utils/app-paths";
 import { parseFrontmatter } from "@/utils/frontmatter";
 import { ALL_SKILL_SOURCES, type SkillSource } from "./skill-sources";
 
@@ -180,22 +181,14 @@ export const SKILLS_DIR = ".skills";
 /**
  * Global skills directory (in user's home directory)
  */
-export const GLOBAL_SKILLS_DIR = join(
-  process.env.HOME || process.env.USERPROFILE || "~",
-  ".letta/skills",
-);
+export const GLOBAL_SKILLS_DIR = appHomePath(["skills"]);
 
 /**
  * Get the agent-scoped skills directory for a specific agent.
  * Primary path is ~/.letta/agents/{id}/memory/skills/ (memfs).
  */
 export function getAgentSkillsDir(agentId: string): string {
-  return join(
-    process.env.HOME || process.env.USERPROFILE || "~",
-    ".letta/agents",
-    agentId,
-    "memory/skills",
-  );
+  return appHomePath([APP_SUBDIRS.agents, agentId, "memory/skills"]);
 }
 
 /**

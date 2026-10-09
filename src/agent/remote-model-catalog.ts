@@ -16,6 +16,7 @@ import {
   getAvailableModelHandles,
 } from "@/agent/available-models";
 import { type CatalogModel, models } from "@/agent/model-catalog";
+import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 import { debugLog } from "@/utils/debug";
 
 const CACHE_SCHEMA_VERSION = 1;
@@ -45,7 +46,7 @@ interface RemoteCatalogEntry {
 function catalogCachePath(): string {
   const dir =
     process.env.LETTA_MODEL_CATALOG_CACHE_DIR ||
-    join(homedir(), ".letta", "cache");
+    join(homedir(), APP_DIR_NAME, APP_SUBDIRS.cache);
   return join(dir, "model-catalog.json");
 }
 

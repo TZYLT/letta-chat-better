@@ -6,6 +6,7 @@ import type {
   SkillDisableCommand,
   SkillEnableCommand,
 } from "@/types/protocol_v2";
+import { appHomeRoot } from "@/utils/app-paths";
 import {
   isCreateAgentCommand,
   isSkillDisableCommand,
@@ -54,7 +55,7 @@ export async function handleSkillCommand(
   // Compute skills dir dynamically to respect LETTA_HOME (important for tests)
   const lettaHome =
     process.env.LETTA_HOME ||
-    join(process.env.HOME || process.env.USERPROFILE || "~", ".letta");
+    appHomeRoot(process.env.HOME || process.env.USERPROFILE || "~");
   const globalSkillsDir = join(lettaHome, "skills");
 
   if (parsed.type === "skill_enable") {

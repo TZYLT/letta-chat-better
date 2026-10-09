@@ -1,6 +1,7 @@
 import path from "node:path";
 import { isConfirmedUnusableDirectory } from "@/helpers/usable-directory";
 import { getFallbackWorkingDirectory } from "@/runtime-context";
+import { APP_DIR_NAME } from "@/utils/app-paths";
 import {
   loadRemoteSettings,
   saveRemoteSettings,
@@ -131,7 +132,7 @@ export function getExportedCwdMap(
 export function getCwdCachePath(): string {
   return path.join(
     process.env.HOME ?? require("node:os").homedir(),
-    ".letta",
+    APP_DIR_NAME,
     "cwd-cache.json",
   );
 }

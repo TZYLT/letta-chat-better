@@ -14,6 +14,7 @@ import { dirname, isAbsolute, join } from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
+import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 
 const TOOLS_DIR_ENV = "LETTA_CODE_TOOLS_DIR";
 const OFFLINE_ENV = "LETTA_CODE_OFFLINE";
@@ -71,7 +72,7 @@ function isOfflineModeEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
 export function getManagedToolsDir(
   env: NodeJS.ProcessEnv = process.env,
 ): string {
-  return env[TOOLS_DIR_ENV] || join(homedir(), ".letta", "bin");
+  return env[TOOLS_DIR_ENV] || join(homedir(), APP_DIR_NAME, APP_SUBDIRS.bin);
 }
 
 function binaryName(config: ToolConfig): string {

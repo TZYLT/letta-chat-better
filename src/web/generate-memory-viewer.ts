@@ -24,6 +24,7 @@ import {
   DEFAULT_LOCAL_SERVER_URL,
   getServerUrl,
 } from "@/backend/api/server-url";
+import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 import {
   applyContextUsageSnapshot,
   type ContextUsageSnapshot,
@@ -41,7 +42,7 @@ import type {
 
 const execFile = promisify(execFileCb);
 
-const VIEWERS_DIR = join(homedir(), ".letta", "viewers");
+const VIEWERS_DIR = join(homedir(), APP_DIR_NAME, APP_SUBDIRS.viewers);
 const MAX_COMMITS = 500;
 const RECENT_DIFF_COUNT = 50;
 const PER_DIFF_CAP = 100_000; // 100KB per diff

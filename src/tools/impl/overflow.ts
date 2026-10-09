@@ -9,6 +9,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { scrubSecretsFromString } from "@/tools/secret-substitution";
+import { appHomeRoot } from "@/utils/app-paths";
 
 /**
  * Configuration options for tool output overflow behavior.
@@ -31,7 +32,7 @@ export const OVERFLOW_CONFIG = {
  */
 export function getOverflowDirectory(workingDirectory: string): string {
   const homeDir = os.homedir();
-  const lettaDir = path.join(homeDir, ".letta");
+  const lettaDir = appHomeRoot(homeDir);
 
   // Normalize and sanitize the working directory path for use in the file system
   const normalizedPath = path.normalize(workingDirectory);

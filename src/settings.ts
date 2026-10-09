@@ -1,3 +1,4 @@
+import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 // src/settings.ts
 // Manages user settings stored in ~/.letta/settings.json and project settings in ./.letta/settings.local.json
 
@@ -32,7 +33,7 @@ const DEFAULT_SETTINGS: Settings = {
 };
 
 function getSettingsPath(): string {
-  return join(homedir(), ".letta", "settings.json");
+  return join(homedir(), APP_DIR_NAME, APP_SUBDIRS.settingsFile);
 }
 
 /**
@@ -102,7 +103,7 @@ export async function getSetting<K extends keyof Settings>(
  * Get project settings path (./.letta/settings.local.json)
  */
 function getProjectSettingsPath(): string {
-  return join(process.cwd(), ".letta", "settings.local.json");
+  return join(process.cwd(), APP_DIR_NAME, APP_SUBDIRS.localSettingsFile);
 }
 
 /**
@@ -134,7 +135,7 @@ export async function saveProjectSettings(
   settings: ProjectSettings,
 ): Promise<void> {
   const settingsPath = getProjectSettingsPath();
-  const dirPath = join(process.cwd(), ".letta");
+  const dirPath = join(process.cwd(), APP_DIR_NAME);
 
   try {
     // Create .letta directory if it doesn't exist

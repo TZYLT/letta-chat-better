@@ -1,5 +1,5 @@
-import path from "node:path";
 import { getRuntimeContext } from "@/runtime-context";
+import { APP_SUBDIRS, appHomePath } from "@/utils/app-paths";
 import { releaseWorktreeLock } from "@/utils/worktree-lock";
 import {
   lockOwner,
@@ -183,7 +183,9 @@ export async function exit_worktree(
     }
 
     const primaryRoot = await resolvePrimaryWorktreeRoot(repoRoot);
-    const managedDir = path.join(primaryRoot, ".letta", "worktrees");
+    const managedDir = appHomePath([APP_SUBDIRS.worktrees], {
+      homeDir: primaryRoot,
+    });
 
     if (!isPathWithin(currentCwd, managedDir)) {
       return textResult(

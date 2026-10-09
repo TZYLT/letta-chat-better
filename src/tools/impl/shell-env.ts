@@ -31,6 +31,7 @@ import {
 } from "@/runtime-context";
 import { getRuntimeExecutionEnv } from "@/runtime-execution-settings";
 import { settingsManager } from "@/settings-manager";
+import { APP_DIR_NAME } from "@/utils/app-paths";
 import { getRipgrepBinDir } from "./ripgrep-manager.js";
 
 /**
@@ -167,7 +168,7 @@ export function getLettaShimDir(env: NodeJS.ProcessEnv = process.env): string {
   // harness state when already sandboxed. `~/.letta` is writable in that profile,
   // while the cross-agent memory subtrees inside it remain masked.
   if (env.LETTA_SANDBOX) {
-    return path.join(homedir(), ".letta", SHELL_SHIM_DIR_NAME);
+    return path.join(homedir(), APP_DIR_NAME, SHELL_SHIM_DIR_NAME);
   }
 
   return path.join(tmpdir(), SHELL_SHIM_DIR_NAME);

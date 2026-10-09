@@ -4,6 +4,7 @@
 import { homedir } from "node:os";
 import { resolve } from "node:path";
 import { settingsManager } from "@/settings-manager";
+import { APP_DIR_NAME, APP_SUBDIRS, appHomePath } from "@/utils/app-paths";
 import { debugLog } from "@/utils/debug";
 import {
   type HookEvent,
@@ -29,11 +30,13 @@ function isProjectSettingsPathCollidingWithGlobal(
   workingDirectory: string,
 ): boolean {
   const home = process.env.HOME || homedir();
-  const globalSettingsPath = resolve(home, ".letta", "settings.json");
+  const globalSettingsPath = appHomePath([APP_SUBDIRS.settingsFile], {
+    homeDir: home,
+  });
   const projectSettingsPath = resolve(
     workingDirectory,
-    ".letta",
-    "settings.json",
+    APP_DIR_NAME,
+    APP_SUBDIRS.settingsFile,
   );
   return globalSettingsPath === projectSettingsPath;
 }

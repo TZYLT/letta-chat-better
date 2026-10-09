@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 import { type FSWatcher, readFileSync, statSync, watch } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import { APP_DIR_NAME, APP_SUBDIRS, appHomePath } from "@/utils/app-paths";
 import { exists, readFile, writeFile } from "@/utils/fs.js";
 import { migratePermissionMode } from "./mode";
 import {
@@ -56,7 +57,7 @@ export function getUserSettingsPaths(options: UserSettingsPathsOptions = {}): {
     join(homeDir, ".config");
 
   return {
-    canonical: join(homeDir, ".letta", "settings.json"),
+    canonical: appHomePath([APP_SUBDIRS.settingsFile], { homeDir: homeDir }),
     legacy: join(xdgConfigHome, "letta", "settings.json"),
   };
 }
@@ -67,8 +68,8 @@ function getPermissionSourcePaths(workingDirectory: string): string[] {
   return [
     legacyUserSettingsPath, // User legacy
     userSettingsPath, // User (canonical)
-    join(workingDirectory, ".letta", "settings.json"), // Project
-    join(workingDirectory, ".letta", "settings.local.json"), // Local
+    appHomePath([APP_SUBDIRS.settingsFile], { homeDir: workingDirectory }), // Project
+    appHomePath([APP_SUBDIRS.localSettingsFile], { homeDir: workingDirectory }), // Local
   ];
 }
 
@@ -343,15 +344,15 @@ export async function savePermissionRule(
     case "project":
       settingsPath = join(
         normalizedWorkingDirectory,
-        ".letta",
-        "settings.json",
+        APP_DIR_NAME,
+        APP_SUBDIRS.settingsFile,
       );
       break;
     case "local":
       settingsPath = join(
         normalizedWorkingDirectory,
-        ".letta",
-        "settings.local.json",
+        APP_DIR_NAME,
+        APP_SUBDIRS.localSettingsFile,
       );
       break;
   }

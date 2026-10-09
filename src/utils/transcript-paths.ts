@@ -1,5 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 
 /** Env override for the reflection transcript root. */
 export const TRANSCRIPT_ROOT_ENV = "LETTA_TRANSCRIPT_ROOT";
@@ -18,5 +19,5 @@ export function getTranscriptRoot(): string {
   if (envRoot) {
     return envRoot;
   }
-  return join(homedir(), ".letta", "transcripts");
+  return join(homedir(), APP_DIR_NAME, APP_SUBDIRS.transcripts);
 }

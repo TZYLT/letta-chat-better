@@ -1,3 +1,4 @@
+import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 /**
  * Local JSONL log for user feedback and channel error reports.
  *
@@ -16,7 +17,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { createJsonlLog } from "./jsonl-log";
 
-const FEEDBACK_LOG_DIR = join(homedir(), ".letta", "logs");
+const FEEDBACK_LOG_DIR = join(homedir(), APP_DIR_NAME, APP_SUBDIRS.logs);
 const FEEDBACK_LOG_BASENAME = "feedback";
 
 /** Per-file byte cap. The active file rotates once it reaches this size. */

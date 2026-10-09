@@ -13,6 +13,7 @@ import {
 import path from "node:path";
 import { getRuntimeContext } from "@/runtime-context";
 import type { WorktreeProjectConfig } from "@/settings-manager";
+import { APP_DIR_NAME, APP_SUBDIRS, appHomePath } from "@/utils/app-paths";
 import {
   acquireWorktreeLock,
   describeHolder,
@@ -164,7 +165,9 @@ async function resolveWorktreeContext(params: {
     requestedRepoPath: getStringArg(params.args, "repo_path"),
   });
   const primaryRoot = await resolvePrimaryWorktreeRoot(repoRoot);
-  const managedDir = path.join(primaryRoot, ".letta", "worktrees");
+  const managedDir = appHomePath([APP_SUBDIRS.worktrees], {
+    homeDir: primaryRoot,
+  });
   return { currentCwd, repoRoot, primaryRoot, managedDir };
 }
 
@@ -264,7 +267,7 @@ async function readProvisionConfig(
 
   try {
     const raw = await readFile(
-      path.join(primaryRoot, ".letta", "settings.json"),
+      appHomePath([APP_SUBDIRS.settingsFile], { homeDir: primaryRoot }),
       "utf8",
     );
     const parsed = JSON.parse(raw) as { worktree?: WorktreeProjectConfig };
@@ -403,7 +406,7 @@ async function copyLocalSettingsFile(
   primaryRoot: string,
   worktreePath: string,
 ): Promise<string> {
-  const rel = path.join(".letta", "settings.local.json");
+  const rel = path.join(APP_DIR_NAME, APP_SUBDIRS.localSettingsFile);
   const source = path.join(primaryRoot, rel);
   const stats = await lstat(source).catch(() => null);
   if (!stats || stats.isSymbolicLink() || !stats.isFile()) {

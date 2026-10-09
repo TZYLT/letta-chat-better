@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
+import { appHomeRoot } from "@/utils/app-paths";
 import type { SessionStatsSnapshot } from "./stats";
 
 export interface SessionHistoryEntry {
@@ -47,7 +48,7 @@ interface SessionStartData {
  */
 function getHistoryDir(): string {
   const homeDir = os.homedir();
-  return path.join(homeDir, ".letta");
+  return appHomeRoot(homeDir);
 }
 
 /**

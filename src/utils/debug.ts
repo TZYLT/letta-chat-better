@@ -1,3 +1,4 @@
+import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 // src/utils/debug.ts
 // Debug logging utility.
 //
@@ -65,7 +66,7 @@ function printDebugLine(line: string, level: "log" | "warn" = "log"): void {
 // Always-on debug log file
 // ---------------------------------------------------------------------------
 
-const DEBUG_LOG_DIR = join(homedir(), ".letta", "logs", "debug");
+const DEBUG_LOG_DIR = join(homedir(), APP_DIR_NAME, APP_SUBDIRS.logs, "debug");
 const MAX_SESSION_FILES = 5;
 const MAX_LOG_BYTES = 10 * 1024 * 1024; // 10 MB per session file
 const DEFAULT_TAIL_LINES = 50;

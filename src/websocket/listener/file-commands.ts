@@ -4,6 +4,7 @@ import path from "node:path";
 import picomatch from "picomatch";
 import type WebSocket from "ws";
 import { trackBoundaryError } from "@/telemetry/error-reporting";
+import { appHomeDirName } from "@/utils/app-paths";
 import { debugLog, debugWarn } from "@/utils/debug";
 import { readUtf8TextStrict, writeUtf8Text } from "@/utils/text-files";
 import { runGrepInFiles } from "./grep-in-files";
@@ -50,7 +51,7 @@ const DIR_LISTING_IGNORED_NAMES = new Set([".DS_Store", ".git", "Thumbs.db"]);
 const RECURSIVE_IGNORED_NAMES = new Set([
   ...DIR_LISTING_IGNORED_NAMES,
   ".cache",
-  ".letta",
+  appHomeDirName(),
   ".next",
   ".nuxt",
   ".tox",
@@ -176,7 +177,7 @@ async function getIgnoreConfig(root: string): Promise<IgnoreConfig> {
   let patterns: string[] = [];
   try {
     const content = await readFile(
-      path.join(absRoot, ".letta", ".lettaignore"),
+      path.join(absRoot, appHomeDirName(), ".lettaignore"),
       "utf-8",
     );
     patterns = parseLettaIgnore(content);
@@ -202,10 +203,8 @@ async function getIgnoreConfig(root: string): Promise<IgnoreConfig> {
 }
 
 function isAlwaysExcludedRelativePath(relativePath: string): boolean {
-  return (
-    relativePath === ".letta/worktrees" ||
-    relativePath.startsWith(".letta/worktrees/")
-  );
+  const worktrees = `${appHomeDirName()}/worktrees`;
+  return relativePath === worktrees || relativePath.startsWith(`${worktrees}/`);
 }
 
 async function shouldSkipEntry(options: {

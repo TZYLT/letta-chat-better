@@ -2,6 +2,7 @@ import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { experimentManager } from "@/experiments/manager";
+import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 import { validateRequiredParams } from "./validation";
 
 const ARTIFACTS_REFERENCE_ROOT = "external/artifacts/";
@@ -44,7 +45,7 @@ function assertArtifactsExperimentEnabled(toolName: string): void {
 function getArtifactsRoot(): string {
   const override = process.env.LETTA_ARTIFACTS_DIR?.trim();
   if (override) return override;
-  return join(homedir(), ".letta", "artifacts");
+  return join(homedir(), APP_DIR_NAME, APP_SUBDIRS.artifacts);
 }
 
 function normalizeArtifactRelativePath(path: string): string {

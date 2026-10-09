@@ -1,12 +1,12 @@
 import { existsSync, realpathSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
-
 import {
   buildFsSandboxPolicy,
   type FsSandboxPolicy,
   normalizeSandboxPath,
 } from "@/sandbox/policy";
+import { APP_SUBDIRS, appHomePath, appHomeRoot } from "@/utils/app-paths";
 import {
   getLocalBackendCrossAgentTreeRoot,
   getLocalBackendStorageDir,
@@ -26,7 +26,9 @@ import {
 
 /** The per-agent tree to wall off, e.g. `/Users/me/.letta/agents`. */
 export function getDefaultAgentsTreeRoot(homeDir: string = homedir()): string {
-  return canonicalizeRoot(join(homeDir, ".letta", "agents"));
+  return canonicalizeRoot(
+    appHomePath([APP_SUBDIRS.agents], { homeDir: homeDir }),
+  );
 }
 
 export interface CrossBackendAgentsTreeRootsOptions {
@@ -63,7 +65,7 @@ export function getCrossBackendAgentsTreeRoots(
  * repo/home/temp — while the cross-agent tree nested inside it stays denied.
  */
 export function getLettaHomeRoot(homeDir: string = homedir()): string {
-  return canonicalizeRoot(join(homeDir, ".letta"));
+  return canonicalizeRoot(appHomeRoot(homeDir));
 }
 
 /**
