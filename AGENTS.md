@@ -244,17 +244,18 @@ also rejects staged parent-relative imports (`../`); use the `@/` alias.
 
 1. **cycles** — `madge --circular src/`; must be exactly 0
 2. **boundaries** — `scripts/check-layer-boundaries.js`; checks import direction per layer
-3. **exported-functions** — `scripts/check-exported-functions.js`; flags `export const fn =`
-4. **filename-casing** — `scripts/check-filename-casing.js`; enforces source naming conventions
-5. **source-file-size** — `scripts/check-source-file-size.js`; enforces the 1,000-line ceiling and ratchet
-6. **module-ownership** — `scripts/check-module-ownership.js`; protects orchestration modules from barrel imports/exports
-7. **recompile-callsites** — `scripts/check-recompile-callsites.js`; enforces the prefix-freeze application-point contract (who may rewrite a conversation's frozen prefix, and which freeze reasons are valid)
-8. **test-mock-isolation** — `scripts/check-test-mock-isolation.js`; flags unsafe `mock.module` patterns
-9. **test-coverage** — `scripts/check-test-coverage.cjs`; checks source/test coverage policy
-10. **skill-frontmatter** — checks every `SKILL.md` has a non-empty `name:` header
-11. **bundled-skill-scripts** — validates scripts shipped with bundled skills
-12. **biome** — format + lint across source files
-13. **typescript** — full `tsc --noEmit`
+3. **cloud-egress** — `scripts/check-cloud-egress.js`; production code must not import the modules that exist only to reach Letta Cloud (the forbidden list and the local exemptions each carry a reason in that file)
+4. **exported-functions** — `scripts/check-exported-functions.js`; flags `export const fn =`
+5. **filename-casing** — `scripts/check-filename-casing.js`; enforces source naming conventions
+6. **source-file-size** — `scripts/check-source-file-size.js`; enforces the 1,000-line ceiling and ratchet
+7. **module-ownership** — `scripts/check-module-ownership.js`; protects orchestration modules from barrel imports/exports
+8. **recompile-callsites** — `scripts/check-recompile-callsites.js`; enforces the prefix-freeze application-point contract (who may rewrite a conversation's frozen prefix, and which freeze reasons are valid)
+9. **test-mock-isolation** — `scripts/check-test-mock-isolation.js`; flags unsafe `mock.module` patterns
+10. **test-coverage** — `scripts/check-test-coverage.cjs`; checks source/test coverage policy
+11. **skill-frontmatter** — checks every `SKILL.md` has a non-empty `name:` header
+12. **bundled-skill-scripts** — validates scripts shipped with bundled skills
+13. **biome** — format + lint across source files
+14. **typescript** — full `tsc --noEmit`
 
 ### Environment Variables
 
