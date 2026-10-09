@@ -32,6 +32,19 @@ describe("runtime model catalog", () => {
     expect(() => getDefaultModel()).toThrow("Model catalog is unavailable.");
   });
 
+  test("an empty catalog tells a first run how to configure a provider", () => {
+    // A fresh install has no provider record and no API key, so this is the
+    // first thing its user ever sees. It must name the way out.
+    let message = "";
+    try {
+      getDefaultModel();
+    } catch (error) {
+      message = error instanceof Error ? error.message : String(error);
+    }
+    expect(message).toContain("letta connect <provider>");
+    expect(message).toContain("API key");
+  });
+
   test("prefers a runtime-provided auto entry over the positional fallback", () => {
     models.push(
       {

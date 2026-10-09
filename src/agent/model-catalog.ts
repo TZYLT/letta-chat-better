@@ -102,7 +102,12 @@ export function getDefaultModel(): string {
 
   const firstModel = models[0];
   if (!firstModel) {
-    throw new Error("Model catalog is unavailable.");
+    throw new Error(
+      "Model catalog is unavailable. This build offers the models of the " +
+        "providers you configure, and none is configured yet: run " +
+        "`letta connect <provider>` (for example `letta connect deepseek`), " +
+        "or set that provider's API key in the environment, then start again.",
+    );
   }
   return firstModel.handle;
 }

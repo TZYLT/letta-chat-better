@@ -226,9 +226,9 @@ export async function ensureDefaultAgents(
 
     return agent;
   } catch (err) {
-    // Re-throw so caller can handle/exit appropriately
-    throw new Error(
-      `Failed to create default agents: ${err instanceof Error ? err.message : String(err)}`,
-    );
+    // Re-throw so the caller can label the step and exit. Both callers already
+    // name it (`Failed to create default agent` in the TUI, `Error:` in
+    // headless), so wrapping here only stacked a second prefix on the user.
+    throw err instanceof Error ? err : new Error(String(err));
   }
 }
