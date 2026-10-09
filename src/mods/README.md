@@ -1,6 +1,6 @@
 # Mods north star
 
-This directory owns the Letta Code mods runtime. These notes are for contributors changing the mods infrastructure itself, not for agents writing ordinary user mods. User-mod authoring guidance lives in `src/skills/builtin/creating-mods/`.
+This directory owns the Haruyuki mods runtime. These notes are for contributors changing the mods infrastructure itself, not for agents writing ordinary user mods. User-mod authoring guidance lives in `src/skills/builtin/creating-mods/`.
 
 ## Core thesis
 
@@ -90,7 +90,7 @@ Every intentional API break should have a diagnostic plan:
 Good diagnostic messages are short but actionable:
 
 ```text
-letta.ui.setStatuslineRenderer was removed. Use letta.ui.openPanel({ id, order, render }) instead.
+haruyuki.ui.setStatuslineRenderer was removed. Use haruyuki.ui.openPanel({ id, order, render }) instead.
 ```
 
 Avoid vague diagnostics:

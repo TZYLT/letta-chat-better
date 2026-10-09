@@ -240,7 +240,6 @@ export function detectPersonalityFromPersonaFile(
 async function getMemoryCommitAuthor(agentId: string): Promise<{
   agentId: string;
   authorName: string;
-  authorEmail: string;
 }> {
   let authorName = agentId;
 
@@ -256,7 +255,6 @@ async function getMemoryCommitAuthor(agentId: string): Promise<{
   return {
     agentId,
     authorName,
-    authorEmail: `${agentId}@letta.com`,
   };
 }
 

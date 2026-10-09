@@ -16,7 +16,7 @@ recipient's conversation list.
 
 ## Where agent state lives
 
-Letta Code keeps agent state in a local store on this machine. Agent IDs start
+Haruyuki keeps agent state in a local store on this machine. Agent IDs start
 with `agent-local-`.
 
 This CLI has no Cloud backend and no teleport: no Cloud service delivers

@@ -79,7 +79,7 @@ describe("client tool rule cleanup", () => {
     mock.restore();
   });
 
-  test("marks Letta Code agents with any persisted tool rules for cleanup", () => {
+  test("marks Haruyuki agents with any persisted tool rules for cleanup", () => {
     expect(
       shouldClearPersistedToolRules({
         tags: ["origin:letta-code"],
@@ -88,7 +88,7 @@ describe("client tool rule cleanup", () => {
     ).toBe(true);
   });
 
-  test("clears all tool rules for Letta Code agents on startup", async () => {
+  test("clears all tool rules for Haruyuki agents on startup", async () => {
     const result = await clearPersistedClientToolRules("agent-123");
 
     expect(result).toEqual({
@@ -112,7 +112,7 @@ describe("client tool rule cleanup", () => {
     expect(updateMock).not.toHaveBeenCalled();
   });
 
-  test("skips update for non-Letta Code agents", async () => {
+  test("skips update for non-Haruyuki agents", async () => {
     retrieveMock.mockResolvedValueOnce({
       tags: ["some-other-tag"],
       tool_rules: [{ type: "requires_approval", tool_name: "web_search" }],

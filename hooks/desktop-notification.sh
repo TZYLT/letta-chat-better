@@ -7,11 +7,11 @@ level=$(echo "$input" | jq -r '.level')
 
 # Display the notification (show subtitle only for warning/error)
 if [ "$level" = "error" ]; then
-  osascript -e "display notification \"$message\" with title \"Letta Code\" subtitle \"Error\""
+  osascript -e "display notification \"$message\" with title \"Haruyuki\" subtitle \"Error\""
 elif [ "$level" = "warning" ]; then
-  osascript -e "display notification \"$message\" with title \"Letta Code\" subtitle \"Warning\""
+  osascript -e "display notification \"$message\" with title \"Haruyuki\" subtitle \"Warning\""
 else
-  osascript -e "display notification \"$message\" with title \"Letta Code\""
+  osascript -e "display notification \"$message\" with title \"Haruyuki\""
 fi
 
 exit 0

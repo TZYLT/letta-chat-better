@@ -8,12 +8,12 @@ export type DeprecatedApiDiagnosticRecorder = (
 ) => void;
 
 const STATUSLINE_MIGRATION =
-  "The statusline mod APIs (setStatus / clearStatus / setStatuslineRenderer) have been removed. Use letta.ui.openPanel({ id, order, render }) instead: order 0 is the primary line (replaces the built-in agent · model line), order 1 replaces the default product-status row, orders > 1 render additive panels above the input, and negative orders stack below the primary line. render(ctx) returns a string; use ctx.row / ctx.columns for layout and ctx.chalk for color.";
+  "The statusline mod APIs (setStatus / clearStatus / setStatuslineRenderer) have been removed. Use haruyuki.ui.openPanel({ id, order, render }) instead: order 0 is the primary line (replaces the built-in agent · model line), order 1 replaces the default product-status row, orders > 1 render additive panels above the input, and negative orders stack below the primary line. render(ctx) returns a string; use ctx.row / ctx.columns for layout and ctx.chalk for color.";
 
 function createDeprecatedApiError(apiId: string): Error {
-  if (apiId === "letta.getContext") {
+  if (apiId === "haruyuki.getContext") {
     return new Error(
-      "letta.getContext is no longer available. Activation has no dynamic invocation context. Move dynamic work into a callback that receives ctx, or use explicit/global state such as process.cwd() for activation-time background work.",
+      "haruyuki.getContext is no longer available. Activation has no dynamic invocation context. Move dynamic work into a callback that receives ctx, or use explicit/global state such as process.cwd() for activation-time background work.",
     );
   }
   if (apiId === "ctx.getContext") {
@@ -22,9 +22,9 @@ function createDeprecatedApiError(apiId: string): Error {
     );
   }
   if (
-    apiId === "letta.ui.setStatus" ||
-    apiId === "letta.ui.clearStatus" ||
-    apiId === "letta.ui.setStatuslineRenderer"
+    apiId === "haruyuki.ui.setStatus" ||
+    apiId === "haruyuki.ui.clearStatus" ||
+    apiId === "haruyuki.ui.setStatuslineRenderer"
   ) {
     return new Error(
       `${apiId} is no longer available. ${STATUSLINE_MIGRATION}`,
@@ -76,7 +76,7 @@ export function attachDeprecatedGetContextTrap<T extends object>(
 export function findDeprecatedContextApiUsages(source: string): string[] {
   const usages = new Set<string>();
   if (/\bletta\s*\.\s*getContext\b/.test(source)) {
-    usages.add("letta.getContext");
+    usages.add("haruyuki.getContext");
   }
   if (/\bctx\s*\.\s*getContext\b/.test(source)) {
     usages.add("ctx.getContext");
@@ -85,13 +85,13 @@ export function findDeprecatedContextApiUsages(source: string): string[] {
     usages.add(".getContext()");
   }
   if (/\.\s*setStatuslineRenderer\s*\(/.test(source)) {
-    usages.add("letta.ui.setStatuslineRenderer");
+    usages.add("haruyuki.ui.setStatuslineRenderer");
   }
   if (/\.\s*setStatus\s*\(/.test(source)) {
-    usages.add("letta.ui.setStatus");
+    usages.add("haruyuki.ui.setStatus");
   }
   if (/\.\s*clearStatus\s*\(/.test(source)) {
-    usages.add("letta.ui.clearStatus");
+    usages.add("haruyuki.ui.clearStatus");
   }
   return [...usages];
 }

@@ -196,7 +196,7 @@ export const InlineFileEditApproval = memo(
     }, [fileEdit, precomputedDiff, allDiffs]);
 
     const customOptionPlaceholder =
-      "No, and tell Letta Code what to do differently";
+      "No, and tell Haruyuki what to do differently";
 
     useInput(
       (input, key) => {

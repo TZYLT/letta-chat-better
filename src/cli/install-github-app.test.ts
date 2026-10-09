@@ -93,7 +93,7 @@ describe("install-github-app helpers", () => {
   test("buildInstallPrBody references workflow path and trigger phrase", () => {
     const body = buildInstallPrBody(".github/workflows/letta.yml");
 
-    expect(body).toContain("Add Letta Code GitHub Workflow");
+    expect(body).toContain("Add Haruyuki GitHub Workflow");
     expect(body).toContain(".github/workflows/letta.yml");
     expect(body).toContain("@letta-code");
     expect(body).toContain("stateful");
@@ -328,7 +328,7 @@ describe("success screen content", () => {
     successLines.push("");
     successLines.push("Next steps:");
     successLines.push("1. A pre-filled PR page has been created");
-    successLines.push("2. Merge the PR to enable Letta Code PR assistance");
+    successLines.push("2. Merge the PR to enable Haruyuki PR assistance");
     successLines.push("3. Mention @letta-code in an issue or PR to test");
 
     // Verify all expected content is present

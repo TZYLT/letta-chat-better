@@ -38,10 +38,10 @@ test("coalesces real mod lifecycle changes without delaying runtime updates", as
     mkdirSync(options.globalModsDirectory, { recursive: true });
     writeFileSync(
       path.join(options.globalModsDirectory, "many-panels.ts"),
-      `export default async function(letta) {
+      `export default async function(haruyuki) {
         const panels = [];
         const register = (index) => {
-          panels.push(letta.ui.openPanel({
+          panels.push(haruyuki.ui.openPanel({
             id: "status-" + index,
             render: () => "panel-" + index,
           }));
@@ -91,8 +91,8 @@ test("does not publish capabilities from a failed activation", async () => {
     mkdirSync(options.globalModsDirectory, { recursive: true });
     writeFileSync(
       path.join(options.globalModsDirectory, "failed.ts"),
-      `export default function(letta) {
-        letta.ui.openPanel({ id: "partial", render: () => "partial" });
+      `export default function(haruyuki) {
+        haruyuki.ui.openPanel({ id: "partial", render: () => "partial" });
         throw new Error("activation failed");
       }`,
     );

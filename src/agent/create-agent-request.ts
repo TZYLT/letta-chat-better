@@ -1,10 +1,10 @@
 /**
- * Pure builder for the `POST /v1/agents` wire payload of a Letta Code agent.
+ * Pure builder for the `POST /v1/agents` wire payload of a Haruyuki agent.
  *
  * This is the shared creation-policy choke point for the CLI and external
  * harness surfaces. It owns the defaults that must not drift between callers:
  * agent type, prompt mode, tags, server tools, initial messages, parallel tool
- * calls, and compaction. Callers may supply either a Letta Code personality or
+ * calls, and compaction. Callers may supply either a Haruyuki personality or
  * their own identity blocks without rebuilding that policy.
  *
  * Everything reachable from this module must stay free of Node/backend imports
@@ -24,7 +24,7 @@ import {
 } from "./personality-presets";
 import { buildSystemPrompt, type MemoryPromptMode } from "./prompt-assets";
 
-/** Agent type used for all Letta Code agents. */
+/** Agent type used for all Haruyuki agents. */
 export const HARUYUKI_CODE_AGENT_TYPE = "letta_v1_agent";
 
 /**
@@ -63,11 +63,11 @@ export interface BuildCreateAgentRequestOptions {
    */
   memoryBlocks?: CreateAgentMemoryBlock[];
   blockIds?: string[];
-  /** Extra tags appended after canonical Letta Code and personality tags. */
+  /** Extra tags appended after canonical Haruyuki and personality tags. */
   extraTags?: string[];
   enableMemfs?: boolean;
   isSubagent?: boolean;
-  /** Exact server-side tools. Omission uses the Letta Code web-tool defaults. */
+  /** Exact server-side tools. Omission uses the Haruyuki web-tool defaults. */
   baseTools?: string[];
   embedding?: string;
   hidden?: boolean;
@@ -127,7 +127,7 @@ function ensureRootMemoryBlock(
     : [{ ...DEFAULT_ROOT_MEMORY_BLOCK }, ...blocks];
 }
 
-/** Build the canonical Core create-agent request for a Letta Code agent. */
+/** Build the canonical Core create-agent request for a Haruyuki agent. */
 export async function buildCreateAgentRequest(
   options: BuildCreateAgentRequestOptions = {},
 ): Promise<CreateAgentRequest> {

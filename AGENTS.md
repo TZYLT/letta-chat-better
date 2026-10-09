@@ -466,7 +466,7 @@ corrupted state is a workaround, not a fix.
 
 ### pi-ai Ownership Boundary
 
-Letta Code depends on `@earendil-works/pi-ai` specifically so that pi-ai owns:
+Haruyuki depends on `@earendil-works/pi-ai` specifically so that pi-ai owns:
 provider payload conversion, model capability enforcement (e.g. downgrading
 image parts for text-only models), the model catalog, and env key resolution.
 
@@ -570,12 +570,12 @@ Key files:
 - `resolveDefaultGlobalModsDirectory` prioritizes `~/.haruyuki/mods/` over
   `~/.haruyuki/extensions/` when both exist. Extensions get silently shadowed.
 - Compiled extensions cached in `~/.haruyuki/extension-cache/`.
-- Feature-checked mod files (checking `letta.capabilities.*` before calling
-  `letta.ui.*`) are safe to leave in `~/.haruyuki/mods/` across different builds.
+- Feature-checked mod files (checking `haruyuki.capabilities.*` before calling
+  `haruyuki.ui.*`) are safe to leave in `~/.haruyuki/mods/` across different builds.
 
 ### Capabilities
 
-Extensions check `letta.capabilities.*` before using surfaces. When a capability
+Extensions check `haruyuki.capabilities.*` before using surfaces. When a capability
 is `false`, the API is stubbed to no-op (not throw). Key capabilities:
 `events.lifecycle`, `events.turns`, `ui.panels`, `ui.dialogs`, `commands`,
 `tools`, `providers`.
@@ -634,7 +634,7 @@ diagnostic. When debugging a mod that "does nothing", check whether it uses
 
 ### Mod Dialogs
 
-`letta.ui.select({ message, options }) -> Promise<string | null>` , blocking,
+`haruyuki.ui.select({ message, options }) -> Promise<string | null>` , blocking,
 modal, captures keyboard focus. Renders below input, preempts statusline +
 below panels. ESC resolves `null`.
 
@@ -660,7 +660,7 @@ dispatch time, not as persistent env vars. Only literal `$NAME` references work
 - `git:` prefix for GitHub-installed mods.
 - Package manifest: capability ID sourced from manifest, fail-closed.
 - Version bumping for breaking API migrations: bump package version, set
-  `engines.lettaCodeCli` to `>= N+1` where N is the current released Letta Code
+  `engines.lettaCodeCli` to `>= N+1` where N is the current released Haruyuki
   version (the breaking change isn't released yet).
 
 ---
@@ -946,6 +946,6 @@ occur. Version compatibility between desktop and CLI must be maintained.
 ### Release Cascade
 
 Automated cross-repository release orchestration publishes Agent SDK and ACP to
-follow every stable Letta Code release. Not Dependabot, it needs multi-step
+follow every stable Haruyuki release. Not Dependabot, it needs multi-step
 package releases in lockstep. Currently blocked by token permissions
 (`amelia-letta` has read-only access to downstream repos).

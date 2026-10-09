@@ -2,7 +2,7 @@
 /**
  * Headless scenario test runner
  *
- * Runs a single multi-step scenario against the Letta Code CLI (headless) for a given
+ * Runs a single multi-step scenario against the Haruyuki CLI (headless) for a given
  * model and output format. Intended for CI matrix usage.
  *
  * Usage:

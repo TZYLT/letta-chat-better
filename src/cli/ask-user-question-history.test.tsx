@@ -8,7 +8,7 @@ test("saved V1 answers stay readable while V2 receipts do not claim an answer", 
   for (const [resultText, header] of [
     [
       'User has answered your questions: "Which warehouse?"="Snowflake".',
-      "User answered Letta Code's questions:",
+      "User answered Haruyuki's questions:",
     ],
     [
       JSON.stringify({

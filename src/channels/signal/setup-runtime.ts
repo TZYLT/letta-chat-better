@@ -242,7 +242,7 @@ export async function listSignalDaemonAccounts(
 
 export function getSignalQrLinkUrl(baseUrl: string): string {
   const url = new URL(`${baseUrl}/v1/qrcodelink`);
-  url.searchParams.set("device_name", "Letta Code");
+  url.searchParams.set("device_name", "Haruyuki");
   return url.toString();
 }
 

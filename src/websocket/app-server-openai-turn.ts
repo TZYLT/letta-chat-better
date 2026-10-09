@@ -373,7 +373,7 @@ async function runTurnViaListenerRuntime(
       // This request's output is owned by the in-process HTTP bridge, so the
       // turn must not block waiting for a relay WebSocket client to attach.
       processOwnedTurn: true,
-      // HTTP clients cannot surface Letta Code's interactive overlays. Keep
+      // HTTP clients cannot surface Haruyuki's interactive overlays. Keep
       // those tools out so the agent asks in ordinary assistant text.
       excludeInteractiveTools: true,
       messages: params.messages,

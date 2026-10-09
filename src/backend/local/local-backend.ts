@@ -161,7 +161,7 @@ export class LocalBackend extends HeadlessBackend {
       seedDefaultAgent: false,
       strictAgentAccess: true,
       strictConversationAccess: true,
-      defaultAgentName: "Letta Code",
+      defaultAgentName: "Haruyuki",
       defaultAgentModel: modelConfig.handle,
       defaultAgentModelSettings: modelConfig.modelSettings,
       modelSettingsForModel: (handle) =>

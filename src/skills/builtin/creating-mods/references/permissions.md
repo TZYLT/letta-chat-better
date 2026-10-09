@@ -5,16 +5,16 @@ Use permission overlays when trusted local code should participate in tool appro
 ## Capability
 
 ```ts
-letta.capabilities.permissions
+haruyuki.capabilities.permissions
 ```
 
 Guard registrations when writing portable mods:
 
 ```ts
-export default function activate(letta) {
-  if (!letta.capabilities.permissions) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.permissions) return;
 
-  return letta.permissions.register({
+  return haruyuki.permissions.register({
     id: "plan-mode",
     description: "Allow read-only tools and writes only to the active plan file.",
     check(event) {

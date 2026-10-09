@@ -321,7 +321,7 @@ export function checkProviderStreamDisconnectError(
   if (!isProviderStreamDisconnectErrorText(text)) return undefined;
 
   const provider = getProviderDisplayName();
-  return `${provider} closed the streaming connection before completing the response. Letta Code retries this automatically when it is safe; if it keeps happening, retry or switch models with /model.`;
+  return `${provider} closed the streaming connection before completing the response. Haruyuki retries this automatically when it is safe; if it keeps happening, retry or switch models with /model.`;
 }
 
 function findAndFormatProviderStreamDisconnectError(

@@ -1,4 +1,4 @@
-# Bun configuration for Letta Code
+# Bun configuration for Haruyuki
 
 [loader]
 ".mdx" = "text"

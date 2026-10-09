@@ -34,10 +34,10 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
-export default function activate(letta) {
-  if (!letta.capabilities.tools) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.tools) return;
 
-  return letta.tools.register({
+  return haruyuki.tools.register({
     name: "branch_summary",
     description: "Summarize the current git branch, working tree status, and recent commits.",
     parameters: {
@@ -67,10 +67,10 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
-export default function activate(letta) {
-  if (!letta.capabilities.tools) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.tools) return;
 
-  return letta.tools.register({
+  return haruyuki.tools.register({
     name: "repo_notes_search",
     description: "Search local repo notes for a query and return matching snippets.",
     parameters: {
@@ -110,7 +110,7 @@ export default function activate(letta) {
 Set approval required and avoid `parallelSafe` unless it is truly safe:
 
 ```ts
-letta.tools.register({
+haruyuki.tools.register({
   name: "format_file",
   description: "Format a specific file in the current workspace.",
   parameters: {
@@ -133,7 +133,7 @@ letta.tools.register({
 Use `approvalPolicy: "alwaysAsk"` when a tool represents a human gate rather than a risky operation. Deny rules and permission overlays still win, but unrestricted/yolo mode will not auto-approve it.
 
 ```ts
-letta.tools.register({
+haruyuki.tools.register({
   name: "exit_plan_mode",
   description: "Exit plan mode after the user has reviewed and approved the plan.",
   parameters: { type: "object", properties: {}, additionalProperties: false },

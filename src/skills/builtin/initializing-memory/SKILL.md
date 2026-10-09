@@ -88,7 +88,7 @@ Read what exists before changing anything. A fresh agent has defaults to replace
 ```bash
 letta trajectories detect
 ```
-Via the installed `@letta-ai/trajectory` package, reports every coding-agent session store on this machine with per-source counts — Claude Code, Codex, Hermes, Letta Code, OpenClaw, OpenHands, Deep Agents, and anything added later. Run it *before* Step 4 so you know whether to ask the history question.
+Via the installed `@letta-ai/trajectory` package, reports every coding-agent session store on this machine with per-source counts — Claude Code, Codex, Hermes, Haruyuki, OpenClaw, OpenHands, Deep Agents, and anything added later. Run it *before* Step 4 so you know whether to ask the history question.
 
 ### 3. Identify the user from git
 Infer rather than ask: `git shortlog -sn --all | head -5`, `git log --format="%an <%ae>" | sort -u | head -10`, cross-referenced with `git config user.email`.
@@ -191,8 +191,7 @@ It reports sessions analyzed, unread, excluded, export errors, and any dropped f
 cd $MEMORY_DIR
 git status                # Review what changed before staging
 git add <specific files>  # Stage targeted paths — avoid blind `git add -A`
-author_name="${AGENT_NAME:-$AGENT_ID}"
-git commit --author="$author_name <$AGENT_ID@letta.com>" -m "feat(init): <summary> ✨
+git commit -m "feat(init): <summary> ✨
 
 <what was initialized and key decisions made>"
 

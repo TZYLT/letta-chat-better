@@ -376,7 +376,7 @@ export function createTelegramAdapter(
 
     instance.command("start", async (ctx) => {
       await ctx.reply(
-        "Welcome! This bot is connected to Letta Code.\n\n" +
+        "Welcome! This bot is connected to Haruyuki.\n\n" +
           "If this is your first time, send any message and you'll " +
           "receive a pairing code to connect to an agent.",
       );

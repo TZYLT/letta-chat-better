@@ -16,7 +16,7 @@ import { runTrajectoriesSubcommand } from "./trajectories";
 
 async function runVersionSubcommand(): Promise<number> {
   const { getVersion } = await import("@/version");
-  console.log(`${getVersion()} (Letta Code)`);
+  console.log(`${getVersion()} (Haruyuki)`);
   return 0;
 }
 

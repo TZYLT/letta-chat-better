@@ -98,8 +98,8 @@ describe("listener mod commands", () => {
     mkdirSync(modsDir, { recursive: true });
     writeFileSync(
       join(modsDir, "greet.ts"),
-      `export default function activate(letta) {
-        letta.commands.register({
+      `export default function activate(haruyuki) {
+        haruyuki.commands.register({
           id: "greet",
           description: "Greets with args and conversation id",
           args: "<name>",
@@ -107,7 +107,7 @@ describe("listener mod commands", () => {
             return { type: "output", output: "hi " + ctx.args + " in " + ctx.conversation.id };
           },
         });
-        letta.commands.register({
+        haruyuki.commands.register({
           id: "ask",
           description: "Returns a prompt",
           run(ctx) {

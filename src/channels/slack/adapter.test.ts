@@ -291,7 +291,7 @@ test("resolveSlackAccountDisplayName prefers the Slack bot profile display name"
       "xoxb-test-token-1234567890",
       "xapp-test-token-1234567890",
     ),
-  ).resolves.toBe("Letta Code (Charles Letta Code app test)");
+  ).resolves.toBe("Haruyuki (Charles Haruyuki app test)");
 });
 
 test("slack adapter maps thread metadata to thread_ts", async () => {

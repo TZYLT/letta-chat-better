@@ -70,7 +70,7 @@ export function buildPairingInstructions(
     "",
     `Pairing code: ${code}`,
     "",
-    `In Letta Code: open Channels > ${displayName} and approve this pending chat.`,
+    `In Haruyuki: open Channels > ${displayName} and approve this pending chat.`,
     "",
     "CLI on the listener machine:",
     pairingCommand,
@@ -95,7 +95,7 @@ export function buildUnboundRouteInstructions(
   }
   return (
     `This chat isn't connected to a Letta agent yet.\n\n` +
-    `Open Channels > ${displayName} in Letta Code and connect this chat there.\n\n` +
+    `Open Channels > ${displayName} in Haruyuki and connect this chat there.\n\n` +
     `CLI on the listener machine:\n\n` +
     `letta channels route add --channel ${channelId} --chat-id ${chatId} --agent <agent-id>\n\n` +
     `Find your agent id with letta agents list.`
@@ -105,7 +105,7 @@ export function buildUnboundRouteInstructions(
 export function buildSlackAppSetupInstructions(): string {
   return (
     "This Slack app isn't connected to a Letta agent yet.\n\n" +
-    "Open Channels > Slack in Letta Code, choose which agent this app should represent, and try again."
+    "Open Channels > Slack in Haruyuki, choose which agent this app should represent, and try again."
   );
 }
 

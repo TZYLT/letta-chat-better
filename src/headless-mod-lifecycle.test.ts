@@ -116,15 +116,15 @@ describe("headless mod adapter", () => {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         path.join(modDir, "headless-tool.ts"),
-        `export default function activate(letta) {
-          letta.commands.register({
+        `export default function activate(haruyuki) {
+          haruyuki.commands.register({
             id: "hidden_headless_command",
             description: "Should not register in headless",
             run() { return { type: "handled" }; },
           });
-          letta.ui.openPanel({ id: "hidden", content: "hidden" });
-          letta.ui.setStatus("hidden", "hidden");
-          letta.events.on("tool_start", (event) => {
+          haruyuki.ui.openPanel({ id: "hidden", content: "hidden" });
+          haruyuki.ui.setStatus("hidden", "hidden");
+          haruyuki.events.on("tool_start", (event) => {
             if (event.toolName !== "${toolName}") return;
             return {
               args: {
@@ -133,7 +133,7 @@ describe("headless mod adapter", () => {
               },
             };
           });
-          letta.tools.register({
+          haruyuki.tools.register({
             name: "${toolName}",
             description: "Echo from headless mod",
             parameters: {
@@ -234,8 +234,8 @@ describe("headless mod adapter", () => {
       mkdirSync(agentModsDir, { recursive: true });
       writeFileSync(
         modPath,
-        `export default function activate(letta) {
-          letta.tools.register({
+        `export default function activate(haruyuki) {
+          haruyuki.tools.register({
             name: "headless_agent_tool",
             description: "Agent-scoped headless tool",
             parameters: { type: "object", properties: {} },
@@ -306,19 +306,19 @@ describe("headless mod adapter", () => {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         path.join(modDir, "headless-tool.ts"),
-        `export default function activate(letta) {
-          letta.tools.register({
+        `export default function activate(haruyuki) {
+          haruyuki.tools.register({
             name: "${toolName}",
             description: "Should not load",
             parameters: { type: "object", properties: {} },
             run() { return "loaded"; },
           });
-          letta.commands.register({
+          haruyuki.commands.register({
             id: "hidden_disabled_command",
             description: "Should not load",
             run() { return { type: "handled" }; },
           });
-          letta.ui.setStatuslineRenderer(() => "hidden");
+          haruyuki.ui.setStatuslineRenderer(() => "hidden");
         }`,
       );
 
@@ -373,8 +373,8 @@ describe("headless mod adapter", () => {
       writeFileSync(replacementPath, "replacement content");
       writeFileSync(
         path.join(modDir, "tool-start.ts"),
-        `export default function activate(letta) {
-          letta.events.on("tool_start", (event) => {
+        `export default function activate(haruyuki) {
+          haruyuki.events.on("tool_start", (event) => {
             if (event.toolName !== "Read") return;
             return { args: { ...event.args, file_path: ${JSON.stringify(replacementPath)} } };
           });
@@ -447,8 +447,8 @@ describe("headless mod adapter", () => {
       writeFileSync(secondPath, "second adapter content");
       writeFileSync(
         path.join(firstModDir, "tool-start.ts"),
-        `export default function activate(letta) {
-          letta.events.on("tool_start", (event) => {
+        `export default function activate(haruyuki) {
+          haruyuki.events.on("tool_start", (event) => {
             if (event.toolName !== "Read") return;
             return { args: { ...event.args, file_path: ${JSON.stringify(firstPath)} } };
           });
@@ -456,8 +456,8 @@ describe("headless mod adapter", () => {
       );
       writeFileSync(
         path.join(secondModDir, "tool-start.ts"),
-        `export default function activate(letta) {
-          letta.events.on("tool_start", (event) => {
+        `export default function activate(haruyuki) {
+          haruyuki.events.on("tool_start", (event) => {
             if (event.toolName !== "Read") return;
             return { args: { ...event.args, file_path: ${JSON.stringify(secondPath)} } };
           });

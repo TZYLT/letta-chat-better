@@ -58,7 +58,7 @@ function renderOAuthPage(options: {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title} - Letta Code</title>
+  <title>${title} - Haruyuki</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -316,7 +316,7 @@ export function startLocalOAuthServer(
           renderOAuthPage({
             success: true,
             title: "Authorization Successful",
-            message: "You can close this window and return to Letta Code.",
+            message: "You can close this window and return to Haruyuki.",
             autoClose: true,
           }),
         );

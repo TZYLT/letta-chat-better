@@ -171,7 +171,7 @@ const CHANNEL_SLASH_COMMANDS: ChannelSlashCommandDefinition[] = [
   {
     name: "feedback",
     kind: "direct",
-    summary: "Send feedback about Letta Code from this routed chat.",
+    summary: "Send feedback about Haruyuki from this routed chat.",
   },
   {
     name: "model",
@@ -421,7 +421,7 @@ export function buildChannelHelpMessage(
           ]
         : [];
     return [
-      `${displayName} is connected to Letta Code.`,
+      `${displayName} is connected to Haruyuki.`,
       "Talk by mentioning the app in a channel thread. Once a thread is routed, normal replies continue the same agent conversation until detached.",
       "Control commands start immediately after the mention:",
       "@agent /model - show this thread's current model",
@@ -450,7 +450,7 @@ export function buildChannelHelpMessage(
         ]
       : [];
   return [
-    `${displayName} is connected to Letta Code.`,
+    `${displayName} is connected to Haruyuki.`,
     "Send a normal message here and the connected agent will reply in this chat.",
     `Supported slash commands here: ${supportedCommandsText()}.`,
     ...extraParagraphs,

@@ -149,7 +149,7 @@ export function normalizeAgentRecord(
     : (legacyModel ?? defaultAgentModel);
   return {
     id: value.id,
-    name: optionalString(value.name) ?? "Letta Code",
+    name: optionalString(value.name) ?? "Haruyuki",
     description: optionalStringOrNull(value.description) ?? null,
     system: optionalString(value.system) ?? "",
     tags,

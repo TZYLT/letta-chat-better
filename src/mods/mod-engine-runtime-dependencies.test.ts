@@ -60,9 +60,9 @@ describe("mod engine runtime dependencies", () => {
       writeFileSync(
         modPath,
         `// import "react" should not count when it is just a comment.
-        export default function(letta) {
+        export default function(haruyuki) {
           const note = 'dynamic import("react") text is not an import';
-          letta.commands.register({
+          haruyuki.commands.register({
             id: "hello",
             description: "Say hello",
             run() { return { type: "output", output: "hello" }; },
@@ -94,8 +94,8 @@ describe("mod engine runtime dependencies", () => {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         path.join(modDir, "notification.ts"),
-        `export default function(letta) {
-          letta.ui.notify("  plan auto-swapped  ");
+        `export default function(haruyuki) {
+          haruyuki.ui.notify("  plan auto-swapped  ");
         }`,
       );
       const notifications: string[] = [];
@@ -121,9 +121,9 @@ describe("mod engine runtime dependencies", () => {
       const reactLink = createStaleReactLink(root);
       writeFileSync(
         modPath,
-        `export default function(letta) {
+        `export default function(haruyuki) {
           const label = <span>hello</span>;
-          letta.ui.openPanel({
+          haruyuki.ui.openPanel({
             id: "hello",
             render() { return label.props.children; },
           });

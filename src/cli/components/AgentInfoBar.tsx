@@ -222,7 +222,7 @@ export const AgentInfoBar = memo(function AgentInfoBar({
         </Box>
         <Box width={contentWidth} flexShrink={1}>
           <Text dimColor wrap="wrap">
-            Letta Code v{getVersion()} · /feedback · discord.gg/letta
+            Haruyuki v{getVersion()} · /feedback · discord.gg/letta
           </Text>
         </Box>
       </Box>

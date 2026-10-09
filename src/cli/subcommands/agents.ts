@@ -28,7 +28,7 @@ List Options:
   --limit <n>           Max results (default: 20)
 
 Create Options:
-  --name <name>         Agent name (default: "Letta Code")
+  --name <name>         Agent name (default: "Haruyuki")
   --model <model>       Model handle (e.g., anthropic/claude-sonnet-4-20250514)
   --personality <name>  Personality preset: letta-code, tutorial, blank, linus, kawaii, claude, codex
   --description <text>  Agent description

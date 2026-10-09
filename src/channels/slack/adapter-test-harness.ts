@@ -72,8 +72,8 @@ export class FakeSlackApp {
         user: {
           name: "letta_code_charles_le",
           profile: {
-            display_name: "Letta Code (Charles Letta Code app test)",
-            real_name: "Letta Code",
+            display_name: "Haruyuki (Charles Haruyuki app test)",
+            real_name: "Haruyuki",
           },
         },
       })),

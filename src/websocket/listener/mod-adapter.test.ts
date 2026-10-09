@@ -127,9 +127,9 @@ describe("listener mod adapter", () => {
     mkdirSync(modsDir, { recursive: true });
     writeFileSync(
       join(modsDir, "notify.ts"),
-      `export default function activate(letta) {
-        letta.events.on("turn_start", (_event, ctx) => {
-          letta.ui.notify("Desktop-only message");
+      `export default function activate(haruyuki) {
+        haruyuki.events.on("turn_start", (_event, ctx) => {
+          haruyuki.ui.notify("Desktop-only message");
         });
       }`,
     );
@@ -215,8 +215,8 @@ describe("listener mod adapter", () => {
     mkdirSync(modsDir, { recursive: true });
     writeFileSync(
       modPath,
-      `export default function activate(letta) {
-        letta.providers.register("kilo", {
+      `export default function activate(haruyuki) {
+        haruyuki.providers.register("kilo", {
           name: "Kilo",
           description: "Connect Kilo",
           api: "openai-completions",
@@ -232,21 +232,21 @@ describe("listener mod adapter", () => {
             maxTokens: 8192,
           }],
         });
-        letta.commands.register({
+        haruyuki.commands.register({
           id: "listener-command",
           description: "Should register on listener",
           args: "<thing>",
           run() { return { type: "handled" }; },
         });
-        letta.tools.register({
+        haruyuki.tools.register({
           name: "listener_tool",
           description: "Should register on listener",
           parameters: { type: "object", properties: {} },
           run(ctx) { return "agent:" + ctx.agent.id; },
         });
-        letta.events.on("conversation_open", () => undefined);
-        letta.ui.openPanel({ id: "ignored-panel", content: "ignored" });
-        letta.ui.setStatus("ignored-status", "ignored");
+        haruyuki.events.on("conversation_open", () => undefined);
+        haruyuki.ui.openPanel({ id: "ignored-panel", content: "ignored" });
+        haruyuki.ui.setStatus("ignored-status", "ignored");
       }`,
     );
 
@@ -413,8 +413,8 @@ describe("listener mod adapter", () => {
     mkdirSync(modsDir, { recursive: true });
     writeFileSync(
       join(modsDir, "turn-mod.ts"),
-      `export default function activate(letta) {
-        letta.events.on("turn_start", (event) => {
+      `export default function activate(haruyuki) {
+        haruyuki.events.on("turn_start", (event) => {
           // Prepend a reminder to the first user message
           const transformed = event.input.map((m, i) => {
             if (m.role === "user" && i === 0) {
@@ -480,8 +480,8 @@ describe("listener mod adapter", () => {
     mkdirSync(modsDir, { recursive: true });
     writeFileSync(
       join(modsDir, "throw-mod.ts"),
-      `export default function activate(letta) {
-        letta.events.on("turn_start", () => {
+      `export default function activate(haruyuki) {
+        haruyuki.events.on("turn_start", () => {
           throw new Error("handler error");
         });
       }`,
@@ -530,8 +530,8 @@ describe("listener mod adapter", () => {
     mkdirSync(modsDir, { recursive: true });
     writeFileSync(
       join(modsDir, "turn-end-mod.ts"),
-      `export default function activate(letta) {
-        letta.events.on("turn_end", (event) => {
+      `export default function activate(haruyuki) {
+        haruyuki.events.on("turn_end", (event) => {
           globalThis.__lettaTurnEndSeen = {
             stopReason: event.stopReason,
             assistantMessage: event.assistantMessage,
@@ -579,8 +579,8 @@ describe("listener mod adapter", () => {
     mkdirSync(modsDir, { recursive: true });
     writeFileSync(
       join(modsDir, "tool-end-mod.ts"),
-      `export default function activate(letta) {
-        letta.events.on("tool_end", (event) => {
+      `export default function activate(haruyuki) {
+        haruyuki.events.on("tool_end", (event) => {
           globalThis.__lettaToolEndSeen = {
             toolName: event.toolName,
             args: event.args,

@@ -201,7 +201,7 @@ describe("formatErrorDetails", () => {
     const message = formatErrorDetails(errorObject);
 
     expect(message).toContain("OpenAI closed the streaming connection");
-    expect(message).toContain("Letta Code retries this automatically");
+    expect(message).toContain("Haruyuki retries this automatically");
     expect(message).toContain("/model");
     expect(message).not.toContain("INTERNAL_SERVER_ERROR");
     expect(message).not.toContain('"message_type"');

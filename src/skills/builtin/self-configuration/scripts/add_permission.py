@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Add a permission rule to Letta Code settings.
+Add a permission rule to Haruyuki settings.
 
 Usage:
     python3 add_permission.py --rule "Bash(npm run:*)" --type allow --scope user --confirm-user-scope
@@ -125,7 +125,7 @@ def ensure_local_gitignored(working_directory: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Add a permission rule to Letta Code settings"
+        description="Add a permission rule to Haruyuki settings"
     )
     parser.add_argument(
         "--rule",

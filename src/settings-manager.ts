@@ -1779,7 +1779,7 @@ class SettingsManager {
   }
 
   /**
-   * Get the Letta Code version that last wrote the managed system prompt hash.
+   * Get the Haruyuki version that last wrote the managed system prompt hash.
    */
   getSystemPromptVersion(agentId: string): string | undefined {
     return this.getAgentSettings(agentId)?.systemPromptVersion;

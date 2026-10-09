@@ -37,7 +37,7 @@ export class ImageWorkerMissingError extends Error {
   constructor(workerPath: string) {
     super(
       `the image processing worker is missing from this installation (expected at ${workerPath}). ` +
-        "Your Letta Code installation appears to be incomplete. " +
+        "Your Haruyuki installation appears to be incomplete. " +
         "Reinstall it (e.g. npm install -g @letta-ai/letta-code@latest) and try again.",
     );
     this.name = "ImageWorkerMissingError";

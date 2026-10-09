@@ -1,7 +1,7 @@
 /**
- * Default agent (Letta Code) creation and management.
+ * Default agent (Haruyuki) creation and management.
  *
- * Letta Code: Stateful agent with full memory - learns and grows with the user.
+ * Haruyuki: Stateful agent with full memory - learns and grows with the user.
  */
 
 import type { AgentState } from "@letta-ai/letta-client/resources/agents/agents";
@@ -23,11 +23,11 @@ export const TUTOR_TAG = "default:tutorial";
  * Personalities the startup bootstrap can create. Kept deliberately simple:
  * a true fresh start (brand-new account, nothing to resume) gets the Tutor
  * onboarding agent, while an explicit `--new-agent` (and headless runs) get
- * the standard Letta Code (memo) agent.
+ * the standard Haruyuki (memo) agent.
  */
 export type DefaultAgentPersonality = "memo" | "tutorial";
 
-// Letta Code's default memory blocks - loaded from Memo-specific prompts.
+// Haruyuki's default memory blocks - loaded from Memo-specific prompts.
 const MEMO_PERSONA = parseMdxFrontmatter(
   MEMORY_PROMPTS["persona_memo.mdx"] ?? "",
 ).body;
@@ -36,14 +36,14 @@ const MEMO_HUMAN = parseMdxFrontmatter(
 ).body;
 
 // Agent descriptions shown in /agents selector
-const MEMO_DESCRIPTION = "The default Letta Code agent with persistent memory";
+const MEMO_DESCRIPTION = "The default Haruyuki agent with persistent memory";
 
 /**
  * Default agent configurations.
  */
 export const DEFAULT_AGENT_CONFIGS: Record<string, CreateAgentOptions> = {
   memo: {
-    name: "Letta Code",
+    name: "Haruyuki",
     description: MEMO_DESCRIPTION,
     // Uses default memory blocks and tools (full stateful config)
     // Override global blocks with Memo-specific personality defaults
@@ -163,19 +163,19 @@ async function addTagToAgent(
 }
 
 /**
- * Create a fresh default Letta Code agent and pin it globally.
+ * Create a fresh default Haruyuki agent and pin it globally.
  * Always creates a new agent — does NOT search by tag to avoid picking up
  * agents created by other users on shared Letta Cloud orgs.
  *
  * Respects `createDefaultAgents` setting (defaults to true).
  *
- * @returns The Letta Code agent (or null if creation disabled/failed).
+ * @returns The Haruyuki agent (or null if creation disabled/failed).
  */
 export async function ensureDefaultAgents(
   backend: Backend,
   options?: {
     preferredModel?: string;
-    /** Which personality the created agent gets. Defaults to memo (Letta Code). */
+    /** Which personality the created agent gets. Defaults to memo (Haruyuki). */
     personality?: DefaultAgentPersonality;
   },
 ): Promise<AgentState | null> {

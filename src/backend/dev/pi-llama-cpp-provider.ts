@@ -115,7 +115,7 @@ function parseLlamaCppNativeModels(
       sawMetadata = true;
     }
     // The upstream provider exposes unloaded models through a separate management
-    // command. Letta Code's model picker is the only selection surface, so also
+    // command. Haruyuki's model picker is the only selection surface, so also
     // publish states that llama.cpp can serve transparently: sleeping models wake
     // on request, and non-failed unloaded models load on demand in router mode.
     const selectable =

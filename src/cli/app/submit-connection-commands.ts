@@ -86,7 +86,7 @@ export async function handleConnectionCommand(
         "Checking MCP connection options...",
       );
       cmd.fail(
-        "The server-side MCP OAuth flow is deprecated in Letta Code. Use /mcp add to configure a client-local stdio, HTTP, or SSE server.",
+        "The server-side MCP OAuth flow is deprecated in Haruyuki. Use /mcp add to configure a client-local stdio, HTTP, or SSE server.",
       );
       return { submitted: true };
     }

@@ -857,7 +857,6 @@ export function handleMemoryProtocolCommand(
           author: {
             agentId: parsed.agent_id,
             authorName: agentName,
-            authorEmail: `${parsed.agent_id}@letta.com`,
           },
           ...(memorySyncMode ? { syncMode: memorySyncMode } : {}),
         });
@@ -1050,7 +1049,6 @@ export function handleMemoryProtocolCommand(
           author: {
             agentId: parsed.agent_id,
             authorName: agentName,
-            authorEmail: `${parsed.agent_id}@letta.com`,
           },
           ...(memorySyncMode ? { syncMode: memorySyncMode } : {}),
         });

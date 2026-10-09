@@ -260,7 +260,7 @@ export function createChannelRouteProvisioner(deps: {
       await adapter.sendDirectReply(
         msg.chatId,
         "This Telegram bot isn't connected to a Letta agent yet.\n\n" +
-          "Open Channels > Telegram in Letta Code, choose which agent this bot should represent, and try again.",
+          "Open Channels > Telegram in Haruyuki, choose which agent this bot should represent, and try again.",
         msg.messageId ? { replyToMessageId: msg.messageId } : undefined,
       );
       return null;
@@ -361,7 +361,7 @@ export function createChannelRouteProvisioner(deps: {
         await adapter.sendDirectReply(
           msg.chatId,
           "This Discord bot isn't connected to a Letta agent yet.\n\n" +
-            "Open Channels > Discord in Letta Code, choose which agent this bot should represent, and try again.",
+            "Open Channels > Discord in Haruyuki, choose which agent this bot should represent, and try again.",
         );
       }
       return null;
@@ -446,7 +446,7 @@ export function createChannelRouteProvisioner(deps: {
         await adapter.sendDirectReply(
           msg.chatId,
           "This WhatsApp account isn't connected to a Letta agent yet.\n\n" +
-            "Open Channels > WhatsApp in Letta Code, choose which agent this WhatsApp account should represent, and try again.",
+            "Open Channels > WhatsApp in Haruyuki, choose which agent this WhatsApp account should represent, and try again.",
         );
       }
       return null;
@@ -532,7 +532,7 @@ export function createChannelRouteProvisioner(deps: {
         await adapter.sendDirectReply(
           msg.chatId,
           "This Signal account isn't connected to a Letta agent yet.\n\n" +
-            "Open Channels > Signal in Letta Code, choose which agent this Signal account should represent, and try again.",
+            "Open Channels > Signal in Haruyuki, choose which agent this Signal account should represent, and try again.",
         );
       }
       return null;

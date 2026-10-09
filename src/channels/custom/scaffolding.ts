@@ -33,7 +33,7 @@ function buildStubPlugin(id: string, displayName: string): string {
   // Self-contained webhook forwarder — no imports from letta-code.
   // Mirrors the logic in src/channels/custom/adapter.ts.
   return `/**
- * Auto-generated webhook channel plugin for Letta Code.
+ * Auto-generated webhook channel plugin for Haruyuki.
  * Channel: ${displayName} (${id})
  *
  * This plugin forwards outbound agent messages to the configured webhook URL.

@@ -442,7 +442,7 @@ function handleRouteRemove(
   }
   if (routes.length > 1) {
     console.error(
-      `Channel "${channelId}" has multiple routes for chat "${chatId}". Remove the route from Letta Code so thread_id can be selected explicitly.`,
+      `Channel "${channelId}" has multiple routes for chat "${chatId}". Remove the route from Haruyuki so thread_id can be selected explicitly.`,
     );
     return 1;
   }

@@ -2,7 +2,7 @@
 
 Use this as the canonical multi-capability mod example. It composes a slash command, model-callable tools, turn reminders, permission overlays, and local state to recreate the old built-in plan-mode flow with mod APIs.
 
-This is a pattern reference, not a full product implementation. Keep local mods self-contained and avoid importing Letta Code internals.
+This is a pattern reference, not a full product implementation. Keep local mods self-contained and avoid importing Haruyuki internals.
 
 ## Contents
 
@@ -112,11 +112,11 @@ Plan file path: ${session.planFilePath}
 If using ApplyPatch, use this exact relative patch path: ${relativePatchPath}`;
 }
 
-export default function activate(letta) {
+export default function activate(haruyuki) {
   const disposers = [];
 
-  if (letta.capabilities.commands) {
-    disposers.push(letta.commands.register({
+  if (haruyuki.capabilities.commands) {
+    disposers.push(haruyuki.commands.register({
       id: "plan",
       description: "Enter plan mode",
       override: true,
@@ -131,8 +131,8 @@ export default function activate(letta) {
     }));
   }
 
-  if (letta.capabilities.tools) {
-    disposers.push(letta.tools.register({
+  if (haruyuki.capabilities.tools) {
+    disposers.push(haruyuki.tools.register({
       name: "enter_plan_mode",
       description:
         "Enter plan mode before a non-trivial implementation task. Use this for new features, multi-file changes, architectural decisions, unclear requirements, or tasks where the user should approve the approach before implementation.",
@@ -169,8 +169,8 @@ Do NOT make any file changes outside the plan file or run any tools that modify 
 </system-reminder>`;
 }
 
-if (letta.capabilities.events.turns) {
-  disposers.push(letta.events.on("turn_start", (event) => {
+if (haruyuki.capabilities.events.turns) {
+  disposers.push(haruyuki.events.on("turn_start", (event) => {
     const session = getSession(event.conversationId);
     if (!session) return;
     return { input: [{ role: "user", content: buildActiveReminder(session, session.cwd) }, ...event.input] };
@@ -232,8 +232,8 @@ function isPlanFileWrite(toolName, args, cwd) {
   // Allow only if every target resolves to a .md file under ~/.haruyuki/plans/.
 }
 
-if (letta.capabilities.permissions) {
-  disposers.push(letta.permissions.register({
+if (haruyuki.capabilities.permissions) {
+  disposers.push(haruyuki.permissions.register({
     id: "plan-mode",
     description: "Allow read-only tools and writes only to ~/.haruyuki/plans/*.md while plan mode is active.",
     check(event) {
@@ -276,8 +276,8 @@ In the mod version, `exit_plan_mode` is not the approval UI. The agent should re
 Use `approvalPolicy: "alwaysAsk"` so the final state transition still pauses for human confirmation in unrestricted/yolo mode.
 
 ```ts
-if (letta.capabilities.tools) {
-  disposers.push(letta.tools.register({
+if (haruyuki.capabilities.tools) {
+  disposers.push(haruyuki.tools.register({
     name: "exit_plan_mode",
     description:
       "Exit plan mode only after the plan file has been written, the full current plan text has been presented with AskUserQuestion, and the user has approved it.",

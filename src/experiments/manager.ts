@@ -16,7 +16,7 @@ const EXPERIMENT_DEFINITIONS: readonly ExperimentDefinition[] = [
     id: "artifacts",
     label: "artifacts",
     description:
-      "Expose Letta Code Desktop artifact creation tools and artifact UI surfaces.",
+      "Expose Haruyuki Desktop artifact creation tools and artifact UI surfaces.",
     envVar: "HARUYUKI_ARTIFACTS",
   },
   {
@@ -28,7 +28,7 @@ const EXPERIMENT_DEFINITIONS: readonly ExperimentDefinition[] = [
     id: "desktop_conversation_bootstrap",
     label: "conversation bootstrap",
     description:
-      "Inject lightweight prior-conversation context into the first turn of brand-new Letta Code conversations.",
+      "Inject lightweight prior-conversation context into the first turn of brand-new Haruyuki conversations.",
   },
   {
     id: "diffs",

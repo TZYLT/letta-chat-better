@@ -84,7 +84,7 @@ that mode only permits messages to/from the linked account itself.
    Common paths:
 
    - QR/device link: use the daemon `/v1/qrcodelink` flow when available, or
-     native `signal-cli link -n "Letta Code"` with the wizard-rendered QR.
+     native `signal-cli link -n "Haruyuki"` with the wizard-rendered QR.
    - SMS registration: register a dedicated number, complete any
      `signalcaptchas.org` captcha, then verify the SMS code.
 
@@ -137,7 +137,7 @@ export SIGNAL_ACCOUNT="+15555550100"
 Run the link command:
 
 ```bash
-signal-cli -c "$SIGNAL_CLI_CONFIG" link -n "Letta Code"
+signal-cli -c "$SIGNAL_CLI_CONFIG" link -n "Haruyuki"
 ```
 
 `signal-cli` prints an `sgnl://linkdevice?...` URI. Scan it from Signal mobile:

@@ -1,6 +1,6 @@
 ---
 name: customizing-commands
-description: Creates, edits, and enables Letta Code mod-provided slash commands. Use when the user asks to add a custom /command, slash command, command shortcut, scoped conversation-backed command, or command-driven panel behavior.
+description: Creates, edits, and enables Haruyuki mod-provided slash commands. Use when the user asks to add a custom /command, slash command, command shortcut, scoped conversation-backed command, or command-driven panel behavior.
 ---
 
 # Customizing Commands
@@ -31,17 +31,17 @@ If the command is a reusable workflow like `/goal`, put the workflow instruction
 
 1. Inspect `~/.haruyuki/mods/` for related command files.
 2. Preserve unrelated mod code; create a focused new file if merging is messy.
-3. Register with `letta.commands.register()` and guard with `letta.capabilities.commands`.
+3. Register with `haruyuki.commands.register()` and guard with `haruyuki.capabilities.commands`.
 4. Return the unregister function, or a disposer that calls it plus any timer/panel cleanup.
 5. Tell the user the exact file path changed and to run `/reload`.
 
 ## Default prompt command
 
 ```ts
-export default function activate(letta) {
-  if (!letta.capabilities.commands) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.commands) return;
 
-  return letta.commands.register({
+  return haruyuki.commands.register({
     id: "review",
     description: "Review current git changes",
     args: "[focus]",
@@ -79,7 +79,7 @@ type ModCommandResult =
 - Do not register built-in command IDs.
 - `runWhenBusy: true` commands must not return `prompt` while the main agent is busy; use scoped conversation helpers/panels and return `handled`.
 - `showInTranscript: false` commands should usually return `handled`, not `prompt`.
-- Do not import Letta Code app internals.
+- Do not import Haruyuki app internals.
 - Do not do surprising side effects on startup; mods activate on app start and `/reload`.
 
 ## More recipes

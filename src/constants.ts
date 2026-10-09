@@ -10,7 +10,7 @@ export const DEFAULT_TITLE_SUMMARIZATION_MODEL = "openai/gpt-6-luna";
 /**
  * Default agent name when creating a new agent
  */
-export const DEFAULT_AGENT_NAME = "Letta Code";
+export const DEFAULT_AGENT_NAME = "Haruyuki";
 
 /**
  * Message displayed when user interrupts tool execution

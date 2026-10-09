@@ -173,7 +173,7 @@ export const ToolCallMessage = memo(
         if (line.phase === "finished" && line.resultOk !== false) {
           displayName = parseAskUserQuestionReceipt(line.resultText)
             ? "Questions posted"
-            : "User answered Letta Code's questions:";
+            : "User answered Haruyuki's questions:";
         } else {
           displayName = "Asking user questions...";
         }

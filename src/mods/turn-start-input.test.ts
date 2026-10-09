@@ -61,8 +61,8 @@ test("turn_start handlers cannot move reminders ahead of approvals", async () =>
   mkdirSync(modsDirectory, { recursive: true });
   writeFileSync(
     path.join(modsDirectory, "prepend-reminder.ts"),
-    `export default function activate(letta) {
-      letta.events.on("turn_start", (event) => ({
+    `export default function activate(haruyuki) {
+      haruyuki.events.on("turn_start", (event) => ({
         input: [
           { type: "message", role: "user", content: "<system-reminder>goal</system-reminder>" },
           ...event.input,

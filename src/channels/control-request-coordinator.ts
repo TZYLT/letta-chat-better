@@ -178,7 +178,7 @@ export class ChannelControlRequestCoordinator {
       await this.options.deliverReprompt(
         cloneEvent(pending.event),
         input,
-        "I’m reconnecting to Letta Code right now, so I couldn’t use that reply yet. Please send it again in a moment.",
+        "I’m reconnecting to Haruyuki right now, so I couldn’t use that reply yet. Please send it again in a moment.",
       );
       return true;
     }

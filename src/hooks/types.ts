@@ -1,5 +1,5 @@
 // src/hooks/types.ts
-// Types for Letta Code hooks system (Claude Code-compatible)
+// Types for Haruyuki hooks system (Claude Code-compatible)
 
 /**
  * Tool-related hook events that require matchers to specify which tools to match

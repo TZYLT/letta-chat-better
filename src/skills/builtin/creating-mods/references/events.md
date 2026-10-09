@@ -17,20 +17,20 @@ Mod events are typed local extension points. Use the event's documented return c
 ## Capabilities
 
 ```ts
-letta.capabilities.events.lifecycle
-letta.capabilities.events.tools
-letta.capabilities.events.turns
-letta.capabilities.events.compact
-letta.capabilities.events.llm
+haruyuki.capabilities.events.lifecycle
+haruyuki.capabilities.events.tools
+haruyuki.capabilities.events.turns
+haruyuki.capabilities.events.compact
+haruyuki.capabilities.events.llm
 ```
 
 Guard events when writing portable mods:
 
 ```ts
-export default function activate(letta) {
-  if (!letta.capabilities.events.lifecycle) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.events.lifecycle) return;
 
-  return letta.events.on("conversation_open", (event, ctx) => {
+  return haruyuki.events.on("conversation_open", (event, ctx) => {
     console.log(`conversation ${event.reason}: ${event.agentName ?? event.agentId}`);
     console.log(`cwd: ${ctx.cwd}`);
   });
@@ -40,16 +40,16 @@ export default function activate(letta) {
 The API intentionally follows the Pi-style event shape:
 
 ```ts
-letta.events.on("event_name", (event, ctx) => {
+haruyuki.events.on("event_name", (event, ctx) => {
   // event is specific to event_name
   // ctx contains host context and an AbortSignal
 });
 ```
 
-Tool events use this same API. Use `letta.permissions.register` for allow/ask/deny policy; use `tool_start` for last-mile argument transforms and lifecycle reactions.
+Tool events use this same API. Use `haruyuki.permissions.register` for allow/ask/deny policy; use `tool_start` for last-mile argument transforms and lifecycle reactions.
 
 ```ts
-letta.events.on("tool_start", (event, ctx) => {
+haruyuki.events.on("tool_start", (event, ctx) => {
   if (event.toolName !== "Bash") return;
   if (String(event.args.command).startsWith("npm test")) {
     return { args: { ...event.args, command: "bun test" } };
@@ -61,7 +61,7 @@ Lifecycle, turn, tool, compaction, and llm events are wired today.
 
 Lifecycle handlers are notification-only and should not return values. `turn_start` handlers can transform or cancel outbound user-message turns. `tool_start` handlers can transform the tool arguments before execution. Compaction and llm handlers are notification-only.
 
-`compact_start`/`compact_end` and `llm_start`/`llm_end` fire on the **local backend**, where compaction and provider requests run client-side. Guard with `letta.capabilities.events.compact` / `letta.capabilities.events.llm` for portable mods.
+`compact_start`/`compact_end` and `llm_start`/`llm_end` fire on the **local backend**, where compaction and provider requests run client-side. Guard with `haruyuki.capabilities.events.compact` / `haruyuki.capabilities.events.llm` for portable mods.
 
 ## Supported events
 
@@ -129,7 +129,7 @@ Lifecycle handlers are notification-only and should not return values. `turn_sta
 Handlers can inspect `event.args`, mutate it directly, or return replacement args:
 
 ```ts
-letta.events.on("tool_start", (event) => {
+haruyuki.events.on("tool_start", (event) => {
   if (event.toolName !== "Bash") return;
   event.args = {
     ...event.args,
@@ -137,7 +137,7 @@ letta.events.on("tool_start", (event) => {
   };
 });
 
-letta.events.on("tool_start", (event) => {
+haruyuki.events.on("tool_start", (event) => {
   if (event.toolName !== "Read") return;
   return { args: { ...event.args, limit: 200 } };
 });
@@ -164,7 +164,7 @@ Handlers run in registration order. Later handlers see the current args after ea
 `tool_end` fires immediately after a tool produces a result, before the agent sees it. `event.args` contains the effective tool invocation arguments after `tool_start` transforms, so handlers can react to the specific file, command, query, etc. Handlers can inspect the result, or return `{ result: { status, output } }` to replace it:
 
 ```ts
-letta.events.on("tool_end", (event) => {
+haruyuki.events.on("tool_end", (event) => {
   if (event.toolName !== "Bash" || event.status !== "success") return;
   if (typeof event.args.command !== "string") return;
   return { result: { status: "success", output: redactSecrets(event.output) } };
@@ -176,7 +176,7 @@ The first handler that returns a `result` wins; later handlers are shadowed. Onl
 A handler can also react to a specific tool completing by adjusting conversation state. For example, switch model and reasoning effort when entering and exiting plan mode (`tool_end` fires only after the tool succeeds, so a denied approval won't switch):
 
 ```ts
-letta.events.on("tool_end", async (event, ctx) => {
+haruyuki.events.on("tool_end", async (event, ctx) => {
   if (event.status !== "success") return;
   if (event.toolName === "enter_plan_mode") {
     await ctx.conversation.updateLlmConfig({ model: "anthropic/claude-opus-4-8", reasoningEffort: "high" });
@@ -201,7 +201,7 @@ function replaceTextContent(content, from, to) {
   );
 }
 
-letta.events.on("turn_start", (event) => {
+haruyuki.events.on("turn_start", (event) => {
   event.input = event.input.map((item) =>
     item.type !== "approval" && item.role === "user"
       ? { ...item, content: replaceTextContent(item.content, "??", new Date().toLocaleString()) }
@@ -209,7 +209,7 @@ letta.events.on("turn_start", (event) => {
   );
 });
 
-letta.events.on("turn_start", (event) => {
+haruyuki.events.on("turn_start", (event) => {
   return { input: event.input };
 });
 ```
@@ -217,7 +217,7 @@ letta.events.on("turn_start", (event) => {
 Handlers can also cancel a user-message turn before it reaches the backend/model:
 
 ```ts
-letta.events.on("turn_start", (event) => {
+haruyuki.events.on("turn_start", (event) => {
   if (!isPlanModeActive(event.conversationId)) {
     return { cancel: { reason: "Run /plan first." } };
   }
@@ -322,14 +322,14 @@ Respect `ctx.signal` for long-running async work. It is aborted on `/reload` and
 ## Conversation status example
 
 ```ts
-export default function activate(letta) {
-  if (!letta.capabilities.events.lifecycle) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.events.lifecycle) return;
 
   const disposers = [];
   let conversation = "";
 
-  if (letta.capabilities.ui.panels) {
-    const panel = letta.ui.openPanel({
+  if (haruyuki.capabilities.ui.panels) {
+    const panel = haruyuki.ui.openPanel({
       id: "conversation",
       order: 100,
       render: ({ width, row }) => row("conversation", conversation, width),
@@ -337,7 +337,7 @@ export default function activate(letta) {
     disposers.push(() => panel.close());
 
     disposers.push(
-      letta.events.on("conversation_open", (event) => {
+      haruyuki.events.on("conversation_open", (event) => {
         conversation = event.reason;
         panel.update();
       }),
@@ -345,7 +345,7 @@ export default function activate(letta) {
   }
 
   disposers.push(
-    letta.events.on("conversation_close", (event) => {
+    haruyuki.events.on("conversation_close", (event) => {
       console.log(`conversation ${event.reason}: ${event.durationMs ?? 0}ms`);
     }),
   );

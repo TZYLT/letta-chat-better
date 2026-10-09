@@ -1317,7 +1317,7 @@ export async function handleHeadlessCommand(
     } catch (error) {
       debugWarn(
         "headless startup",
-        `Failed to ensure Letta Code origin tag for ${agent.id}: ${
+        `Failed to ensure Haruyuki origin tag for ${agent.id}: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );

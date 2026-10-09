@@ -1,6 +1,6 @@
 ---
 name: capturing-tui-visual-proof
-description: Captures reviewable before-and-after visual proof from the real Letta Code Ink TUI. Use when a Letta Code PR changes interactive CLI rendering or behavior and needs terminal screenshots or GIFs in its PR body.
+description: Captures reviewable before-and-after visual proof from the real Haruyuki Ink TUI. Use when a Haruyuki PR changes interactive CLI rendering or behavior and needs terminal screenshots or GIFs in its PR body.
 ---
 
 # Capturing TUI Visual Proof

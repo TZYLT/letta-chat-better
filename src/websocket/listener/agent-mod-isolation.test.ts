@@ -79,8 +79,8 @@ describe("listener agent-scoped mods", () => {
 
     writeFileSync(
       join(globalModsDir, "shared.ts"),
-      `export default function activate(letta) {
-        letta.tools.register({
+      `export default function activate(haruyuki) {
+        haruyuki.tools.register({
           name: "shared_listener_tool",
           description: "Available to every listener agent",
           parameters: { type: "object", properties: {} },
@@ -96,8 +96,8 @@ describe("listener agent-scoped mods", () => {
     ) => {
       writeFileSync(
         join(directory, "agent-tool.ts"),
-        `export default function activate(letta) {
-          letta.tools.register({
+        `export default function activate(haruyuki) {
+          haruyuki.tools.register({
             name: "${toolName}",
             description: "Agent-scoped listener tool",
             parameters: { type: "object", properties: {} },
@@ -246,8 +246,8 @@ describe("listener agent-scoped mods", () => {
     const writeTool = (toolName: string): void => {
       writeFileSync(
         modPath,
-        `export default function activate(letta) {
-          letta.tools.register({
+        `export default function activate(haruyuki) {
+          haruyuki.tools.register({
             name: "${toolName}",
             description: "MemFS sync state",
             parameters: { type: "object", properties: {} },
@@ -378,9 +378,9 @@ describe("listener agent-scoped mods", () => {
     const agentBDir = join(agentBRoot, "mods");
     const cacheRoot = join(root, "listener-cache");
     const source = `let activationCount = 0;
-      export default function activate(letta) {
+      export default function activate(haruyuki) {
         activationCount += 1;
-        letta.tools.register({
+        haruyuki.tools.register({
           name: "stateful_counter",
           description: "Returns this module instance activation count",
           parameters: { type: "object", properties: {} },
@@ -496,14 +496,14 @@ describe("listener agent-scoped mods", () => {
     const writeIdentityMod = (directory: string, agent: "a" | "b"): void => {
       writeFileSync(
         join(directory, "identity.js"),
-        `export default function activate(letta) {
-          letta.tools.register({
+        `export default function activate(haruyuki) {
+          haruyuki.tools.register({
             name: "agent_${agent}_identity",
             description: "Agent ${agent.toUpperCase()} identity",
             parameters: { type: "object", properties: {} },
             run() { return "${agent}"; },
           });
-          letta.commands.register({
+          haruyuki.commands.register({
             id: "agent-${agent}-command",
             description: "Agent ${agent.toUpperCase()} command",
             run() { return "${agent}"; },

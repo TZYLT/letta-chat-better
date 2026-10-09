@@ -70,15 +70,15 @@ Executable code (TypeScript/Python/Bash/etc.) that can be run directly to perfor
 
 **Appropriate for:** Scripts that perform automation, data processing, or specific operations.
 
-**Note:** Scripts may be executed without loading into context, but can still be read by the Letta Code agent for patching or environment adjustments.
+**Note:** Scripts may be executed without loading into context, but can still be read by the Haruyuki agent for patching or environment adjustments.
 
 ### references/
-Documentation and reference material intended to be loaded into context to inform the Letta Code agent's process and thinking.
+Documentation and reference material intended to be loaded into context to inform the Haruyuki agent's process and thinking.
 
-**Appropriate for:** In-depth documentation, API references, database schemas, comprehensive guides, or any detailed information that the Letta Code agent should reference while working.
+**Appropriate for:** In-depth documentation, API references, database schemas, comprehensive guides, or any detailed information that the Haruyuki agent should reference while working.
 
 ### assets/
-Files not intended to be loaded into context, but rather used within the output the Letta Code agent produces.
+Files not intended to be loaded into context, but rather used within the output the Haruyuki agent produces.
 
 **Appropriate for:** Templates, boilerplate code, document templates, images, icons, fonts, or any files meant to be copied or used in the final output.
 
@@ -141,7 +141,7 @@ This placeholder represents where asset files would be stored.
 Replace with actual asset files (templates, images, fonts, etc.) or delete if not needed.
 
 Asset files are NOT intended to be loaded into context, but rather used within
-the output the Letta Code agent produces.
+the output the Haruyuki agent produces.
 
 ## Common Asset Types
 

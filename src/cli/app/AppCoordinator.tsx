@@ -4547,7 +4547,7 @@ export function App({
   const terminalTitleData = useMemo<WindowTitleData>(
     () => ({
       agentName,
-      appName: "Letta Code",
+      appName: "Haruyuki",
       version: getVersion(),
       conversationSummary,
       conversationId,

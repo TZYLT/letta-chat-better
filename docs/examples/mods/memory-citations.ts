@@ -205,7 +205,7 @@ function appendReminderMessage(input: unknown[], text: string): unknown[] {
   ];
 }
 
-export function activate(letta) {
+export function activate(haruyuki) {
   const disposers = [];
   const byConversation = new Map<string, ConversationState>();
 
@@ -221,9 +221,9 @@ export function activate(letta) {
     return state;
   }
 
-  if (letta.capabilities.events.turns) {
+  if (haruyuki.capabilities.events.turns) {
     disposers.push(
-      letta.events.on("turn_start", (event) => {
+      haruyuki.events.on("turn_start", (event) => {
         const key = conversationKey(event.conversationId);
         byConversation.set(key, {
           citations: [],
@@ -237,9 +237,9 @@ export function activate(letta) {
     );
   }
 
-  if (letta.capabilities.events.tools) {
+  if (haruyuki.capabilities.events.tools) {
     disposers.push(
-      letta.events.on("tool_start", (event, ctx) => {
+      haruyuki.events.on("tool_start", (event, ctx) => {
         const memoryDir = getMemoryDir(ctx);
         if (!memoryDir) return;
 
@@ -292,9 +292,9 @@ export function activate(letta) {
     );
   }
 
-  if (letta.capabilities.tools) {
+  if (haruyuki.capabilities.tools) {
     disposers.push(
-      letta.tools.register({
+      haruyuki.tools.register({
         name: "memory_citation_snapshot",
         description:
           "Return observed memory file references for the current turn. Call this immediately before a final answer when memory influenced the answer, then cite only returned paths in a short Memory references footer.",
@@ -317,9 +317,9 @@ export function activate(letta) {
     );
   }
 
-  if (letta.capabilities.commands) {
+  if (haruyuki.capabilities.commands) {
     disposers.push(
-      letta.commands.register({
+      haruyuki.commands.register({
         id: "memory-citations",
         description:
           "Show memory references observed by the memory citation mod this turn.",

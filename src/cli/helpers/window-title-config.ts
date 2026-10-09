@@ -74,7 +74,7 @@ export const WINDOW_TITLE_FIELD_INFO: Record<
 > = {
   "app-name": {
     label: "App Name",
-    description: "Letta Code app name",
+    description: "Haruyuki app name",
   },
   "project-name": {
     label: "Project Name",
@@ -122,7 +122,7 @@ export const WINDOW_TITLE_FIELD_INFO: Record<
   },
   version: {
     label: "Version",
-    description: "Letta Code application version",
+    description: "Haruyuki application version",
   },
   "used-tokens": {
     label: "Used Tokens",

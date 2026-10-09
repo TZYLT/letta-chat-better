@@ -18,7 +18,7 @@ const DEFAULT_STATUSLINE_ACTIVATION = {
 };
 
 function createStatuslineFixture({
-  agentName = "Letta Code",
+  agentName = "Haruyuki",
   modelDisplayName = "GPT-5.5 (ChatGPT)",
   reasoningEffort = "high",
   rightColumnWidth = 80,
@@ -58,7 +58,7 @@ describe("statusline renderers", () => {
     expect(context.toolset).toBe("computer");
     expect(context.workspace.currentDir).toBe("/tmp/project");
     expect(context.workspace.projectDir).toBe("/tmp/project");
-    expect(context.agent.name).toBe("Letta Code");
+    expect(context.agent.name).toBe("Haruyuki");
     expect(context.model.displayName).toBe("GPT-5.5 (ChatGPT)");
     expect(context.model.provider).toBe("chatgpt-plus-pro");
     expect(context.model.reasoningEffort).toBe("high");
@@ -69,7 +69,7 @@ describe("statusline renderers", () => {
     const output = buildDefaultStatuslineParts(context, ui);
 
     expect(stripAnsi(String(output.right)).trim()).toBe(
-      "Letta Code · GPT-5.5 (ChatGPT)",
+      "Haruyuki · GPT-5.5 (ChatGPT)",
     );
   });
 
@@ -80,7 +80,7 @@ describe("statusline renderers", () => {
     ui.isByokProvider = true;
     const output = buildDefaultStatuslineParts(context, ui);
 
-    expect(stripAnsi(String(output.right)).trim()).toBe("Letta Code · kimi-k3");
+    expect(stripAnsi(String(output.right)).trim()).toBe("Haruyuki · kimi-k3");
   });
 
   test("default renderer omits reasoning and backend labels", () => {
@@ -90,7 +90,7 @@ describe("statusline renderers", () => {
     const output = buildDefaultStatuslineParts(context, ui);
 
     expect(stripAnsi(String(output.right)).trim()).toBe(
-      "Letta Code · No model selected",
+      "Haruyuki · No model selected",
     );
   });
 

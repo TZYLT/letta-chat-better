@@ -59,7 +59,7 @@ export interface CreateListenerModAdapterOptions {
 }
 
 async function getUnavailableListenerClient(): Promise<Letta> {
-  throw new Error("letta.client is not available in listener mods");
+  throw new Error("haruyuki.client is not available in listener mods");
 }
 
 function resolveListenerAgentMemfsContext(

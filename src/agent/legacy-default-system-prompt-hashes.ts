@@ -1,5 +1,5 @@
 /**
- * Exact historical Letta Code default prompts that Cloud agents may still have
+ * Exact historical Haruyuki default prompts that Cloud agents may still have
  * stored explicitly. These are SHA-256 hashes of the trimmed files at the
  * indicated letta-code commits. Never match a prefix or edited prompt here:
  * an SDK caller's custom system prompt must remain theirs.

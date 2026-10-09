@@ -23,7 +23,6 @@ const NO_UNIT_TEST_PATHS = new Set([
   "LICENSE",
   "README.md",
   ".github/pull_request_template.md",
-  "assets/letta-code-demo.gif",
   "scripts/source-file-size-baseline.json",
 ]);
 

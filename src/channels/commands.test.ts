@@ -262,7 +262,7 @@ describe("channel slash commands", () => {
     }
 
     const text = buildChannelHelpMessage("telegram");
-    expect(text).toContain("Telegram is connected to Letta Code.");
+    expect(text).toContain("Telegram is connected to Haruyuki.");
     expect(text).not.toContain("MessageChannel");
     expect(text).toContain(
       "Supported slash commands here: /help, /status, /whoami, /pause, /resume, /cancel, /chat, /feedback, /model, /reflection, /reload.",
@@ -638,7 +638,7 @@ describe("channel slash commands", () => {
       "Slack cancelled the in-progress agent turn for this chat.",
     );
     expect(buildChannelCancelUnavailableMessage("telegram")).toContain(
-      "not connected to an active Letta Code conversation yet",
+      "not connected to an active Haruyuki conversation yet",
     );
     expect(buildChannelCancelNoActiveTurnMessage("discord")).toContain(
       "no in-progress agent turn",

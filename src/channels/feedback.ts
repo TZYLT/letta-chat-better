@@ -62,7 +62,7 @@ export function buildChannelFeedbackSubmittedMessage(
   channelId: string,
 ): string {
   const displayName = channelDisplayName(channelId);
-  return `${displayName} feedback submitted. Thanks for helping improve Letta Code.`;
+  return `${displayName} feedback submitted. Thanks for helping improve Haruyuki.`;
 }
 
 export function buildChannelFeedbackFailedMessage(channelId: string): string {

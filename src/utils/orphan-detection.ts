@@ -1,5 +1,5 @@
 /**
- * Parent-death detection for the Letta Code CLI process.
+ * Parent-death detection for the Haruyuki CLI process.
  *
  * When Desktop (or a terminal) spawns the CLI with `detached: true` and then
  * exits without cleanly sending SIGTERM — a crash, force-quit, or terminal

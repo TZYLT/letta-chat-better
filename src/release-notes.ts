@@ -1,5 +1,5 @@
 /**
- * Release notes displayed to users once per version when they upgrade Letta Code.
+ * Release notes displayed to users once per version when they upgrade Haruyuki.
  * Notes appear above the "Starting new conversation with..." line in the transcript.
  *
  * To add release notes for a new version:
@@ -18,15 +18,15 @@ export const releaseNotes: Record<string, string> = {
   // Add release notes for new versions here.
   // Keep concise - 3-4 bullet points max.
   // Use → for bullets to match the command hints below.
-  "0.25.7": `🔐 **Permissions update in Letta Code 0.25.7**
-→ The default permission mode is now **unrestricted**, so Letta Code starts without approval prompts unless you change it
+  "0.25.7": `🔐 **Permissions update in Haruyuki 0.25.7**
+→ The default permission mode is now **unrestricted**, so Haruyuki starts without approval prompts unless you change it
 → Run **/permissions** and choose **standard** if you want the old request-approval behavior back
 → You can also press **shift+tab** to cycle modes until you reach **standard**`,
-  "0.13.4": `🔄 **Letta Code 0.13.4: Back to the OG experience**
+  "0.13.4": `🔄 **Haruyuki 0.13.4: Back to the OG experience**
 → Running **letta** now resumes your "default" conversation (instead of spawning a new one)
 → Use **letta --new** if you want to create a new conversation for concurrent sessions`,
-  "0.13.0": `🎁 **Letta Code 0.13.0: Introducing Conversations!**
-→ Letta Code now starts a new conversation on each startup (memory is shared across all conversations)
+  "0.13.0": `🎁 **Haruyuki 0.13.0: Introducing Conversations!**
+→ Haruyuki now starts a new conversation on each startup (memory is shared across all conversations)
 → Use **/resume** to switch conversations, or run **letta --conv <id>** to continue a specific conversation`,
 };
 

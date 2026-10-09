@@ -14,7 +14,7 @@ import {
 
 const baseData: WindowTitleData = {
   agentName: "Big Chungus",
-  appName: "Letta Code",
+  appName: "Haruyuki",
   version: "0.0.0-test",
   conversationId: "thread-123",
   conversationSummary: "Investigate title behavior",

@@ -206,7 +206,7 @@ export function generateLettaWorkflowYaml(options?: {
   includeAgentId?: boolean;
 }): string {
   const lines = [
-    "name: Letta Code",
+    "name: Haruyuki",
     "on:",
     "  issues:",
     "    types: [opened, labeled]",
@@ -241,13 +241,13 @@ export function generateLettaWorkflowYaml(options?: {
 
 export function buildInstallPrBody(workflowPath: string): string {
   return [
-    "## 👾 Add Letta Code GitHub Workflow",
+    "## 👾 Add Haruyuki GitHub Workflow",
     "",
-    `This PR adds [\`${workflowPath}\`](${workflowPath}), a GitHub Actions workflow that enables [Letta Code](https://docs.letta.com/letta-code) integration in this repository.`,
+    `This PR adds [\`${workflowPath}\`](${workflowPath}), a GitHub Actions workflow that enables [Haruyuki](https://docs.letta.com/letta-code) integration in this repository.`,
     "",
-    "### What is Letta Code?",
+    "### What is Haruyuki?",
     "",
-    "[Letta Code](https://docs.letta.com/letta-code) is a stateful AI coding agent that can help with:",
+    "[Haruyuki](https://docs.letta.com/letta-code) is a stateful AI coding agent that can help with:",
     "- Bug fixes and improvements",
     "- Documentation updates",
     "- Implementing new features",
@@ -257,9 +257,9 @@ export function buildInstallPrBody(workflowPath: string): string {
     "",
     "### How it works",
     "",
-    "Once this PR is merged, you can interact with Letta Code by mentioning `@letta-code` in a pull request or issue comment.",
+    "Once this PR is merged, you can interact with Haruyuki by mentioning `@letta-code` in a pull request or issue comment.",
     "",
-    "When triggered, Letta Code will analyze the comment and surrounding context and execute on the request in a GitHub Action. Because Letta agents are **stateful**, every interaction builds on the same persistent memory \u2014 the agent learns your codebase and preferences over time.",
+    "When triggered, Haruyuki will analyze the comment and surrounding context and execute on the request in a GitHub Action. Because Letta agents are **stateful**, every interaction builds on the same persistent memory \u2014 the agent learns your codebase and preferences over time.",
     "",
     "### Conversations",
     "",
@@ -277,10 +277,10 @@ export function buildInstallPrBody(workflowPath: string): string {
     "",
     "- **This workflow won't take effect until this PR is merged**",
     "- **`@letta-code` mentions won't work until after the merge is complete**",
-    "- The workflow runs automatically whenever Letta Code is mentioned in PR or issue comments",
-    "- Letta Code gets access to the entire PR or issue context including files, diffs, and previous comments",
+    "- The workflow runs automatically whenever Haruyuki is mentioned in PR or issue comments",
+    "- Haruyuki gets access to the entire PR or issue context including files, diffs, and previous comments",
     "",
-    "There's more information in the [Letta Code Action repo](https://github.com/letta-ai/letta-code-action).",
+    "There's more information in the [Haruyuki Action repo](https://github.com/letta-ai/letta-code-action).",
     "",
     "After merging this PR, try mentioning `@letta-code` in a comment on any PR to get started!",
   ].join("\n");
@@ -393,7 +393,7 @@ function createPullRequest(
   workflowPath: string,
   repoDir: string,
 ): { url: string; mode: "created" | "page-opened" } {
-  const title = "Add Letta Code GitHub Workflow";
+  const title = "Add Haruyuki GitHub Workflow";
   const body = buildInstallPrBody(workflowPath);
   const base = getDefaultBaseBranch(repoDir);
 
@@ -504,7 +504,7 @@ export async function installGithubApp(
     }
 
     runGit(["add", workflowPath], repoDir);
-    runGit(["commit", "-m", "Add Letta Code GitHub Workflow"], repoDir);
+    runGit(["commit", "-m", "Add Haruyuki GitHub Workflow"], repoDir);
 
     progress(onProgress, "Opening pull request page");
     runGit(["push", "-u", "origin", branchName], repoDir);

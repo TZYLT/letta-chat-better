@@ -178,7 +178,7 @@ const PI_PROVIDER_OVERRIDES: Partial<
     baseUrlEnv: () => process.env.OPENROUTER_BASE_URL,
     headers: () => ({
       "HTTP-Referer": "https://letta.com",
-      "X-OpenRouter-Title": "Letta Code",
+      "X-OpenRouter-Title": "Haruyuki",
       "X-OpenRouter-Categories": "cloud-agent,personal-agent",
     }),
   },

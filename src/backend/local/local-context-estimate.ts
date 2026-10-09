@@ -7,7 +7,7 @@ import type { LocalMessage } from "./local-message";
 //
 // Intentional deviations from Pi (everything else should stay 1:1):
 // 1. User-message images are counted at the same fixed image cost Pi applies to
-//    tool-result images. Pi counts user images as 0; Letta Code receives pasted
+//    tool-result images. Pi counts user images as 0; Haruyuki receives pasted
 //    screenshots as user content, so zero-costing them undercounts real usage.
 // 2. Assistant messages whose usage is all-zero are skipped as anchors
 //    (`contextTokensFromLocalUsage` returns undefined). The local backend

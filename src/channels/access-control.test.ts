@@ -440,6 +440,6 @@ describe("tryHandleChannelSlashCommand gating", () => {
       { commandGate: gate },
     );
     expect(handled).toBe(true);
-    expect(replies[0]?.text).toContain("connected to Letta Code");
+    expect(replies[0]?.text).toContain("connected to Haruyuki");
   });
 });

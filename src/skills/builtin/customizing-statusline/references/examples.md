@@ -5,10 +5,10 @@ Use these as patterns, not mandatory templates. Keep the final mod focused on th
 ## Agent and model
 
 ```tsx
-export default function activate(letta) {
-  if (!letta.capabilities.ui.panels) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.ui.panels) return;
 
-  const panel = letta.ui.openPanel({
+  const panel = haruyuki.ui.openPanel({
     id: "statusline",
     order: 0,
     render: ({ width, agent, model, row, chalk }) =>
@@ -31,12 +31,12 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
-export default function activate(letta) {
-  if (!letta.capabilities.ui.panels) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.ui.panels) return;
 
   let branch = "";
 
-  const panel = letta.ui.openPanel({
+  const panel = haruyuki.ui.openPanel({
     id: "statusline",
     order: 0,
     render: ({ width, agent, row, chalk }) =>
@@ -67,10 +67,10 @@ export default function activate(letta) {
 ## Full row with internal right alignment
 
 ```tsx
-export default function activate(letta) {
-  if (!letta.capabilities.ui.panels) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.ui.panels) return;
 
-  const panel = letta.ui.openPanel({
+  const panel = haruyuki.ui.openPanel({
     id: "statusline",
     order: 0,
     render: ({ width, agent, model, row, chalk }) =>
@@ -93,12 +93,12 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
-export default function activate(letta) {
-  if (!letta.capabilities.ui.panels) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.ui.panels) return;
 
   let pr = "";
 
-  const panel = letta.ui.openPanel({
+  const panel = haruyuki.ui.openPanel({
     id: "statusline",
     order: 0,
     render: ({ width, model, row }) => row(pr || (model.displayName ?? ""), "", width),
@@ -135,12 +135,12 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
-export default function activate(letta) {
-  if (!letta.capabilities.ui.panels) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.ui.panels) return;
 
   let music = "";
 
-  const panel = letta.ui.openPanel({
+  const panel = haruyuki.ui.openPanel({
     id: "statusline",
     order: 0,
     render: ({ width, agent, row, chalk }) =>

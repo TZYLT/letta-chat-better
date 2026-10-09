@@ -425,7 +425,7 @@ async function buildToolsetChangeReminder(
   const droppedLine =
     dropped > 0 ? `\nOmitted ${dropped} older toolset change event(s).` : "";
 
-  return `${SYSTEM_REMINDER_OPEN} The user just changed your toolset (specifically, client-side tools that are attached to the Letta Code harness, which may be a subset of your total tools).${droppedLine}
+  return `${SYSTEM_REMINDER_OPEN} The user just changed your toolset (specifically, client-side tools that are attached to the Haruyuki harness, which may be a subset of your total tools).${droppedLine}
 
 ${changeBlocks.join("\n\n")}
 ${SYSTEM_REMINDER_CLOSE}`;

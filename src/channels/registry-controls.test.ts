@@ -672,7 +672,7 @@ describe("pending channel control requests", () => {
     expect(replies).toEqual([
       {
         chatId: "C123",
-        text: "I’m reconnecting to Letta Code right now, so I couldn’t use that reply yet. Please send it again in a moment.",
+        text: "I’m reconnecting to Haruyuki right now, so I couldn’t use that reply yet. Please send it again in a moment.",
         replyToMessageId: "1712800000.000200",
       },
     ]);

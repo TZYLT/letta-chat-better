@@ -105,7 +105,7 @@ function trackCliBoundaryError(
 function printHelp() {
   // Keep this plaintext (no colors) so output pipes cleanly
   const usage = `
-Letta Code is a general purpose CLI for interacting with Letta agents
+Haruyuki is a general purpose CLI for interacting with Letta agents
 
 USAGE
   # interactive TUI
@@ -160,7 +160,7 @@ SUBCOMMANDS
   letta local-backend migrate-transcripts [--storage-dir <path>] [--dry-run]
 
 BEHAVIOR
-  On startup, Letta Code checks for saved profiles:
+  On startup, Haruyuki checks for saved profiles:
   - If profiles exist, you'll be prompted to select one or create a new agent
   - Agents can be pinned for quick access with /pin
   - Use /profile save <name> to bookmark your current agent
@@ -243,7 +243,7 @@ async function printInfo() {
     return name ? `${id} (${name})` : `${id} (not found)`;
   };
 
-  console.log(`Letta Code ${getVersion()}\n`);
+  console.log(`Haruyuki ${getVersion()}\n`);
   console.log(`Current directory: ${cwd}`);
   console.log(
     `Skills directory:  ${skillsDir}${skillsExist ? "" : " (not found)"}`,
@@ -617,7 +617,7 @@ async function main(): Promise<void> {
 
   if (values.version) {
     const { getVersion } = await import("@/version");
-    console.log(`${getVersion()} (Letta Code)`);
+    console.log(`${getVersion()} (Haruyuki)`);
     process.exit(0);
   }
 
@@ -1387,7 +1387,7 @@ async function main(): Promise<void> {
                 preferredModel: model,
                 // True fresh start (brand-new account, nothing to resume)
                 // gets the Tutor onboarding agent; an explicit --new-agent
-                // gets the standard Letta Code agent.
+                // gets the standard Haruyuki agent.
                 personality:
                   target.trigger === "fresh-start" ? "tutorial" : "memo",
               });
@@ -1935,7 +1935,7 @@ async function main(): Promise<void> {
               import("@/utils/debug").then(({ debugWarn }) =>
                 debugWarn(
                   "startup",
-                  `Failed to ensure Letta Code origin tag for ${agent.id}: ${
+                  `Failed to ensure Haruyuki origin tag for ${agent.id}: ${
                     error instanceof Error ? error.message : String(error)
                   }`,
                 ),

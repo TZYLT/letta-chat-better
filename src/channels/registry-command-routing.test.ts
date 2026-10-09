@@ -122,7 +122,7 @@ describe("ChannelRegistry command routing", () => {
       chatId: "123",
       replyToMessageId: "77",
     });
-    expect(replies[0]?.text).toContain("Telegram is connected to Letta Code");
+    expect(replies[0]?.text).toContain("Telegram is connected to Haruyuki");
   });
 
   test("Slack threaded DM slash command replies stay in the DM thread", async () => {
@@ -177,7 +177,7 @@ describe("ChannelRegistry command routing", () => {
       replyToMessageId: "1712800000.000200",
       threadId: "1712790000.000050",
     });
-    expect(replies[0]?.text).toContain("Slack is connected to Letta Code");
+    expect(replies[0]?.text).toContain("Slack is connected to Haruyuki");
   });
 
   test("unsupported slash commands get direct channel guidance instead of agent delivery", async () => {

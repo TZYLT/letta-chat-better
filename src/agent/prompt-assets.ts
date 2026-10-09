@@ -88,8 +88,8 @@ export const SYSTEM_PROMPTS: SystemPromptOption[] = [
   },
   {
     id: "letta",
-    label: "Letta Code",
-    description: "Full Letta Code system prompt",
+    label: "Haruyuki",
+    description: "Full Haruyuki system prompt",
     content: lettaNoMemfsPrompt,
     memfsContent: lettaMemfsPrompt,
     rootMemfsContent: lettaRootMemfsPrompt,

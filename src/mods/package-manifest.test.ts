@@ -146,8 +146,8 @@ describe("Letta package manifest", () => {
     if (result.ok) return;
 
     expect(result.errors.map((error) => error.path)).toEqual([
-      "letta.capabilities[1]",
-      "letta.capabilities[2]",
+      "haruyuki.capabilities[1]",
+      "haruyuki.capabilities[2]",
     ]);
   });
 

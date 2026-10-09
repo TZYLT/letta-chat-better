@@ -15,10 +15,10 @@ This is a trusted, user-owned global mod file. Project mods are intentionally un
 Export a default function or named `activate` function. The statusline is a panel at `order: 0`:
 
 ```tsx
-export default function activate(letta) {
-  if (!letta.capabilities.ui.panels) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.ui.panels) return;
 
-  const panel = letta.ui.openPanel({
+  const panel = haruyuki.ui.openPanel({
     id: "statusline",
     order: 0, // primary line: overrides the built-in agent · model
     render: ({ width, agent, model, row, chalk }) => {
@@ -35,15 +35,15 @@ export default function activate(letta) {
 ## API
 
 ```ts
-letta.capabilities.ui.panels: boolean
+haruyuki.capabilities.ui.panels: boolean
 
-letta.ui.openPanel(options: {
+haruyuki.ui.openPanel(options: {
   id: string;
   order?: number; // default 100
   render: (ctx) => string | string[];
 }): { close(): void; update(opts?: { order?: number }): void }
 
-letta.ui.closePanel(id: string): void
+haruyuki.ui.closePanel(id: string): void
 ```
 
 `openPanel` registers (or replaces, by `id`) a panel. `render` returns the panel body as a string or an array of strings (one per line). Call the returned handle's `update()` to re-render after state changes, and `close()` to remove it.
@@ -94,12 +94,12 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
-export default function activate(letta) {
-  if (!letta.capabilities.ui.panels) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.ui.panels) return;
 
   let branch = "";
 
-  const panel = letta.ui.openPanel({
+  const panel = haruyuki.ui.openPanel({
     id: "statusline",
     order: 0,
     render: ({ width, agent, row, chalk }) => {

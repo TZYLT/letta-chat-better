@@ -119,7 +119,7 @@ export async function runSlackSetup(): Promise<boolean> {
     );
     console.log("Next steps:");
     console.log("  1. Start the listener: letta server --channels slack");
-    console.log("  2. Open Channels > Slack in Letta Code");
+    console.log("  2. Open Channels > Slack in Haruyuki");
     console.log(
       "  3. Choose which Letta agent this Slack app should represent",
     );

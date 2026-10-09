@@ -1,5 +1,5 @@
 """
-Show relevant Letta Code self-configuration.
+Show relevant Haruyuki self-configuration.
 
 Displays a secret-safe runtime report plus settings files, permissions, selected
 runtime preferences, environment keys, experiments, and per-agent settings across
@@ -342,7 +342,7 @@ def format_settings_files(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Show Letta Code self-configuration without dumping secret values"
+        description="Show Haruyuki self-configuration without dumping secret values"
     )
     parser.add_argument(
         "--cwd",
@@ -378,7 +378,7 @@ def main():
         print(json.dumps(output, indent=2, sort_keys=True))
         return
 
-    print("\nLetta Code Self-Configuration")
+    print("\nHaruyuki Self-Configuration")
     print(f"Working directory: {args.cwd}\n")
     if args.section in ("runtime", "all"):
         format_runtime(args.cwd, all_settings, as_json=False)

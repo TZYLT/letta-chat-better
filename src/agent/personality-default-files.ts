@@ -191,7 +191,6 @@ export async function seedPersonalityDefaultMemoryFiles(
           agentId: params.agentId,
           // Defaults belong to the preset, even when the agent was renamed.
           authorName: personality.label,
-          authorEmail: `${params.agentId}@letta.com`,
         },
         syncMode,
       });

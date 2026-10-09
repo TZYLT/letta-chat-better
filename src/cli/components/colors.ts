@@ -1,5 +1,5 @@
 /**
- * Letta Code Color System
+ * Haruyuki Color System
  *
  * This file defines all colors used in the application.
  * No colors should be hardcoded in components - all should reference this file.
@@ -74,11 +74,9 @@ export function hexToFgAnsi(hex: string): string {
 
 // Brand colors (dark mode)
 export const brandColors = {
-  orange: "#FF5533", // dark orange
-  blue: "#0707AC", // dark blue
   // text colors
-  primaryAccent: "#8C8CF9", // lighter blue
-  primaryAccentLight: "#BEBEEE", // even lighter blue
+  primaryAccent: "#7FB3E3", // spring-snow sky blue
+  primaryAccentLight: "#BCD8F0", // snow highlight
   textMain: "#DEE1E4", // white
   textSecondary: "#A5A8AB", // light grey
   textDisabled: "#46484A", // dark grey
@@ -90,11 +88,9 @@ export const brandColors = {
 
 // Brand colors (light mode)
 export const brandColorsLight = {
-  orange: "#FF5533", // dark orange
-  blue: "#0707AC", // dark blue
   // text colors
-  primaryAccent: "#3939BD", // lighter blue
-  primaryAccentLight: "#A9A9DE", // even lighter blue
+  primaryAccent: "#2F6FA8", // spring-snow sky blue
+  primaryAccentLight: "#7FA8CC", // snow highlight
   textMain: "#202020", // white
   textSecondary: "#797B7D", // light grey
   textDisabled: "#A5A8AB", // dark grey
@@ -285,7 +281,7 @@ const _colors = {
     system: "#E07050", // coral-red
     coreMemory: "#E0A040", // amber
     tools: "#20B2AA", // turquoise
-    messages: "#8C8CF9", // brand purple
+    messages: "#7FB3E3", // brand accent
     summaryMemory: "#D0B060", // gold
     other: "#A0A0A0", // light grey
   },

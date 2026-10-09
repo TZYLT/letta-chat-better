@@ -37,7 +37,7 @@ assert.equal(fs.realpathSync(child.stdout.trim()), fs.realpathSync(process.execP
 if (process.platform !== 'win32') {
   const direct = spawnSync(cli, ['--version'], {env, encoding:'utf8'});
   assert.equal(direct.status, 0, direct.stderr); // Executable bits + /usr/bin/env node.
-  assert.match(direct.stdout, /Letta Code/);
+  assert.match(direct.stdout, /Haruyuki/);
 }
 assert.ok(fs.existsSync(path.join(app, 'skills', 'haruyuki-guide', 'SKILL.md')));
 assert.ok(fs.existsSync(path.join(app, 'assets', 'tutor-profile.png')));
@@ -116,7 +116,7 @@ def main():
             env["PATH"] += os.pathsep + str(Path(os.environ["SystemRoot"]) / "System32")
         for args, expected, code in [
             (["--help"], "USAGE", 0),
-            (["--version"], "Letta Code", 0),
+            (["--version"], "Haruyuki", 0),
             (["update"], "uv tool upgrade letta", 1),
         ]:
             result = subprocess.run(

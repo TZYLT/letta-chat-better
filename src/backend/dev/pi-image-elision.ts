@@ -35,7 +35,7 @@ function localProviderRequestByteTarget(
   return Math.floor(limit * 0.75);
 }
 
-// Letta Code addition with no Pi analog. Pi compacts reactively on clean,
+// Haruyuki addition with no Pi analog. Pi compacts reactively on clean,
 // classifiable provider overflow errors (`isContextOverflow`, including
 // Anthropic 413 `request_too_large`). But oversized payloads frequently kill
 // the transport from a local device before any classifiable response arrives

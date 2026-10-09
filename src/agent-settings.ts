@@ -13,8 +13,8 @@ export interface AgentSettings {
   toolset?: ToolsetPreference; // Virtual default-conversation preference
   toolsetsByConversation?: Record<string, Exclude<ToolsetPreference, "auto">>;
   systemPromptPreset?: string; // known preset ID, "custom", or undefined (legacy/subagent)
-  systemPromptHash?: string; // hash of the managed prompt content last written by Letta Code
-  systemPromptVersion?: string; // Letta Code version that wrote systemPromptHash
+  systemPromptHash?: string; // hash of the managed prompt content last written by Haruyuki
+  systemPromptVersion?: string; // Haruyuki version that wrote systemPromptHash
   mcpServers?: McpServerConfig[]; // MCP servers available only to this agent
 }
 

@@ -44,7 +44,7 @@ interface SessionStartData {
 }
 
 /**
- * Get the Letta Code history directory
+ * Get the Haruyuki history directory
  */
 function getHistoryDir(): string {
   const homeDir = os.homedir();

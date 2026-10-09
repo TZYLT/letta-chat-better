@@ -15,6 +15,7 @@ import { platform } from "node:os";
 import { dirname, join } from "node:path";
 import { promisify } from "node:util";
 import { getMemoryGitDir } from "@/agent/memory-git-dir";
+import { harnessGitIdentity } from "@/agent/memory-git-identity";
 import { getDesktopAccessToken } from "@/auth/desktop-credentials";
 import {
   getMemfsGitProxyRewriteConfig,
@@ -66,7 +67,7 @@ const AGENT_DISPLAY_NAME_TIMEOUT_MS = 3_000;
 export interface MemoryCommitAuthor {
   agentId: string;
   authorName: string;
-  authorEmail: string;
+  authorEmail?: string; // defaults to the harness identity
 }
 
 export interface CommitMemoryWriteParams {
@@ -852,13 +853,13 @@ export async function ensureLocalMemfsGitConfig(
     // Respect user overrides: only set identity when unset locally.
     const currentEmail = await getLocalGitConfig(dir, "user.email");
     if (!currentEmail) {
-      await setLocalGitConfig(dir, "user.email", `${agentId}@letta.com`);
+      await setLocalGitConfig(dir, "user.email", harnessGitIdentity().email);
     }
 
     const currentName = await getLocalGitConfig(dir, "user.name");
     if (!currentName) {
       const displayName =
-        (await fetchAgentDisplayName(agentId)) ?? "Letta Agent";
+        (await fetchAgentDisplayName(agentId)) ?? "Haruyuki Agent";
       await setLocalGitConfig(dir, "user.name", displayName);
     }
 
@@ -1140,8 +1141,8 @@ async function prepareLocalOnlyMemoryRepoForGitOps(
   installPostCommitHook(memoryDir);
   for (const [key, value] of [
     ["letta.agentId", author.agentId],
-    ["user.email", author.authorEmail],
-    ["user.name", author.authorName.trim() || "Letta Agent"],
+    ["user.email", author.authorEmail ?? harnessGitIdentity().email],
+    ["user.name", author.authorName.trim() || "Haruyuki Agent"],
   ] as const) {
     if ((await getLocalGitConfig(memoryDir, key)) !== value) {
       await setLocalGitConfig(memoryDir, key, value);
@@ -1198,7 +1199,7 @@ async function commitMemoryPaths(
       "-c",
       `user.name=${author.authorName.trim() || author.agentId}`,
       "-c",
-      `user.email=${author.authorEmail}`,
+      `user.email=${author.authorEmail ?? harnessGitIdentity().email}`,
       "commit",
       "-m",
       reason,
@@ -1324,8 +1325,7 @@ export async function initializeLocalMemoryRepo(
 
   const author: MemoryCommitAuthor = {
     agentId: params.agentId,
-    authorName: params.authorName?.trim() || "Letta Agent",
-    authorEmail: `${params.agentId}@letta.com`,
+    authorName: params.authorName?.trim() || "Haruyuki Agent",
   };
   if (await hasMemoryHead(params.memoryDir)) {
     await prepareLocalOnlyMemoryRepoForGitOps(params.memoryDir, author);
@@ -1368,7 +1368,7 @@ export async function initializeLocalMemoryRepo(
     "-c",
     `user.name=${author.authorName}`,
     "-c",
-    `user.email=${author.authorEmail}`,
+    `user.email=${author.authorEmail ?? harnessGitIdentity().email}`,
     "commit",
     "--allow-empty",
     "-m",

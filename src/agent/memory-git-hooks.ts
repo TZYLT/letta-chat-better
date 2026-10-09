@@ -60,7 +60,7 @@ export function buildPreCommitHookScript(
 
   return `#!/usr/bin/env bash
 # Validate frontmatter in staged memory .md files
-# Installed by Letta Code CLI
+# Installed by Haruyuki CLI
 
 errors=""
 memory_files=()
@@ -252,8 +252,8 @@ export function installSharedMemoryPreCommitHook(dir: string): void {
  * so the endpoint is scoped to a single agent automatically.
  */
 export const POST_COMMIT_HOOK_SCRIPT = `#!/usr/bin/env bash
-# Letta Code: push memfs commits to the configured memory-repository remote.
-# Installed by Letta Code CLI. Do not edit by hand — regenerated on startup.
+# Haruyuki: push memfs commits to the configured memory-repository remote.
+# Installed by Haruyuki CLI. Do not edit by hand — regenerated on startup.
 url=$(git config --local --get letta.memoryRepository.url 2>/dev/null)
 [ -z "$url" ] && exit 0
 branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null) || exit 0

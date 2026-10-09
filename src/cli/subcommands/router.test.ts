@@ -20,7 +20,7 @@ describe("subcommand router", () => {
       // The fork carries a semver pre-release suffix (`0.35.0-better`), which is
       // valid semver; what matters here is the "<version> (<product>)" shape.
       expect(messages[0]).toMatch(
-        /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)? .*\(Letta Code\)$/,
+        /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)? .*\(Haruyuki\)$/,
       );
     } finally {
       console.log = originalLog;

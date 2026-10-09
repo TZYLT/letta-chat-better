@@ -127,7 +127,7 @@ export type ModCapabilityDiagnosticRecorder = (
 ) => void;
 
 export type LettaModFactory = (
-  letta: LettaModApi,
+  haruyuki: LettaModApi,
 ) => undefined | LettaModDisposer | Promise<undefined | LettaModDisposer>;
 
 export interface LettaModApi {
@@ -515,7 +515,7 @@ function createImportableModPath(
     .replace(/[^a-zA-Z0-9_-]/g, "-");
   const importPath = path.join(
     importCacheDirectory,
-    `.letta-mod-${baseName}-${hash}.mjs`,
+    `.haruyuki-mod-${baseName}-${hash}.mjs`,
   );
 
   if (!existsSync(importPath)) {
@@ -525,7 +525,7 @@ function createImportableModPath(
   try {
     for (const entry of readdirSync(importCacheDirectory)) {
       if (
-        entry.startsWith(`.letta-mod-${baseName}-`) &&
+        entry.startsWith(`.haruyuki-mod-${baseName}-`) &&
         entry !== path.basename(importPath)
       ) {
         unlinkSync(path.join(importCacheDirectory, entry));
@@ -549,7 +549,7 @@ function createLazyClient(getClient: () => Promise<Letta>): Letta {
           }
           if (typeof value !== "function") {
             throw new TypeError(
-              `letta.client.${path.map(String).join(".")} is not callable`,
+              `haruyuki.client.${path.map(String).join(".")} is not callable`,
             );
           }
           return value.apply(owner, args);
@@ -976,7 +976,7 @@ function createLettaModApi(
     recordCapabilityDiagnostic({
       capability: { id: apiId, kind: "statusline" },
       error: new Error(
-        `${apiId} is no longer available. Use letta.ui.openPanel({ id, order, render }) instead — order 0 is the primary line (replaces agent · model), order 1 replaces the default product-status row, orders > 1 render additive panels above input, and negative orders stack below it.`,
+        `${apiId} is no longer available. Use haruyuki.ui.openPanel({ id, order, render }) instead — order 0 is the primary line (replaces agent · model), order 1 replaces the default product-status row, orders > 1 render additive panels above input, and negative orders stack below it.`,
       ),
       phase: "deprecated_api",
       severity: "warning",
@@ -1279,8 +1279,8 @@ function createLettaModApi(
             capability: { id: panel.id, kind: "panel" },
             error: new Error(
               usedLegacyContent
-                ? "letta.ui.openPanel now requires render(ctx), not content. Use letta.ui.openPanel({ id, order, render: () => content }) instead."
-                : "letta.ui.openPanel requires a render(ctx) function.",
+                ? "haruyuki.ui.openPanel now requires render(ctx), not content. Use haruyuki.ui.openPanel({ id, order, render: () => content }) instead."
+                : "haruyuki.ui.openPanel requires a render(ctx) function.",
             ),
             phase: "activate",
             severity: "warning",
@@ -1307,13 +1307,13 @@ function createLettaModApi(
         };
       },
       setStatus() {
-        recordStatuslineDeprecation("letta.ui.setStatus");
+        recordStatuslineDeprecation("haruyuki.ui.setStatus");
       },
       clearStatus() {
-        recordStatuslineDeprecation("letta.ui.clearStatus");
+        recordStatuslineDeprecation("haruyuki.ui.clearStatus");
       },
       setStatuslineRenderer() {
-        recordStatuslineDeprecation("letta.ui.setStatuslineRenderer");
+        recordStatuslineDeprecation("haruyuki.ui.setStatuslineRenderer");
       },
     },
   };
@@ -1321,7 +1321,7 @@ function createLettaModApi(
   return attachDeprecatedGetContextTrap(
     api,
     recordCapabilityDiagnostic,
-    "letta.getContext",
+    "haruyuki.getContext",
   );
 }
 

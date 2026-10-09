@@ -63,9 +63,9 @@ interface ExecCommandArgs {
   login?: boolean;
   // Upstream Codex also exposes sandbox-escalation fields here:
   // sandbox_permissions, justification, prefix_rule, additional_permissions.
-  // Letta Code intentionally omits them from the model-facing schema because
+  // Haruyuki intentionally omits them from the model-facing schema because
   // this harness has no Codex sandbox override / permission-profile layer;
-  // the regular Letta Code approval system still gates command execution.
+  // the regular Haruyuki approval system still gates command execution.
   signal?: AbortSignal;
   onOutput?: (chunk: string, stream: "stdout" | "stderr") => void;
   secretEnv?: Record<string, string>;

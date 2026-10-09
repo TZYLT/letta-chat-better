@@ -210,14 +210,14 @@ describe("listen-mode session context", () => {
   test("listen reminder context preserves provided agent metadata", () => {
     const state = createSharedReminderState();
     const ctx = listenContext(state, {
-      agentName: "Letta Code",
+      agentName: "Haruyuki",
       agentDescription: "Helpful coding agent",
       agentLastRunAt: "2026-04-01T19:00:00.000Z",
     });
 
     expect(ctx.agent).toMatchObject({
       id: "agent-test",
-      name: "Letta Code",
+      name: "Haruyuki",
       description: "Helpful coding agent",
       lastRunAt: "2026-04-01T19:00:00.000Z",
     });

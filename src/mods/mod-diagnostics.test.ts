@@ -182,8 +182,8 @@ describe("mod diagnostics", () => {
     const owner = createOwner();
     const report = createModDiagnosticsReport([
       {
-        capability: { id: "letta.getContext", kind: "api" },
-        error: createError("Mod source uses removed API: letta.getContext"),
+        capability: { id: "haruyuki.getContext", kind: "api" },
+        error: createError("Mod source uses removed API: haruyuki.getContext"),
         owner,
         phase: "deprecated_api",
         severity: "warning",
@@ -194,8 +194,8 @@ describe("mod diagnostics", () => {
     expect(report).toMatchObject({
       diagnostics: [
         {
-          capability: { id: "letta.getContext", kind: "api" },
-          hint: "letta.getContext has been removed. Activation has no dynamic invocation context. Move dynamic work into a command, tool, event, permission, status, or statusline callback that receives ctx, or use explicit/global state such as process.cwd() for activation-time background work.",
+          capability: { id: "haruyuki.getContext", kind: "api" },
+          hint: "haruyuki.getContext has been removed. Activation has no dynamic invocation context. Move dynamic work into a command, tool, event, permission, status, or statusline callback that receives ctx, or use explicit/global state such as process.cwd() for activation-time background work.",
           phase: "deprecated_api",
           severity: "warning",
         },

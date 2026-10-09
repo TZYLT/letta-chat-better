@@ -829,7 +829,7 @@ export function AppView(props: AppViewProps) {
               />
             )}
 
-            {/* GitHub App Installer - setup Letta Code GitHub Action */}
+            {/* GitHub App Installer - setup Haruyuki GitHub Action */}
             {activeOverlay === "install-github-app" && (
               <InstallGithubAppFlow
                 onComplete={(result) => {
@@ -839,7 +839,7 @@ export function AppView(props: AppViewProps) {
                     overlayCommand ??
                     commandRunner.start(
                       "/install-github-app",
-                      "Setting up Letta Code GitHub Action...",
+                      "Setting up Haruyuki GitHub Action...",
                     );
 
                   if (!result.committed) {

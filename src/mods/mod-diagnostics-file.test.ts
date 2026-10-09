@@ -108,8 +108,8 @@ describe("mod diagnostics file", () => {
     const rootDirectory = createTempDir();
     try {
       const diagnostic = createDiagnostic();
-      diagnostic.capability = { id: "letta.getContext", kind: "api" };
-      diagnostic.error = new Error("letta.getContext is not a function");
+      diagnostic.capability = { id: "haruyuki.getContext", kind: "api" };
+      diagnostic.error = new Error("haruyuki.getContext is not a function");
       diagnostic.phase = "deprecated_api";
       diagnostic.severity = "warning";
 
@@ -119,9 +119,9 @@ describe("mod diagnostics file", () => {
       });
 
       expect(written.report.diagnostics[0]).toMatchObject({
-        capability: { id: "letta.getContext", kind: "api" },
-        hint: "letta.getContext has been removed. Activation has no dynamic invocation context. Move dynamic work into a command, tool, event, permission, status, or statusline callback that receives ctx, or use explicit/global state such as process.cwd() for activation-time background work.",
-        message: "letta.getContext is not a function",
+        capability: { id: "haruyuki.getContext", kind: "api" },
+        hint: "haruyuki.getContext has been removed. Activation has no dynamic invocation context. Move dynamic work into a command, tool, event, permission, status, or statusline callback that receives ctx, or use explicit/global state such as process.cwd() for activation-time background work.",
+        message: "haruyuki.getContext is not a function",
         phase: "deprecated_api",
         severity: "warning",
       });
@@ -131,7 +131,7 @@ describe("mod diagnostics file", () => {
           readFileSync(getModDiagnosticsLatestFilePath(rootDirectory), "utf-8"),
         ).report.diagnostics[0].hint,
       ).toBe(
-        "letta.getContext has been removed. Activation has no dynamic invocation context. Move dynamic work into a command, tool, event, permission, status, or statusline callback that receives ctx, or use explicit/global state such as process.cwd() for activation-time background work.",
+        "haruyuki.getContext has been removed. Activation has no dynamic invocation context. Move dynamic work into a command, tool, event, permission, status, or statusline callback that receives ctx, or use explicit/global state such as process.cwd() for activation-time background work.",
       );
     } finally {
       rmSync(rootDirectory, { force: true, recursive: true });

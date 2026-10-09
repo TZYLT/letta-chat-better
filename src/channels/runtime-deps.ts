@@ -147,7 +147,7 @@ async function writeChannelRuntimeManifest(
   const manifest = {
     name: `letta-channel-runtime-${channelId}`,
     private: true,
-    description: `Runtime dependencies for Letta Code ${channelId} channel support`,
+    description: `Runtime dependencies for Haruyuki ${channelId} channel support`,
   };
 
   await writeFile(

@@ -1,24 +1,24 @@
 # Mod UI recipes
 
-UI capabilities are optional. Always guard UI work with `letta.capabilities.ui.panels` when writing portable mods.
+UI capabilities are optional. Always guard UI work with `haruyuki.capabilities.ui.panels` when writing portable mods.
 
 For UI that belongs to a larger command/event mod, also read `architecture.md` for cleanup and composition patterns.
 
 ## Capabilities
 
 ```ts
-letta.capabilities.ui.panels
+haruyuki.capabilities.ui.panels
 ```
 
 - `panels`: TUI-only local UI, including text panels around the input bar and persistent transcript notifications. Desktop/listener disables this capability.
 
 ## Persistent transcript notifications
 
-Use `letta.ui.notify(message)` for a persistent TUI-only event line such as a model auto-swap or background-work completion. It uses the same transcript visual as `Dreamed; no memory changes were needed.` and is not sent to the model or added to agent context. Guard calls with `letta.capabilities.ui.panels`; Desktop/listener cannot render them.
+Use `haruyuki.ui.notify(message)` for a persistent TUI-only event line such as a model auto-swap or background-work completion. It uses the same transcript visual as `Dreamed; no memory changes were needed.` and is not sent to the model or added to agent context. Guard calls with `haruyuki.capabilities.ui.panels`; Desktop/listener cannot render them.
 
 ```ts
-if (letta.capabilities.ui.panels) {
-  letta.ui.notify("The fallback model is now active.");
+if (haruyuki.capabilities.ui.panels) {
+  haruyuki.ui.notify("The fallback model is now active.");
 }
 ```
 
@@ -27,9 +27,9 @@ if (letta.capabilities.ui.panels) {
 Panels are app/TUI-global today. Desktop/listener disables panel UI; future scoped panels need an explicit design instead of sharing this global registry across panes/conversations.
 
 ```ts
-if (letta.capabilities.ui.panels) {
+if (haruyuki.capabilities.ui.panels) {
   let status = "Working…";
-  const panel = letta.ui.openPanel({
+  const panel = haruyuki.ui.openPanel({
     id: "my-mod",
     order: 100,
     render: ({ width }) => status,
@@ -93,7 +93,7 @@ Checklist:
 Critical shape:
 
 ```ts
-const panel = letta.ui.openPanel({
+const panel = haruyuki.ui.openPanel({
   id: "dreaming-indicator",
   order: 1,
   render(ctx) {
@@ -109,18 +109,18 @@ const panel = letta.ui.openPanel({
 
 ### Commands that open panels
 
-If a command's `run()` opens a panel, guard the command **registration** on `letta.capabilities.ui.panels` — not just the `openPanel` call:
+If a command's `run()` opens a panel, guard the command **registration** on `haruyuki.capabilities.ui.panels` — not just the `openPanel` call:
 
 ```ts
-export default function activate(letta) {
-  if (!letta.capabilities.commands) return;
-  if (!letta.capabilities.ui.panels) return; // panel-only command: skip where panels are unsupported
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.commands) return;
+  if (!haruyuki.capabilities.ui.panels) return; // panel-only command: skip where panels are unsupported
 
-  return letta.commands.register({
+  return haruyuki.commands.register({
     id: "mycommand",
     description: "…",
     run() {
-      const panel = letta.ui.openPanel({ /* … */ });
+      const panel = haruyuki.ui.openPanel({ /* … */ });
       // …
       return { type: "handled" };
     },
@@ -133,11 +133,11 @@ Guarding only the `openPanel` call is not enough. The desktop listener has `comm
 ## Timers and cleanup
 
 ```ts
-export default function activate(letta) {
-  if (!letta.capabilities.ui.panels) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.ui.panels) return;
 
   let clock = new Date().toLocaleTimeString();
-  const panel = letta.ui.openPanel({
+  const panel = haruyuki.ui.openPanel({
     id: "clock",
     order: 100,
     render: ({ width, row }) => row("clock", clock, width),

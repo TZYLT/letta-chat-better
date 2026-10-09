@@ -20,7 +20,7 @@ export const CUSTOM_CHANNEL_CONFIG_SCHEMA: ChannelConfigSchema = {
       label: "Webhook URL",
       required: true,
       placeholder: "https://example.com/webhook",
-      description: "Letta Code will POST incoming agent messages to this URL.",
+      description: "Haruyuki will POST incoming agent messages to this URL.",
     },
     {
       type: "secret",
@@ -28,7 +28,7 @@ export const CUSTOM_CHANNEL_CONFIG_SCHEMA: ChannelConfigSchema = {
       label: "Bot token",
       placeholder: "Paste your bot token",
       description:
-        "Used to authenticate Letta Code as a bot when posting to your service.",
+        "Used to authenticate Haruyuki as a bot when posting to your service.",
     },
     {
       type: "secret",

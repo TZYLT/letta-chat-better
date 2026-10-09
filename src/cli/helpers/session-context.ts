@@ -95,11 +95,11 @@ function getIntroText(
   }
   switch (source) {
     case "listen":
-      return "This conversation is now connected to a Letta Code execution environment.";
+      return "This conversation is now connected to a Haruyuki execution environment.";
     case "headless":
-      return "The user has just initiated a new connection via the Letta Code headless client.";
+      return "The user has just initiated a new connection via the Haruyuki headless client.";
     default:
-      return "The user has just initiated a new connection via the [Letta Code CLI client](https://docs.letta.com/letta-code/index.md).";
+      return "The user has just initiated a new connection via the [Haruyuki CLI client](https://docs.letta.com/letta-code/index.md).";
   }
 }
 
@@ -173,7 +173,7 @@ ${getIntroText(source, reason)}
 ## Device Information
 - **Local time**: ${localTime}
 - **Device type**: ${deviceType}
-- **Letta Code version**: ${version}
+- **Haruyuki version**: ${version}
 - **Current working directory**: ${cwd}
 `;
 

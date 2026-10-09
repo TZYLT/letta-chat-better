@@ -29,7 +29,7 @@ return config
     expect(output).toContain("config.color_scheme = 'Tokyo Night'");
     expect(output).toContain("key = 'Delete'");
 
-    const markerIdx = output.indexOf("-- Letta Code: Fix Delete key");
+    const markerIdx = output.indexOf("-- Haruyuki: Fix Delete key");
     const liveReturnIdx = output.lastIndexOf("return config");
     const colorIdx = output.indexOf("config.color_scheme = 'Tokyo Night'");
 
@@ -72,7 +72,7 @@ return config
 `;
 
     const output = injectWezTermDeleteFix(input);
-    const markerIdx = output.indexOf("-- Letta Code: Fix Delete key");
+    const markerIdx = output.indexOf("-- Haruyuki: Fix Delete key");
     const colorIdx = output.indexOf("config.color_scheme = 'Tokyo Night'");
     const finalReturnIdx = output.lastIndexOf("return config");
 
@@ -97,7 +97,7 @@ return config
 `;
 
     const output = injectWezTermDeleteFix(input);
-    const markerIdx = output.indexOf("-- Letta Code: Fix Delete key");
+    const markerIdx = output.indexOf("-- Haruyuki: Fix Delete key");
     const colorIdx = output.indexOf("config.color_scheme = 'Tokyo Night'");
     const finalReturnIdx = output.lastIndexOf("return config");
 
@@ -117,7 +117,7 @@ return {
     expect(output).toContain("color_scheme = 'Tokyo Night'");
     expect(output.match(/^\s*return config\s*$/gm)?.length).toBe(1);
 
-    const markerIdx = output.indexOf("-- Letta Code: Fix Delete key");
+    const markerIdx = output.indexOf("-- Haruyuki: Fix Delete key");
     const liveReturnIdx = output.lastIndexOf("return config");
     expect(markerIdx).toBeLessThan(liveReturnIdx);
   });

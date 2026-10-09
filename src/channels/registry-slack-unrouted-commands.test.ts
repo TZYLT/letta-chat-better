@@ -86,7 +86,7 @@ describe("Slack commands in unrouted threads", () => {
     });
 
     expect(replies).toHaveLength(1);
-    expect(replies[0]).toContain("Slack is connected to Letta Code");
+    expect(replies[0]).toContain("Slack is connected to Haruyuki");
     expect(delivered).toHaveLength(0);
     expect(getRoutesForChannel("slack", "acct-slack")).toHaveLength(0);
 

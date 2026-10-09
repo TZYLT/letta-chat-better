@@ -37,8 +37,8 @@ describe("release notes logic", () => {
 
   test("renders all unseen notes with blank line separation", () => {
     const notes = getPendingReleaseNotes("0.13.4", "0.12.9");
-    expect(notes).toContain("Letta Code 0.13.0");
-    expect(notes).toContain("Letta Code 0.13.4");
-    expect(notes).toContain("\n\n🔄 **Letta Code 0.13.4");
+    expect(notes).toContain("Haruyuki 0.13.0");
+    expect(notes).toContain("Haruyuki 0.13.4");
+    expect(notes).toContain("\n\n🔄 **Haruyuki 0.13.4");
   });
 });

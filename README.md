@@ -1,21 +1,19 @@
-# Letta Code
+# Haruyuki
 
 [![npm](https://img.shields.io/npm/v/@letta-ai/letta-code.svg?style=flat-square)](https://www.npmjs.com/package/@letta-ai/letta-code) [![Discord](https://img.shields.io/badge/discord-join-blue?style=flat-square&logo=discord)](https://discord.gg/letta)
 
-Letta Code is a stateful agent harness for creating agents that are more like people than tools. Letta Code agents have memory, identity, and a sense of experience over time. They learn and evolve over long horizons through rewriting their own memory, skills, prompts, and even the harness itself (through mods). 
+Haruyuki is a stateful agent harness for creating agents that are more like people than tools. Haruyuki agents have memory, identity, and a sense of experience over time. They learn and evolve over long horizons through rewriting their own memory, skills, prompts, and even the harness itself (through mods). 
 
-Letta Code can be used interactively, or to power always-on agents that work proactively. Interact with agents through:
+Haruyuki can be used interactively, or to power always-on agents that work proactively. Interact with agents through:
 * A local [**CLI**](https://docs.letta.com/letta-code/cli)
 * The [**desktop app**](https://docs.letta.com/letta-code/desktop-app) for macOS, Windows, and Linux
 * Your browser, including [mobile](https://docs.letta.com/letta-code/remote-mobile), at [chat.letta.com](https://chat.letta.com)
 * Messaging integrations, including [Telegram](https://docs.letta.com/letta-code/channels#telegram-cli), [Slack](https://docs.letta.com/letta-code/channels#slack-cli), [Discord](https://docs.letta.com/letta-code/channels#discord-cli), and [custom channels](https://github.com/letta-ai/letta-code/blob/main/src/channels/README.md)
 
-![](https://github.com/letta-ai/letta-code/blob/main/assets/letta-code-demo.gif)
-
 ## Feature Overview
 
 > [!TIP]
-> Letta Code agents are designed to be self-configuring. If you want to configure something (e.g. skills, behavior, hooks, permissions), try asking your agent to do it for you.
+> Haruyuki agents are designed to be self-configuring. If you want to configure something (e.g. skills, behavior, hooks, permissions), try asking your agent to do it for you.
 
 | Feature | Description |
 |---|---|
@@ -31,7 +29,7 @@ Letta Code can be used interactively, or to power always-on agents that work pro
 | [Remote computers](https://docs.letta.com/platform/computers/byom) (requires signing in with Letta) | Agents work across multiple computers. Connect any machine by running `letta server --computer-name "..."` |
 | [Secrets](https://docs.letta.com/letta-code/secrets) (requires signing in with Letta) | Make secrets available as environment variables (across machines) while obfuscating their values from context |
 
-Automatic client-side dreaming is disabled by default on native Windows, including when saved `/sleeptime` settings enable it. Manual `/dream` and `/reflect` commands remain available. To opt in, set `HARUYUKI_ENABLE_WINDOWS_AUTO_REFLECTION=1` in the environment of the Letta Code process. This does not affect macOS, Linux (including WSL), or server-side dreaming.
+Automatic client-side dreaming is disabled by default on native Windows, including when saved `/sleeptime` settings enable it. Manual `/dream` and `/reflect` commands remain available. To opt in, set `HARUYUKI_ENABLE_WINDOWS_AUTO_REFLECTION=1` in the environment of the Haruyuki process. This does not affect macOS, Linux (including WSL), or server-side dreaming.
 
 See the full list of slash commands in our [documentation](https://docs.letta.com/letta-code/slash-commands).
 
@@ -56,7 +54,7 @@ You can also download the [**desktop app**](https://docs.letta.com/letta-code/de
 
 ## Letta Cloud
 
-Letta Cloud stores agents' memory, identity, and conversations while Letta Code runs on a laptop, [GitHub Actions](https://github.com/letta-ai/letta-code-action), a Cloud sandbox, or a remote computer. Chat with them through [chat.letta.com](https://chat.letta.com/) or Desktop. On resume, bundled default system prompts (including older versions) become Cloud-managed. Custom prompts stay explicit. Set `HARUYUKI_CODE_PRESERVE_CLOUD_SYSTEM_PROMPT=1` to disable automatic prompt updates on Cloud.
+Letta Cloud stores agents' memory, identity, and conversations while Haruyuki runs on a laptop, [GitHub Actions](https://github.com/letta-ai/letta-code-action), a Cloud sandbox, or a remote computer. Chat with them through [chat.letta.com](https://chat.letta.com/) or Desktop. On resume, bundled default system prompts (including older versions) become Cloud-managed. Custom prompts stay explicit. Set `HARUYUKI_CODE_PRESERVE_CLOUD_SYSTEM_PROMPT=1` to disable automatic prompt updates on Cloud.
 
 ```mermaid
 graph TD
@@ -96,7 +94,7 @@ spellings remain available for backwards compatibility.
 
 ## AgentFile deprecation
 
-AgentFile (`.af`) export and import are deprecated and have been removed from Letta Code. The `/export` and `/download` slash commands and the `--import` and `--from-af` CLI flags are no longer supported, including imports from the agent registry.
+AgentFile (`.af`) export and import are deprecated and have been removed from Haruyuki. The `/export` and `/download` slash commands and the `--import` and `--from-af` CLI flags are no longer supported, including imports from the agent registry.
 
 This does not affect memory import/export or conversation transcript export.
 
@@ -114,7 +112,7 @@ To view skills run `letta skills list --agent <agent-id>`, and delete skills wit
 
 ## Research
 
-Letta Code is developed by the creators of [MemGPT](https://arxiv.org/abs/2310.08560) and [sleep-time compute](https://arxiv.org/abs/2504.13171) (now called "dreaming"), and driven by our [research](https://www.letta.com/research) in AI memory and continual learning.
+Haruyuki is developed by the creators of [MemGPT](https://arxiv.org/abs/2310.08560) and [sleep-time compute](https://arxiv.org/abs/2504.13171) (now called "dreaming"), and driven by our [research](https://www.letta.com/research) in AI memory and continual learning.
 
 ## Other
 

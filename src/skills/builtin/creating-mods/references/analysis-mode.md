@@ -287,12 +287,12 @@ The guest has brought you back online.
 </system-reminder>`;
 }
 
-export default function activate(letta) {
+export default function activate(haruyuki) {
   const disposers: Array<() => void> = [];
 
-  if (letta.capabilities?.events?.turns) {
+  if (haruyuki.capabilities?.events?.turns) {
     disposers.push(
-      letta.events.on("turn_start", (event) => {
+      haruyuki.events.on("turn_start", (event) => {
         const userText = extractUserText(event.input || []);
         const agentId = event.agentId || "__global__";
         const conversationId = event.conversationId || "default";

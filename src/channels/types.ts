@@ -1,7 +1,7 @@
 /**
  * Channel system types.
  *
- * A "channel" connects Letta Code agents to external messaging platforms
+ * A "channel" connects Haruyuki agents to external messaging platforms
  * (Telegram, Slack, etc.). Each channel has an adapter that handles
  * platform-specific communication, and a routing table that maps
  * platform chat IDs to agent+conversation pairs.
@@ -83,7 +83,7 @@ export const FIRST_PARTY_CHANNEL_IDS = [
 ] as const;
 export type FirstPartyChannelId = (typeof FIRST_PARTY_CHANNEL_IDS)[number];
 /**
- * Built-in channels shipped with Letta Code. Custom channel IDs are discovered
+ * Built-in channels shipped with Haruyuki. Custom channel IDs are discovered
  * at runtime from ~/.haruyuki/channels/<id>/channel.json.
  */
 export const SUPPORTED_CHANNEL_IDS = FIRST_PARTY_CHANNEL_IDS;

@@ -128,7 +128,7 @@ describe("created agent system prompt defaults", () => {
 });
 
 describe("created agent tags", () => {
-  test("adds Letta Code origin and MemFS tags without dropping user tags", () => {
+  test("adds Haruyuki origin and MemFS tags without dropping user tags", () => {
     const tags = buildCreatedAgentTags({
       tags: ["project:alpha", HARUYUKI_CODE_ORIGIN_TAG, GIT_MEMORY_ENABLED_TAG],
       enableMemfs: true,

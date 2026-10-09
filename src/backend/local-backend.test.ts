@@ -1447,7 +1447,7 @@ describe("local backend pi transcript", () => {
       JSON.stringify(
         {
           id: "agent-local-default",
-          name: "Letta Code",
+          name: "Haruyuki",
           description: null,
           system: "",
           tags: [],

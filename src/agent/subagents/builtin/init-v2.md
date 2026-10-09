@@ -88,7 +88,7 @@ Rules:
 ```
 feat(init): initialize memory for project
 
-Generated-By: Letta Code
+Generated-By: Haruyuki
 Agent-ID: $HARUYUKI_AGENT_ID
 Parent-Agent-ID: $HARUYUKI_PARENT_AGENT_ID
 ```

@@ -11,6 +11,6 @@ export function assertSupportedBunRuntime(
   }
 
   throw new Error(
-    `Letta Code cannot run on Bun ${bunVersion}. Bun ${MINIMUM_BUN_VERSION} or newer is required because older versions can stop reading child-process output. Upgrade Bun, or install Letta Code from npm to run it with Node.`,
+    `Haruyuki cannot run on Bun ${bunVersion}. Bun ${MINIMUM_BUN_VERSION} or newer is required because older versions can stop reading child-process output. Upgrade Bun, or install Haruyuki from npm to run it with Node.`,
   );
 }

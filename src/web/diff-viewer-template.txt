@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Worktree Diff | Letta Code</title>
+<title>Worktree Diff | Haruyuki</title>
 <style>
 :root {
   color-scheme: light dark;
@@ -407,7 +407,7 @@ h1 {
 <div class="shell">
   <header class="hero">
     <div>
-      <div class="kicker">Letta Code Experiments</div>
+      <div class="kicker">Haruyuki Experiments</div>
       <h1>Worktree Diff</h1>
       <p class="subtitle">A browser diff preview for the current worktree, rendered with Pierre Diffs themes, split layout, word-level highlights, and compact hunk separators.</p>
     </div>
@@ -420,7 +420,7 @@ h1 {
   </header>
   <section class="stats" id="stats"></section>
   <main id="app"></main>
-  <div class="footer">Rendered with <strong>@pierre/diffs</strong> via Letta Code.</div>
+  <div class="footer">Rendered with <strong>@pierre/diffs</strong> via Haruyuki.</div>
 </div>
 <script type="application/json" id="payload"><!--HARUYUKI_DIFF_DATA_PLACEHOLDER--></script>
 <script>

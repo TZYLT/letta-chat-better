@@ -178,7 +178,7 @@ export function HelpDialog({ onClose }: HelpDialogProps) {
   return (
     <OverlayShell
       command="/help"
-      title={`Letta Code v${version}`}
+      title={`Haruyuki v${version}`}
       footer={`↑↓ scroll · ←→ page · Tab switch · Esc cancel`}
     >
       <Box flexDirection="column" paddingLeft={1}>

@@ -1,6 +1,6 @@
 # Mod examples
 
-These examples are trusted local Letta Code mods. Copy a file into
+These examples are trusted local Haruyuki mods. Copy a file into
 `~/.letta/mods/` and run `/reload`, or point a local test run at this
 directory with `HARUYUKI_MODS_DIR=/path/to/mods` (or legacy
 `HARUYUKI_EXTENSIONS_DIR` on pre-rename branches).
@@ -25,7 +25,7 @@ The learning harness in `scripts/mod-learning/learn-mod.ts` dogfoods the
 mod system itself:
 
 1. read a target env/demo;
-2. ask a fresh headless Letta Code agent to generate a candidate mod;
+2. ask a fresh headless Haruyuki agent to generate a candidate mod;
 3. run a second headless eval with `HARUYUKI_MODS_DIR` pointed at the
    candidate directory;
 4. save prompts, stdout/stderr, the candidate mod, and a pass/fail report
@@ -37,7 +37,7 @@ Run the memory-citation learner target with:
 bun run mod-learning:memory-citations
 ```
 
-From inside the Letta Code TUI, run the same built-in target with:
+From inside the Haruyuki TUI, run the same built-in target with:
 
 ```text
 /mods learn memory-citations

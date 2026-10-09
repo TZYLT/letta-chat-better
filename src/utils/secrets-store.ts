@@ -1,5 +1,5 @@
 /**
- * Agent-scoped secret storage for Letta Code.
+ * Agent-scoped secret storage for Haruyuki.
  *
  * Every agent is local now: the API (Cloud) backend that used to own
  * server-side agent secrets is gone, so the optional backend secret-list method

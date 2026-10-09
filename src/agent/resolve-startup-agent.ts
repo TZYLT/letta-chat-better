@@ -17,7 +17,7 @@ export type StartupTarget =
        * Why we're creating: an explicit `--new-agent` request vs a true
        * fresh start (nothing to resume or select). Callers map this to a
        * default personality — e.g. the interactive CLI creates a Tutor
-       * agent for fresh starts and a standard Letta Code agent for
+       * agent for fresh starts and a standard Haruyuki agent for
        * `--new-agent`.
        */
       trigger: "force-new" | "fresh-start";

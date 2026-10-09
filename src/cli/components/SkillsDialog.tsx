@@ -36,7 +36,7 @@ function getTabDescription(tab: SkillTab, agentId: string): string {
     case "global":
       return GLOBAL_SKILLS_DISPLAY;
     case "bundled":
-      return "Built-in skills shipped with Letta Code";
+      return "Built-in skills shipped with Haruyuki";
   }
 }
 

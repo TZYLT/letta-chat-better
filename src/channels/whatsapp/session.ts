@@ -328,7 +328,7 @@ export async function createWhatsAppSocket(params: {
     const sock = makeWASocket({
       auth,
       version,
-      browser: ["Letta Code", "Desktop", "1.0.0"],
+      browser: ["Haruyuki", "Desktop", "1.0.0"],
       syncFullHistory: false,
       markOnlineOnConnect: false,
       printQRInTerminal: false,

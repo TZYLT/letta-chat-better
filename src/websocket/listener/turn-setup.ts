@@ -173,7 +173,7 @@ export async function prepareListenerTurn(params: {
       } catch (error) {
         debugWarn(
           "listen",
-          `Failed to ensure Letta Code agent metadata for ${agentId}: ${
+          `Failed to ensure Haruyuki agent metadata for ${agentId}: ${
             error instanceof Error ? error.message : String(error)
           }`,
         );

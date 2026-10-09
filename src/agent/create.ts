@@ -357,7 +357,7 @@ export async function createAgent(
   // - memory_blocks: new blocks to create inline
   // - block_ids: references to existing blocks (for shared memory)
   const agentDescription =
-    options.description ?? `Letta Code agent created in ${process.cwd()}`;
+    options.description ?? `Haruyuki agent created in ${process.cwd()}`;
 
   const createAgentRequestBase = await buildCreateAgentRequest({
     name,

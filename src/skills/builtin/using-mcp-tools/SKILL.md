@@ -37,8 +37,8 @@ Every command accepts `--agent <id>`, defaulting to `HARUYUKI_AGENT_ID`/`AGENT_I
 
 ## Troubleshooting
 
-- `list` empty → no MCP servers are available. Ask the user to configure a local MCP server in the Letta Code app.
-- Server with no tools (or `0 tools` in the reminder) → tools were never synced. Ask the user to resync it in the Letta Code app; the CLI has no refresh action.
-- `unauthorized` or another auth error on `call` → the server's stored credentials are missing or stale (`tools` can still list from previously synced rows). Ask the user to re-authenticate the server by connecting once in the Letta Code app — this CLI is non-interactive and only reuses persisted credentials.
+- `list` empty → no MCP servers are available. Ask the user to configure a local MCP server in the Haruyuki app.
+- Server with no tools (or `0 tools` in the reminder) → tools were never synced. Ask the user to resync it in the Haruyuki app; the CLI has no refresh action.
+- `unauthorized` or another auth error on `call` → the server's stored credentials are missing or stale (`tools` can still list from previously synced rows). Ask the user to re-authenticate the server by connecting once in the Haruyuki app — this CLI is non-interactive and only reuses persisted credentials.
 - `ambiguous_server_name` → two servers share a name; the error hint explains how to disambiguate.
 - Duplicate tool names across servers get a numeric suffix (`_2`); the printed name is always the callable one.

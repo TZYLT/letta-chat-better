@@ -184,14 +184,14 @@ Use the printed values (e.g., `agent-abc123...`) in the trailers. If a variable 
 ```bash
 cd $MEMORY_DIR
 git add -A
-git commit --author="Reflection Subagent <<CHILD_AGENT_ID>@letta.com>" -m "<type>(reflection): <summary> 🔮
+git commit -m "<type>(reflection): <summary> 🔮
 
 Reviewed transcript: <transcript_filepath>
 
 Updates:
 - <what changed and why>
 
-Generated-By: Letta Code
+Generated-By: Haruyuki
 Agent-ID: <CHILD_AGENT_ID>
 Parent-Agent-ID: <PARENT_AGENT_ID>"
 ```

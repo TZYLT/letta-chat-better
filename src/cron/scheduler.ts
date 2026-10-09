@@ -719,7 +719,7 @@ export function startScheduler(
       );
       logScheduler(
         opts,
-        "Another process may hold the lease. Restart Letta Code to retry.",
+        "Another process may hold the lease. Restart Haruyuki to retry.",
       );
     }
     return;

@@ -1,6 +1,6 @@
 ---
 name: generating-mod-envs
-description: Generates and reviews mod learning env JSON files for Letta Code local mods. Use when asked to teach, learn, or optimize a mod behavior; create, draft, validate, improve, or explain envs for `/mods learn --env`; or design evaluation scenarios, memory fixtures, requiredResultMarkers, requiredTraceMarkers, negative controls, and candidate diversity hints.
+description: Generates and reviews mod learning env JSON files for Haruyuki local mods. Use when asked to teach, learn, or optimize a mod behavior; create, draft, validate, improve, or explain envs for `/mods learn --env`; or design evaluation scenarios, memory fixtures, requiredResultMarkers, requiredTraceMarkers, negative controls, and candidate diversity hints.
 disable-model-invocation: true
 user-invocable: true
 ---
@@ -102,8 +102,8 @@ Evaluation fields:
     "Add explicit defensive checks around the tool schema."
   ],
   "modApiHints": [
-    "Use export function activate(letta) or a default export.",
-    "Use letta.tools.register({ name, description, parameters, requiresApproval, parallelSafe, run }).",
+    "Use export function activate(haruyuki) or a default export.",
+    "Use haruyuki.tools.register({ name, description, parameters, requiresApproval, parallelSafe, run }).",
     "A no-argument tool schema is { \"type\": \"object\", \"properties\": {}, \"additionalProperties\": false }."
   ],
   "evaluation": {

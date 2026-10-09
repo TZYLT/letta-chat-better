@@ -91,7 +91,7 @@ function createPackageJson(packageName: string, manifestEntry: string) {
 function createReadme(packageName: string): string {
   return `# ${packageName}
 
-Letta Code mod package.
+Haruyuki mod package.
 
 ## Install locally
 

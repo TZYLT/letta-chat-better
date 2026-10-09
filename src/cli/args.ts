@@ -443,7 +443,7 @@ export function parseBackendModeFlag(
   if (value === "local") return "local";
   if (value === "cloud" || value === "api") {
     throw new Error(
-      `--backend ${value} is no longer supported: Letta Code only runs the local backend. Use --backend local, or omit the flag.`,
+      `--backend ${value} is no longer supported: Haruyuki only runs the local backend. Use --backend local, or omit the flag.`,
     );
   }
   throw new Error(`Invalid --backend value "${value}". Expected "local".`);

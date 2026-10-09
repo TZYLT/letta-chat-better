@@ -1,6 +1,6 @@
 # Channel plugins
 
-Letta Code channels connect agents to external chat systems. Telegram, Slack,
+Haruyuki channels connect agents to external chat systems. Telegram, Slack,
 and Discord are first-party bundled plugins with custom Desktop UI. User-defined
 plugins are loaded from `~/.haruyuki/channels/<channel-id>/` and run headlessly:
 they can receive inbound messages, participate in pairing/routing, and extend
@@ -128,8 +128,8 @@ The MVP runtime path supports custom plugins that fit the generic pairing and
 routing flow:
 
 1. The adapter receives an inbound message and calls `adapter.onMessage(msg)`.
-2. Letta Code enforces `dmPolicy` / `allowedUsers`.
-3. Letta Code resolves a route from `routing.json` or creates a pairing code.
+2. Haruyuki enforces `dmPolicy` / `allowedUsers`.
+3. Haruyuki resolves a route from `routing.json` or creates a pairing code.
 4. The routed message is delivered to the bound agent/conversation.
 5. ChannelGateway registers `MessageChannel` for the conversation when it has an
    active route on at least one running channel adapter.
@@ -232,7 +232,7 @@ allowed in any scope, and allowlisted senders skip the pairing handshake.
 ## Slack app manifest notes
 
 The bundled Slack channel runs in Socket Mode. The Slack app must still declare
-the events, scopes, and slash commands that Slack should deliver to Letta Code.
+the events, scopes, and slash commands that Slack should deliver to Haruyuki.
 For `/cancel`, add the `commands` bot scope and a native slash command entry:
 
 ```yaml
@@ -271,7 +271,7 @@ settings:
 ```
 
 Slack-native slash command payloads do not identify a thread. If `/cancel` is
-sent through Slack's native command UI in a channel, Letta Code can target the
+sent through Slack's native command UI in a channel, Haruyuki can target the
 sole routed thread in that channel; if multiple Letta threads are routed there,
 send `/cancel` as a normal thread message instead so the thread route is
 unambiguous.

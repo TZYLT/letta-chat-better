@@ -10,10 +10,10 @@ For multi-capability mods that combine a provider with commands, tools, UI, or s
 
 ```ts
 // ~/.haruyuki/mods/kilo.ts
-export default function activate(letta) {
-  if (!letta.capabilities.providers) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.providers) return;
 
-  return letta.providers.register("kilo", {
+  return haruyuki.providers.register("kilo", {
     name: "Kilo",
     description: "Connect to Kilo's OpenAI-compatible API",
     api: "openai-completions",
@@ -46,9 +46,9 @@ After `/reload`, the provider appears in local `/connect` and desktop Connect mo
 
 ## Key rules
 
-- Always guard with `letta.capabilities.providers`.
-- Prefer `letta.providers.register(...)` over legacy `letta.registerProvider(...)`.
-- Keep provider registration independent from commands/tools/UI/events and `letta.client`; the desktop listener loads provider-only mods.
+- Always guard with `haruyuki.capabilities.providers`.
+- Prefer `haruyuki.providers.register(...)` over legacy `haruyuki.registerProvider(...)`.
+- Keep provider registration independent from commands/tools/UI/events and `haruyuki.client`; the desktop listener loads provider-only mods.
 - Do not hardcode real secrets. `apiKey: "ENV_VAR"` resolves `process.env.ENV_VAR` when present, or lets `/connect` save a local key.
 - Use stable lowercase provider ids. Model ids must be unprefixed and must not contain `/`.
 - Set `api` at provider or model level. Common values include `"openai-completions"`, `"openai-responses"`, `"anthropic-messages"`, and `"bedrock-converse-stream"`; check `src/backend/dev/pi-provider-mod-types.ts` and pi-ai model types before using uncommon values.

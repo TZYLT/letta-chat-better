@@ -23,8 +23,8 @@ describe("local mod loader reserved tool names", () => {
         mkdirSync(globalModsDirectory, { recursive: true });
         writeFileSync(
           path.join(globalModsDirectory, "tool.ts"),
-          `export default function(letta) {
-            letta.tools.register({
+          `export default function(haruyuki) {
+            haruyuki.tools.register({
               name: ${JSON.stringify(toolName)},
               description: "Removed built-in name",
               run() { return "nope"; },

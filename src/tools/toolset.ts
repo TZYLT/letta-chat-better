@@ -44,7 +44,7 @@ function resolveIncludedToolNames(toolNames: string[] | undefined): ToolName[] {
     if (!Object.hasOwn(TOOL_DEFINITIONS, internalName)) {
       throw new Error(
         isRemovedToolName(toolName)
-          ? `Unknown bundled client tool: ${toolName} (removed from Letta Code)`
+          ? `Unknown bundled client tool: ${toolName} (removed from Haruyuki)`
           : `Unknown bundled client tool: ${toolName}`,
       );
     }

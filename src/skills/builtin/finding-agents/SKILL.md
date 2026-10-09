@@ -35,15 +35,15 @@ letta agents list [options]
 
 ## Common Patterns
 
-### Finding Letta Code Agents
+### Finding Haruyuki Agents
 
-Agents created by Letta Code are tagged with `origin:letta-code`. To find only Letta Code agents:
+Agents created by Haruyuki are tagged with `origin:letta-code`. To find only Haruyuki agents:
 
 ```bash
 letta agents list --tags "origin:letta-code"
 ```
 
-This is useful when the user is looking for agents they've worked with in Letta Code CLI sessions.
+This is useful when the user is looking for agents they've worked with in Haruyuki CLI sessions.
 
 ### Finding All Accessible Agents
 
@@ -73,7 +73,7 @@ letta agents list --name "ProjectX-v1"
 letta agents list --query "project"
 ```
 
-**Find only Letta Code agents:**
+**Find only Haruyuki agents:**
 ```bash
 letta agents list --tags "origin:letta-code"
 ```

@@ -301,7 +301,7 @@ describe("buildCreateAgentRequestForPersonality", () => {
     expect(memo.profile_picture).toBeUndefined();
   });
 
-  test("appends extra tags after the Letta Code tags", async () => {
+  test("appends extra tags after the Haruyuki tags", async () => {
     const request = await buildCreateAgentRequestForPersonality({
       personalityId: "memo",
       extraTags: [ONBOARDING_ORIGIN_TAG, "favorite:user:user-1"],

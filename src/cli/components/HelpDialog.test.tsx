@@ -54,7 +54,7 @@ async function renderHelpDialog(
 test("HelpDialog renders its footer without raw Ink text", async () => {
   const output = await renderHelpDialog();
 
-  expect(output).toContain("Letta Code v");
+  expect(output).toContain("Haruyuki v");
   expect(output).toContain("↑↓ scroll · ←→ page · Tab switch · Esc cancel");
 });
 

@@ -1,9 +1,9 @@
 /**
  * Self-contained validator installed beside the MemFS pre-commit hook.
  *
- * It runs under Node because Letta Code requires Node 22.19 or newer. Keeping
+ * It runs under Node because Haruyuki requires Node 22.19 or newer. Keeping
  * the validator dependency-free lets Git execute it from agent and shared
- * memory repositories without resolving the Letta Code package at commit time.
+ * memory repositories without resolving the Haruyuki package at commit time.
  *
  * The optional tracked `.memfs.config.json` file accepts:
  * - `version`: the required config format version (currently 1)
@@ -112,7 +112,7 @@ function report(errors) {
     }
     console.error("Split files above their per-file limit, then retry the commit.");
     console.error(
-      "Limits come from .memfs.config.json, or the Letta Code defaults when it is absent.",
+      "Limits come from .memfs.config.json, or the Haruyuki defaults when it is absent.",
     );
     console.error(
       "Do not raise or disable these limits unless the user explicitly approves it.",

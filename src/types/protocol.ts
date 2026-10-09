@@ -1,5 +1,5 @@
 /**
- * Protocol Types for Letta Code
+ * Protocol Types for Haruyuki
  *
  * These types define:
  * 1. The JSON structure emitted by headless.ts in stream-json mode (wire protocol)
@@ -43,7 +43,7 @@ export type {
  *
  * Available presets (validated at runtime by CLI):
  * - 'default' - Alias for letta
- * - 'letta' - Full Letta Code system prompt
+ * - 'letta' - Full Haruyuki system prompt
  * - 'source-claude' - Source-faithful Claude Code prompt (for benchmarking)
  * - 'source-codex' - Source-faithful OpenAI Codex prompt (for benchmarking)
  * - 'source-gemini' - Source-faithful Gemini CLI prompt (for benchmarking)
@@ -109,7 +109,7 @@ export interface SystemInitMessage extends MessageEnvelope {
   system_info_reminder_enabled?: boolean;
   reflection_trigger?: "off" | "step-count" | "compaction-event";
   reflection_step_count?: number;
-  // output_style omitted - Letta Code doesn't have output styles feature
+  // output_style omitted - Haruyuki doesn't have output styles feature
 }
 
 export type SystemMessage = SystemInitMessage;

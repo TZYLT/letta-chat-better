@@ -37,7 +37,7 @@ interface WriteArtifactFileResult {
 function assertArtifactsExperimentEnabled(toolName: string): void {
   if (!experimentManager.isEnabled("artifacts")) {
     throw new Error(
-      `${toolName}: artifacts experiment is disabled. Enable it with /experiments in Letta Code Desktop.`,
+      `${toolName}: artifacts experiment is disabled. Enable it with /experiments in Haruyuki Desktop.`,
     );
   }
 }

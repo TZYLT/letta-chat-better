@@ -69,7 +69,7 @@ describe("mod learning harness", () => {
     expect(prompt).toContain("/tmp/run/mods/memory-citations.ts");
     expect(prompt).toContain("Register memory_citation_snapshot");
     expect(prompt).toContain("Edit only the candidate file");
-    expect(prompt).toContain("letta.tools.register");
+    expect(prompt).toContain("haruyuki.tools.register");
   });
 
   test("builds differentiated prompts for multi-candidate runs", () => {
@@ -187,7 +187,7 @@ describe("mod learning harness", () => {
         await mkdir(path.dirname(candidatePath), { recursive: true });
         writeFileSync(
           candidatePath,
-          "export function activate(letta) { letta.tools.register({ name: 'memory_citation_snapshot', description: 'snapshot', requiresApproval: false, parallelSafe: true, run() { return '{}'; } }); }\n",
+          "export function activate(haruyuki) { haruyuki.tools.register({ name: 'memory_citation_snapshot', description: 'snapshot', requiresApproval: false, parallelSafe: true, run() { return '{}'; } }); }\n",
         );
         return {
           args,
@@ -485,10 +485,10 @@ describe("mod learning harness", () => {
     const sourcePath = path.join(repoRoot, "uv-pip-install.ts");
     writeFileSync(
       sourcePath,
-      `export function activate(letta) {
+      `export function activate(haruyuki) {
         const disposers = [];
-        if (letta.capabilities.events.turns) {
-          disposers.push(letta.events.on("turn_start", (event) => ({
+        if (haruyuki.capabilities.events.turns) {
+          disposers.push(haruyuki.events.on("turn_start", (event) => ({
             input: [
               ...event.input,
               {
@@ -499,11 +499,11 @@ describe("mod learning harness", () => {
             ],
           })));
         }
-        if (letta.capabilities.events.tools) {
+        if (haruyuki.capabilities.events.tools) {
           const rewrite = (command) => command
             .replace(/^python3? -m pip install\\b/, "uv pip install")
             .replace(/^pip install\\b/, "uv pip install");
-          disposers.push(letta.events.on("tool_start", (event) => {
+          disposers.push(haruyuki.events.on("tool_start", (event) => {
             if (typeof event.args.command === "string") {
               return { args: { ...event.args, command: rewrite(event.args.command) } };
             }
@@ -746,7 +746,7 @@ describe("mod learning harness", () => {
         await mkdir(path.dirname(candidatePath), { recursive: true });
         writeFileSync(
           candidatePath,
-          "export function activate(letta) { letta.tools.register({ name: 'memory_citation_snapshot', description: 'snapshot', requiresApproval: false, parallelSafe: true, run() { return '{}'; } }); }\n",
+          "export function activate(haruyuki) { haruyuki.tools.register({ name: 'memory_citation_snapshot', description: 'snapshot', requiresApproval: false, parallelSafe: true, run() { return '{}'; } }); }\n",
         );
         return {
           args,

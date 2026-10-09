@@ -9,7 +9,7 @@ describe("registry copy: first-party channels", () => {
   test("pairing instructions point at both desktop UI and CLI for telegram", () => {
     const text = buildPairingInstructions("telegram", "ABC123");
     expect(text).toContain("Connect this chat to a Letta agent.");
-    expect(text).toContain("In Letta Code: open Channels > Telegram");
+    expect(text).toContain("In Haruyuki: open Channels > Telegram");
     expect(text).toContain("Telegram");
     expect(text).toContain("Pairing code: ABC123");
     expect(text).toContain("CLI on the listener machine:");
@@ -37,7 +37,7 @@ describe("registry copy: first-party channels", () => {
     const text = buildPairingInstructions("discord", "XYZ789", {
       agentId: "agent-discord",
     });
-    expect(text).toContain("In Letta Code: open Channels > Discord");
+    expect(text).toContain("In Haruyuki: open Channels > Discord");
     expect(text).toContain("Discord");
     expect(text).toContain(
       "letta channels pair --channel discord --code XYZ789 --agent agent-discord",
@@ -50,7 +50,7 @@ describe("registry copy: first-party channels", () => {
     const text = buildPairingInstructions("whatsapp", "W123", {
       agentId: "agent-whatsapp",
     });
-    expect(text).toContain("In Letta Code: open Channels > WhatsApp");
+    expect(text).toContain("In Haruyuki: open Channels > WhatsApp");
     expect(text).toContain("WhatsApp");
     expect(text).toContain("Pairing code: W123");
     expect(text).toContain(
@@ -77,13 +77,13 @@ describe("registry copy: first-party channels", () => {
       "Letta agent",
     );
     expect(buildPairingInstructions("telegram", "X")).not.toContain(
-      "Letta Code agent",
+      "Haruyuki agent",
     );
   });
 
   test("channel help explains how to use a connected Telegram chat", () => {
     const text = buildChannelHelpMessage("telegram");
-    expect(text).toContain("Telegram is connected to Letta Code.");
+    expect(text).toContain("Telegram is connected to Haruyuki.");
     expect(text).toContain("Send a normal message");
     expect(text).toContain("connected agent will reply in this chat");
     expect(text).not.toContain("MessageChannel");

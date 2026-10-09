@@ -6,7 +6,7 @@ Use this tool when starting a new feature, bug fix, refactor, or other file-edit
 
 Pass `name` (and optionally `branch_name`/`base_ref`) to create a new worktree. Pass `path` instead to switch into an existing worktree that was created under `.haruyuki/worktrees/` — for example to resume work or hand off to a worktree another conversation started.
 
-Prefer this tool over manually running `git worktree add` with Bash because it creates the worktree in Letta Code's canonical location, bases it on the latest default branch, and updates this conversation/session's working directory when supported.
+Prefer this tool over manually running `git worktree add` with Bash because it creates the worktree in Haruyuki's canonical location, bases it on the latest default branch, and updates this conversation/session's working directory when supported.
 
 Do not use this tool for read-only tasks, code review, answering questions, continuing work already in the correct checkout, or when the user explicitly asks not to use worktrees.
 

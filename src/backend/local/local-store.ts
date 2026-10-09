@@ -132,7 +132,7 @@ import type {
 import type { LocalCompiledSystemPrompt } from "./system-prompt-compilation";
 export type { LocalAgentRecord, StoredMessage };
 
-const DEFAULT_LOCAL_AGENT_NAME = "Letta Code";
+const DEFAULT_LOCAL_AGENT_NAME = "Haruyuki";
 const DEFAULT_LOCAL_MODEL = "local/default";
 const LEGACY_LOCAL_CONTEXT_WINDOW_LIMIT = 128000;
 const DEFAULT_LOCAL_CONVERSATION_ID_PREFIX = "local-conv-";

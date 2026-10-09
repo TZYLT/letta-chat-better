@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Latency Benchmark Script for Letta Code CLI
+ * Latency Benchmark Script for Haruyuki CLI
  *
  * Runs headless mode with HARUYUKI_DEBUG_TIMINGS=1 and parses the output
  * to measure latency breakdown at different stages.

@@ -206,7 +206,7 @@ export function buildChannelCancelUnavailableMessage(
 ): string {
   const displayName = channelDisplayName(channelId);
   return [
-    `${displayName} received /cancel, but this chat is not connected to an active Letta Code conversation yet.`,
+    `${displayName} received /cancel, but this chat is not connected to an active Haruyuki conversation yet.`,
     "Send a normal message first to connect this chat to an agent.",
   ].join("\n\n");
 }

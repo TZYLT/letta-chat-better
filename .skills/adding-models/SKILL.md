@@ -1,11 +1,11 @@
 ---
 name: adding-models
-description: Guide for adding new LLM models to Letta Code. Use when the user wants to add support for a new model, needs to know valid model handles, or wants to update model-specific compatibility behavior. Covers runtime catalog sources, CI test matrices, and handle validation.
+description: Guide for adding new LLM models to Haruyuki. Use when the user wants to add support for a new model, needs to know valid model handles, or wants to update model-specific compatibility behavior. Covers runtime catalog sources, CI test matrices, and handle validation.
 ---
 
 # Adding Models
 
-This skill guides you through adding a new LLM model to Letta Code.
+This skill guides you through adding a new LLM model to Haruyuki.
 
 ## Quick Reference
 
@@ -59,7 +59,7 @@ Common provider prefixes:
 
 ### Step 2: Update the Owning Catalog
 
-Letta Code does not bundle a model catalog:
+Haruyuki does not bundle a model catalog:
 
 - Cloud hosted rows and presets come from the server's
   `GET /v1/models/catalog` response.
@@ -68,7 +68,7 @@ Letta Code does not bundle a model catalog:
 
 Add the model at the source that owns it. A hosted preset belongs in the server catalog. A local provider model belongs in pi-ai or that provider's discovery runtime.
 
-Only change this repository when the model needs Letta Code-specific compatibility behavior, such as preserving an established CLI alias or recognizing a new provider for toolset selection. Keep that logic narrow and derive the handle and metadata from the runtime catalog rather than copying model definitions here.
+Only change this repository when the model needs Haruyuki-specific compatibility behavior, such as preserving an established CLI alias or recognizing a new provider for toolset selection. Keep that logic narrow and derive the handle and metadata from the runtime catalog rather than copying model definitions here.
 
 ### Step 3: Test the Model
 

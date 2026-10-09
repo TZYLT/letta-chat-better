@@ -76,8 +76,8 @@ describe("selectDefaultAgentModel", () => {
 });
 
 describe("default agent configs", () => {
-  test("memo default agent is Letta Code with memo persona and human", () => {
-    expect(DEFAULT_AGENT_CONFIGS.memo?.name).toBe("Letta Code");
+  test("memo default agent is Haruyuki with memo persona and human", () => {
+    expect(DEFAULT_AGENT_CONFIGS.memo?.name).toBe("Haruyuki");
     expect(DEFAULT_AGENT_CONFIGS.memo?.blockValues?.persona?.trim()).toBe(
       getPersonalityContent("memo").trim(),
     );

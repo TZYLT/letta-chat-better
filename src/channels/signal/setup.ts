@@ -398,7 +398,7 @@ async function linkSignalAccountWithNativeCli(
   );
   const configDir =
     configInput.trim() || detectedConfigDir || getDefaultSignalCliConfigDir();
-  console.log('Running: signal-cli link -n "Letta Code"');
+  console.log('Running: signal-cli link -n "Haruyuki"');
   console.log(
     "Scan the QR/link output with Signal → Settings → Linked Devices → +.",
   );
@@ -421,7 +421,7 @@ async function linkSignalAccountWithNativeCli(
     }
   };
   const result = await runNativeSignalCliInteractive(
-    ["-c", configDir, "link", "-n", "Letta Code"],
+    ["-c", configDir, "link", "-n", "Haruyuki"],
     maybeRenderQr,
   );
   if (!result.ok) {
@@ -475,7 +475,7 @@ async function configureSignalAccountIdentity(
     console.log(
       "To link/register the account, use one of these outside Letta:",
     );
-    console.log('  QR link: signal-cli link -n "Letta Code"');
+    console.log('  QR link: signal-cli link -n "Haruyuki"');
     console.log("  SMS register: signal-cli -a +<BOT_PHONE_NUMBER> register");
     console.log(
       "  If Signal asks for captcha: open https://signalcaptchas.org/registration/generate.html, copy the signalcaptcha:// URL, then run:",

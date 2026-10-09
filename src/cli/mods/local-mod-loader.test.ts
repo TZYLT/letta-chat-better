@@ -28,7 +28,7 @@ function createTempDir(): string {
 
 function createModContext(): ModContext {
   return buildCliModContext({
-    agentName: "Letta Code",
+    agentName: "Haruyuki",
     currentDirectory: "/tmp/project",
     modelDisplayName: "Sonnet 4.6",
     modelProvider: "anthropic",
@@ -345,8 +345,8 @@ describe("local mod loader", () => {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         path.join(modDir, "status.ts"),
-        `export default function(letta) {
-          letta.ui.openPanel({ id: "mode", render: () => "fast" });
+        `export default function(haruyuki) {
+          haruyuki.ui.openPanel({ id: "mode", render: () => "fast" });
         }`,
       );
 
@@ -368,12 +368,12 @@ describe("local mod loader", () => {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         path.join(modDir, "legacy-statusline.ts"),
-        `export default function(letta) {
+        `export default function(haruyuki) {
           const update = async () => {
             try {
-              letta.getContext();
+              haruyuki.getContext();
             } catch {
-              letta.ui.clearStatus("branch");
+              haruyuki.ui.clearStatus("branch");
             }
           };
           void update();
@@ -385,7 +385,7 @@ describe("local mod loader", () => {
       expect(getModErrorDiagnostics(registry.diagnostics)).toEqual([]);
       expect(registry.diagnostics).toContainEqual(
         expect.objectContaining({
-          capability: { id: "letta.getContext", kind: "api" },
+          capability: { id: "haruyuki.getContext", kind: "api" },
           phase: "deprecated_api",
           severity: "warning",
         }),
@@ -393,7 +393,7 @@ describe("local mod loader", () => {
       expect(
         registry.diagnostics.some((diagnostic) =>
           diagnostic.error.message.includes(
-            "letta.getContext is no longer available",
+            "haruyuki.getContext is no longer available",
           ),
         ),
       ).toBe(true);
@@ -458,8 +458,8 @@ describe("local mod loader", () => {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         modPath,
-        `export default function(letta: any) {
-          letta.ui.openPanel({
+        `export default function(haruyuki: any) {
+          haruyuki.ui.openPanel({
             id: "panel",
             render: (ctx: any) => <span>{ctx.agent.name}</span>,
           });
@@ -471,13 +471,13 @@ describe("local mod loader", () => {
       expect(getModErrorDiagnostics(registry.diagnostics)).toEqual([]);
       expect(registry.loadedPaths).toEqual([modPath]);
       const cacheFiles = readdirSync(options.cacheDirectory).filter((entry) =>
-        entry.startsWith(".letta-mod-statusline-"),
+        entry.startsWith(".haruyuki-mod-statusline-"),
       );
       expect(cacheFiles).toHaveLength(1);
       expect(cacheFiles[0]?.endsWith(".mjs")).toBe(true);
       const panel = Object.values(registry.ui.panels)[0];
       const output = panel?.render(renderCtx(80));
-      expect(output).toMatchObject({ props: { children: "Letta Code" } });
+      expect(output).toMatchObject({ props: { children: "Haruyuki" } });
     } finally {
       rmSync(root, { force: true, recursive: true });
     }
@@ -502,8 +502,8 @@ describe("local mod loader", () => {
       writeFileSync(
         path.join(modDir, "index.js"),
         `import { label } from "fake-dep";
-export default function(letta) {
-  letta.ui.openPanel({ id: "dep", render: () => label });
+export default function(haruyuki) {
+  haruyuki.ui.openPanel({ id: "dep", render: () => label });
 }
 `,
       );
@@ -553,7 +553,7 @@ export default function(letta) {
       const panel = Object.values(registry.ui.panels)[0];
       expect(panel?.render(renderCtx(80))).toBe("dependency");
       const generatedFiles = readdirSync(modDir).filter((entry) =>
-        entry.startsWith(".letta-mod-index-"),
+        entry.startsWith(".haruyuki-mod-index-"),
       );
       expect(generatedFiles).toHaveLength(1);
     } finally {
@@ -570,8 +570,8 @@ export default function(letta) {
       writeFileSync(path.join(modDir, "broken.ts"), "export const nope = 1;");
       writeFileSync(
         path.join(modDir, "working.ts"),
-        `export default function(letta) {
-          letta.ui.openPanel({ id: "ok", render: () => "true" });
+        `export default function(haruyuki) {
+          haruyuki.ui.openPanel({ id: "ok", render: () => "true" });
         }`,
       );
 
@@ -600,8 +600,8 @@ export default function(letta) {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         modPath,
-        `export default function(letta) {
-          return letta.commands.register({
+        `export default function(haruyuki) {
+          return haruyuki.commands.register({
             id: "review-pr",
             description: "Review a GitHub PR",
             args: "<url-or-number>",
@@ -670,8 +670,8 @@ export default function(letta) {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         path.join(modDir, "legacy-command.ts"),
-        `export default function(letta) {
-          letta.commands.register({
+        `export default function(haruyuki) {
+          haruyuki.commands.register({
             id: "legacy-command",
             description: "Old command",
             run(ctx) { return ctx.getContext(); },
@@ -725,12 +725,12 @@ export default function(letta) {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         path.join(modDir, "client.ts"),
-        `export default function(letta) {
-          letta.commands.register({
+        `export default function(haruyuki) {
+          haruyuki.commands.register({
             id: "client-check",
             description: "Check client availability",
             async run() {
-              return { type: "output", output: await letta.client.getMarker() };
+              return { type: "output", output: await haruyuki.client.getMarker() };
             },
           });
         }`,
@@ -781,8 +781,8 @@ export default function(letta) {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         path.join(modDir, "panel.ts"),
-        `export default function(letta) {
-          const panel = letta.ui.openPanel({
+        `export default function(haruyuki) {
+          const panel = haruyuki.ui.openPanel({
             id: "btw",
             render: () => "answer",
           });
@@ -812,14 +812,14 @@ export default function(letta) {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         path.join(modDir, "a.ts"),
-        `export default function(letta) {
-          letta.ui.openPanel({ id: "status", render: () => "from a" });
+        `export default function(haruyuki) {
+          haruyuki.ui.openPanel({ id: "status", render: () => "from a" });
         }`,
       );
       writeFileSync(
         path.join(modDir, "b.ts"),
-        `export default function(letta) {
-          letta.ui.openPanel({ id: "status", render: () => "from b" });
+        `export default function(haruyuki) {
+          haruyuki.ui.openPanel({ id: "status", render: () => "from b" });
         }`,
       );
 
@@ -848,8 +848,8 @@ export default function(letta) {
       mkdirSync(legacyExtensions, { recursive: true });
       writeFileSync(
         legacyPath,
-        `export default function(letta) {
-          letta.commands.register({
+        `export default function(haruyuki) {
+          haruyuki.commands.register({
             id: "review",
             description: "Legacy review",
             run() { return { type: "output", output: "legacy" }; },
@@ -858,8 +858,8 @@ export default function(letta) {
       );
       writeFileSync(
         modPath,
-        `export default function(letta) {
-          letta.commands.register({
+        `export default function(haruyuki) {
+          haruyuki.commands.register({
             id: "review",
             description: "Mods review",
             run() { return { type: "output", output: "mods" }; },
@@ -915,8 +915,8 @@ export default function(letta) {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         path.join(modDir, "a.ts"),
-        `export default function(letta) {
-          letta.commands.register({
+        `export default function(haruyuki) {
+          haruyuki.commands.register({
             id: "dupe",
             description: "First command",
             run() { return { type: "handled" }; },
@@ -925,8 +925,8 @@ export default function(letta) {
       );
       writeFileSync(
         path.join(modDir, "b.ts"),
-        `export default function(letta) {
-          letta.commands.register({
+        `export default function(haruyuki) {
+          haruyuki.commands.register({
             id: "dupe",
             description: "Second command",
             run() { return { type: "handled" }; },
@@ -935,8 +935,8 @@ export default function(letta) {
       );
       writeFileSync(
         path.join(modDir, "c.ts"),
-        `export default function(letta) {
-          letta.commands.register({
+        `export default function(haruyuki) {
+          haruyuki.commands.register({
             id: "reload",
             description: "Built-in conflict",
             run() { return { type: "handled" }; },
@@ -945,8 +945,8 @@ export default function(letta) {
       );
       writeFileSync(
         path.join(modDir, "d.ts"),
-        `export default function(letta) {
-          letta.commands.register({
+        `export default function(haruyuki) {
+          haruyuki.commands.register({
             id: "/bad",
             description: "Invalid id",
             run() { return { type: "handled" }; },
@@ -994,8 +994,8 @@ export default function(letta) {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         path.join(modDir, "tool.ts"),
-        `export default function(letta) {
-          letta.tools.register({
+        `export default function(haruyuki) {
+          haruyuki.tools.register({
             name: "Read",
             description: "Built-in conflict",
             run() { return "nope"; },
@@ -1022,8 +1022,8 @@ export default function(letta) {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         path.join(modDir, "status.ts"),
-        `export default function(letta) {
-          const panel = letta.ui.openPanel({ id: "mode", render: () => "fast" });
+        `export default function(haruyuki) {
+          const panel = haruyuki.ui.openPanel({ id: "mode", render: () => "fast" });
           return () => panel.close();
         }`,
       );

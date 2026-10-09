@@ -1,8 +1,8 @@
 /**
  * Package export: `@letta-ai/letta-code/agent-presets`
  *
- * Browser-safe library entry exposing Letta Code's agent creation presets so
- * other surfaces (e.g. the chat web app) can create Letta Code agents through
+ * Browser-safe library entry exposing Haruyuki's agent creation presets so
+ * other surfaces (e.g. the chat web app) can create Haruyuki agents through
  * Core with byte-identical payloads to the CLI — personalities, memory block
  * content, system prompts, tags, and the create-agent request builder.
  *

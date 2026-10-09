@@ -352,14 +352,14 @@ describe("defaultChannelDisplayName", () => {
 describe("buildChannelHelpMessage", () => {
   test("renders slack mention guidance with the default resolver", () => {
     const message = buildChannelHelpMessage("slack");
-    expect(message).toStartWith("Slack is connected to Letta Code.");
+    expect(message).toStartWith("Slack is connected to Haruyuki.");
     expect(message).toContain("@agent /model <handle-or-id>");
     expect(message).toContain("Legacy bang aliases still work after a mention");
   });
 
   test("renders the generic slash command list for other channels", () => {
     const message = buildChannelHelpMessage("telegram");
-    expect(message).toStartWith("Telegram is connected to Letta Code.");
+    expect(message).toStartWith("Telegram is connected to Haruyuki.");
     expect(message).toContain(
       "Supported slash commands here: /help, /status, /whoami, /pause, /resume, /cancel, /chat, /feedback, /model, /reflection, /reload.",
     );
@@ -370,7 +370,7 @@ describe("buildChannelHelpMessage", () => {
       "telegram",
       (channelId) => `Cloud ${channelId}`,
     );
-    expect(message).toStartWith("Cloud telegram is connected to Letta Code.");
+    expect(message).toStartWith("Cloud telegram is connected to Haruyuki.");
   });
 
   test("matches the local host rendering for first-party channels", () => {

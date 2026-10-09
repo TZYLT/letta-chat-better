@@ -37,10 +37,10 @@ If the command represents a reusable agent workflow (for example `/goal`), put t
 Use `prompt` for normal slash shortcuts that should become the next agent turn. Prompt commands are not busy-safe.
 
 ```ts
-export default function activate(letta) {
-  if (!letta.capabilities.commands) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.commands) return;
 
-  return letta.commands.register({
+  return haruyuki.commands.register({
     id: "review",
     description: "Review current git changes",
     args: "[focus]",
@@ -63,10 +63,10 @@ export default function activate(letta) {
 Use `output` for local results that do not need the model.
 
 ```ts
-export default function activate(letta) {
-  if (!letta.capabilities.commands) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.commands) return;
 
-  return letta.commands.register({
+  return haruyuki.commands.register({
     id: "whereami",
     description: "Show the active mod command context",
     run(ctx) {
@@ -84,20 +84,20 @@ export default function activate(letta) {
 Use `{ type: "handled" }` when the command owns the UI. Guard panels because they are optional on non-TUI surfaces.
 
 ```ts
-export default function activate(letta) {
-  if (!letta.capabilities.commands) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.commands) return;
 
-  return letta.commands.register({
+  return haruyuki.commands.register({
     id: "hello-panel",
     description: "Show a short transient panel",
     showInTranscript: false,
     run(ctx) {
-      if (!letta.capabilities.ui.panels) {
+      if (!haruyuki.capabilities.ui.panels) {
         return { type: "output", output: `hello ${ctx.args || "there"}` };
       }
 
       const greeting = `hello ${ctx.args || "there"}`;
-      const panel = letta.ui.openPanel({
+      const panel = haruyuki.ui.openPanel({
         id: "hello-panel",
         render: () => greeting,
       });
@@ -112,7 +112,7 @@ export default function activate(letta) {
 
 For commands with `runWhenBusy: true`, do not return `prompt` while the agent is running. Use the scoped conversation handle directly, update a panel/status if available, and return `{ type: "handled" }` quickly.
 
-Use `ctx.conversation` for conversation operations. The handle is bound to the active conversation and backend for that command invocation, so composed flows like fork-then-send stay on the same backend. Use `letta.client` only for server-specific API calls.
+Use `ctx.conversation` for conversation operations. The handle is bound to the active conversation and backend for that command invocation, so composed flows like fork-then-send stay on the same backend. Use `haruyuki.client` only for server-specific API calls.
 
 Common pattern:
 

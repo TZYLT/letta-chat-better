@@ -35,8 +35,8 @@ describe("local mod package scaffolder", () => {
     const outputDirectory = path.join(root, "hello-package");
     writeFileSync(
       sourceFile,
-      `export default function activate(letta) {
-        letta.commands.register({ id: "hello", description: "Hello", run() {} });
+      `export default function activate(haruyuki) {
+        haruyuki.commands.register({ id: "hello", description: "Hello", run() {} });
       }\n`,
     );
 
@@ -56,7 +56,7 @@ describe("local mod package scaffolder", () => {
       targetModPath: path.join(outputDirectory, "mods", "hello.ts"),
     });
     expect(readFileSync(result.targetModPath, "utf8")).toContain(
-      "letta.commands.register",
+      "haruyuki.commands.register",
     );
     expect(JSON.parse(readFileSync(result.packageJsonPath, "utf8"))).toEqual({
       name: "@caren/hello-mod",

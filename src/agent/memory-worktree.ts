@@ -6,6 +6,7 @@ import { dirname, isAbsolute, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { getAuthToken } from "@/agent/memory-auth";
 import { runGit as runMemoryGit } from "@/agent/memory-git";
+import { harnessGitIdentity } from "@/agent/memory-git-identity";
 import { GIT_DISABLE_COMMIT_SIGNING_ARGS } from "@/agent/memory-git-signing";
 import { withMemoryOperation } from "@/agent/memory-operation";
 import { getMemfsServerUrl } from "@/backend/api/memfs-git-proxy";
@@ -14,12 +15,22 @@ import { debugLog } from "@/utils/debug";
 const execFile = promisify(execFileCb);
 
 const GIT_TIMEOUT_MS = 30_000;
-const HARNESS_GIT_ENV = {
-  GIT_AUTHOR_NAME: "Letta Code",
-  GIT_AUTHOR_EMAIL: "noreply@letta.com",
-  GIT_COMMITTER_NAME: "Letta Code",
-  GIT_COMMITTER_EMAIL: "noreply@letta.com",
-};
+
+/**
+ * Git identity for harness-issued worktree operations.
+ *
+ * Resolved lazily (not at module scope) because it shells out to git, and the
+ * module is imported by tests that re-point the global config.
+ */
+function harnessGitEnv(): Record<string, string> {
+  const identity = harnessGitIdentity();
+  return {
+    GIT_AUTHOR_NAME: identity.name,
+    GIT_AUTHOR_EMAIL: identity.email,
+    GIT_COMMITTER_NAME: identity.name,
+    GIT_COMMITTER_EMAIL: identity.email,
+  };
+}
 
 interface GitResult {
   stdout: string;
@@ -33,7 +44,7 @@ async function runGit(cwd: string, args: string[]): Promise<GitResult> {
       cwd,
       env: {
         ...process.env,
-        ...HARNESS_GIT_ENV,
+        ...harnessGitEnv(),
       },
       encoding: "utf-8",
       timeout: GIT_TIMEOUT_MS,

@@ -138,9 +138,9 @@ export function WelcomeScreen({
 
       {/* Right column: Text info */}
       <Box flexDirection="column" marginTop={0}>
-        {/* Row 1: Letta Code + version */}
+        {/* Row 1: Haruyuki + version */}
         <Box>
-          <Text bold>Letta Code</Text>
+          <Text bold>Haruyuki</Text>
           <Text color="gray"> v{version}</Text>
         </Box>
         {/* Row 2: model · auth (or just auth while loading) */}

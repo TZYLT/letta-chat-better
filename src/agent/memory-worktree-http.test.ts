@@ -11,6 +11,7 @@ import { createServer, type Server } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, it } from "node:test";
+import { harnessGitIdentity } from "@/agent/memory-git-identity";
 import {
   createReflectionMemoryWorktree,
   finalizeReflectionMemoryWorktree,
@@ -173,9 +174,10 @@ describe("reflection memory HTTP refresh", () => {
       readFileSync(join(memoryDir, "remote.md"), "utf8"),
       "from another environment\n",
     );
+    const identity = harnessGitIdentity();
     assert.equal(
       git(memoryDir, ["log", "-1", "--format=%an <%ae>"]).trim(),
-      "Letta Code <noreply@letta.com>",
+      `${identity.name} <${identity.email}>`,
     );
     assert.equal(
       git(memoryDir, ["config", "--get", "remote.origin.url"]).trim(),

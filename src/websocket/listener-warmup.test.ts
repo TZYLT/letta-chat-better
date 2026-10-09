@@ -112,8 +112,8 @@ describe("listener warmup scheduling", () => {
     mkdirSync(modsDirectory, { recursive: true });
     writeFileSync(
       join(modsDirectory, "warmup-command.js"),
-      `export default function activate(letta) {
-        letta.commands.register({
+      `export default function activate(haruyuki) {
+        haruyuki.commands.register({
           id: "warmup-command",
           description: "Loaded after sync replay",
           run() { return "ready"; },

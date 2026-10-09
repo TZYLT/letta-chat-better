@@ -64,7 +64,7 @@ export const InlineBashApproval = memo(
     const maxOptionIndex = customOptionIndex;
     const isOnCustomOption = selectedOption === customOptionIndex;
     const customOptionPlaceholder =
-      "No, and tell Letta Code what to do differently";
+      "No, and tell Haruyuki what to do differently";
 
     useInput(
       (input, key) => {

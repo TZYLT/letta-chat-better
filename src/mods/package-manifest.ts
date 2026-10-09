@@ -190,13 +190,13 @@ function validateCapabilities(
 ): LettaPackageCapability[] | undefined {
   if (value === undefined) return undefined;
   if (!Array.isArray(value)) {
-    addError(errors, "letta.capabilities", "capabilities must be an array");
+    addError(errors, "haruyuki.capabilities", "capabilities must be an array");
     return undefined;
   }
 
   const capabilities: LettaPackageCapability[] = [];
   value.forEach((entry, index) => {
-    const entryPath = `letta.capabilities[${index}]`;
+    const entryPath = `haruyuki.capabilities[${index}]`;
     if (typeof entry !== "string") {
       addError(errors, entryPath, "capability must be a string");
       return;

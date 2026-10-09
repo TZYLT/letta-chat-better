@@ -55,9 +55,9 @@ feat: add user's preferences
 
 This handles the user's settings correctly.
 
-🤖 Generated with [Letta Code](https://letta.com)
+🤖 Generated with [Haruyuki](https://letta.com)
 
-Co-Authored-By: Letta Code <noreply@letta.com>
+Co-Authored-By: Haruyuki <noreply@letta.com>
 EOF
 )"`,
     });
@@ -99,9 +99,9 @@ fix: handle user's preferences correctly
 - Added Sarah's requested feature
 - Updated John's component
 
-🤖 Generated with [Letta Code](https://letta.com)
+🤖 Generated with [Haruyuki](https://letta.com)
 
-Co-Authored-By: Letta Code <noreply@letta.com>
+Co-Authored-By: Haruyuki <noreply@letta.com>
 EOF`,
     });
     expect(result.status).toBe("success");

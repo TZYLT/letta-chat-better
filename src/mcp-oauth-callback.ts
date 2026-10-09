@@ -118,7 +118,7 @@ async function startOAuthCallbackServerOnPort(
     response.end(
       callbackPage(
         "Authorization complete",
-        "You can close this tab and return to Letta Code.",
+        "You can close this tab and return to Haruyuki.",
       ),
       () => {
         void closeServer(true);

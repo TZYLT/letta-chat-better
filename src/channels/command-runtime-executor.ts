@@ -302,7 +302,7 @@ export function buildChannelModelListMessage(
   if (availableEntries.length === 0) {
     lines.push(
       "",
-      "No available models were reported. Use /connect in Letta Code to configure a provider, then try again.",
+      "No available models were reported. Use /connect in Haruyuki to configure a provider, then try again.",
     );
   }
 

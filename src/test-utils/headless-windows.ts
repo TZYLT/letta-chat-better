@@ -2,7 +2,7 @@
 /**
  * Windows-specific headless integration test
  *
- * Tests that Letta Code works correctly on Windows by:
+ * Tests that Haruyuki works correctly on Windows by:
  * 1. Running shell commands (tests PowerShell preference)
  * 2. Creating a multiline echo (tests heredoc avoidance)
  * 3. Checking tool availability (tests PATH)

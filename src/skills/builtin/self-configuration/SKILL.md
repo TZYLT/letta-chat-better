@@ -1,12 +1,12 @@
 ---
 name: self-configuration
-description: Inspect or modify Letta Code's own memory, model, context window, system prompt, compaction, permissions, toolsets, mods, skills, channels, schedules, agent secrets, and local runtime settings. Use when the user asks how this agent or conversation is configured, asks about account usage, remaining credits, or model quota, asks you to change how you behave or how the harness runs you, or renames you.
+description: Inspect or modify Haruyuki's own memory, model, context window, system prompt, compaction, permissions, toolsets, mods, skills, channels, schedules, agent secrets, and local runtime settings. Use when the user asks how this agent or conversation is configured, asks about account usage, remaining credits, or model quota, asks you to change how you behave or how the harness runs you, or renames you.
 license: MIT
 ---
 
 # Self-Configuration
 
-Use this skill when the user asks you to change yourself or the Letta Code runtime around you.
+Use this skill when the user asks you to change yourself or the Haruyuki runtime around you.
 
 The important part is choosing the right layer. Do not smear a preference into deterministic config, and do not bury a deterministic safety rule in prose memory.
 
@@ -92,7 +92,7 @@ If CLI behavior does not match the docs, stop and inspect `command -v letta`, `t
 Use memory when the user wants you to remember, prefer, learn, or change your identity/personality.
 
 Inspect the projected memory tree in the system prompt before choosing paths.
-Letta Code supports two layouts:
+Haruyuki supports two layouts:
 
 | Purpose | Root layout | Existing layout |
 | --- | --- | --- |
@@ -226,7 +226,7 @@ npx tsx <SKILL_DIR>/scripts/update-agent-settings.ts \
   --dry-run
 ```
 
-For normal behavioral changes, edit memory. For startup preset selection, use `--system <preset>` or `--system-custom <file>` when launching Letta Code.
+For normal behavioral changes, edit memory. For startup preset selection, use `--system <preset>` or `--system-custom <file>` when launching Haruyuki.
 
 ## Local settings files
 
@@ -278,7 +278,7 @@ path.
 | `createDefaultAgents` | Create Memo/Incognito default agents on startup (default: true) |
 | `windowTitle` | Configurable terminal window title fields |
 | `permissions` | Allow/deny/ask/alwaysAsk rules |
-| `env` | User-wide environment variables for Letta Code |
+| `env` | User-wide environment variables for Haruyuki |
 | `experiments` | Feature flags |
 | `agents[]` | Per-agent pinned/memfs/toolset/system-prompt metadata |
 

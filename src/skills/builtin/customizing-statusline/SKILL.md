@@ -1,11 +1,11 @@
 ---
 name: customizing-statusline
-description: Creates, edits, and migrates Letta Code statusline mods. Use when handling the /statusline command or continuing work started by /statusline.
+description: Creates, edits, and migrates Haruyuki statusline mods. Use when handling the /statusline command or continuing work started by /statusline.
 ---
 
 # Customizing Statusline
 
-Use this skill to create or update the global Letta Code statusline mod:
+Use this skill to create or update the global Haruyuki statusline mod:
 
 ```text
 ~/.haruyuki/mods/statusline.tsx
@@ -32,7 +32,7 @@ The order-0 panel owns the whole primary row. It renders text (not React) and ow
 4. If the user asks to migrate, import a `.sh` file, or match a shell prompt, read `references/migration.md`.
 5. If API details or concrete patterns are needed, read `references/api.md` and `references/examples.md`.
 6. If the request combines statusline work with commands, tools, events, other panels, or stateful mod behavior, also use `creating-mods` and its `references/architecture.md`.
-7. Guard panel work with `letta.capabilities.ui.panels` when writing new files.
+7. Guard panel work with `haruyuki.capabilities.ui.panels` when writing new files.
 8. Edit `~/.haruyuki/mods/statusline.tsx`.
 9. Summarize the absolute file path changed and tell the user to run `/reload` unless the command can reload automatically.
 
@@ -59,7 +59,7 @@ Keep this conversational. Do not build a menu UI unless the product command expl
 - Keep `render` synchronous and side-effect-free. Do not shell, fetch, await, or read files inside render.
 - Do async work in setup code, intervals, or subscriptions, store the result in a closure variable, then call `panel.update()` to re-render.
 - Register the statusline at `order: 0`. Compose left/right with `row(left, right, width)`; color with `chalk`.
-- Guard panel work with `letta.capabilities.ui.panels` in new files.
+- Guard panel work with `haruyuki.capabilities.ui.panels` in new files.
 - Return a disposer that clears timers/subscriptions and calls `panel.close()`.
 - Preserve existing mod code unless the user asks to reset.
 

@@ -290,7 +290,7 @@ describe("system prompt versioning", () => {
     expect(decision.kind).toBe("track");
   });
 
-  test("tracks legacy Letta Code agents only when their prompt matches a current preset", () => {
+  test("tracks legacy Haruyuki agents only when their prompt matches a current preset", () => {
     const currentPrompt = buildSystemPrompt("default", "standard");
 
     const decision = decideManagedSystemPromptUpdate({
@@ -305,7 +305,7 @@ describe("system prompt versioning", () => {
     }
   });
 
-  test("marks legacy Letta Code agents custom when their prompt is modified", () => {
+  test("marks legacy Haruyuki agents custom when their prompt is modified", () => {
     const currentPrompt = buildSystemPrompt("default", "standard");
 
     const decision = decideManagedSystemPromptUpdate({
@@ -340,10 +340,10 @@ describe("system prompt versioning", () => {
     }
   });
 
-  test("does not replace a prompt merely because it starts like Letta Code", () => {
+  test("does not replace a prompt merely because it starts like Haruyuki", () => {
     const decision = decideManagedSystemPromptUpdate({
       agent: agent(
-        "You are Letta Code, a state-of-the-art coding agent running within the Letta Code CLI on a user's computer.\n\nCustom instructions.",
+        "You are Haruyuki, a state-of-the-art coding agent running within the Haruyuki CLI on a user's computer.\n\nCustom instructions.",
       ),
       memoryMode: "root-memfs",
     });

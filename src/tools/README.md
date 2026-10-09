@@ -1,6 +1,6 @@
 # Client-side tool guidelines
 
-How to implement tools that run locally in Letta Code.
+How to implement tools that run locally in Haruyuki.
 
 ## Contract
 - Function signature: `(args, opts?) => Promise<{ toolReturn: string; status: "success" | "error"; stdout?: string[]; stderr?: string[] }>`

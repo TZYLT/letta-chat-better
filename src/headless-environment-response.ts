@@ -116,7 +116,7 @@ export function getEnvironmentRoutedMessagingUnsupportedReason(
 ): string | null {
   if (environment.metadata?.environmentMessageProtocol === "v2-input")
     return null;
-  return `Computer ${environment.connectionName} (${environment.deviceId}) is running Letta Code ${
+  return `Computer ${environment.connectionName} (${environment.deviceId}) is running Haruyuki ${
     environment.metadata?.lettaCodeVersion ?? "unknown"
   } and does not advertise computer-routed headless messaging support. Update that runtime or omit --computer to use same-computer messaging.`;
 }

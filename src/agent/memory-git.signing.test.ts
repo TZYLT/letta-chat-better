@@ -15,9 +15,10 @@ import {
 
 /**
  * Regression tests for operator machines with commit signing enabled
- * globally (`commit.gpgsign=true`). The agent's committer identity
- * (`<agentId>@letta.com`) has no signing key, so any signing attempt fails
- * with "gpg: signing failed: No secret key" and blocked memory init:
+ * globally (`commit.gpgsign=true`). The harness commits with the operator's own
+ * global git identity (see `memory-git-identity.ts`), which has no signing key
+ * for the harness, so any signing attempt fails with "gpg: signing failed: No
+ * secret key" and blocked memory init:
  *
  *   Command failed: git -c user.name=Tutor -c user.email=agent-local-...@letta.com
  *     commit --allow-empty -m chore: initialize empty local memory
@@ -121,7 +122,10 @@ describe("memory git commit signing", () => {
     const subject = git(memoryDir, ["log", "-1", "--pretty=%s"]).trim();
     expect(subject).toBe("chore: initialize local memory");
     const author = git(memoryDir, ["log", "-1", "--pretty=%an <%ae>"]).trim();
-    expect(author).toBe(`Tutor <${AGENT_ID}@letta.com>`);
+    // The author NAME keeps the agent/preset attribution; the EMAIL is the
+    // operator's, so the commit links to the operator on forges. That split is
+    // deliberate: only the email was hardcoded to a foreign domain.
+    expect(author).toBe("Tutor <human@example.com>");
   });
 
   test("commitMemoryWrite (local sync mode) commits when global config demands signing", async () => {

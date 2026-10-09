@@ -253,7 +253,7 @@ class TelemetryManager {
    * Enabled by default unless explicitly disabled.
    */
   private isTelemetryEnabled(): boolean {
-    // HARUYUKI_CODE_TELEM is Letta Code's specific opt-out. DO_NOT_TRACK is a
+    // HARUYUKI_CODE_TELEM is Haruyuki's specific opt-out. DO_NOT_TRACK is a
     // broader convention also honored by install-time analytics packages.
     const envValue = process.env.HARUYUKI_CODE_TELEM;
     if (envValue === "0" || envValue === "false") {

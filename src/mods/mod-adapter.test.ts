@@ -144,8 +144,8 @@ describe("mod adapter", () => {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         path.join(modDir, "provider.ts"),
-        `export default function(letta) {
-          letta.providers.register("reflection-test", {
+        `export default function(haruyuki) {
+          haruyuki.providers.register("reflection-test", {
             baseUrl: "http://localhost:8000/v1",
             apiKey: "not-needed",
             api: "openai-completions",
@@ -159,12 +159,12 @@ describe("mod adapter", () => {
               maxTokens: 4096,
             }],
           });
-          letta.tools.register({
+          haruyuki.tools.register({
             name: "reflection_tool",
             description: "Must stay isolated",
             run() { return "unexpected"; },
           });
-          letta.events.on("turn_start", () => ({ input: [] }));
+          haruyuki.events.on("turn_start", () => ({ input: [] }));
         }`,
       );
 
@@ -281,8 +281,8 @@ describe("mod adapter", () => {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         path.join(modDir, "events.ts"),
-        `export default function(letta) {
-          letta.events.on("conversation_open", () => {
+        `export default function(haruyuki) {
+          haruyuki.events.on("conversation_open", () => {
             throw new Error("runtime failed");
           });
         }`,
@@ -355,8 +355,8 @@ describe("mod adapter", () => {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         path.join(modDir, "events.ts"),
-        `export default function(letta) {
-          letta.events.on("conversation_open", (event) => {
+        `export default function(haruyuki) {
+          haruyuki.events.on("conversation_open", (event) => {
             throw new Error("runtime failed " + event.reason);
           });
         }`,
@@ -431,8 +431,8 @@ describe("mod adapter", () => {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         path.join(modDir, "events.ts"),
-        `export default function(letta) {
-          letta.events.on("conversation_open", () => {
+        `export default function(haruyuki) {
+          haruyuki.events.on("conversation_open", () => {
             throw new Error("runtime failed");
           });
         }`,
@@ -488,9 +488,9 @@ describe("mod adapter", () => {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         path.join(modDir, "events.ts"),
-        `export default function(letta) {
-          letta.events.on("conversation_open", () => {
-            letta.diagnostics.report({ message: "missing optional env" });
+        `export default function(haruyuki) {
+          haruyuki.events.on("conversation_open", () => {
+            haruyuki.diagnostics.report({ message: "missing optional env" });
           });
         }`,
       );
@@ -549,8 +549,8 @@ describe("mod adapter", () => {
       mkdirSync(modDir, { recursive: true });
       writeFileSync(
         path.join(modDir, "events.ts"),
-        `export default function(letta) {
-          letta.events.on("conversation_open", async (event, ctx) => {
+        `export default function(haruyuki) {
+          haruyuki.events.on("conversation_open", async (event, ctx) => {
             const fork = await ctx.conversation.fork({ hidden: true });
             globalThis.__lettaAdapterEvents.push(
               event.reason + ":" + ctx.agent.name + ":" + fork.id,

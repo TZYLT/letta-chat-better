@@ -21,9 +21,9 @@ A mod is trusted local code that registers capabilities during activation and cl
 - state is local and explicit
 - cleanup is returned from activation
 
-Do not import Letta Code internals. If the mod API does not expose a capability yet, avoid reaching around it.
+Do not import Haruyuki internals. If the mod API does not expose a capability yet, avoid reaching around it.
 
-Capabilities vary by host surface. Keep each registration behind the matching `letta.capabilities` guard so one file can run in TUI, headless, and provider-only listener contexts.
+Capabilities vary by host surface. Keep each registration behind the matching `haruyuki.capabilities` guard so one file can run in TUI, headless, and provider-only listener contexts.
 
 ## Capability composition patterns
 
@@ -36,11 +36,11 @@ function summarizeBranch(cwd) {
   // local implementation
 }
 
-export default function activate(letta) {
+export default function activate(haruyuki) {
   const disposers = [];
 
-  if (letta.capabilities.tools) {
-    disposers.push(letta.tools.register({
+  if (haruyuki.capabilities.tools) {
+    disposers.push(haruyuki.tools.register({
       name: "branch_summary",
       description: "Summarize the current git branch when repository state matters.",
       parameters: { type: "object", properties: {}, additionalProperties: false },
@@ -51,8 +51,8 @@ export default function activate(letta) {
     }));
   }
 
-  if (letta.capabilities.commands) {
-    disposers.push(letta.commands.register({
+  if (haruyuki.capabilities.commands) {
+    disposers.push(haruyuki.commands.register({
       id: "branch-summary",
       description: "Show current branch summary",
       async run(ctx) {
@@ -83,15 +83,15 @@ Do not call `ctx.conversation.sendMessageStream()` on the active conversation fr
 Use lifecycle events to maintain a small panel such as active conversation state. Guard both event and panel capabilities, and re-render with `panel.update()`.
 
 ```ts
-if (letta.capabilities.events.lifecycle && letta.capabilities.ui.panels) {
+if (haruyuki.capabilities.events.lifecycle && haruyuki.capabilities.ui.panels) {
   let conversation = "";
-  const panel = letta.ui.openPanel({
+  const panel = haruyuki.ui.openPanel({
     id: "conversation",
     order: 100,
     render: ({ width, row }) => row("conversation", conversation, width),
   });
   disposers.push(() => panel.close());
-  disposers.push(letta.events.on("conversation_open", (event) => {
+  disposers.push(haruyuki.events.on("conversation_open", (event) => {
     conversation = event.reason;
     panel.update();
   }));
@@ -123,7 +123,7 @@ const timer = setInterval(update, 30_000);
 return () => clearInterval(timer);
 ```
 
-For long async loops, check `letta.signal.aborted` or `ctx.signal.aborted` and stop quietly.
+For long async loops, check `haruyuki.signal.aborted` or `ctx.signal.aborted` and stop quietly.
 
 ## Scoped conversation handles
 

@@ -32,7 +32,7 @@ export interface PersonalityOption {
 export const PERSONALITY_OPTIONS: PersonalityOption[] = [
   {
     id: "memo",
-    label: "Letta Code",
+    label: "Haruyuki",
     description: "The memory-first agent",
   },
   {
@@ -65,12 +65,12 @@ export const PERSONALITY_OPTIONS: PersonalityOption[] = [
   },
   {
     id: "claude",
-    label: "Letta Code",
+    label: "Haruyuki",
     description: "Vanilla Claude flavors",
   },
   {
     id: "codex",
-    label: "Letta Code",
+    label: "Haruyuki",
     description: "Vanilla Codex flavors",
   },
 ];

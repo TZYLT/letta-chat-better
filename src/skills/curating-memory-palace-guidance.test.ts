@@ -10,7 +10,7 @@ const ACTION_KEYS = new Set([
 
 /**
  * Why the Palace would show a `palace-action` block as an error instead of a
- * button, or null. Mirrors the action parser in Letta Code Desktop.
+ * button, or null. Mirrors the action parser in Haruyuki Desktop.
  */
 function actionProblem(source: string): string | null {
   let parsed: unknown;

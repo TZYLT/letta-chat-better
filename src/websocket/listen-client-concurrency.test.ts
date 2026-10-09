@@ -572,8 +572,8 @@ describe("listen-client multi-worker concurrency", () => {
     try {
       await writeFile(
         join(modsDir, "cancel-turn.ts"),
-        `export default function activate(letta) {
-          letta.events.on("turn_start", () => ({
+        `export default function activate(haruyuki) {
+          haruyuki.events.on("turn_start", () => ({
             cancel: { reason: " Run /plan first. " },
           }));
         }`,

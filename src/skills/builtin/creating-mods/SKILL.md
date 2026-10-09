@@ -1,11 +1,11 @@
 ---
 name: creating-mods
-description: Creates and edits trusted local Letta Code mods, including tools, slash commands, local-only model providers, lifecycle/turn events, scoped conversation helpers, panels, and capability-gated behavior. Use when asked to make a mod, add an agent-callable tool, add a slash command, add a local provider/model adapter, transform turns, react to app events, or add lightweight mod UI outside the dedicated /statusline flow.
+description: Creates and edits trusted local Haruyuki mods, including tools, slash commands, local-only model providers, lifecycle/turn events, scoped conversation helpers, panels, and capability-gated behavior. Use when asked to make a mod, add an agent-callable tool, add a slash command, add a local provider/model adapter, transform turns, react to app events, or add lightweight mod UI outside the dedicated /statusline flow.
 ---
 
 # Creating Mods
 
-Use this skill to create or update trusted Letta Code mod files. Mods are trusted local code that add small composable capabilities through mod APIs, not by importing app internals. Dynamic agent/conversation/workspace/model state is passed as `ctx` to tool, command, event, and permission callbacks (panels receive live `agent`/`model` in their render context); do not read mutable global context for model-callable behavior. Prefer scoped handles (`ctx.conversation`, `ctx.cwd`, `ctx.agent`) and guard optional UI with `letta.capabilities`.
+Use this skill to create or update trusted Haruyuki mod files. Mods are trusted local code that add small composable capabilities through mod APIs, not by importing app internals. Dynamic agent/conversation/workspace/model state is passed as `ctx` to tool, command, event, and permission callbacks (panels receive live `agent`/`model` in their render context); do not read mutable global context for model-callable behavior. Prefer scoped handles (`ctx.conversation`, `ctx.cwd`, `ctx.agent`) and guard optional UI with `haruyuki.capabilities`.
 
 Capabilities vary by surface — not every surface loads every capability. The TUI/headless host can load tools, commands, events, UI, and providers; the desktop listener loads tools, commands, providers, and tool/turn events, but not panel UI. Always guard each registration on the capabilities its behavior needs.
 
@@ -61,15 +61,15 @@ Default to a **tool** when the model should decide when to use the capability. D
 ## Core mod shape
 
 ```ts
-export default function activate(letta) {
+export default function activate(haruyuki) {
   const disposers = [];
 
-  if (letta.capabilities.tools) {
-    disposers.push(letta.tools.register(/* ... */));
+  if (haruyuki.capabilities.tools) {
+    disposers.push(haruyuki.tools.register(/* ... */));
   }
 
-  if (letta.capabilities.commands) {
-    disposers.push(letta.commands.register(/* ... */));
+  if (haruyuki.capabilities.commands) {
+    disposers.push(haruyuki.commands.register(/* ... */));
   }
 
   return () => {
@@ -78,19 +78,19 @@ export default function activate(letta) {
 }
 ```
 
-Use `letta.capabilities` for optional behavior:
+Use `haruyuki.capabilities` for optional behavior:
 
 ```ts
-letta.capabilities.tools
-letta.capabilities.commands
-letta.capabilities.events.lifecycle
-letta.capabilities.events.tools
-letta.capabilities.events.turns
-letta.capabilities.events.compact
-letta.capabilities.events.llm
-letta.capabilities.permissions
-letta.capabilities.providers
-letta.capabilities.ui.panels
+haruyuki.capabilities.tools
+haruyuki.capabilities.commands
+haruyuki.capabilities.events.lifecycle
+haruyuki.capabilities.events.tools
+haruyuki.capabilities.events.turns
+haruyuki.capabilities.events.compact
+haruyuki.capabilities.events.llm
+haruyuki.capabilities.permissions
+haruyuki.capabilities.providers
+haruyuki.capabilities.ui.panels
 ```
 
 Guard each registration on every capability its behavior depends on — not just the one that registers it. Surfaces load different capability subsets, so a registration that relies on another capability (a command that opens UI, emits an event, or calls a provider) must guard on that capability too. Otherwise it is advertised or activated on a host that cannot fulfill it and silently does nothing. Register where the host can actually do the work.
@@ -102,12 +102,12 @@ Guard each registration on every capability its behavior depends on — not just
   - `ctx.conversation.fork()` for independent/background model work
   - `forked.sendMessageStream([...])` to stream from a fork
 - In tools, use `ctx.conversation.getHistory()` when the tool needs recent context.
-- Use `letta.client` only for server-specific Letta API calls; do not use it as a substitute for scoped conversation helpers.
-- Do not import `@/backend`, `@/cli`, or other Letta Code internals from mod files.
+- Use `haruyuki.client` only for server-specific Letta API calls; do not use it as a substitute for scoped conversation helpers.
+- Do not import `@/backend`, `@/cli`, or other Haruyuki internals from mod files.
 
 ## Diagnostics
 
-Use `letta.diagnostics.report({ message, severity })` sparingly as a debug utility for mod setup/runtime problems an agent should inspect, such as missing required environment variables or failed local configuration. Default severity is `"error"`; use `severity: "warning"` only for optional/degraded behavior. Keep messages short and actionable, and do not dump routine logs or large state.
+Use `haruyuki.diagnostics.report({ message, severity })` sparingly as a debug utility for mod setup/runtime problems an agent should inspect, such as missing required environment variables or failed local configuration. Default severity is `"error"`; use `severity: "warning"` only for optional/degraded behavior. Keep messages short and actionable, and do not dump routine logs or large state.
 
 Agents can inspect local mod diagnostics at:
 

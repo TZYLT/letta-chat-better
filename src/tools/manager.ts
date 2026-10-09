@@ -2543,7 +2543,7 @@ export function getToolNames(): string[] {
 }
 
 /**
- * Returns all Letta Code tool names known to this build, regardless of what is currently loaded.
+ * Returns all Haruyuki tool names known to this build, regardless of what is currently loaded.
  * Useful for unlinking/removing tools when switching providers/models.
  */
 export function getAllLettaToolNames(): string[] {

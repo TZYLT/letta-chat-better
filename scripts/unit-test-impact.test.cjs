@@ -109,7 +109,7 @@ describe("unit-test impact planning", () => {
     const result = plan([
       { status: "M", path: "README.md" },
       { status: "M", path: "docs/commands.md" },
-      { status: "M", path: "assets/letta-code-demo.gif" },
+      { status: "M", path: "CONTRIBUTING.md" },
     ]);
 
     expect(result.mode).toBe("selected");

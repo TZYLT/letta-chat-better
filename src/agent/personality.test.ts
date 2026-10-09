@@ -62,7 +62,7 @@ describe("personality helpers", () => {
     expect(detectPersonalityFromPersonaFile(personaFile)).toBeNull();
   });
 
-  test("resolvePersonalityId accepts public Letta Code alias", () => {
+  test("resolvePersonalityId accepts public Haruyuki alias", () => {
     expect(resolvePersonalityId("letta-code")).toBe("memo");
     expect(resolvePersonalityId("LettaCode")).toBe("memo");
     expect(resolvePersonalityId("memo")).toBe("memo");
@@ -180,7 +180,7 @@ describe("personality helpers", () => {
     );
 
     expect(onboardingBlock?.value).toContain(
-      "The person you are working with is new to Letta Code.",
+      "The person you are working with is new to Haruyuki.",
     );
     // There is no Cloud variant to offer a profile picture any more: the
     // default environment is local, and the local text says not to.

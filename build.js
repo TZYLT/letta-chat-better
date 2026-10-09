@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 /**
- * Build script for Letta Code CLI
+ * Build script for Haruyuki CLI
  * Bundles TypeScript source into a single JavaScript file
  */
 
@@ -67,7 +67,7 @@ const version = pkg.version;
 const useMagick = Bun.env.USE_MAGICK;
 const features = [];
 
-console.log(`📦 Building Letta Code v${version}...`);
+console.log(`📦 Building Haruyuki v${version}...`);
 if (useMagick) {
   console.log(`🪄 Using magick variant of imageResize...`);
   features.push("USE_MAGICK");
@@ -241,7 +241,7 @@ await Bun.build({
 });
 
 // Browser-safe agent creation presets (personalities, prompts, tags) for
-// surfaces that create Letta Code agents through Core (e.g. the chat web app).
+// surfaces that create Haruyuki agents through Core (e.g. the chat web app).
 for (const output of readdirSync(join(__dirname, "dist"))) {
   if (/^agent-presets-.+\.js(?:\.map)?$/.test(output)) {
     rmSync(join(__dirname, "dist", output));

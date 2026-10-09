@@ -40,7 +40,7 @@ export function validateAgentName(name: string): string | null {
 }
 
 /**
- * Check if the name is the default Letta Code agent name.
+ * Check if the name is the default Haruyuki agent name.
  */
 export function isDefaultAgentName(name: string): boolean {
   return name === DEFAULT_AGENT_NAME;

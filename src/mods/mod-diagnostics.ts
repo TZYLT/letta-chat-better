@@ -53,7 +53,7 @@ export const MOD_DYNAMIC_CONTEXT_MIGRATION_HINT =
   "Dynamic context is now passed as ctx to commands, tools, events, permissions, and UI renderers. Use ctx.agent, ctx.cwd, ctx.conversation, ctx.model, etc.";
 
 export const MOD_LETTA_GET_CONTEXT_MIGRATION_HINT =
-  "letta.getContext has been removed. Activation has no dynamic invocation context. Move dynamic work into a command, tool, event, permission, status, or statusline callback that receives ctx, or use explicit/global state such as process.cwd() for activation-time background work.";
+  "haruyuki.getContext has been removed. Activation has no dynamic invocation context. Move dynamic work into a command, tool, event, permission, status, or statusline callback that receives ctx, or use explicit/global state such as process.cwd() for activation-time background work.";
 
 export const MOD_CTX_GET_CONTEXT_MIGRATION_HINT =
   "ctx.getContext has been removed. Use ctx directly; scoped fields are available as ctx.agent, ctx.cwd, ctx.conversation, ctx.model, etc.";
@@ -66,7 +66,7 @@ function getDeprecatedApiDiagnosticHint(
 ): string {
   if (diagnostic.capability?.kind === "api") {
     switch (diagnostic.capability.id) {
-      case "letta.getContext":
+      case "haruyuki.getContext":
         return MOD_LETTA_GET_CONTEXT_MIGRATION_HINT;
       case "ctx.getContext":
         return MOD_CTX_GET_CONTEXT_MIGRATION_HINT;

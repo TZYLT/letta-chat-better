@@ -1,17 +1,17 @@
 /**
- * Tags that identify Letta Code agents and their capabilities.
+ * Tags that identify Haruyuki agents and their capabilities.
  *
  * This module must stay free of Node/backend imports: it is bundled into the
  * browser-safe `@letta-ai/letta-code/agent-presets` package export.
  */
 
-/** Marks an agent as created/managed by Letta Code. */
+/** Marks an agent as created/managed by Haruyuki. */
 export const HARUYUKI_CODE_ORIGIN_TAG = "origin:letta-code";
 
 /** Marks an agent as created by a first-run onboarding flow. */
 export const ONBOARDING_ORIGIN_TAG = "origin:onboarding";
 
-/** Marks an agent as a Letta Code subagent (excluded from prompt management). */
+/** Marks an agent as a Haruyuki subagent (excluded from prompt management). */
 export const HARUYUKI_CODE_SUBAGENT_TAG = "role:subagent";
 
 /** Marks an agent as using git-backed memory (MemFS). */

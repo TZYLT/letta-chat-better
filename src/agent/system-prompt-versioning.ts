@@ -267,8 +267,7 @@ export function decideManagedSystemPromptUpdate(input: {
           kind: "update",
           nextSystemPrompt,
           prompt: nextPrompt,
-          reason:
-            "managed prompt content changed for current Letta Code version",
+          reason: "managed prompt content changed for current Haruyuki version",
         };
       }
 
@@ -296,7 +295,7 @@ export function decideManagedSystemPromptUpdate(input: {
   }
 
   if ((agent.tags ?? []).includes(HARUYUKI_CODE_SUBAGENT_TAG)) {
-    return { kind: "noop", reason: "agent is a Letta Code subagent" };
+    return { kind: "noop", reason: "agent is a Haruyuki subagent" };
   }
 
   const matchingPreset = findMatchingCurrentPreset(currentSystemPrompt);
@@ -304,8 +303,7 @@ export function decideManagedSystemPromptUpdate(input: {
     if (isLettaCodePrimaryAgent(agent)) {
       return {
         kind: "custom",
-        reason:
-          "legacy Letta Code agent prompt does not match a current preset",
+        reason: "legacy Haruyuki agent prompt does not match a current preset",
       };
     }
 
@@ -318,7 +316,7 @@ export function decideManagedSystemPromptUpdate(input: {
       kind: "update",
       nextSystemPrompt,
       prompt: managedPrompt(matchingPreset, memoryMode, nextSystemPrompt),
-      reason: "untracked legacy Letta Code prompt detected",
+      reason: "untracked legacy Haruyuki prompt detected",
     };
   }
 

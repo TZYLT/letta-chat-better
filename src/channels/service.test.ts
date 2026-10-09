@@ -725,7 +725,7 @@ describe("channel service", () => {
   });
 
   test("refreshChannelAccountDisplayNameLive hydrates a real platform name", async () => {
-    __testOverrideResolveChannelAccountDisplayName(async () => "Letta Code");
+    __testOverrideResolveChannelAccountDisplayName(async () => "Haruyuki");
 
     createChannelAccountLive(
       "slack",
@@ -741,7 +741,7 @@ describe("channel service", () => {
       "slack-bot",
     );
 
-    expect(refreshed.displayName).toBe("Letta Code");
+    expect(refreshed.displayName).toBe("Haruyuki");
   });
 
   test("forced display-name refresh preserves user-provided labels", async () => {

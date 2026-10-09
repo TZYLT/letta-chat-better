@@ -59,12 +59,12 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
-export default function activate(letta) {
-  if (!letta.capabilities.ui.panels) return;
+export default function activate(haruyuki) {
+  if (!haruyuki.capabilities.ui.panels) return;
 
   let branch = "";
 
-  const panel = letta.ui.openPanel({
+  const panel = haruyuki.ui.openPanel({
     id: "statusline",
     order: 0,
     render: ({ width, row }) => row(branch, "", width),

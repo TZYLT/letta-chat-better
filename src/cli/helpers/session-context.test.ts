@@ -8,7 +8,7 @@ describe("session context reminder", () => {
     expect(context).toContain("## Device Information");
     expect(context).toContain("**Local time**");
     expect(context).toContain("**Device type**");
-    expect(context).toContain("**Letta Code version**");
+    expect(context).toContain("**Haruyuki version**");
     expect(context).toContain("**Current working directory**");
   });
 

@@ -173,7 +173,7 @@ describe("request-scoped client toolsets", () => {
         clientToolset: { include: ["Read", "MultiEdit"] },
       }),
     ).rejects.toThrow(
-      "Unknown bundled client tool: MultiEdit (removed from Letta Code)",
+      "Unknown bundled client tool: MultiEdit (removed from Haruyuki)",
     );
   });
 

@@ -919,7 +919,7 @@ async function commitSkillMemoryChange(params: {
   const { commitMemoryWrite } = await import("@/agent/memory-git");
   const { getBackend } = await import("@/backend");
 
-  let authorName = "Letta Code";
+  let authorName = "Haruyuki";
   try {
     const agent = await getBackend().retrieveAgent(params.agentId);
     if (agent.name?.trim()) {
@@ -936,7 +936,6 @@ async function commitSkillMemoryChange(params: {
     author: {
       agentId: params.agentId,
       authorName,
-      authorEmail: `${params.agentId}@letta.com`,
     },
     syncMode: isLocalAgentId(params.agentId) ? "local" : "remote",
   });

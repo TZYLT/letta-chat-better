@@ -1371,7 +1371,7 @@ describe("Settings Manager - Managed Keys Preservation", () => {
     const settingsDir = join(testHomeDir, ".haruyuki");
     await mkdir(settingsDir, { recursive: true });
 
-    // Simulate a user manually adding a key that Letta Code doesn't know about
+    // Simulate a user manually adding a key that Haruyuki doesn't know about
     await writeFile(
       join(settingsDir, "settings.json"),
       JSON.stringify({
