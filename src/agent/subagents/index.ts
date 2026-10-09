@@ -12,6 +12,7 @@ import { join } from "node:path";
 import type { LocalMemoryFormat } from "@/agent/memory-format";
 import { getBackend } from "@/backend";
 import { findRemovedToolNames } from "@/tools/removed-tools";
+import { APP_SUBDIRS, appHomeDirName, appHomePath } from "@/utils/app-paths";
 import { getErrorMessage } from "@/utils/error";
 import {
   getStringField,
@@ -136,16 +137,13 @@ export const EXTERNAL_CODING_AGENT_DESCRIPTORS = [
 /**
  * Directory for subagent files (relative to project root)
  */
-export const AGENTS_DIR = ".letta/agents";
+export const AGENTS_DIR = `${appHomeDirName()}/agents`;
 
 /**
  * Global directory for subagent files (in user's home directory)
  */
 function getGlobalAgentsDir(): string {
-  return join(
-    process.env.HOME || process.env.USERPROFILE || "~",
-    ".letta/agents",
-  );
+  return appHomePath([APP_SUBDIRS.agents]);
 }
 
 export const GLOBAL_AGENTS_DIR = getGlobalAgentsDir();

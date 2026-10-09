@@ -5,13 +5,11 @@
 import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
+import { APP_SUBDIRS, appHomePath } from "@/utils/app-paths";
 import { getStringField, parseFrontmatter } from "@/utils/frontmatter.js";
 
 export const COMMANDS_DIR = ".commands";
-export const GLOBAL_COMMANDS_DIR = join(
-  process.env.HOME || process.env.USERPROFILE || "~",
-  ".letta/commands",
-);
+export const GLOBAL_COMMANDS_DIR = appHomePath([APP_SUBDIRS.commands]);
 
 export interface CustomCommand {
   id: string; // Command name without slash (e.g., "review")

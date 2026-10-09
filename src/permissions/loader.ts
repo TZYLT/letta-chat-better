@@ -5,7 +5,12 @@ import { createHash } from "node:crypto";
 import { type FSWatcher, readFileSync, statSync, watch } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import { APP_DIR_NAME, APP_SUBDIRS, appHomePath } from "@/utils/app-paths";
+import {
+  APP_DIR_NAME,
+  APP_SUBDIRS,
+  appHomeDirName,
+  appHomePath,
+} from "@/utils/app-paths";
 import { exists, readFile, writeFile } from "@/utils/fs.js";
 import { migratePermissionMode } from "./mode";
 import {
@@ -404,7 +409,7 @@ async function ensureLocalSettingsIgnored(
   workingDirectory: string,
 ): Promise<void> {
   const gitignorePath = join(workingDirectory, ".gitignore");
-  const pattern = ".letta/settings.local.json";
+  const pattern = `${appHomeDirName()}/${APP_SUBDIRS.localSettingsFile}`;
 
   try {
     let content = "";
