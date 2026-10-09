@@ -4,14 +4,19 @@
  * indicated letta-code commits. Never match a prefix or edited prompt here:
  * an SDK caller's custom system prompt must remain theirs.
  *
- * Cloud-capable variants: letta.md, letta_root_memfs.md, letta_no_memfs.md.
+ * Hash entries are grouped by the prompt variant they came from. The variant
+ * files are named `src/agent/prompts/haruyuki*.md` today; they were
+ * `letta*.md` at the commits the digests were taken from.
+ *
+ * Cloud-capable variants: haruyuki.md, haruyuki_root_memfs.md,
+ * haruyuki_no_memfs.md.
  * Before March 2026, the default used system_prompt.txt alone or composed
  * it with system_prompt_memfs.txt / system_prompt_memory.txt. Those digests
  * hash `${base.trimEnd()}\n\n${addon.trimStart()}`.trim().
  * The local-only variant is deliberately excluded.
  */
 export const LEGACY_CLOUD_DEFAULT_PROMPT_HASHES: ReadonlySet<string> = new Set([
-  // src/agent/prompts/letta.md
+  // src/agent/prompts/haruyuki.md
   "sha256:m-96mEJhYbL5ahBr4Ey7U3XoezbGZdzo55aHFrToLG8", // fe944c0da6
   "sha256:jL1vX1J03wI9g53HlTY9tLxaFg1J_r3T_THQuf3_MgA", // 549edb9d93
   "sha256:Pb91lQ2PBESuJ-8YPwhVaDxLGXBUIKMqrLLv_OazHCc", // 1379be7c68
@@ -34,7 +39,7 @@ export const LEGACY_CLOUD_DEFAULT_PROMPT_HASHES: ReadonlySet<string> = new Set([
   "sha256:8eGhK1107305b0Pe9yo-2a8HB4SMw16Fii_xx-IDDjY", // 959dfe0428
   "sha256:js3Atj5DqZGmw7o8fSRB-rWuV_dmBWkFAukSSDvEYPs", // 238af7dfb8
   "sha256:JBfQwoChYOOvn9YcLexA1L_FS_93Cu7rOEINW_WxxQg", // 591e6638cc
-  // src/agent/prompts/letta_root_memfs.md
+  // src/agent/prompts/haruyuki_root_memfs.md
   "sha256:KsvfxD5Dr1CJgOeErsLVoDTz1TyGn8CevvpaIiYOuEU", // fe944c0da6
   "sha256:AgAAsq7Bjne9HgOAFzsyrcxc9ktTPsPdJrzekeObZaY", // 549edb9d93
   "sha256:NQ1OWIRC2u5-AWY7V11uUkjiJThNlwpEurNdM5TedbE", // 1379be7c68
@@ -43,7 +48,7 @@ export const LEGACY_CLOUD_DEFAULT_PROMPT_HASHES: ReadonlySet<string> = new Set([
   "sha256:UqJ4nBKPbkraJNKCATbgpkChGrx-fwBlrMrQ_YJod-k", // 258c8298e3
   "sha256:pP52Xfl_z0AVOvz511aAQXeePAVYaN51bBu-_ylUlYI", // c9c32a1f19
   "sha256:1wFuhfHAY6IIymrj4Ai51ererXAFIUarK20u_gRreEE", // 5168bd600a
-  // src/agent/prompts/letta_no_memfs.md
+  // src/agent/prompts/haruyuki_no_memfs.md
   "sha256:nS8fw6xbTyGH7myNqqgxfrDhtRp242ck0r2J2LyFSmM", // fe944c0da6
   "sha256:msmki1kfc5Bz3GZIo8v_SPfUTHbpjJqbiimR2QWrsZ4", // 549edb9d93
   "sha256:q16JqbqYOfBLMaA9hJDbj4y2kqYzxX9JRRJ7gvx50-Y", // 1379be7c68

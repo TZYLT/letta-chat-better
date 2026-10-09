@@ -1,17 +1,17 @@
 // Additional system prompts for /system command
 
 import approvalRecoveryAlert from "./prompts/approval_recovery_alert.txt";
+import lettaMemfsPrompt from "./prompts/haruyuki.md";
+import lettaLocalMemfsPrompt from "./prompts/haruyuki_local_memfs.md";
+import lettaNoMemfsPrompt from "./prompts/haruyuki_no_memfs.md";
+import lettaRootMemfsPrompt from "./prompts/haruyuki_root_memfs.md";
+import lettaTopicMarkingPrompt from "./prompts/haruyuki_topic_marking.md";
 import humanPrompt from "./prompts/human.mdx";
 import humanKawaiiPrompt from "./prompts/human_kawaii.mdx";
 import humanLinusPrompt from "./prompts/human_linus.mdx";
 import humanMemoPrompt from "./prompts/human_memo.mdx";
 import humanTutorialPrompt from "./prompts/human_tutorial.mdx";
 import interruptRecoveryAlert from "./prompts/interrupt_recovery_alert.txt";
-import lettaMemfsPrompt from "./prompts/letta.md";
-import lettaLocalMemfsPrompt from "./prompts/letta_local_memfs.md";
-import lettaNoMemfsPrompt from "./prompts/letta_no_memfs.md";
-import lettaRootMemfsPrompt from "./prompts/letta_root_memfs.md";
-import lettaTopicMarkingPrompt from "./prompts/letta_topic_marking.md";
 import memoryFilesystemPrompt from "./prompts/memory_filesystem.mdx";
 import onboardingPrompt from "./prompts/onboarding.mdx";
 import onboardingLocalPrompt from "./prompts/onboarding_local.mdx";
