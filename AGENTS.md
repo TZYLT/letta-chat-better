@@ -233,7 +233,7 @@ Test files live **next to their source** (`local-store.test.ts` next to `local-s
 | Auto-fix lint/format | `bun run fix` |
 | Type check only | `bun run typecheck` |
 | Run a single test file | `bun test src/path/to/file.test.ts` |
-| Run all unit tests | `bun test $(find src -name "*.test.ts" \| grep -v integration-tests)` |
+| Run all unit tests | `node scripts/run-unit-tests.cjs` (parallel; `HARUYUKI_TEST_PARALLEL=0` for the old serial run) |
 | Dev mode | `bun run dev` (sets `HARUYUKI_DEBUG=1` by default) |
 
 `bun run fix` only auto-fixes biome violations (format + lint autofixes). The
@@ -268,6 +268,7 @@ also rejects staged parent-relative imports (`../`); use the `@/` alias.
 | `LETTA_LOCAL_BACKEND_DIR` | Local-backend storage root (defaults to `~/.haruyuki/lc-local-backend`) |
 | `HARUYUKI_HOME` | Overrides the harness root outright, in place of `~/.haruyuki` (every path that resolves through `src/utils/app-paths.ts`) |
 | `HARUYUKI_PREFIX_PROBE_DIR` | Dump each local provider request payload to `payload-<conversationId>-<seq>.json` for the prefix-freeze probe (default off) |
+| `HARUYUKI_TEST_PARALLEL` | Worker count for `node scripts/run-unit-tests.cjs` (default 8, capped at the core count). `0` restores the old chunked, single-process serial run |
 
 **Eight names still carry the `LETTA_` prefix, deliberately.** The env prefix
 was renamed to `HARUYUKI_`, but `@letta-ai/letta-agent-sdk` — loaded at runtime
