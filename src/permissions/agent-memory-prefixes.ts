@@ -1,8 +1,6 @@
-import { homedir } from "node:os";
-import { resolve } from "node:path";
 import { getRuntimeContext } from "@/runtime-context";
 import { getRuntimeExecutionEnv } from "@/runtime-execution-settings";
-import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
+import { APP_SUBDIRS, appHomePath } from "@/utils/app-paths";
 
 /** Memory locations approved for scoped read-only shell commands. */
 export function getAllowedMemoryPrefixes(agentId: string): string[] {
@@ -15,13 +13,14 @@ export function getAllowedMemoryPrefixes(agentId: string): string[] {
     parentId && parentId !== agentId ? [agentId, parentId] : [agentId];
   return ids.flatMap((id) =>
     ["memory", "memory-worktrees"].map((directory) =>
-      resolve(
-        homedir(),
-        APP_DIR_NAME,
-        APP_SUBDIRS.agents,
-        id,
-        directory,
-      ).replace(/\\/g, "/"),
+      // Resolved through app-paths, not `homedir()`: the sandbox policy derives
+      // its writable base the same way, so a `LETTA_HOME` override has to move
+      // both or the whitelist would never match (silently rejecting every
+      // read-only memory command).
+      appHomePath([APP_SUBDIRS.agents, id, directory], { env }).replace(
+        /\\/g,
+        "/",
+      ),
     ),
   );
 }

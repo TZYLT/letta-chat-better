@@ -33,7 +33,7 @@ import { homedir } from "node:os";
 import { getRuntimeContext } from "@/runtime-context";
 import { getRuntimeExecutionEnv } from "@/runtime-execution-settings";
 import { SANDBOX_ENV_VAR } from "@/sandbox/policy";
-import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
+import { APP_SUBDIRS, appHomePath, resolveHomeDir } from "@/utils/app-paths";
 import {
   getLocalBackendCrossAgentTreeRoot,
   getLocalBackendStorageDir,
@@ -124,9 +124,10 @@ const UNRESOLVED_AGENT_ID = "<unresolved>";
  * The agents-tree root on this machine, e.g. `/home/user/.haruyuki/agents`,
  * normalized (forward slashes, no trailing slash).
  */
-function getAgentsTreeRoot(homeDir: string): string {
-  const normalizedHome = homeDir.replace(/\\/g, "/").replace(/\/+$/, "");
-  return `${normalizedHome}/${APP_DIR_NAME}/${APP_SUBDIRS.agents}`;
+function getAgentsTreeRoot(homeDir: string, env: NodeJS.ProcessEnv): string {
+  return normalizePathForCompare(
+    appHomePath([APP_SUBDIRS.agents], { homeDir, env }),
+  );
 }
 
 /**
@@ -173,7 +174,7 @@ function getCrossAgentTreeRoots(
   env: NodeJS.ProcessEnv,
 ): string[] {
   return [
-    getAgentsTreeRoot(homeDir),
+    getAgentsTreeRoot(homeDir, env),
     normalizePathForCompare(
       getLocalBackendCrossAgentTreeRoot(
         getLocalBackendStorageDir(homeDir, env),
@@ -392,7 +393,7 @@ export function evaluateCrossAgentGuard(
   options: CrossAgentGuardOptions = {},
 ): CrossAgentGuardResult | null {
   const env = options.env ?? process.env;
-  const homeDir = env.HOME ?? homedir();
+  const homeDir = resolveHomeDir(env);
 
   if (isMemoryGuardDisabled(options)) {
     return null;

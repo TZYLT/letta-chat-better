@@ -13,7 +13,11 @@ import {
 import path from "node:path";
 import { getRuntimeContext } from "@/runtime-context";
 import type { WorktreeProjectConfig } from "@/settings-manager";
-import { APP_DIR_NAME, APP_SUBDIRS, appHomePath } from "@/utils/app-paths";
+import {
+  APP_DIR_NAME,
+  APP_SUBDIRS,
+  projectAppHomePath,
+} from "@/utils/app-paths";
 import {
   acquireWorktreeLock,
   describeHolder,
@@ -165,9 +169,7 @@ async function resolveWorktreeContext(params: {
     requestedRepoPath: getStringArg(params.args, "repo_path"),
   });
   const primaryRoot = await resolvePrimaryWorktreeRoot(repoRoot);
-  const managedDir = appHomePath([APP_SUBDIRS.worktrees], {
-    homeDir: primaryRoot,
-  });
+  const managedDir = projectAppHomePath(primaryRoot, APP_SUBDIRS.worktrees);
   return { currentCwd, repoRoot, primaryRoot, managedDir };
 }
 
@@ -267,7 +269,7 @@ async function readProvisionConfig(
 
   try {
     const raw = await readFile(
-      appHomePath([APP_SUBDIRS.settingsFile], { homeDir: primaryRoot }),
+      projectAppHomePath(primaryRoot, APP_SUBDIRS.settingsFile),
       "utf8",
     );
     const parsed = JSON.parse(raw) as { worktree?: WorktreeProjectConfig };

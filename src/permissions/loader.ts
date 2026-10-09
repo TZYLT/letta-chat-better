@@ -6,10 +6,10 @@ import { type FSWatcher, readFileSync, statSync, watch } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import {
-  APP_DIR_NAME,
   APP_SUBDIRS,
   appHomeDirName,
   appHomePath,
+  projectAppHomePath,
 } from "@/utils/app-paths";
 import { exists, readFile, writeFile } from "@/utils/fs.js";
 import { migratePermissionMode } from "./mode";
@@ -73,8 +73,8 @@ function getPermissionSourcePaths(workingDirectory: string): string[] {
   return [
     legacyUserSettingsPath, // User legacy
     userSettingsPath, // User (canonical)
-    appHomePath([APP_SUBDIRS.settingsFile], { homeDir: workingDirectory }), // Project
-    appHomePath([APP_SUBDIRS.localSettingsFile], { homeDir: workingDirectory }), // Local
+    projectAppHomePath(workingDirectory, APP_SUBDIRS.settingsFile), // Project
+    projectAppHomePath(workingDirectory, APP_SUBDIRS.localSettingsFile), // Local
   ];
 }
 
@@ -347,16 +347,14 @@ export async function savePermissionRule(
       settingsPath = getUserSettingsPaths().canonical;
       break;
     case "project":
-      settingsPath = join(
+      settingsPath = projectAppHomePath(
         normalizedWorkingDirectory,
-        APP_DIR_NAME,
         APP_SUBDIRS.settingsFile,
       );
       break;
     case "local":
-      settingsPath = join(
+      settingsPath = projectAppHomePath(
         normalizedWorkingDirectory,
-        APP_DIR_NAME,
         APP_SUBDIRS.localSettingsFile,
       );
       break;

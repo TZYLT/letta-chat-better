@@ -18,7 +18,7 @@ import {
   getLocalBackendStorageDir,
   isLocalBackendEnvEnabled,
 } from "@/backend/local/paths";
-import { APP_DIR_NAME } from "@/utils/app-paths";
+import { appHomeRoot } from "@/utils/app-paths";
 import {
   DIRECTORY_LIMIT_DEFAULTS,
   getDirectoryLimits,
@@ -27,7 +27,6 @@ import { getCurrentAgentId } from "./context";
 import { DEFAULT_ROOT_MEMORY_BLOCK } from "./create-agent-request";
 import { installMemoryGitHooks } from "./memory-git-hooks";
 
-export const MEMORY_FS_ROOT = APP_DIR_NAME;
 export const MEMORY_FS_AGENTS_DIR = "agents";
 export const MEMORY_FS_MEMORY_DIR = "memory";
 export const MEMORY_SYSTEM_DIR = "system";
@@ -47,10 +46,14 @@ export interface MemoryTreeRenderOptions {
 export function getMemoryFilesystemRoot(
   agentId: string,
   homeDir: string = homedir(),
+  env: NodeJS.ProcessEnv = process.env,
 ): string {
+  // Resolve through `appHomeRoot` rather than joining `homeDir` directly: the
+  // sandbox policy already derives its writable base and denied trees from this
+  // root, so a memory root that ignored a `LETTA_HOME` override would land
+  // outside the policy and have every memory write silently rejected.
   return join(
-    homeDir,
-    MEMORY_FS_ROOT,
+    appHomeRoot(homeDir, env),
     MEMORY_FS_AGENTS_DIR,
     agentId,
     MEMORY_FS_MEMORY_DIR,
@@ -60,8 +63,12 @@ export function getMemoryFilesystemRoot(
 export function getMemorySystemDir(
   agentId: string,
   homeDir: string = homedir(),
+  env: NodeJS.ProcessEnv = process.env,
 ): string {
-  return join(getMemoryFilesystemRoot(agentId, homeDir), MEMORY_SYSTEM_DIR);
+  return join(
+    getMemoryFilesystemRoot(agentId, homeDir, env),
+    MEMORY_SYSTEM_DIR,
+  );
 }
 
 export function getScopedMemoryFilesystemRoot(
@@ -77,10 +84,10 @@ export function getScopedMemoryFilesystemRoot(
     const storageDir =
       options.localBackendStorageDir ??
       env.LETTA_LOCAL_BACKEND_DIR ??
-      getLocalBackendStorageDir(options.homeDir ?? homedir());
+      getLocalBackendStorageDir(options.homeDir ?? homedir(), env);
     return getLocalBackendMemoryFilesystemRoot(agentId, storageDir);
   }
-  return getMemoryFilesystemRoot(agentId, options.homeDir ?? homedir());
+  return getMemoryFilesystemRoot(agentId, options.homeDir ?? homedir(), env);
 }
 
 export interface ResolveScopedMemoryDirOptions {

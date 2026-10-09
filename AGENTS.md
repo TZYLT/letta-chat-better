@@ -329,8 +329,16 @@ directory first. Otherwise the run reads and mutates your real
   `projectAppHomePath(cwd, ...)` for the project-level `<repo>/.haruyuki/...`, and
   `appHomeDirName()` for the few places that need the name as a path *segment*.
   `resolveHomeDir()` is the shared `HOME` → `USERPROFILE` → `os.homedir()`
-  fallback. All of them honour `LETTA_HOME`, which overrides the root outright —
-  that is the one supported way tests and operators relocate harness state.
+  fallback.
+  **`appHomeRoot` / `appHomePath` honour `LETTA_HOME`, which overrides the root
+  outright — `projectAppHomePath` deliberately does not.** It is the *user*-
+  level root that moves; a project's `<repo>/.haruyuki/...` belongs to the
+  project and must stay there. Passing a repo directory as `homeDir` to
+  `appHomePath` silently redirects project settings, permission rules and
+  managed worktrees to the relocated root — the reads and writes then disagree
+  with no error. `LETTA_HOME` is the one supported way tests and operators
+  relocate user-level harness state. Regression coverage for the split lives in
+  `src/permissions/harness-path-whitelists.test.ts`.
   A few files still carry the name as a literal. They are the **rename
   checklist** — touch them whenever the directory is renamed, and do not add
   yourself to it casually:

@@ -945,7 +945,7 @@ class SettingsManager {
     if (!settings) return;
 
     const settingsPath = this.getProjectSettingsPath(workingDirectory);
-    const dirPath = appHomeRoot(workingDirectory);
+    const dirPath = projectAppHomePath(workingDirectory);
 
     try {
       // Read existing settings (might have permissions, etc.)
@@ -1101,7 +1101,7 @@ class SettingsManager {
     if (!settings) return;
 
     const settingsPath = this.getLocalProjectSettingsPath(workingDirectory);
-    const dirPath = appHomeRoot(workingDirectory);
+    const dirPath = projectAppHomePath(workingDirectory);
 
     try {
       // Create directory if needed
@@ -1841,7 +1841,7 @@ class SettingsManager {
    * Check if local .haruyuki directory exists (indicates existing project)
    */
   hasLocalLettaDir(workingDirectory: string = process.cwd()): boolean {
-    const dirPath = appHomeRoot(workingDirectory);
+    const dirPath = projectAppHomePath(workingDirectory);
     return exists(dirPath);
   }
 

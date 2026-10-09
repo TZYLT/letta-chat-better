@@ -1,5 +1,5 @@
 import { getRuntimeContext } from "@/runtime-context";
-import { APP_SUBDIRS, appHomePath } from "@/utils/app-paths";
+import { APP_SUBDIRS, projectAppHomePath } from "@/utils/app-paths";
 import { releaseWorktreeLock } from "@/utils/worktree-lock";
 import {
   lockOwner,
@@ -183,9 +183,7 @@ export async function exit_worktree(
     }
 
     const primaryRoot = await resolvePrimaryWorktreeRoot(repoRoot);
-    const managedDir = appHomePath([APP_SUBDIRS.worktrees], {
-      homeDir: primaryRoot,
-    });
+    const managedDir = projectAppHomePath(primaryRoot, APP_SUBDIRS.worktrees);
 
     if (!isPathWithin(currentCwd, managedDir)) {
       return textResult(
