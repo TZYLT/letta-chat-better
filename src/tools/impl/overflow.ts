@@ -25,7 +25,7 @@ export const OVERFLOW_CONFIG = {
 
 /**
  * Get the overflow directory for the current project.
- * Pattern: ~/.letta/projects/<project-path>/agent-tools/
+ * Pattern: ~/.haruyuki/projects/<project-path>/agent-tools/
  *
  * @param workingDirectory - Current working directory (project root)
  * @returns Absolute path to the overflow directory

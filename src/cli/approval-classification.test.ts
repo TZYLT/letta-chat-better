@@ -117,7 +117,7 @@ describe("classifyApprovals", () => {
   test("reports missing Bash command as validation error before auto-allow", async () => {
     await loadTools();
     permissionMode.setMode("unrestricted");
-    process.env.MEMORY_DIR = "/Users/test/.letta/agents/agent-1/memory";
+    process.env.MEMORY_DIR = "/Users/test/.haruyuki/agents/agent-1/memory";
 
     const result = await classifyApprovals(
       [
@@ -131,7 +131,7 @@ describe("classifyApprovals", () => {
       ],
       {
         requireArgsForAutoApprove: true,
-        workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+        workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
       },
     );
 
@@ -150,7 +150,7 @@ describe("classifyApprovals", () => {
   test("flags empty arguments as dropped in transit, not omitted by the model", async () => {
     await loadTools();
     permissionMode.setMode("unrestricted");
-    process.env.MEMORY_DIR = "/Users/test/.letta/agents/agent-1/memory";
+    process.env.MEMORY_DIR = "/Users/test/.haruyuki/agents/agent-1/memory";
 
     const result = await classifyApprovals(
       [
@@ -162,7 +162,7 @@ describe("classifyApprovals", () => {
       ],
       {
         requireArgsForAutoApprove: true,
-        workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+        workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
       },
     );
 
@@ -176,7 +176,7 @@ describe("classifyApprovals", () => {
   test("flags unparseable arguments as truncated in transit", async () => {
     await loadTools();
     permissionMode.setMode("unrestricted");
-    process.env.MEMORY_DIR = "/Users/test/.letta/agents/agent-1/memory";
+    process.env.MEMORY_DIR = "/Users/test/.haruyuki/agents/agent-1/memory";
 
     // Shape of a payload truncated mid-string on the way to the client.
     const truncated = '{"command":"echo hello';
@@ -191,7 +191,7 @@ describe("classifyApprovals", () => {
       ],
       {
         requireArgsForAutoApprove: true,
-        workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+        workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
       },
     );
 

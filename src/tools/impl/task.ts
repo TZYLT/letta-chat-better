@@ -2,7 +2,7 @@
  * Task tool implementation
  *
  * Spawns specialized subagents to handle complex, multi-step tasks autonomously.
- * Supports both built-in subagent types and custom subagents defined in .letta/agents/.
+ * Supports both built-in subagent types and custom subagents defined in .haruyuki/agents/.
  */
 
 import { getConversationId, getCurrentAgentId } from "@/agent/context";

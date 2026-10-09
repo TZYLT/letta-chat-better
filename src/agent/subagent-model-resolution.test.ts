@@ -26,7 +26,7 @@ describe("recallPromptForBackend", () => {
     expect(apiPrompt).not.toContain("transcript-backed exact text search");
     expect(localPrompt).toContain("transcript-backed full-text search");
     expect(localPrompt).toContain("Accessing the Underlying Files");
-    expect(localPrompt).toContain("~/.letta/lc-local-backend");
+    expect(localPrompt).toContain("~/.haruyuki/lc-local-backend");
     expect(localPrompt).not.toContain("--mode <mode>");
     expect(localPrompt).not.toContain("Semantic similarity search");
   });
@@ -226,11 +226,12 @@ describe("resolveSubagentWorkingDirectory", () => {
       {
         subagentType: "reflection",
         launchProfile: "memory-subagent",
-        inheritedPrimaryRoot: "/Users/test/.letta/agents/agent-parent/memory",
+        inheritedPrimaryRoot:
+          "/Users/test/.haruyuki/agents/agent-parent/memory",
       },
     );
 
-    expect(cwd).toBe("/Users/test/.letta/agents/agent-parent/memory");
+    expect(cwd).toBe("/Users/test/.haruyuki/agents/agent-parent/memory");
   });
 
   test("reflection subagents with memoryScope run from USER_CWD while MEMORY_DIR points at the worktree", () => {
@@ -242,12 +243,13 @@ describe("resolveSubagentWorkingDirectory", () => {
       {
         subagentType: "reflection",
         launchProfile: "memory-subagent",
-        inheritedPrimaryRoot: "/Users/test/.letta/agents/agent-parent/memory",
+        inheritedPrimaryRoot:
+          "/Users/test/.haruyuki/agents/agent-parent/memory",
         memoryScope: {
           primaryRoot:
-            "/Users/test/.letta/agents/agent-parent/memory-worktrees/reflection-123",
+            "/Users/test/.haruyuki/agents/agent-parent/memory-worktrees/reflection-123",
           writableRoots: [
-            "/Users/test/.letta/agents/agent-parent/memory-worktrees/reflection-123",
+            "/Users/test/.haruyuki/agents/agent-parent/memory-worktrees/reflection-123",
           ],
         },
       },
@@ -258,7 +260,7 @@ describe("resolveSubagentWorkingDirectory", () => {
 
   test("reflection integration agents run directly from their memory worktree", () => {
     const worktree =
-      "/Users/test/.letta/agents/agent-parent/memory-worktrees/reflection-123";
+      "/Users/test/.haruyuki/agents/agent-parent/memory-worktrees/reflection-123";
     const cwd = resolveSubagentWorkingDirectory(
       { USER_CWD: "/tmp/project-root" } as NodeJS.ProcessEnv,
       "/tmp/fallback-root",
@@ -284,7 +286,8 @@ describe("resolveSubagentWorkingDirectory", () => {
       {
         subagentType: "general-purpose",
         launchProfile: "memory-subagent",
-        inheritedPrimaryRoot: "/Users/test/.letta/agents/agent-parent/memory",
+        inheritedPrimaryRoot:
+          "/Users/test/.haruyuki/agents/agent-parent/memory",
       },
     );
 

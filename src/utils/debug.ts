@@ -4,7 +4,7 @@ import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 //
 // Screen output: controlled by LETTA_DEBUG=1 (or DEBUG=1 for legacy compatibility),
 // or LETTA_DEBUG_FILE for a custom path.
-// File output:   always written to ~/.letta/logs/debug/{agent-id}/{session-id}.log
+// File output:   always written to ~/.haruyuki/logs/debug/{agent-id}/{session-id}.log
 //                once debugLogFile.init() has been called.  Before init, lines are
 //                silently dropped (no file path yet).
 
@@ -72,7 +72,7 @@ const MAX_LOG_BYTES = 10 * 1024 * 1024; // 10 MB per session file
 const DEFAULT_TAIL_LINES = 50;
 
 interface DebugLogFileOptions {
-  /** Override the log root (tests). Defaults to ~/.letta/logs/debug. */
+  /** Override the log root (tests). Defaults to ~/.haruyuki/logs/debug. */
   dir?: string;
   /** Override the per-file size cap in bytes (tests). */
   maxBytes?: number;

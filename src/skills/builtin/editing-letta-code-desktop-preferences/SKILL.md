@@ -1,6 +1,6 @@
 ---
 name: editing-letta-code-desktop-preferences
-description: Edits Letta Code Desktop (LCD) preferences by safely reading and updating ~/.letta/desktop_preferences.json. Use only when the user asks to change current Desktop/LCD settings such as theme, default working directory, remote access preference, or remote environment name via the preferences JSON.
+description: Edits Letta Code Desktop (LCD) preferences by safely reading and updating ~/.haruyuki/desktop_preferences.json. Use only when the user asks to change current Desktop/LCD settings such as theme, default working directory, remote access preference, or remote environment name via the preferences JSON.
 ---
 
 # Editing Letta Code Desktop Preferences
@@ -12,7 +12,7 @@ Use this skill only to edit the active Letta Code Desktop preferences JSON file.
 The Desktop preferences file is:
 
 ```text
-~/.letta/desktop_preferences.json
+~/.haruyuki/desktop_preferences.json
 ```
 
 User-editable preference keys:
@@ -51,7 +51,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const file = path.join(os.homedir(), '.letta', 'desktop_preferences.json');
+const file = path.join(os.homedir(), '.haruyuki', 'desktop_preferences.json');
 fs.mkdirSync(path.dirname(file), { recursive: true });
 
 const current = fs.existsSync(file)
@@ -73,5 +73,5 @@ NODE
 After editing, read the file back or parse it to confirm valid JSON:
 
 ```bash
-node -e "JSON.parse(require('fs').readFileSync(require('os').homedir() + '/.letta/desktop_preferences.json', 'utf8')); console.log('desktop_preferences.json is valid')"
+node -e "JSON.parse(require('fs').readFileSync(require('os').homedir() + '/.haruyuki/desktop_preferences.json', 'utf8')); console.log('desktop_preferences.json is valid')"
 ```

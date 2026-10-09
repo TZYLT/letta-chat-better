@@ -145,7 +145,7 @@ async function resolveWorktreeSourceRoot(params: {
 /**
  * Resolves the common prelude shared by the create and enter flows: the current
  * cwd, the repo root for `repo_path`/cwd, the primary checkout root, and the
- * managed `.letta/worktrees/` directory under it.
+ * managed `.haruyuki/worktrees/` directory under it.
  */
 async function resolveWorktreeContext(params: {
   args: EnterWorktreeArgs;
@@ -251,7 +251,7 @@ interface ResolvedProvisionConfig {
 }
 
 /**
- * Reads `.letta/settings.json` directly (rather than going through the settings
+ * Reads `.haruyuki/settings.json` directly (rather than going through the settings
  * manager's loaded cache, which may not hold the primary root) and resolves the
  * worktree provisioning config, applying defaults for any missing keys.
  */
@@ -415,7 +415,7 @@ async function copyLocalSettingsFile(
   const dest = path.join(worktreePath, rel);
   await mkdir(path.dirname(dest), { recursive: true });
   await copyFile(source, dest);
-  return "copied .letta/settings.local.json";
+  return "copied .haruyuki/settings.local.json";
 }
 
 async function readWorktreeIncludeEntries(
@@ -655,7 +655,7 @@ async function claimWorktreeLock(params: {
 
   // Release the lock on the worktree we are leaving. A lock can only ever be
   // held on a managed worktree, so skip the git-dir lookup entirely when the
-  // previous cwd is outside `.letta/worktrees/` (the common case: switching in
+  // previous cwd is outside `.haruyuki/worktrees/` (the common case: switching in
   // from the main checkout).
   if (isPathWithin(params.previousCwd, params.managedDir)) {
     const previousGitDir = await resolveWorktreeGitDir(params.previousCwd);
@@ -737,7 +737,7 @@ async function listRegisteredWorktrees(
 /**
  * Switches the session into an existing worktree. Validation-only: the target
  * must be a registered, non-prunable linked worktree of this repository, living
- * under the managed `.letta/worktrees/` directory. Does not create or
+ * under the managed `.haruyuki/worktrees/` directory. Does not create or
  * re-provision anything.
  */
 async function enterExistingWorktree(params: {

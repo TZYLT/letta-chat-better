@@ -51,7 +51,7 @@ function createPanel(render: ModPanel["render"]): ModPanel {
     id: "cwd",
     render,
     order: 0,
-    path: "/tmp/project/.letta/mods/cwd.ts",
+    path: "/tmp/project/.haruyuki/mods/cwd.ts",
     updatedAt: 1,
   };
 }

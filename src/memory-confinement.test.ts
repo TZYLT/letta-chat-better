@@ -9,7 +9,7 @@ describe("memory confinement launcher", () => {
   test("wraps a launcher with the fail-closed Seatbelt policy", () => {
     const memoryDir = join(
       homedir(),
-      ".letta",
+      ".haruyuki",
       "agents",
       "agent-self",
       "memory",

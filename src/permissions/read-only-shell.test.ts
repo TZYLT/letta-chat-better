@@ -14,14 +14,14 @@ describe("isReadOnlyShellCommand", () => {
 
     describe("isScopedMemoryShellCommand", () => {
       const roots = [
-        "/Users/test/.letta/agents/agent-1/memory",
-        "/Users/test/.letta/agents/agent-1/memory-worktrees",
+        "/Users/test/.haruyuki/agents/agent-1/memory",
+        "/Users/test/.haruyuki/agents/agent-1/memory-worktrees",
       ];
 
       test("allows memory-rooted git commands", () => {
         expect(
           isScopedMemoryShellCommand(
-            "cd /Users/test/.letta/agents/agent-1/memory && git status && git pull --ff-only && git push",
+            "cd /Users/test/.haruyuki/agents/agent-1/memory && git status && git pull --ff-only && git push",
             roots,
           ),
         ).toBe(true);
@@ -29,7 +29,7 @@ describe("isReadOnlyShellCommand", () => {
 
       test("allows constrained memory-rooted git introspection and index cleanup", () => {
         const env = {
-          MEMORY_DIR: "/Users/test/.letta/agents/agent-1/memory",
+          MEMORY_DIR: "/Users/test/.haruyuki/agents/agent-1/memory",
         } as NodeJS.ProcessEnv;
 
         expect(
@@ -37,7 +37,7 @@ describe("isReadOnlyShellCommand", () => {
             "git config --get remote.origin.url",
             roots,
             {
-              workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+              workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
               env,
             },
           ),
@@ -47,7 +47,7 @@ describe("isReadOnlyShellCommand", () => {
             "git config remote.origin.url https://example.com/repo.git",
             roots,
             {
-              workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+              workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
               env,
             },
           ),
@@ -57,14 +57,14 @@ describe("isReadOnlyShellCommand", () => {
             'git check-ignore -v "$MEMORY_DIR/skills/a11y-audit-automation/SKILL.md"',
             roots,
             {
-              workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+              workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
               env,
             },
           ),
         ).toBe(true);
         expect(
           isScopedMemoryShellCommand("git show-ref", roots, {
-            workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+            workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
             env,
           }),
         ).toBe(true);
@@ -77,20 +77,20 @@ describe("isReadOnlyShellCommand", () => {
         ).toBe(true);
         expect(
           isScopedMemoryShellCommand(
-            'cd "$MEMORY_DIR" && git restore --staged "$MEMORY_DIR/.letta/.lettaignore" "$MEMORY_DIR/.letta/settings.local.json"',
+            'cd "$MEMORY_DIR" && git restore --staged "$MEMORY_DIR/.haruyuki/.haruyukiignore" "$MEMORY_DIR/.haruyuki/settings.local.json"',
             roots,
             { env },
           ),
         ).toBe(true);
         expect(
           isScopedMemoryShellCommand(
-            "cd /Users/test/.letta/agents/agent-1/memory && git reset HEAD",
+            "cd /Users/test/.haruyuki/agents/agent-1/memory && git reset HEAD",
             roots,
           ),
         ).toBe(true);
         expect(
           isScopedMemoryShellCommand("git reset --hard HEAD", roots, {
-            workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+            workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
             env,
           }),
         ).toBe(true);
@@ -102,7 +102,7 @@ describe("isReadOnlyShellCommand", () => {
             "git fetch https://example.com/repo.git",
             roots,
             {
-              workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+              workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
             },
           ),
         ).toBe(false);
@@ -111,13 +111,13 @@ describe("isReadOnlyShellCommand", () => {
             "git check-ignore -v /Users/test/project/file.md",
             roots,
             {
-              workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+              workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
             },
           ),
         ).toBe(false);
         expect(
           isScopedMemoryShellCommand("git restore README.md", roots, {
-            workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+            workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
           }),
         ).toBe(false);
       });
@@ -125,7 +125,7 @@ describe("isReadOnlyShellCommand", () => {
       test("allows builtin-required worktree and backoff commands", () => {
         expect(
           isScopedMemoryShellCommand(
-            "cd /Users/test/.letta/agents/agent-1/memory && git worktree remove ../memory-worktrees/foo && git branch -d foo && sleep 2",
+            "cd /Users/test/.haruyuki/agents/agent-1/memory && git worktree remove ../memory-worktrees/foo && git branch -d foo && sleep 2",
             roots,
           ),
         ).toBe(true);
@@ -149,7 +149,7 @@ describe("isReadOnlyShellCommand", () => {
       test("denies arbitrary shell mutation under memory cwd", () => {
         expect(
           isScopedMemoryShellCommand(
-            "cd /Users/test/.letta/agents/agent-1/memory && python script.py",
+            "cd /Users/test/.haruyuki/agents/agent-1/memory && python script.py",
             roots,
           ),
         ).toBe(false);
@@ -158,7 +158,7 @@ describe("isReadOnlyShellCommand", () => {
       test("allows git push from an allowed working directory without explicit cd", () => {
         expect(
           isScopedMemoryShellCommand("git push", roots, {
-            workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+            workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
           }),
         ).toBe(true);
       });
@@ -175,9 +175,9 @@ describe("isReadOnlyShellCommand", () => {
             roots,
             {
               env: {
-                MEMORY_DIR: "/Users/test/.letta/agents/agent-1/memory",
+                MEMORY_DIR: "/Users/test/.haruyuki/agents/agent-1/memory",
                 WORKTREE_DIR:
-                  "/Users/test/.letta/agents/agent-1/memory-worktrees",
+                  "/Users/test/.haruyuki/agents/agent-1/memory-worktrees",
               } as NodeJS.ProcessEnv,
             },
           ),
@@ -190,9 +190,9 @@ describe("isReadOnlyShellCommand", () => {
             'echo "test content" > "$MEMORY_DIR/skills/example/SKILL.md" && ls -la "$MEMORY_DIR/skills/example/"',
             roots,
             {
-              workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+              workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
               env: {
-                MEMORY_DIR: "/Users/test/.letta/agents/agent-1/memory",
+                MEMORY_DIR: "/Users/test/.haruyuki/agents/agent-1/memory",
               } as NodeJS.ProcessEnv,
             },
           ),
@@ -214,9 +214,9 @@ describe("isReadOnlyShellCommand", () => {
             ].join("\n"),
             roots,
             {
-              workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+              workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
               env: {
-                MEMORY_DIR: "/Users/test/.letta/agents/agent-1/memory",
+                MEMORY_DIR: "/Users/test/.haruyuki/agents/agent-1/memory",
               } as NodeJS.ProcessEnv,
             },
           ),
@@ -234,9 +234,9 @@ describe("isReadOnlyShellCommand", () => {
             ].join("\n"),
             roots,
             {
-              workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+              workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
               env: {
-                MEMORY_DIR: "/Users/test/.letta/agents/agent-1/memory",
+                MEMORY_DIR: "/Users/test/.haruyuki/agents/agent-1/memory",
               } as NodeJS.ProcessEnv,
             },
           ),
@@ -255,9 +255,9 @@ describe("isReadOnlyShellCommand", () => {
             ].join("\n"),
             roots,
             {
-              workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+              workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
               env: {
-                MEMORY_DIR: "/Users/test/.letta/agents/agent-1/memory",
+                MEMORY_DIR: "/Users/test/.haruyuki/agents/agent-1/memory",
               } as NodeJS.ProcessEnv,
             },
           ),
@@ -276,7 +276,7 @@ describe("isReadOnlyShellCommand", () => {
             roots,
             {
               env: {
-                MEMORY_DIR: "/Users/test/.letta/agents/agent-1/memory",
+                MEMORY_DIR: "/Users/test/.haruyuki/agents/agent-1/memory",
               } as NodeJS.ProcessEnv,
             },
           ),
@@ -294,9 +294,9 @@ describe("isReadOnlyShellCommand", () => {
             ].join("\n"),
             roots,
             {
-              workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+              workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
               env: {
-                MEMORY_DIR: "/Users/test/.letta/agents/agent-1/memory",
+                MEMORY_DIR: "/Users/test/.haruyuki/agents/agent-1/memory",
               } as NodeJS.ProcessEnv,
             },
           ),
@@ -315,9 +315,9 @@ describe("isReadOnlyShellCommand", () => {
             ].join("\n"),
             roots,
             {
-              workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+              workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
               env: {
-                MEMORY_DIR: "/Users/test/.letta/agents/agent-1/memory",
+                MEMORY_DIR: "/Users/test/.haruyuki/agents/agent-1/memory",
               } as NodeJS.ProcessEnv,
             },
           ),
@@ -330,9 +330,9 @@ describe("isReadOnlyShellCommand", () => {
             ["cat > /tmp/outside.md << 'EOF'", "# Outside", "EOF"].join("\n"),
             roots,
             {
-              workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+              workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
               env: {
-                MEMORY_DIR: "/Users/test/.letta/agents/agent-1/memory",
+                MEMORY_DIR: "/Users/test/.haruyuki/agents/agent-1/memory",
               } as NodeJS.ProcessEnv,
             },
           ),
@@ -349,9 +349,9 @@ describe("isReadOnlyShellCommand", () => {
             ].join("\n"),
             roots,
             {
-              workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+              workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
               env: {
-                MEMORY_DIR: "/Users/test/.letta/agents/agent-1/memory",
+                MEMORY_DIR: "/Users/test/.haruyuki/agents/agent-1/memory",
               } as NodeJS.ProcessEnv,
             },
           ),
@@ -369,9 +369,9 @@ describe("isReadOnlyShellCommand", () => {
             ].join("\n"),
             roots,
             {
-              workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+              workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
               env: {
-                MEMORY_DIR: "/Users/test/.letta/agents/agent-1/memory",
+                MEMORY_DIR: "/Users/test/.haruyuki/agents/agent-1/memory",
               } as NodeJS.ProcessEnv,
             },
           ),
@@ -384,9 +384,9 @@ describe("isReadOnlyShellCommand", () => {
             'echo "test content" > /tmp/outside-memory.txt',
             roots,
             {
-              workingDirectory: "/Users/test/.letta/agents/agent-1/memory",
+              workingDirectory: "/Users/test/.haruyuki/agents/agent-1/memory",
               env: {
-                MEMORY_DIR: "/Users/test/.letta/agents/agent-1/memory",
+                MEMORY_DIR: "/Users/test/.haruyuki/agents/agent-1/memory",
               } as NodeJS.ProcessEnv,
             },
           ),
@@ -396,13 +396,13 @@ describe("isReadOnlyShellCommand", () => {
       test("denies command substitution in memory-rooted commands", () => {
         expect(
           isScopedMemoryShellCommand(
-            'cd /Users/test/.letta/agents/agent-1/memory && git commit -m "$(touch /tmp/pwn)"',
+            'cd /Users/test/.haruyuki/agents/agent-1/memory && git commit -m "$(touch /tmp/pwn)"',
             roots,
           ),
         ).toBe(false);
         expect(
           isScopedMemoryShellCommand(
-            'cd /Users/test/.letta/agents/agent-1/memory && git commit -m "`touch /tmp/pwn`"',
+            'cd /Users/test/.haruyuki/agents/agent-1/memory && git commit -m "`touch /tmp/pwn`"',
             roots,
           ),
         ).toBe(false);
@@ -411,13 +411,13 @@ describe("isReadOnlyShellCommand", () => {
       test("denies git rebase exec hooks in memory-rooted commands", () => {
         expect(
           isScopedMemoryShellCommand(
-            'cd /Users/test/.letta/agents/agent-1/memory && git rebase --exec "touch /tmp/pwn" main',
+            'cd /Users/test/.haruyuki/agents/agent-1/memory && git rebase --exec "touch /tmp/pwn" main',
             roots,
           ),
         ).toBe(false);
         expect(
           isScopedMemoryShellCommand(
-            'cd /Users/test/.letta/agents/agent-1/memory && git rebase -x "touch /tmp/pwn" main',
+            'cd /Users/test/.haruyuki/agents/agent-1/memory && git rebase -x "touch /tmp/pwn" main',
             roots,
           ),
         ).toBe(false);
@@ -426,13 +426,13 @@ describe("isReadOnlyShellCommand", () => {
       test("allows safe git rebase continuation in memory-rooted commands", () => {
         expect(
           isScopedMemoryShellCommand(
-            "cd /Users/test/.letta/agents/agent-1/memory && git rebase --continue",
+            "cd /Users/test/.haruyuki/agents/agent-1/memory && git rebase --continue",
             roots,
           ),
         ).toBe(true);
         expect(
           isScopedMemoryShellCommand(
-            "cd /Users/test/.letta/agents/agent-1/memory && git rebase --abort",
+            "cd /Users/test/.haruyuki/agents/agent-1/memory && git rebase --abort",
             roots,
           ),
         ).toBe(true);
@@ -444,19 +444,19 @@ describe("isReadOnlyShellCommand", () => {
         // can't catch them — must be rejected explicitly.
         expect(
           isScopedMemoryShellCommand(
-            "cd /Users/test/.letta/agents/agent-1/memory && git config --global user.email evil@example.com",
+            "cd /Users/test/.haruyuki/agents/agent-1/memory && git config --global user.email evil@example.com",
             roots,
           ),
         ).toBe(false);
         expect(
           isScopedMemoryShellCommand(
-            "cd /Users/test/.letta/agents/agent-1/memory && git config --system core.editor 'rm -rf /'",
+            "cd /Users/test/.haruyuki/agents/agent-1/memory && git config --system core.editor 'rm -rf /'",
             roots,
           ),
         ).toBe(false);
         expect(
           isScopedMemoryShellCommand(
-            "cd /Users/test/.letta/agents/agent-1/memory && git config --get --global user.email",
+            "cd /Users/test/.haruyuki/agents/agent-1/memory && git config --get --global user.email",
             roots,
           ),
         ).toBe(false);
@@ -465,13 +465,13 @@ describe("isReadOnlyShellCommand", () => {
       test("allows git config without --global / --system in memory-rooted commands", () => {
         expect(
           isScopedMemoryShellCommand(
-            "cd /Users/test/.letta/agents/agent-1/memory && git config --get remote.origin.url",
+            "cd /Users/test/.haruyuki/agents/agent-1/memory && git config --get remote.origin.url",
             roots,
           ),
         ).toBe(true);
         expect(
           isScopedMemoryShellCommand(
-            "cd /Users/test/.letta/agents/agent-1/memory && git config --local user.email reflection@letta.com",
+            "cd /Users/test/.haruyuki/agents/agent-1/memory && git config --local user.email reflection@letta.com",
             roots,
           ),
         ).toBe(true);
@@ -1040,8 +1040,8 @@ describe("isMemoryDirCommand", () => {
   const AGENT_ID = "agent-test-abc123";
   // Normalize to forward slashes for shell command strings (even on Windows)
   const home = homedir().replace(/\\/g, "/");
-  const memDir = `${home}/.letta/agents/${AGENT_ID}/memory`;
-  const worktreeDir = `${home}/.letta/agents/${AGENT_ID}/memory-worktrees`;
+  const memDir = `${home}/.haruyuki/agents/${AGENT_ID}/memory`;
+  const worktreeDir = `${home}/.haruyuki/agents/${AGENT_ID}/memory-worktrees`;
 
   describe("git operations in memory dir", () => {
     test("allows git add", () => {
@@ -1198,7 +1198,7 @@ describe("isMemoryDirCommand", () => {
     test("allows tilde-based memory dir path", () => {
       expect(
         isMemoryDirCommand(
-          `cd ~/.letta/agents/${AGENT_ID}/memory && git status`,
+          `cd ~/.haruyuki/agents/${AGENT_ID}/memory && git status`,
           AGENT_ID,
         ),
       ).toBe(true);
@@ -1209,7 +1209,7 @@ describe("isMemoryDirCommand", () => {
     test("blocks different agent ID", () => {
       expect(
         isMemoryDirCommand(
-          `cd ${home}/.letta/agents/agent-OTHER-456/memory && git push`,
+          `cd ${home}/.haruyuki/agents/agent-OTHER-456/memory && git push`,
           AGENT_ID,
         ),
       ).toBe(false);

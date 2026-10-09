@@ -58,7 +58,7 @@ export async function getBillingTier(): Promise<string | null> {
  * This used to POST to `https://api.letta.com/v1/metadata/feedback` unless a
  * Desktop runtime had a loopback server configured. There is no Cloud backend
  * any more, so the submission is written to
- * `~/.letta/logs/feedback.jsonl` instead: the report still survives on disk for
+ * `~/.haruyuki/logs/feedback.jsonl` instead: the report still survives on disk for
  * the user to attach to an issue, and nothing leaves the machine.
  *
  * Stays async so the call sites keep their shape.

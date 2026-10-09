@@ -388,13 +388,13 @@ test("Skill script in agent-scoped skill suggests agent-scoped message", () => {
   const context = analyzeApprovalContext(
     "Bash",
     {
-      command: `npx tsx ${home}/.letta/agents/agent-123/memory/skills/finding-agents/scripts/main.ts --help`,
+      command: `npx tsx ${home}/.haruyuki/agents/agent-123/memory/skills/finding-agents/scripts/main.ts --help`,
     },
     "/Users/test/project",
   );
 
   expect(context.recommendedRule).toBe(
-    `Bash(npx tsx ${home}/.letta/agents/agent-123/memory/skills/finding-agents:*)`,
+    `Bash(npx tsx ${home}/.haruyuki/agents/agent-123/memory/skills/finding-agents:*)`,
   );
   expect(context.approveAlwaysText).toBe(
     "Yes, and don't ask again for scripts in agent-scoped skill 'finding-agents'",
@@ -408,13 +408,13 @@ test("Skill script in global skill suggests global message", () => {
   const context = analyzeApprovalContext(
     "Bash",
     {
-      command: `npx tsx ${home}/.letta/skills/messaging-agents/scripts/run.ts`,
+      command: `npx tsx ${home}/.haruyuki/skills/messaging-agents/scripts/run.ts`,
     },
     "/Users/test/project",
   );
 
   expect(context.recommendedRule).toBe(
-    `Bash(npx tsx ${home}/.letta/skills/messaging-agents:*)`,
+    `Bash(npx tsx ${home}/.haruyuki/skills/messaging-agents:*)`,
   );
   expect(context.approveAlwaysText).toBe(
     "Yes, and don't ask again for scripts in global skill 'messaging-agents'",

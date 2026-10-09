@@ -1,5 +1,5 @@
 /**
- * Custom slash commands - user-defined commands from .commands/ and ~/.letta/commands/
+ * Custom slash commands - user-defined commands from .commands/ and ~/.haruyuki/commands/
  */
 
 import { existsSync } from "node:fs";

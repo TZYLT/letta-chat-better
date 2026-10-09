@@ -15,15 +15,17 @@ test("normalizeSandboxPath anchors relative paths at root, never cwd", () => {
 
 test("buildFsSandboxPolicy normalizes and dedupes each root set", () => {
   const policy = buildFsSandboxPolicy({
-    deniedRoots: ["/home/u/.letta/agents/", "/home/u/.letta/agents"],
-    writableRoots: ["/home/u/.letta/agents/self/memory/"],
-    readonlyRoots: ["/home/u/.letta/agents/parent"],
+    deniedRoots: ["/home/u/.haruyuki/agents/", "/home/u/.haruyuki/agents"],
+    writableRoots: ["/home/u/.haruyuki/agents/self/memory/"],
+    readonlyRoots: ["/home/u/.haruyuki/agents/parent"],
     restrictWrites: true,
   });
 
-  expect(policy.deniedRoots).toEqual(["/home/u/.letta/agents"]);
-  expect(policy.writableRoots).toEqual(["/home/u/.letta/agents/self/memory"]);
-  expect(policy.readonlyRoots).toEqual(["/home/u/.letta/agents/parent"]);
+  expect(policy.deniedRoots).toEqual(["/home/u/.haruyuki/agents"]);
+  expect(policy.writableRoots).toEqual([
+    "/home/u/.haruyuki/agents/self/memory",
+  ]);
+  expect(policy.readonlyRoots).toEqual(["/home/u/.haruyuki/agents/parent"]);
   expect(policy.restrictWrites).toBe(true);
 });
 

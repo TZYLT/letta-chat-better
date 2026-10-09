@@ -18,7 +18,7 @@ import { SUBAGENT_NAME_ENV } from "@/utils/subagent-launch-marker";
 import { TRANSCRIPT_ROOT_ENV } from "@/utils/transcript-paths";
 
 const PARENT_ID = "agent-226cd814-09bf-4436-940e-aea9d91d14cb";
-const PARENT_MEMORY_DIR = `/Users/someone/.letta/agents/${PARENT_ID}/memory`;
+const PARENT_MEMORY_DIR = `/Users/someone/.haruyuki/agents/${PARENT_ID}/memory`;
 
 describe("composeSubagentChildEnv", () => {
   test("memory workers suppress worker-side sync without marking other children as memory workers", () => {
@@ -247,7 +247,7 @@ describe("composeSubagentChildEnv", () => {
   });
 
   test("memory subagent memoryScope overrides inherited primary root", () => {
-    const worktreeDir = `/Users/someone/.letta/agents/${PARENT_ID}/memory-worktrees/reflection-123`;
+    const worktreeDir = `/Users/someone/.haruyuki/agents/${PARENT_ID}/memory-worktrees/reflection-123`;
     const env = composeSubagentChildEnv({
       parentProcessEnv: {
         HOME: "/home/user",
@@ -391,7 +391,7 @@ describe("resolveSubagentInheritedPrimaryRoot", () => {
       resolveSubagentInheritedPrimaryRoot({
         backendMode: "local",
         parentAgentId: PARENT_ID,
-        inheritedPrimaryRoot: "/Users/someone/.letta/agents/stale/memory",
+        inheritedPrimaryRoot: "/Users/someone/.haruyuki/agents/stale/memory",
         localBackendStorageDir: "/tmp/lc-local-backend",
       }),
     ).toBe(join("/tmp/lc-local-backend", "memfs", PARENT_ID, "memory"));

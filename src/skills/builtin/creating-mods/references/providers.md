@@ -9,7 +9,7 @@ For multi-capability mods that combine a provider with commands, tools, UI, or s
 ## Quick pattern
 
 ```ts
-// ~/.letta/mods/kilo.ts
+// ~/.haruyuki/mods/kilo.ts
 export default function activate(letta) {
   if (!letta.capabilities.providers) return;
 

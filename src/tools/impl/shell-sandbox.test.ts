@@ -17,7 +17,7 @@ import { applyShellSandbox } from "@/tools/impl/shell-sandbox";
 const SEATBELT: SandboxAvailability = { backend: "seatbelt", reason: "test" };
 const NO_BACKEND: SandboxAvailability = { backend: null, reason: "test" };
 const LAUNCHER = ["/bin/zsh", "-c", "echo hi"];
-// The parent agent's cwd is the repo — outside ~/.letta/agents.
+// The parent agent's cwd is the repo — outside ~/.haruyuki/agents.
 const REPO_CWD = process.cwd();
 
 function defineValue(args: string[], prefix: string): string | undefined {
@@ -122,7 +122,7 @@ test("no-op when no sandbox backend is available", () => {
 });
 
 test("no-op when cwd is inside the agents tree (Seatbelt empty-env hazard)", () => {
-  const cwdInTree = join(homedir(), ".letta", "agents", "self", "memory");
+  const cwdInTree = join(homedir(), ".haruyuki", "agents", "self", "memory");
   const result = applyShellSandbox(
     LAUNCHER,
     cwdInTree,
@@ -178,9 +178,9 @@ test("api backend: also walls off the local memfs tree", () => {
   ]);
 });
 
-test("local backend: walls off both local memfs and ~/.letta/agents", () => {
+test("local backend: walls off both local memfs and ~/.haruyuki/agents", () => {
   // A local-backend parent agent keeps its memory under lc-local-backend/memfs,
-  // but it still must not read cloud/API memory projected under ~/.letta/agents.
+  // but it still must not read cloud/API memory projected under ~/.haruyuki/agents.
   const storageDir = join(REPO_CWD, "custom-local-backend");
   const memfsTree = getLocalBackendCrossAgentTreeRoot(storageDir);
   const memDir = join(memfsTree, "local-agent-xyz", "memory");
@@ -213,7 +213,7 @@ test("carves the whole self agent dir for an in-tree memory root", () => {
   const agentDir = join(getDefaultAgentsTreeRoot(), "test-cross-agent-xyz");
   const memDir = join(
     homedir(),
-    ".letta",
+    ".haruyuki",
     "agents",
     "test-cross-agent-xyz",
     "memory",

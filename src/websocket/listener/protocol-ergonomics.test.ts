@@ -280,7 +280,7 @@ describe("listener protocol ergonomics", () => {
       });
       const persistedSettings = JSON.parse(
         await readFile(
-          path.join(fakeHome, ".letta", "remote-settings.json"),
+          path.join(fakeHome, ".haruyuki", "remote-settings.json"),
           "utf-8",
         ),
       );
@@ -404,7 +404,7 @@ describe("listener protocol ergonomics", () => {
         id: "searching-and-viewing-slack",
         name: "searching-and-viewing-slack",
         description: "Search Slack from a managed computer.",
-        path: "/root/.letta/cloud-skills/searching-and-viewing-slack/SKILL.md",
+        path: "/root/.haruyuki/cloud-skills/searching-and-viewing-slack/SKILL.md",
         source: "project",
       },
     ];

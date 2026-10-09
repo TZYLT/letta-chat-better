@@ -2,7 +2,7 @@
  * Memory Viewer Generator
  *
  * Collects data from the git-backed memory filesystem, injects it into the
- * self-contained HTML template, writes the result to ~/.letta/viewers/, and
+ * self-contained HTML template, writes the result to ~/.haruyuki/viewers/, and
  * opens it in the user's browser.
  */
 
@@ -521,7 +521,7 @@ export async function generateAndOpenMemoryViewer(
     () => jsonPayload,
   );
 
-  // 3. Write to ~/.letta/viewers/ with owner-only permissions
+  // 3. Write to ~/.haruyuki/viewers/ with owner-only permissions
   if (!existsSync(VIEWERS_DIR)) {
     mkdirSync(VIEWERS_DIR, { recursive: true, mode: 0o700 });
   }

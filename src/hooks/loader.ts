@@ -29,7 +29,7 @@ export function clearHooksCache(): void {
 /**
  * Check whether project settings path collides with global settings path.
  *
- * When cwd is HOME, both resolve to ~/.letta/settings.json. In that case,
+ * When cwd is HOME, both resolve to ~/.haruyuki/settings.json. In that case,
  * treat project hooks as empty so global hooks don't get merged twice.
  */
 function isProjectSettingsPathCollidingWithGlobal(
@@ -48,7 +48,7 @@ function isProjectSettingsPathCollidingWithGlobal(
 }
 
 /**
- * Load global hooks configuration from ~/.letta/settings.json
+ * Load global hooks configuration from ~/.haruyuki/settings.json
  * Uses settings-manager cache (loaded at app startup)
  */
 export function loadGlobalHooks(): HooksConfig {
@@ -62,7 +62,7 @@ export function loadGlobalHooks(): HooksConfig {
 }
 
 /**
- * Load project hooks configuration from .letta/settings.json
+ * Load project hooks configuration from .haruyuki/settings.json
  * Uses settings-manager cache
  */
 export async function loadProjectHooks(
@@ -89,7 +89,7 @@ export async function loadProjectHooks(
 }
 
 /**
- * Load project-local hooks configuration from .letta/settings.local.json
+ * Load project-local hooks configuration from .haruyuki/settings.local.json
  * Uses settings-manager cache
  */
 export async function loadProjectLocalHooks(

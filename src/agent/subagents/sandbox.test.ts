@@ -75,8 +75,8 @@ function baseInput(): WrapSubagentLauncherInput {
     launcher: LAUNCHER,
     launchProfile: "memory-subagent",
     backendMode: "api",
-    memoryRoots: ["/home/u/.letta/agents/parent/memory"],
-    inheritedPrimaryRoot: "/home/u/.letta/agents/parent/memory",
+    memoryRoots: ["/home/u/.haruyuki/agents/parent/memory"],
+    inheritedPrimaryRoot: "/home/u/.haruyuki/agents/parent/memory",
     env: { LETTA_FS_SANDBOX: "1" } as NodeJS.ProcessEnv,
     availability: SEATBELT,
   };
@@ -152,7 +152,7 @@ test("returns null for non-memory-subagent launch profiles", () => {
 });
 
 test("wraps a LOCAL subagent with the memory-subagent profile (deny-list against the memfs tree)", () => {
-  const storageDir = "/home/u/.letta/lc-local-backend";
+  const storageDir = "/home/u/.haruyuki/lc-local-backend";
   const memoryRoot = `${storageDir}/memfs/parent/memory`;
   const result = wrapSubagentLauncher({
     ...baseInput(),
@@ -195,23 +195,24 @@ test("memoryScope confines a reflection subagent to an exact worktree plus git m
   const result = wrapSubagentLauncher({
     ...baseInput(),
     memoryScope: {
-      primaryRoot: "/home/u/.letta/agents/parent/memory-worktrees/reflection-1",
+      primaryRoot:
+        "/home/u/.haruyuki/agents/parent/memory-worktrees/reflection-1",
       writableRoots: [
-        "/home/u/.letta/agents/parent/memory-worktrees/reflection-1",
-        "/home/u/.letta/agents/parent/memory/.git",
+        "/home/u/.haruyuki/agents/parent/memory-worktrees/reflection-1",
+        "/home/u/.haruyuki/agents/parent/memory/.git",
       ],
-      readonlyRoots: ["/home/u/.letta/agents/parent"],
+      readonlyRoots: ["/home/u/.haruyuki/agents/parent"],
     },
   });
 
   expect(result).not.toBeNull();
   expect(defineValues(result?.args ?? [], "-DWRITABLE_")).toEqual([
-    `0=${canonicalizeRoot("/home/u/.letta/agents/parent/memory-worktrees/reflection-1")}`,
-    `1=${canonicalizeRoot("/home/u/.letta/agents/parent/memory/.git")}`,
+    `0=${canonicalizeRoot("/home/u/.haruyuki/agents/parent/memory-worktrees/reflection-1")}`,
+    `1=${canonicalizeRoot("/home/u/.haruyuki/agents/parent/memory/.git")}`,
   ]);
   expect(
     defineValues(result?.args ?? [], "-DREADONLY_").map((value) =>
       value.replace(/^\d+=/, ""),
     ),
-  ).toContain(canonicalizeRoot("/home/u/.letta/agents/parent"));
+  ).toContain(canonicalizeRoot("/home/u/.haruyuki/agents/parent"));
 });

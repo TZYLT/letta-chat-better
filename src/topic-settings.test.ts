@@ -35,9 +35,9 @@ afterEach(async () => {
 });
 
 function writeSettings(record: Record<string, unknown>): void {
-  mkdirSync(join(testHomeDir, ".letta"), { recursive: true });
+  mkdirSync(join(testHomeDir, ".haruyuki"), { recursive: true });
   writeFileSync(
-    join(testHomeDir, ".letta", "settings.json"),
+    join(testHomeDir, ".haruyuki", "settings.json"),
     JSON.stringify(record, null, 2),
   );
 }

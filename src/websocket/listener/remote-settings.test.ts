@@ -111,7 +111,7 @@ describe("remote settings cwd repair", () => {
     const deletedDirectory = path.join(tempRoot, "deleted-worktree");
     useHome(fakeHome);
 
-    const legacyPath = path.join(fakeHome, ".letta", "cwd-cache.json");
+    const legacyPath = path.join(fakeHome, ".haruyuki", "cwd-cache.json");
     await mkdir(path.dirname(legacyPath), { recursive: true });
     await writeFile(
       legacyPath,
@@ -182,7 +182,7 @@ describe("remote settings cwd repair", () => {
     useHome(fakeHome);
 
     await mkdir(fakeHome);
-    await writeFile(path.join(fakeHome, ".letta"), "temporarily blocked");
+    await writeFile(path.join(fakeHome, ".haruyuki"), "temporarily blocked");
 
     const updates = {
       cwdMap: { "conversation:live": "/repository/root" },
@@ -190,8 +190,8 @@ describe("remote settings cwd repair", () => {
     saveRemoteSettings(updates);
     expect(await flushRemoteSettingsWrites()).toBe(false);
 
-    await rm(path.join(fakeHome, ".letta"));
-    await mkdir(path.join(fakeHome, ".letta"));
+    await rm(path.join(fakeHome, ".haruyuki"));
+    await mkdir(path.join(fakeHome, ".haruyuki"));
 
     saveRemoteSettings(updates);
     expect(await flushRemoteSettingsWrites()).toBe(true);

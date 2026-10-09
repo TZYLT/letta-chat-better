@@ -179,7 +179,7 @@ test("keeps project and agent-memory skills ahead of shared skills", async () =>
     "From project",
   );
   const agentSkillPath = await createSkill(
-    join(tempHome, ".letta", "agents", AGENT_ID, "memory", "skills"),
+    join(tempHome, ".haruyuki", "agents", AGENT_ID, "memory", "skills"),
     "agent-wins",
     "From agent memory",
   );
@@ -297,7 +297,7 @@ test("does not load attached shared skills for local agents", async () => {
   const localAgentId = "agent-local-shared-skills-test";
   const localMount = join(
     tempHome,
-    ".letta",
+    ".haruyuki",
     "agents",
     localAgentId,
     "shared-team",

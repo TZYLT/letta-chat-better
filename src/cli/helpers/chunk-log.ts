@@ -2,7 +2,7 @@
  * ChunkLog - Rolling log of the last N streaming chunks received by the client.
  *
  * Stores truncated chunks as JSONL on disk, organized per agent per session:
- *   ~/.letta/logs/chunk-logs/{agent_id}/{session_id}.jsonl
+ *   ~/.haruyuki/logs/chunk-logs/{agent_id}/{session_id}.jsonl
  *
  * Metadata (message_type, ids, timestamps) is preserved fully;
  * large content fields (reasoning, tool_return, arguments, etc.) are

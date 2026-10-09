@@ -67,14 +67,14 @@ show_permissions() {
 xdg_config="${XDG_CONFIG_HOME:-$HOME/.config}"
 show_permissions "$xdg_config/letta/settings.json" "User Settings (XDG)" "$BLUE"
 
-# Legacy global settings (~/.letta/settings.json)
-show_permissions "$HOME/.letta/settings.json" "User Settings (Legacy)" "$BLUE"
+# Legacy global settings (~/.haruyuki/settings.json)
+show_permissions "$HOME/.haruyuki/settings.json" "User Settings (Legacy)" "$BLUE"
 
-# Project settings (.letta/settings.json)
-show_permissions "$working_dir/.letta/settings.json" "Project Settings" "$YELLOW"
+# Project settings (.haruyuki/settings.json)
+show_permissions "$working_dir/.haruyuki/settings.json" "Project Settings" "$YELLOW"
 
-# Project local settings (.letta/settings.local.json)
-show_permissions "$working_dir/.letta/settings.local.json" "Project Local Settings" "$GREEN"
+# Project local settings (.haruyuki/settings.local.json)
+show_permissions "$working_dir/.haruyuki/settings.local.json" "Project Local Settings" "$GREEN"
 
 echo -e "${BOLD}═══════════════════════════════════════════════════════════════${RESET}\n"
 

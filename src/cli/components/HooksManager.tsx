@@ -30,6 +30,7 @@ import {
   setHooksDisabled,
 } from "@/hooks/writer";
 import { settingsManager } from "@/settings-manager";
+import { appHomeDirName } from "@/utils/app-paths";
 import { colors } from "./colors";
 import { PasteAwareTextInput } from "./PasteAwareTextInput";
 import { Text } from "./Text";
@@ -107,14 +108,18 @@ const SAVE_LOCATIONS: {
   {
     location: "project-local",
     label: "Project settings (local)",
-    path: ".letta/settings.local.json",
+    path: `${appHomeDirName()}/settings.local.json`,
   },
   {
     location: "project",
     label: "Project settings",
-    path: ".letta/settings.json",
+    path: `${appHomeDirName()}/settings.json`,
   },
-  { location: "user", label: "User settings", path: "~/.letta/settings.json" },
+  {
+    location: "user",
+    label: "User settings",
+    path: `~/${appHomeDirName()}/settings.json`,
+  },
 ];
 
 function getSourceLabel(source: SaveLocation): string {

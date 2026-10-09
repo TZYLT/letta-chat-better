@@ -44,7 +44,7 @@ export function buildSeatbeltProfile(policy: FsSandboxPolicy): {
     lines.push('(allow file-write* (subpath "/dev"))');
   }
 
-  // 2. Base writable roots: re-allow writes under a broad harness dir (~/.letta).
+  // 2. Base writable roots: re-allow writes under a broad harness dir (~/.haruyuki).
   //    Emitted AFTER the global write-deny but BEFORE the denied roots, so a
   //    cross-agent tree nested inside still gets walled off in step 3.
   policy.baseWritableRoots.forEach((root, i) => {

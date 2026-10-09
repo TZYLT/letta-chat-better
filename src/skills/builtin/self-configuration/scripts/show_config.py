@@ -76,9 +76,9 @@ GLOBAL_ONLY_KEYS = {
 def get_settings_paths(working_directory: str) -> list[tuple[str, Path]]:
     """Return (scope, path) in precedence order (lowest to highest)."""
     return [
-        ("user", Path.home() / ".letta" / "settings.json"),
-        ("project", Path(working_directory) / ".letta" / "settings.json"),
-        ("local", Path(working_directory) / ".letta" / "settings.local.json"),
+        ("user", Path.home() / ".haruyuki" / "settings.json"),
+        ("project", Path(working_directory) / ".haruyuki" / "settings.json"),
+        ("local", Path(working_directory) / ".haruyuki" / "settings.local.json"),
     ]
 
 

@@ -31,7 +31,7 @@ test("Load permissions from empty directory returns rules from user settings", a
   const projectDir = join(testDir, "empty-project");
   const permissions = await loadPermissions(projectDir);
 
-  // Will include user settings from real ~/.letta/settings.json if it exists
+  // Will include user settings from real ~/.haruyuki/settings.json if it exists
   // So we just verify the structure is correct
   expect(Array.isArray(permissions.allow)).toBe(true);
   expect(Array.isArray(permissions.deny)).toBe(true);
@@ -44,7 +44,7 @@ test("Load permissions from empty directory returns rules from user settings", a
 
 test("Load permissions from project settings", async () => {
   const projectDir = join(testDir, "project-1");
-  const projectSettingsPath = join(projectDir, ".letta", "settings.json");
+  const projectSettingsPath = join(projectDir, ".haruyuki", "settings.json");
   await Bun.write(
     projectSettingsPath,
     JSON.stringify({
@@ -62,7 +62,11 @@ test("Load permissions from project settings", async () => {
 
 test("Load permissions from local settings", async () => {
   const projectDir = join(testDir, "project-2");
-  const localSettingsPath = join(projectDir, ".letta", "settings.local.json");
+  const localSettingsPath = join(
+    projectDir,
+    ".haruyuki",
+    "settings.local.json",
+  );
   await Bun.write(
     localSettingsPath,
     JSON.stringify({
@@ -81,7 +85,7 @@ test("Load permissions from local settings", async () => {
 test("Load permissions from alwaysAsk settings", async () => {
   const projectDir = join(testDir, "project-always-ask");
   await Bun.write(
-    join(projectDir, ".letta", "settings.json"),
+    join(projectDir, ".haruyuki", "settings.json"),
     JSON.stringify({
       permissions: {
         alwaysAsk: ["Bash(git push:*)"],
@@ -97,7 +101,7 @@ test("Load permissions from alwaysAsk settings", async () => {
 test("Load permissions migrates legacy permission mode", async () => {
   const projectDir = join(testDir, "project-mode-legacy");
   await Bun.write(
-    join(projectDir, ".letta", "settings.json"),
+    join(projectDir, ".haruyuki", "settings.json"),
     JSON.stringify({
       permissions: {
         mode: "bypassPermissions",
@@ -117,7 +121,7 @@ test("Load permissions migrates legacy permission mode", async () => {
 test("Load permissions uses highest-precedence permission mode", async () => {
   const projectDir = join(testDir, "project-mode-precedence");
   await Bun.write(
-    join(projectDir, ".letta", "settings.json"),
+    join(projectDir, ".haruyuki", "settings.json"),
     JSON.stringify({
       permissions: {
         mode: "standard",
@@ -125,7 +129,7 @@ test("Load permissions uses highest-precedence permission mode", async () => {
     }),
   );
   await Bun.write(
-    join(projectDir, ".letta", "settings.local.json"),
+    join(projectDir, ".haruyuki", "settings.local.json"),
     JSON.stringify({
       permissions: {
         mode: "acceptEdits",
@@ -142,7 +146,7 @@ test("Load permissions uses highest-precedence permission mode", async () => {
 
 test("Load permissions picks up external project settings edits without restart", async () => {
   const projectDir = join(testDir, "project-hot-reload");
-  const projectSettingsPath = join(projectDir, ".letta", "settings.json");
+  const projectSettingsPath = join(projectDir, ".haruyuki", "settings.json");
 
   await Bun.write(
     projectSettingsPath,
@@ -176,7 +180,7 @@ test("Load permissions picks up newly-created local settings after cached miss",
   expect(initial.allow).not.toContain("Bash(letta-permission-watch-created)");
 
   await Bun.write(
-    join(projectDir, ".letta", "settings.local.json"),
+    join(projectDir, ".haruyuki", "settings.local.json"),
     JSON.stringify({
       permissions: {
         allow: ["Bash(letta-permission-watch-created)"],
@@ -214,7 +218,7 @@ test("Local settings merge with project settings", async () => {
 
   // Project settings
   await Bun.write(
-    join(projectDir, ".letta", "settings.json"),
+    join(projectDir, ".haruyuki", "settings.json"),
     JSON.stringify({
       permissions: {
         allow: ["Bash(cat:*)"],
@@ -224,7 +228,7 @@ test("Local settings merge with project settings", async () => {
 
   // Local settings
   await Bun.write(
-    join(projectDir, ".letta", "settings.local.json"),
+    join(projectDir, ".haruyuki", "settings.local.json"),
     JSON.stringify({
       permissions: {
         allow: ["Bash(git push:*)"],
@@ -244,7 +248,7 @@ test("Settings merge deny rules from multiple sources", async () => {
 
   // Project settings
   await Bun.write(
-    join(projectDir, ".letta", "settings.json"),
+    join(projectDir, ".haruyuki", "settings.json"),
     JSON.stringify({
       permissions: {
         deny: ["Read(.env)"],
@@ -254,7 +258,7 @@ test("Settings merge deny rules from multiple sources", async () => {
 
   // Local settings
   await Bun.write(
-    join(projectDir, ".letta", "settings.local.json"),
+    join(projectDir, ".haruyuki", "settings.local.json"),
     JSON.stringify({
       permissions: {
         deny: ["Read(secrets/**)"],
@@ -274,7 +278,7 @@ test("Settings merge additionalDirectories", async () => {
 
   // Project settings
   await Bun.write(
-    join(projectDir, ".letta", "settings.json"),
+    join(projectDir, ".haruyuki", "settings.json"),
     JSON.stringify({
       permissions: {
         additionalDirectories: ["../docs"],
@@ -284,7 +288,7 @@ test("Settings merge additionalDirectories", async () => {
 
   // Local settings
   await Bun.write(
-    join(projectDir, ".letta", "settings.local.json"),
+    join(projectDir, ".haruyuki", "settings.local.json"),
     JSON.stringify({
       permissions: {
         additionalDirectories: ["../shared"],
@@ -314,7 +318,7 @@ test("Save permission to project settings", async () => {
     projectDir,
   );
 
-  const projectSettingsPath = join(projectDir, ".letta", "settings.json");
+  const projectSettingsPath = join(projectDir, ".haruyuki", "settings.json");
   const file = Bun.file(projectSettingsPath);
   const settings = await file.json();
 
@@ -325,19 +329,23 @@ test("Save permission to local settings", async () => {
   const projectDir = join(testDir, "project");
   await savePermissionRule("Bash(git push:*)", "allow", "local", projectDir);
 
-  const localSettingsPath = join(projectDir, ".letta", "settings.local.json");
+  const localSettingsPath = join(
+    projectDir,
+    ".haruyuki",
+    "settings.local.json",
+  );
   const file = Bun.file(localSettingsPath);
   const settings = await file.json();
 
   expect(settings.permissions.allow).toContain("Bash(git push:*)");
 });
 
-test("User settings paths prefer ~/.letta and keep XDG as legacy fallback", () => {
+test("User settings paths prefer ~/.haruyuki and keep XDG as legacy fallback", () => {
   const homeDir = join("tmp", "home-test");
   const xdgConfigHome = join("tmp", "xdg-test");
   const paths = getUserSettingsPaths({ homeDir, xdgConfigHome });
 
-  expect(paths.canonical).toBe(join(homeDir, ".letta", "settings.json"));
+  expect(paths.canonical).toBe(join(homeDir, ".haruyuki", "settings.json"));
   expect(paths.legacy).toBe(join(xdgConfigHome, "letta", "settings.json"));
 });
 
@@ -345,7 +353,7 @@ test("Save permission to deny list", async () => {
   const projectDir = join(testDir, "project");
   await savePermissionRule("Read(.env)", "deny", "project", projectDir);
 
-  const settingsPath = join(projectDir, ".letta", "settings.json");
+  const settingsPath = join(projectDir, ".haruyuki", "settings.json");
   const file = Bun.file(settingsPath);
   const settings = await file.json();
 
@@ -361,7 +369,7 @@ test("Save permission to alwaysAsk list", async () => {
     projectDir,
   );
 
-  const settingsPath = join(projectDir, ".letta", "settings.json");
+  const settingsPath = join(projectDir, ".haruyuki", "settings.json");
   const file = Bun.file(settingsPath);
   const settings = await file.json();
 
@@ -373,7 +381,7 @@ test("Save permission doesn't create duplicates", async () => {
   await savePermissionRule("Bash(ls:*)", "allow", "project", projectDir);
   await savePermissionRule("Bash(ls:*)", "allow", "project", projectDir);
 
-  const settingsPath = join(projectDir, ".letta", "settings.json");
+  const settingsPath = join(projectDir, ".haruyuki", "settings.json");
   const file = Bun.file(settingsPath);
   const settings = await file.json();
 
@@ -397,7 +405,7 @@ test("Save permission dedupes wrapped shell launcher variants", async () => {
     projectDir,
   );
 
-  const settingsPath = join(projectDir, ".letta", "settings.json");
+  const settingsPath = join(projectDir, ".haruyuki", "settings.json");
   const file = Bun.file(settingsPath);
   const settings = await file.json();
 
@@ -415,7 +423,7 @@ test("Save permission preserves existing rules", async () => {
   const projectDir = join(testDir, "project");
 
   // Create initial settings
-  const settingsPath = join(projectDir, ".letta", "settings.json");
+  const settingsPath = join(projectDir, ".haruyuki", "settings.json");
   await Bun.write(
     settingsPath,
     JSON.stringify({
@@ -440,7 +448,7 @@ test("Save permission preserves other settings fields", async () => {
   const projectDir = join(testDir, "project");
 
   // Create settings with other fields
-  const settingsPath = join(projectDir, ".letta", "settings.json");
+  const settingsPath = join(projectDir, ".haruyuki", "settings.json");
   await Bun.write(
     settingsPath,
     JSON.stringify({
@@ -468,7 +476,7 @@ test("Save permission preserves other settings fields", async () => {
 
 test("Load permissions handles invalid JSON gracefully", async () => {
   const projectDir = join(testDir, "project-invalid-json");
-  const settingsPath = join(projectDir, ".letta", "settings.json");
+  const settingsPath = join(projectDir, ".haruyuki", "settings.json");
 
   // Write invalid JSON
   await Bun.write(settingsPath, "{ invalid json ");
@@ -482,7 +490,7 @@ test("Load permissions handles invalid JSON gracefully", async () => {
 
 test("Load permissions handles missing permissions field", async () => {
   const projectDir = join(testDir, "project-no-perms");
-  const settingsPath = join(projectDir, ".letta", "settings.json");
+  const settingsPath = join(projectDir, ".haruyuki", "settings.json");
 
   await Bun.write(
     settingsPath,
@@ -503,7 +511,7 @@ test("Save permission creates parent directories", async () => {
   const deepPath = join(testDir, "deep", "nested", "project");
   await savePermissionRule("Bash(ls:*)", "allow", "project", deepPath);
 
-  const settingsPath = join(deepPath, ".letta", "settings.json");
+  const settingsPath = join(deepPath, ".haruyuki", "settings.json");
   const file = Bun.file(settingsPath);
 
   expect(await file.exists()).toBe(true);
@@ -524,7 +532,7 @@ test("Saving local settings updates .gitignore", async () => {
   const gitignoreFile = Bun.file(join(projectDir, ".gitignore"));
   const content = await gitignoreFile.text();
 
-  expect(content).toContain(".letta/settings.local.json");
+  expect(content).toContain(".haruyuki/settings.local.json");
   expect(content).toContain("node_modules"); // Preserves existing content
 });
 
@@ -533,7 +541,7 @@ test("Saving local settings doesn't duplicate .gitignore entry", async () => {
 
   await Bun.write(
     join(projectDir, ".gitignore"),
-    "node_modules\n.letta/settings.local.json\n",
+    "node_modules\n.haruyuki/settings.local.json\n",
   );
 
   await savePermissionRule("Bash(ls:*)", "allow", "local", projectDir);
@@ -541,7 +549,7 @@ test("Saving local settings doesn't duplicate .gitignore entry", async () => {
   const gitignoreFile = Bun.file(join(projectDir, ".gitignore"));
   const content = await gitignoreFile.text();
 
-  const matches = content.match(/\.letta\/settings\.local\.json/g);
+  const matches = content.match(/\.haruyuki\/settings\.local\.json/g);
   expect(matches).toHaveLength(1);
 });
 
@@ -555,7 +563,7 @@ test("Saving local settings creates .gitignore if missing", async () => {
   expect(await gitignoreFile.exists()).toBe(true);
 
   const content = await gitignoreFile.text();
-  expect(content).toContain(".letta/settings.local.json");
+  expect(content).toContain(".haruyuki/settings.local.json");
 });
 
 test("Save permission dedupes canonical shell aliases", async () => {
@@ -573,7 +581,7 @@ test("Save permission dedupes canonical shell aliases", async () => {
     projectDir,
   );
 
-  const settingsPath = join(projectDir, ".letta", "settings.json");
+  const settingsPath = join(projectDir, ".haruyuki", "settings.json");
   const file = Bun.file(settingsPath);
   const settings = await file.json();
 
@@ -602,7 +610,7 @@ test("Save permission dedupes slash variants for file patterns", async () => {
     projectDir,
   );
 
-  const settingsPath = join(projectDir, ".letta", "settings.json");
+  const settingsPath = join(projectDir, ".haruyuki", "settings.json");
   const file = Bun.file(settingsPath);
   const settings = await file.json();
 

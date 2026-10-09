@@ -73,7 +73,7 @@ checkout, installs hooks, configures identity, and seeds default memory files.
 
 ## Inspect a Broken Checkout
 
-Use `$MEMORY_DIR` instead of a hard-coded `~/.letta/agents/...` path; let the
+Use `$MEMORY_DIR` instead of a hard-coded `~/.haruyuki/agents/...` path; let the
 harness resolve the active root.
 
 ```bash

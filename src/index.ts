@@ -165,7 +165,7 @@ BEHAVIOR
   - Agents can be pinned for quick access with /pin
   - Use /profile save <name> to bookmark your current agent
 
-  Agent pins are stored in ~/.letta/settings.json.
+  Agent pins are stored in ~/.haruyuki/settings.json.
 
   Providers are connected from the terminal: letta connect <provider>.
 
@@ -1258,7 +1258,7 @@ async function main(): Promise<void> {
           }
 
           // No valid agent found anywhere
-          console.error("No recent session found in .letta/ or ~/.letta.");
+          console.error("No recent session in .haruyuki/ or ~/.haruyuki.");
           console.error("Run 'letta' to get started.");
           process.exit(1);
         }
@@ -1615,7 +1615,7 @@ async function main(): Promise<void> {
           setAgentProvenance(result.provenance);
         }
 
-        // Priority 4: Try to resume from project settings LRU (.letta/settings.local.json)
+        // Priority 4: Try to resume from project settings LRU (.haruyuki/settings.local.json)
         // Note: If LRU retrieval failed in early validation, we already showed selector and returned
         // Use cached agent from Phase 1 validation when available to avoid redundant API call
         if (!agent && resumingAgentId) {

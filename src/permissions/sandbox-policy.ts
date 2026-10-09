@@ -24,7 +24,7 @@ import {
  * nothing — i.e. a sandbox that allows everything. See `canonicalizeRoot`.
  */
 
-/** The per-agent tree to wall off, e.g. `/Users/me/.letta/agents`. */
+/** The per-agent tree to wall off, e.g. `/Users/me/.haruyuki/agents`. */
 export function getDefaultAgentsTreeRoot(homeDir: string = homedir()): string {
   return canonicalizeRoot(
     appHomePath([APP_SUBDIRS.agents], { homeDir: homeDir }),
@@ -40,7 +40,7 @@ export interface CrossBackendAgentsTreeRootsOptions {
 
 /**
  * Every cross-agent memory tree the kernel sandbox must wall off. API/cloud
- * agents live under `~/.letta/agents`; local-backend agents live under
+ * agents live under `~/.haruyuki/agents`; local-backend agents live under
  * `<storage>/memfs`. A process running in either backend must deny both trees,
  * then carve back only the current/parent agent roots it is allowed to touch.
  */
@@ -59,7 +59,7 @@ export function getCrossBackendAgentsTreeRoots(
 }
 
 /**
- * The harness state directory, e.g. `/Users/me/.letta`. Used as the broad
+ * The harness state directory, e.g. `/Users/me/.haruyuki`. Used as the broad
  * writable base for memory subagents: they may write harness metadata anywhere
  * under it (settings, logs, conversations, transcripts, memory) but not the
  * repo/home/temp — while the cross-agent tree nested inside it stays denied.
@@ -134,8 +134,8 @@ function resolveAgentsTreeRootsInput(roots?: string[]): string[] {
 /**
  * Map memory roots to the agent directories to carve out of the walled-off
  * agents tree. A memory root under the tree
- * (`~/.letta/agents/<id>/memory[-worktrees]`) yields the whole agent dir
- * (`~/.letta/agents/<id>`); carving the *agent dir* rather than just `/memory`
+ * (`~/.haruyuki/agents/<id>/memory[-worktrees]`) yields the whole agent dir
+ * (`~/.haruyuki/agents/<id>`); carving the *agent dir* rather than just `/memory`
  * keeps the cwd's immediate parent traversable, so a read-deny on the tree does
  * not empty the child env under Seatbelt. Roots outside the tree (a custom
  * `MEMORY_DIR`) are returned as-is.
@@ -201,17 +201,17 @@ export interface MemorySubagentSandboxInput {
   /** Additional roots to carve back read-only after denying agents trees. */
   readonlyRoots?: string[];
   /**
-   * Harness state roots configured OUTSIDE `~/.letta` to also make writable —
-   * `~/.letta` itself is always the base. The caller passes a custom
+   * Harness state roots configured OUTSIDE `~/.haruyuki` to also make writable —
+   * `~/.haruyuki` itself is always the base. The caller passes a custom
    * `LETTA_LOCAL_BACKEND_DIR` / `LETTA_TRANSCRIPT_ROOT` here so the in-process
    * child can still persist conversation/agent-state/transcripts when those are
    * relocated off the default tree. Usually empty (the defaults live under
-   * `~/.letta`).
+   * `~/.haruyuki`).
    */
   harnessWritableRoots?: string[];
   /**
    * The agents trees to wall off + carve self out of. Defaults to both
-   * `~/.letta/agents` (API/cloud) and `lc-local-backend/memfs` (local). Each
+   * `~/.haruyuki/agents` (API/cloud) and `lc-local-backend/memfs` (local). Each
    * agent's memory lives at `<tree>/<id>/memory` on both, so
    * {@link deriveSelfAgentRootsForTrees} carves the same way regardless of
    * backend.
@@ -225,20 +225,20 @@ export interface MemorySubagentSandboxInput {
 
 /**
  * Policy for the memory-subagent launch profile: it may read the filesystem broadly to do
- * its work, write only under the harness state dir (`~/.letta`), and not read or
+ * its work, write only under the harness state dir (`~/.haruyuki`), and not read or
  * write *other* agents' memory.
  *
  * The whole subagent process runs under this policy, so it is the sole
  * enforcement for these agents — the static guard is skipped for them. It covers
  * both axes:
  *   - writes: `restrictWrites` denies writes everywhere except the base
- *     `~/.letta` carve (and self memory). This scopes the agent's
+ *     `~/.haruyuki` carve (and self memory). This scopes the agent's
  *     non-deterministic work — it can persist memory + harness metadata
  *     (settings, logs, conversations, transcripts) but cannot write the repo,
- *     home, or temp. Carving the WHOLE `~/.letta` rather than enumerating each
+ *     home, or temp. Carving the WHOLE `~/.haruyuki` rather than enumerating each
  *     harness file is deliberate: the harness writes many paths under it and the
  *     set is unbounded, so a per-file carve would silently break as new writers
- *     appear. The cross-agent tree nested inside `~/.letta` stays denied.
+ *     appear. The cross-agent tree nested inside `~/.haruyuki` stays denied.
  *   - cross-agent reads: the agents tree is read+write denied, with the agent's
  *     own (and inherited parent's) directory carved back out READ-only.
  *
@@ -252,16 +252,16 @@ export interface MemorySubagentSandboxInput {
  * Both backend trees are denied by default so cloud/API agents cannot read local
  * agent memories and local agents cannot read cloud/API memories. Self memory is
  * re-carved writable in `writableRoots` because it is nested inside a denied
- * tree (the base `~/.letta` carve is overridden there by the deny).
+ * tree (the base `~/.haruyuki` carve is overridden there by the deny).
  */
 export function buildMemorySubagentSandboxPolicy(
   input: MemorySubagentSandboxInput,
 ): FsSandboxPolicy {
   const agentsTreeRoots = resolveAgentsTreeRootsInput(input.agentsTreeRoots);
 
-  // Writes are scoped to the harness state dir. `~/.letta` is the always-on base
+  // Writes are scoped to the harness state dir. `~/.haruyuki` is the always-on base
   // (covers settings/logs/conversations/transcripts/memory under the defaults);
-  // `harnessWritableRoots` adds any harness root relocated OUTSIDE `~/.letta`
+  // `harnessWritableRoots` adds any harness root relocated OUTSIDE `~/.haruyuki`
   // (custom LETTA_LOCAL_BACKEND_DIR / LETTA_TRANSCRIPT_ROOT). These are emitted
   // BEFORE the cross-agent deny, so the nested tree is still walled off.
   const baseWritableRoots = [
@@ -277,7 +277,7 @@ export function buildMemorySubagentSandboxPolicy(
       ...(input.readonlyRoots ?? []).map(canonicalizeRoot),
     ],
     // Self memory is nested inside the denied tree; re-carve it writable so the
-    // deny (which overrides the base ~/.letta carve there) is itself overridden.
+    // deny (which overrides the base ~/.haruyuki carve there) is itself overridden.
     writableRoots: deriveWritableMemoryRootsForTrees(
       input.memoryRoots,
       agentsTreeRoots,
@@ -289,7 +289,7 @@ export function buildMemorySubagentSandboxPolicy(
 export interface CrossAgentSandboxInput {
   /**
    * Directories the agent may freely read+write inside the walled-off agents
-   * tree — typically its own agent directory (`~/.letta/agents/<self-id>`).
+   * tree — typically its own agent directory (`~/.haruyuki/agents/<self-id>`).
    */
   selfRoots: string[];
   /** The agents trees to wall off (read+write). Defaults to both backends. */

@@ -409,7 +409,7 @@ describe("buildClientSkillsPayload", () => {
       const staleSkillDir = join(staleMemoryDir, "skills", "shared-skill");
       const scopedMemorySkillDir = join(
         tempRoot,
-        ".letta",
+        ".haruyuki",
         "agents",
         "agent-1",
         "memory",
@@ -504,7 +504,7 @@ describe("buildClientSkillsPayload", () => {
       );
       const scopedMemorySkillsDir = join(
         tempRoot,
-        ".letta",
+        ".haruyuki",
         "agents",
         "agent-1",
         "memory",
@@ -739,12 +739,12 @@ describe("client skills payload cache", () => {
       );
 
       // Set up scoped memory for agent-2 so it has a different memory root
-      // The scoped memory dir is: $HOME/.letta/agents/<agentId>/memory
+      // The scoped memory dir is: $HOME/.haruyuki/agents/<agentId>/memory
       // getMemorySkillsDirs checks existsSync on the memory root, then
       // appends "skills" to discover skill directories.
       const agent2MemoryRoot = join(
         tempRoot,
-        ".letta",
+        ".haruyuki",
         "agents",
         "cache-agent-2",
         "memory",

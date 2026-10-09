@@ -8,25 +8,25 @@ import {
 } from "@/sandbox/seatbelt";
 
 const CROSS_AGENT = buildFsSandboxPolicy({
-  deniedRoots: ["/home/u/.letta/agents"],
-  writableRoots: ["/home/u/.letta/agents/self"],
-  readonlyRoots: ["/home/u/.letta/agents/parent"],
+  deniedRoots: ["/home/u/.haruyuki/agents"],
+  writableRoots: ["/home/u/.haruyuki/agents/self"],
+  readonlyRoots: ["/home/u/.haruyuki/agents/parent"],
   restrictWrites: false,
 });
 
 const MEMORY_MODE = buildFsSandboxPolicy({
-  deniedRoots: ["/home/u/.letta/agents"],
-  writableRoots: ["/home/u/.letta/agents/self/memory", "/tmp"],
+  deniedRoots: ["/home/u/.haruyuki/agents"],
+  writableRoots: ["/home/u/.haruyuki/agents/self/memory", "/tmp"],
   restrictWrites: true,
 });
 
-// Writes scoped to ~/.letta: base carve, cross-agent tree denied inside it, self
+// Writes scoped to ~/.haruyuki: base carve, cross-agent tree denied inside it, self
 // memory re-carved. The three must be emitted in nesting order to layer right.
 const LETTA_SCOPED = buildFsSandboxPolicy({
-  baseWritableRoots: ["/home/u/.letta"],
-  deniedRoots: ["/home/u/.letta/agents"],
-  readonlyRoots: ["/home/u/.letta/agents/self"],
-  writableRoots: ["/home/u/.letta/agents/self/memory"],
+  baseWritableRoots: ["/home/u/.haruyuki"],
+  deniedRoots: ["/home/u/.haruyuki/agents"],
+  readonlyRoots: ["/home/u/.haruyuki/agents/self"],
+  writableRoots: ["/home/u/.haruyuki/agents/self/memory"],
   restrictWrites: true,
 });
 
@@ -102,7 +102,7 @@ test("base writable is layered: after global write-deny, before the deny, self a
     '(allow file-read* file-write* (subpath (param "WRITABLE_0")))',
   );
   expect(globalDeny).toBeGreaterThan(-1);
-  // ~/.letta becomes writable AFTER the global write-deny...
+  // ~/.haruyuki becomes writable AFTER the global write-deny...
   expect(base).toBeGreaterThan(globalDeny);
   // ...the cross-agent tree deny comes AFTER the base (so the nested tree wins)...
   expect(deny).toBeGreaterThan(base);
@@ -122,7 +122,7 @@ test("defines map every param referenced in the profile", () => {
 test("args carry the profile and -D defines for the inner launcher", () => {
   const args = buildSeatbeltArgs(MEMORY_MODE);
   expect(args[0]).toBe("-p");
-  expect(args).toContain("-DDENIED_0=/home/u/.letta/agents");
+  expect(args).toContain("-DDENIED_0=/home/u/.haruyuki/agents");
   expect(args).toContain("-DWRITABLE_1=/tmp");
   // SANDBOX_EXEC_PATH itself is added by wrapLauncher, not here.
   expect(args).not.toContain(SANDBOX_EXEC_PATH);

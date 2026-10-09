@@ -27,19 +27,19 @@ const OTHER = "agent-other";
 const THIRD = "agent-third";
 
 function selfMemory(rel = ""): string {
-  return join(HOME, ".letta", "agents", SELF, "memory", rel);
+  return join(HOME, ".haruyuki", "agents", SELF, "memory", rel);
 }
 
 function otherMemory(rel = ""): string {
-  return join(HOME, ".letta", "agents", OTHER, "memory", rel);
+  return join(HOME, ".haruyuki", "agents", OTHER, "memory", rel);
 }
 
 function otherWorktree(rel = ""): string {
-  return join(HOME, ".letta", "agents", OTHER, "memory-worktrees", rel);
+  return join(HOME, ".haruyuki", "agents", OTHER, "memory-worktrees", rel);
 }
 
 function thirdMemory(rel = ""): string {
-  return join(HOME, ".letta", "agents", THIRD, "memory", rel);
+  return join(HOME, ".haruyuki", "agents", THIRD, "memory", rel);
 }
 
 const ENV_KEYS_TO_RESET = [
@@ -190,7 +190,7 @@ describe("extractTargetAgentPaths", () => {
   test("tilde-based paths resolve against home dir", () => {
     const result = extractTargetAgentPaths(
       "Read",
-      { file_path: `~/.letta/agents/${OTHER}/memory/system/x.md` },
+      { file_path: `~/.haruyuki/agents/${OTHER}/memory/system/x.md` },
       "/tmp",
     );
     expect(result.agentIds).toEqual(new Set([OTHER]));
@@ -473,20 +473,20 @@ describe("checkPermission integration", () => {
 // ---------------------------------------------------------------------------
 // Regression tests: Grep / Glob ancestor-path bypass.
 //
-// The classifier used to require `<home>/.letta/agents/<id>/memory` to
-// match, so pointing Grep or Glob at `.letta/agents` (the tree root)
+// The classifier used to require `<home>/.haruyuki/agents/<id>/memory` to
+// match, so pointing Grep or Glob at `.haruyuki/agents` (the tree root)
 // slipped through entirely — leaking file contents and enumerating every
 // agent on disk.
 // ---------------------------------------------------------------------------
 
 describe("Grep/Glob ancestor-path regression tests", () => {
-  const agentsTreeRoot = join(HOME, ".letta", "agents");
+  const agentsTreeRoot = join(HOME, ".haruyuki", "agents");
 
   beforeEach(() => {
     cliPermissions.setMemoryGuardDisabled(false);
   });
 
-  test("Glob with path='<home>/.letta/agents' is denied", () => {
+  test("Glob with path='<home>/.haruyuki/agents' is denied", () => {
     const result = evaluateCrossAgentGuard(
       "Glob",
       { pattern: "**/*.md", path: agentsTreeRoot },
@@ -496,7 +496,7 @@ describe("Grep/Glob ancestor-path regression tests", () => {
     expect(result?.matchedRule).toBe("cross-agent guard");
   });
 
-  test("Grep with path='<home>/.letta/agents' is denied", () => {
+  test("Grep with path='<home>/.haruyuki/agents' is denied", () => {
     const result = evaluateCrossAgentGuard(
       "Grep",
       { pattern: "password|secret|token|api_key", path: agentsTreeRoot },
@@ -618,7 +618,7 @@ describe("Grep/Glob ancestor-path regression tests", () => {
 describe("symlink-escape (realpath classification of in-process file tools)", () => {
   // Real temp dirs with real symlinks: the realpath classification only has
   // teeth when the paths actually exist on disk. Each test builds a throwaway
-  // home (~/.letta/agents/<id>/memory) and injects it as the guard's homeDir.
+  // home (~/.haruyuki/agents/<id>/memory) and injects it as the guard's homeDir.
   const tempHomes: string[] = [];
 
   function makeTempHome(): string {
@@ -628,7 +628,7 @@ describe("symlink-escape (realpath classification of in-process file tools)", ()
   }
 
   function agentMemory(home: string, id: string, rel = ""): string {
-    return join(home, ".letta", "agents", id, "memory", rel);
+    return join(home, ".haruyuki", "agents", id, "memory", rel);
   }
 
   afterEach(() => {
@@ -791,12 +791,12 @@ describe("sandboxed subagent defers entirely to the kernel", () => {
 });
 
 describe("local-backend memfs tree", () => {
-  // Local-backend memory lives at ~/.letta/lc-local-backend/memfs/<id>/memory,
-  // not ~/.letta/agents. The kernel sandbox confines local subagents and shells,
+  // Local-backend memory lives at ~/.haruyuki/lc-local-backend/memfs/<id>/memory,
+  // not ~/.haruyuki/agents. The kernel sandbox confines local subagents and shells,
   // but the parent agent's in-process Read/Edit/Write never fork, so this guard
   // is their only cross-agent backstop on local too.
   const localMemfs = (id: string, rel = ""): string =>
-    join(HOME, ".letta", "lc-local-backend", "memfs", id, "memory", rel);
+    join(HOME, ".haruyuki", "lc-local-backend", "memfs", id, "memory", rel);
 
   beforeEach(() => {
     cliPermissions.setMemoryGuardDisabled(false);
@@ -837,7 +837,7 @@ describe("local-backend memfs tree", () => {
       "Glob",
       {
         pattern: "**/*",
-        path: join(HOME, ".letta", "lc-local-backend", "memfs"),
+        path: join(HOME, ".haruyuki", "lc-local-backend", "memfs"),
       },
       "/tmp",
     );
@@ -872,7 +872,7 @@ describe("local-backend memfs tree", () => {
 
 describe("toolset alignment (Codex file tools)", () => {
   const localMemfs = (id: string, rel = ""): string =>
-    join(HOME, ".letta", "lc-local-backend", "memfs", id, "memory", rel);
+    join(HOME, ".haruyuki", "lc-local-backend", "memfs", id, "memory", rel);
 
   beforeEach(() => {
     cliPermissions.setMemoryGuardDisabled(false);

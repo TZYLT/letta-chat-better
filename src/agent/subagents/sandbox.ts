@@ -29,12 +29,12 @@ import type { SubagentLaunchProfile } from ".";
  * fall back on); set `LETTA_FS_SANDBOX=0` to opt out. No-ops when the host has
  * no sandbox backend.
  *
- * Both backends scope writes to the harness state dir (`~/.letta`): a memory
+ * Both backends scope writes to the harness state dir (`~/.haruyuki`): a memory
  * subagent may persist memory + harness metadata (settings, logs, conversations,
  * transcripts) but not the repo, home, or temp. Both cross-agent trees
- * (`~/.letta/agents` for API/cloud and `lc-local-backend/memfs` for local) stay
+ * (`~/.haruyuki/agents` for API/cloud and `lc-local-backend/memfs` for local) stay
  * read- and write-denied; self memory is re-carved writable. Carving the whole
- * `~/.letta` rather than each harness file avoids silently breaking harness
+ * `~/.haruyuki` rather than each harness file avoids silently breaking harness
  * writes (settings, etc.) as new writers appear under it.
  */
 
@@ -60,7 +60,7 @@ export interface WrapSubagentLauncherInput {
     readonlyRoots?: string[];
   };
   /**
-   * Local backend storage dir (`~/.letta/lc-local-backend`), used to locate the
+   * Local backend storage dir (`~/.haruyuki/lc-local-backend`), used to locate the
    * `memfs` cross-agent tree. Only consulted when `backendMode === "local"`;
    * null/omitted falls back to the default storage dir.
    */
@@ -109,11 +109,11 @@ export function wrapSubagentLauncher(
     return null;
   }
 
-  // Writes are scoped to the harness state dir (~/.letta) by the policy: the
+  // Writes are scoped to the harness state dir (~/.haruyuki) by the policy: the
   // child can persist memory + harness metadata (settings, logs, conversations,
   // transcripts) but not the repo/home/temp. Pass any harness root configured
-  // OUTSIDE ~/.letta — a custom transcript root, or a relocated local storage
-  // dir — so those stay writable too (defaults already live under ~/.letta).
+  // OUTSIDE ~/.haruyuki — a custom transcript root, or a relocated local storage
+  // dir — so those stay writable too (defaults already live under ~/.haruyuki).
   const isLocal = input.backendMode === "local";
   const storageDir = input.localBackendStorageDir ?? undefined;
   const harnessWritableRoots = [

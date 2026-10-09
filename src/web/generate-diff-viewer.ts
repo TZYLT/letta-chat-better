@@ -3,7 +3,7 @@ import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
  * Browser diff viewer for git worktrees.
  *
  * Collects a git diff for the current worktree, renders each file with
- * @pierre/diffs, writes a self-contained HTML file to ~/.letta/viewers/, and
+ * @pierre/diffs, writes a self-contained HTML file to ~/.haruyuki/viewers/, and
  * opens it in the user's browser.
  */
 

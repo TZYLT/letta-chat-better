@@ -1514,7 +1514,7 @@ export interface SkillDisableCommand {
   type: "skill_disable";
   /** Echoed back in the response for request correlation. */
   request_id: string;
-  /** Skill name (symlink name in ~/.letta/skills/). */
+  /** Skill name (symlink name in ~/.haruyuki/skills/). */
   name: string;
 }
 

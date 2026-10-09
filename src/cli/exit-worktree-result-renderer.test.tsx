@@ -33,7 +33,7 @@ function createInputStream(): NodeJS.ReadStream {
 const removedWorktreeResult = [
   "Removed worktree.",
   "",
-  "Path: /Users/loaner/dev/letta-code-prod/.letta/worktrees/render-test-worktree",
+  "Path: /Users/loaner/dev/letta-code-prod/.haruyuki/worktrees/render-test-worktree",
   "Branch: deleted letta/render-test-worktree-a90824a8",
   "Lock: released",
   "CWD: /Users/loaner/dev/letta-code-prod",
@@ -44,7 +44,7 @@ const removedWorktreeResult = [
 const keptWorktreeResult = [
   "Left worktree.",
   "",
-  "Path: /Users/loaner/dev/letta-code-prod/.letta/worktrees/render-test-worktree",
+  "Path: /Users/loaner/dev/letta-code-prod/.haruyuki/worktrees/render-test-worktree",
   "Branch: letta/render-test-worktree-a90824a8",
   "CWD: /Users/loaner/dev/letta-code-prod",
   "",
@@ -90,7 +90,7 @@ async function renderExitWorktreeToolCall(
 test("parses ExitWorktree tool result fields", () => {
   expect(parseExitWorktreeResult(removedWorktreeResult)).toEqual({
     action: "removed",
-    path: "/Users/loaner/dev/letta-code-prod/.letta/worktrees/render-test-worktree",
+    path: "/Users/loaner/dev/letta-code-prod/.haruyuki/worktrees/render-test-worktree",
     branch: "deleted letta/render-test-worktree-a90824a8",
     lock: "released",
     cwd: "/Users/loaner/dev/letta-code-prod",
@@ -116,7 +116,7 @@ test("ExitWorktree tool result renders a compact structured summary", async () =
 test("ExitWorktree tool result distinguishes a kept worktree", async () => {
   expect(parseExitWorktreeResult(keptWorktreeResult)).toEqual({
     action: "left",
-    path: "/Users/loaner/dev/letta-code-prod/.letta/worktrees/render-test-worktree",
+    path: "/Users/loaner/dev/letta-code-prod/.haruyuki/worktrees/render-test-worktree",
     branch: "letta/render-test-worktree-a90824a8",
     lock: undefined,
     cwd: "/Users/loaner/dev/letta-code-prod",
@@ -135,11 +135,11 @@ test("ExitWorktree renderer flags a working directory that did not switch", asyn
   const strandedResult = [
     "Removed worktree.",
     "",
-    "Path: /repo/.letta/worktrees/stranded",
+    "Path: /repo/.haruyuki/worktrees/stranded",
     "Branch: deleted letta/stranded-1234",
     "CWD: /repo",
     "",
-    "⚠ The working directory could not be switched and may still point at /repo/.letta/worktrees/stranded.",
+    "⚠ The working directory could not be switched and may still point at /repo/.haruyuki/worktrees/stranded.",
   ].join("\n");
 
   expect(parseExitWorktreeResult(strandedResult)?.switchedCwd).toBe(false);

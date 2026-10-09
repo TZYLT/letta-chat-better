@@ -16,6 +16,7 @@ import {
   resolveEntryScriptPath,
   resolveLettaInvocation,
 } from "@/tools/impl/shell-env";
+import { APP_DIR_NAME } from "@/utils/app-paths";
 
 const DEFAULT_TARGET = "memory-citations";
 const DEFAULT_MODEL = "auto";
@@ -106,7 +107,7 @@ function formatModsUsage(error?: string): string {
     "  --candidates <n>              Run N optimization iterations for one learned mod (default: 5)",
     "  --scenario-limit <n>          Evaluate only the first N scenarios (fast smoke testing)",
     "  --candidate-file-name <name>  Candidate filename in the eval mod dir",
-    "  --out <dir>                   Artifact directory (default: .letta/mod-learning-runs/<target>-<timestamp>)",
+    `  --out <dir>                   Artifact directory (default: ${APP_DIR_NAME}/mod-learning-runs/<target>-<timestamp>)`,
     "  --skip-generation             Expect the candidate file to already exist in the run dir",
     "",
     "Built-in targets:",

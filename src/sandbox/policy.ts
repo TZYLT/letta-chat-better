@@ -14,10 +14,10 @@ import { posix, win32 } from "node:path";
  *   - `baseWritableRoots`  write re-allowed under these, emitted BEFORE
  *                       `deniedRoots` so a denied root nested inside still wins.
  *                       Used to grant a broad harness dir (e.g. all of
- *                       `~/.letta`) while keeping the cross-agent tree denied —
+ *                       `~/.haruyuki`) while keeping the cross-agent tree denied —
  *                       so a memory subagent may write harness state anywhere
- *                       under `~/.letta` but not the repo/home/temp.
- *   - `deniedRoots`     read + write denied (e.g. `~/.letta/agents`).
+ *                       under `~/.haruyuki` but not the repo/home/temp.
+ *   - `deniedRoots`     read + write denied (e.g. `~/.haruyuki/agents`).
  *   - `readonlyRoots`   read re-allowed, write stays denied. Overrides denied.
  *   - `writableRoots`   read + write re-allowed. Overrides denied, the global
  *                       write-deny, AND `baseWritableRoots` — for a self carve
@@ -57,11 +57,11 @@ export const SANDBOX_ENV_VAR = "LETTA_SANDBOX";
 export interface BuildPolicyOptions {
   /**
    * Broad write carves emitted BEFORE `deniedRoots` (a nested deny still wins).
-   * e.g. all of `~/.letta` so a memory subagent can write harness state but not
+   * e.g. all of `~/.haruyuki` so a memory subagent can write harness state but not
    * the repo/home/temp.
    */
   baseWritableRoots?: string[];
-  /** Roots to wall off (read+write), e.g. `~/.letta/agents`. */
+  /** Roots to wall off (read+write), e.g. `~/.haruyuki/agents`. */
   deniedRoots?: string[];
   /** Paths to re-expose read-only (e.g. a subagent's parent memory dir). */
   readonlyRoots?: string[];

@@ -84,9 +84,9 @@ async function runScenario(options: {
   replaceInput?: boolean;
 }): Promise<Event[]> {
   const home = mkdtempSync(join(tmpdir(), "letta-headless-response-state-"));
-  mkdirSync(join(home, ".letta"));
+  mkdirSync(join(home, ".haruyuki"));
   writeFileSync(
-    join(home, ".letta", "settings.json"),
+    join(home, ".haruyuki", "settings.json"),
     JSON.stringify({ permissions: { alwaysAsk: ["Bash"] } }),
   );
   const readFile = join(home, "input.txt");

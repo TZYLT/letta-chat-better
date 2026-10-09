@@ -237,7 +237,7 @@ quick checks.
 
 Every run persists its script, args, and a `journal.jsonl` with one line per
 completed subagent call (prompt, outcome, conversation id) under
-`~/.letta/workflows/executions/<id>/`; the tool result names the paths. Before
+`~/.haruyuki/workflows/executions/<id>/`; the tool result names the paths. Before
 diagnosing why a workflow returned an empty or unexpected result, read that
 journal — it records each agent's actual return value and, for a `null`,
 which guard or error produced it. A failed run is not resumable: fix the

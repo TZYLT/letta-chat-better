@@ -54,7 +54,7 @@ describe("feedback submission", () => {
 
     expect(fetchCalls).toBe(0);
     expect(localFeedbackLogPath()).toBe(
-      join(homedir(), ".letta", "logs", "feedback.jsonl"),
+      join(homedir(), ".haruyuki", "logs", "feedback.jsonl"),
     );
     const lines = readFileSync(localFeedbackLogPath(), "utf8")
       .trim()

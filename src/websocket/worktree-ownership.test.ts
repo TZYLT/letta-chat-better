@@ -35,7 +35,7 @@ describe("worktree ownership tracking", () => {
             [
               "/bin/bash",
               "-lc",
-              'git worktree add -b fix/foo ".letta/worktrees/fix-foo" main',
+              'git worktree add -b fix/foo ".haruyuki/worktrees/fix-foo" main',
             ],
             "/repo",
           );
@@ -44,7 +44,7 @@ describe("worktree ownership tracking", () => {
 
       const runtime = getConversationRuntime(listener, "agent-1", "conv-1");
       expect(runtime?.expectedWorktreePath).toBe(
-        path.resolve("/repo", ".letta/worktrees/fix-foo"),
+        path.resolve("/repo", ".haruyuki/worktrees/fix-foo"),
       );
     } finally {
       setActiveRuntime(null);
@@ -61,19 +61,19 @@ describe("worktree ownership tracking", () => {
 
     runtime.expectedWorktreePath = path.resolve(
       "/repo",
-      ".letta/worktrees/fix-foo",
+      ".haruyuki/worktrees/fix-foo",
     );
 
     expect(
       hasExpectedWorktreePath(
         runtime,
-        path.resolve("/repo", ".letta/worktrees/other"),
+        path.resolve("/repo", ".haruyuki/worktrees/other"),
       ),
     ).toBe(false);
     expect(
       hasExpectedWorktreePath(
         runtime,
-        path.resolve("/repo", ".letta/worktrees/fix-foo"),
+        path.resolve("/repo", ".haruyuki/worktrees/fix-foo"),
       ),
     ).toBe(true);
 
@@ -92,12 +92,12 @@ describe("worktree ownership tracking", () => {
           "add",
           "-b",
           "fix/bar",
-          ".letta/worktrees/fix-bar",
+          ".haruyuki/worktrees/fix-bar",
           "main",
         ],
         "/repo",
       ),
-    ).toBe(path.resolve("/repo/packages/app", ".letta/worktrees/fix-bar"));
+    ).toBe(path.resolve("/repo/packages/app", ".haruyuki/worktrees/fix-bar"));
   });
 
   test("parses env-prefixed git worktree commands", () => {
@@ -119,11 +119,11 @@ describe("worktree ownership tracking", () => {
           "add",
           "-b",
           "fix/foo",
-          ".letta/worktrees/fix-foo",
+          ".haruyuki/worktrees/fix-foo",
           "main",
         ],
         "/repo",
       ),
-    ).toBe(path.resolve("/repo", ".letta/worktrees/fix-foo"));
+    ).toBe(path.resolve("/repo", ".haruyuki/worktrees/fix-foo"));
   });
 });

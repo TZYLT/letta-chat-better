@@ -6,7 +6,7 @@ Use this tool only when the user asks to exit, leave, or go back from a worktree
 
 ## Scope
 
-Applies to the worktree the conversation is currently in, when that worktree lives under `.letta/worktrees/` — the location EnterWorktree creates and enters. It does not matter whether this conversation created it.
+Applies to the worktree the conversation is currently in, when that worktree lives under `.haruyuki/worktrees/` — the location EnterWorktree creates and enters. It does not matter whether this conversation created it.
 
 If the current working directory is not a managed worktree, this tool is a **no-op**: it reports that there is nothing to exit and changes nothing on disk.
 

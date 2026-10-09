@@ -183,12 +183,12 @@ async function runDenyLifecycleScenario(): Promise<HeadlessEvent[]> {
   const tempRoot = await mkdtemp(join(tmpdir(), "letta-deny-interrupt-"));
   tempRoots.push(tempRoot);
   const homeDir = join(tempRoot, "home");
-  mkdirSync(join(homeDir, ".letta"), { recursive: true });
+  mkdirSync(join(homeDir, ".haruyuki"), { recursive: true });
   writeFileSync(
-    join(homeDir, ".letta", "settings.json"),
+    join(homeDir, ".haruyuki", "settings.json"),
     JSON.stringify({ permissions: { alwaysAsk: ["Bash"] } }),
   );
-  // A persisted `~/.letta/cache/model-catalog.json` used to seed the catalog
+  // A persisted `~/.haruyuki/cache/model-catalog.json` used to seed the catalog
   // here. That cache went away with the Cloud catalog endpoint, and the dev
   // backend projects no models, so the child names the local default instead.
 

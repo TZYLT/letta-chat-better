@@ -148,7 +148,7 @@ function buildExitWorktreeMessage(params: {
  * Scope is the *current* working directory rather than a recorded session:
  * EnterWorktree can also switch into a worktree another conversation created,
  * and after a restart there is no in-memory session to consult. If the cwd is
- * not a managed worktree under `.letta/worktrees/`, this is a no-op.
+ * not a managed worktree under `.haruyuki/worktrees/`, this is a no-op.
  */
 export async function exit_worktree(
   rawArgs: Record<string, unknown>,
@@ -191,7 +191,7 @@ export async function exit_worktree(
       return textResult(
         [
           `Not in a managed worktree (current directory: ${currentCwd}).`,
-          "ExitWorktree only applies to worktrees under .letta/worktrees/; nothing to do.",
+          "ExitWorktree only applies to worktrees under .haruyuki/worktrees/; nothing to do.",
         ].join("\n"),
         "success",
       );

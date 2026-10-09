@@ -119,13 +119,13 @@ async function runLiveBidirectionalReflectionSmoke(
   const homeDir = join(tmpRoot, "home");
   const projectDir = join(tmpRoot, "project");
   const transcriptRoot = join(tmpRoot, "transcripts");
-  await mkdir(join(homeDir, ".letta"), { recursive: true });
-  await mkdir(join(homeDir, ".letta", "agents"), { recursive: true });
+  await mkdir(join(homeDir, ".haruyuki"), { recursive: true });
+  await mkdir(join(homeDir, ".haruyuki", "agents"), { recursive: true });
   await mkdir(projectDir, { recursive: true });
   await mkdir(transcriptRoot, { recursive: true });
 
   await writeFile(
-    join(homeDir, ".letta", "agents", "reflection.md"),
+    join(homeDir, ".haruyuki", "agents", "reflection.md"),
     reflectionSubagentMd.replace(
       "\nmodel: inherit\n",
       `\nmodel: ${args.reflectionModel}\n`,
@@ -133,7 +133,7 @@ async function runLiveBidirectionalReflectionSmoke(
   );
 
   await writeFile(
-    join(homeDir, ".letta", "settings.json"),
+    join(homeDir, ".haruyuki", "settings.json"),
     JSON.stringify(
       {
         tokenStreaming: false,

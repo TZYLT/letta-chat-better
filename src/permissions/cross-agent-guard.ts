@@ -33,6 +33,7 @@ import { homedir } from "node:os";
 import { getRuntimeContext } from "@/runtime-context";
 import { getRuntimeExecutionEnv } from "@/runtime-execution-settings";
 import { SANDBOX_ENV_VAR } from "@/sandbox/policy";
+import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 import {
   getLocalBackendCrossAgentTreeRoot,
   getLocalBackendStorageDir,
@@ -104,7 +105,7 @@ export interface CrossAgentTargets {
   agentIds: Set<string>;
   /**
    * True iff at least one target path resolved under a cross-agent memory tree
-   * (`~/.letta/agents/<id>/...` on API, `<storage>/memfs/<id>/...` on local) —
+   * (`~/.haruyuki/agents/<id>/...` on API, `<storage>/memfs/<id>/...` on local) —
    * the only case where the guard is concerned at all.
    */
   anyAgentScoped: boolean;
@@ -120,12 +121,12 @@ export interface CrossAgentTargets {
 const UNRESOLVED_AGENT_ID = "<unresolved>";
 
 /**
- * The agents-tree root on this machine, e.g. `/home/user/.letta/agents`,
+ * The agents-tree root on this machine, e.g. `/home/user/.haruyuki/agents`,
  * normalized (forward slashes, no trailing slash).
  */
 function getAgentsTreeRoot(homeDir: string): string {
   const normalizedHome = homeDir.replace(/\\/g, "/").replace(/\/+$/, "");
-  return `${normalizedHome}/.letta/agents`;
+  return `${normalizedHome}/${APP_DIR_NAME}/${APP_SUBDIRS.agents}`;
 }
 
 /**
@@ -158,9 +159,9 @@ export type AgentsTreeClassification =
 /**
  * Every cross-agent memory tree on this machine, normalized. A target under any
  * of these (and not belonging to self/parent) is denied:
- *   - API backend:   `<home>/.letta/agents`
+ *   - API backend:   `<home>/.haruyuki/agents`
  *   - local backend: `<storage>/memfs` — storage is `$LETTA_LOCAL_BACKEND_DIR`
- *     or `<home>/.letta/lc-local-backend`
+ *     or `<home>/.haruyuki/lc-local-backend`
  * Both share the `<root>/<agentId>/...` shape, so {@link classifyPathUnderRoot}
  * resolves the agent id regardless of backend. The local root is always included
  * (a no-op when local backend is unused — no files live there) so a single agent
@@ -342,7 +343,7 @@ export function extractTargetAgentPaths(
   addFromPath(extractFilePath(toolArgs));
 
   // Glob also accepts a `pattern` arg. An absolute pattern like
-  // `/home/user/.letta/agents/**/*.md` would bypass the `path` check
+  // `/home/user/.haruyuki/agents/**/*.md` would bypass the `path` check
   // entirely. Run the pattern through the same resolver.
   if (recursive && typeof toolArgs.pattern === "string") {
     addFromPath(toolArgs.pattern);

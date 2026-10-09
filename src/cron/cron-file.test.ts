@@ -48,7 +48,7 @@ beforeEach(() => {
     rmSync(TEST_DIR, { recursive: true });
   }
   mkdirSync(TEST_DIR, { recursive: true });
-  // Note: cronFile.ts reads from ~/.letta/crons.json.
+  // Note: cronFile.ts reads from ~/.haruyuki/crons.json.
   // For unit tests we need to test the pure logic functions.
   // We'll test addTask/listTasks/deleteTask through the public API
   // by setting LETTA_HOME.

@@ -401,13 +401,13 @@ test("File pattern: Windows absolute path in working directory", () => {
 
 test("File pattern: Windows absolute variants are equivalent", () => {
   const query =
-    "Edit(C:\\Users\\Aaron\\.letta\\agents\\agent-1\\memory\\system\\project\\tech_stack.md)";
+    "Edit(C:\\Users\\Aaron\\.haruyuki\\agents\\agent-1\\memory\\system\\project\\tech_stack.md)";
   const workingDir = "C:\\Users\\Aaron\\repo";
 
   expect(
     matchesFilePattern(
       query,
-      "Edit(/C:/Users/Aaron/.letta/agents/agent-1/memory/system/project/**)",
+      "Edit(/C:/Users/Aaron/.haruyuki/agents/agent-1/memory/system/project/**)",
       workingDir,
     ),
   ).toBe(true);
@@ -415,7 +415,7 @@ test("File pattern: Windows absolute variants are equivalent", () => {
   expect(
     matchesFilePattern(
       query,
-      "Edit(//C:/Users/Aaron/.letta/agents/agent-1/memory/system/project/**)",
+      "Edit(//C:/Users/Aaron/.haruyuki/agents/agent-1/memory/system/project/**)",
       workingDir,
     ),
   ).toBe(true);
@@ -423,7 +423,7 @@ test("File pattern: Windows absolute variants are equivalent", () => {
   expect(
     matchesFilePattern(
       query,
-      "Edit(C:/Users/Aaron/.letta/agents/agent-1/memory/system/project/**)",
+      "Edit(C:/Users/Aaron/.haruyuki/agents/agent-1/memory/system/project/**)",
       workingDir,
     ),
   ).toBe(true);

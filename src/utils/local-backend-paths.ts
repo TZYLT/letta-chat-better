@@ -4,7 +4,7 @@ import { APP_SUBDIRS, appHomePath } from "@/utils/app-paths";
 
 /**
  * Env override for the local-backend storage dir (defaults to
- * `~/.letta/lc-local-backend`).
+ * `~/.haruyuki/lc-local-backend`).
  */
 export const LOCAL_BACKEND_DIR_ENV = "LETTA_LOCAL_BACKEND_DIR";
 
@@ -30,7 +30,7 @@ export function getLocalBackendStorageDir(
 /**
  * The tree holding every local-backend agent's memory (`<storage>/memfs`) — the
  * cross-agent boundary the filesystem sandbox walls off, analogous to
- * `~/.letta/agents` on the API backend. Each agent's memory lives at
+ * `~/.haruyuki/agents` on the API backend. Each agent's memory lives at
  * `<this>/<agentId>/memory`, so self is carved the same way on both backends.
  */
 export function getLocalBackendCrossAgentTreeRoot(

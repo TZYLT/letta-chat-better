@@ -261,7 +261,7 @@ describe("Startup Flow - Integration", () => {
       const homeDir = await mkdtemp(
         join(tmpdir(), "letta-ephemeral-cloud-home-"),
       );
-      const settingsDir = join(homeDir, ".letta");
+      const settingsDir = join(homeDir, ".haruyuki");
       await mkdir(settingsDir, { recursive: true });
       await writeFile(
         join(settingsDir, "settings.json"),

@@ -24,7 +24,7 @@ beforeEach(async () => {
   testHomeDir = await mkdtemp(join(tmpdir(), "letta-artifacts-home-"));
   process.env.HOME = testHomeDir;
   process.env.USERPROFILE = testHomeDir;
-  process.env.LETTA_ARTIFACTS_DIR = join(testHomeDir, ".letta", "artifacts");
+  process.env.LETTA_ARTIFACTS_DIR = join(testHomeDir, ".haruyuki", "artifacts");
   await settingsManager.initialize();
 });
 
@@ -58,7 +58,7 @@ describe("artifact file tools", () => {
     ).rejects.toThrow("artifacts experiment is disabled");
   });
 
-  test("write and read files under ~/.letta/artifacts", async () => {
+  test("write and read files under ~/.haruyuki/artifacts", async () => {
     experimentManager.set("artifacts", true);
 
     const writeResult = await write_artifact_file({
@@ -72,7 +72,7 @@ describe("artifact file tools", () => {
       readFile(
         join(
           testHomeDir,
-          ".letta",
+          ".haruyuki",
           "artifacts",
           "todo-app",
           "ui",

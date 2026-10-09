@@ -122,9 +122,9 @@ Only set LETTA_BASE_URL when targeting a separate self-hosted server. Do not set
 a dummy LETTA_BASE_URL for --backend local.
 
 State files:
-  ~/.letta/channels/<channel>/accounts.json
-  ~/.letta/channels/<channel>/pairing.yaml
-  ~/.letta/channels/<channel>/routing.json
+  ~/.haruyuki/channels/<channel>/accounts.json
+  ~/.haruyuki/channels/<channel>/pairing.yaml
+  ~/.haruyuki/channels/<channel>/routing.json
 
 Output is JSON.
 `.trim(),

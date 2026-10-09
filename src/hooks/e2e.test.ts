@@ -38,8 +38,8 @@ function setupTestEnv(): TestEnv {
   const fakeHome = join(baseDir, "home");
   const markerFile = join(baseDir, "hook-marker.txt");
 
-  mkdirSync(join(projectDir, ".letta"), { recursive: true });
-  mkdirSync(join(fakeHome, ".letta"), { recursive: true });
+  mkdirSync(join(projectDir, ".haruyuki"), { recursive: true });
+  mkdirSync(join(fakeHome, ".haruyuki"), { recursive: true });
 
   return { baseDir, projectDir, fakeHome, markerFile };
 }
@@ -60,7 +60,7 @@ function cleanup(env: TestEnv): void {
  */
 function writeHooksConfig(env: TestEnv, hooks: Record<string, unknown>): void {
   writeFileSync(
-    join(env.projectDir, ".letta", "settings.json"),
+    join(env.projectDir, ".haruyuki", "settings.json"),
     JSON.stringify({ hooks }),
   );
 }

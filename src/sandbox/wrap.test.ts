@@ -5,8 +5,8 @@ import { SANDBOX_EXEC_PATH } from "@/sandbox/seatbelt";
 import { wrapLauncher } from "@/sandbox/wrap";
 
 const POLICY = buildFsSandboxPolicy({
-  deniedRoots: ["/home/u/.letta/agents"],
-  writableRoots: ["/home/u/.letta/agents/self"],
+  deniedRoots: ["/home/u/.haruyuki/agents"],
+  writableRoots: ["/home/u/.haruyuki/agents/self"],
 });
 
 const LAUNCHER = ["/bin/zsh", "-c", "echo hi"];

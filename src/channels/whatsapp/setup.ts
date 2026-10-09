@@ -150,7 +150,7 @@ export async function runWhatsAppSetup(): Promise<boolean> {
     upsertChannelAccount("whatsapp", account);
     console.log("\nWhatsApp account configured.");
     console.log(
-      "Config written to: ~/.letta/channels/whatsapp/accounts.json\n",
+      "Config written to: ~/.haruyuki/channels/whatsapp/accounts.json\n",
     );
     console.log("Next steps:");
     console.log("  1. Start the listener: letta server --channels whatsapp");

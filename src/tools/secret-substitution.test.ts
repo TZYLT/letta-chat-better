@@ -605,12 +605,12 @@ describe("ambient runtime credential redaction", () => {
       const fakeHome = join(baseDir, "home");
       const projectDir = join(baseDir, "project");
       mkdirSync(fakeHome, { recursive: true });
-      mkdirSync(join(projectDir, ".letta"), { recursive: true });
+      mkdirSync(join(projectDir, ".haruyuki"), { recursive: true });
       // The hook echoes the ambient runtime key from its inherited
       // environment to stderr and blocks (exit 2); that stderr becomes hook
       // feedback appended to the model-facing tool result.
       writeFileSync(
-        join(projectDir, ".letta", "settings.json"),
+        join(projectDir, ".haruyuki", "settings.json"),
         JSON.stringify({
           hooks: {
             PostToolUse: [
@@ -675,12 +675,12 @@ describe("ambient runtime credential redaction", () => {
       const fakeHome = join(baseDir, "home");
       const projectDir = join(baseDir, "project");
       mkdirSync(fakeHome, { recursive: true });
-      mkdirSync(join(projectDir, ".letta"), { recursive: true });
+      mkdirSync(join(projectDir, ".haruyuki"), { recursive: true });
       // Over-limit (10k) hook output with the sentinel on both sides of the
       // 2k preview boundary, so containment must hold in the returned excerpt
       // AND the persisted overflow file the model is pointed at.
       writeFileSync(
-        join(projectDir, ".letta", "settings.json"),
+        join(projectDir, ".haruyuki", "settings.json"),
         JSON.stringify({
           hooks: {
             PostToolUse: [

@@ -36,7 +36,7 @@ function createDiagnostic(): ModDiagnostic {
 describe("mod diagnostics file", () => {
   test("resolves diagnostics under the mods directory", () => {
     expect(getDefaultModDiagnosticsRoot("/home/test")).toBe(
-      path.join("/home/test", ".letta", "mods", "diagnostics"),
+      path.join("/home/test", ".haruyuki", "mods", "diagnostics"),
     );
     expect(getModDiagnosticsLatestFilePath("/tmp/root")).toBe(
       path.join("/tmp/root", "latest.json"),
@@ -46,7 +46,7 @@ describe("mod diagnostics file", () => {
   test("resolves diagnostics under legacy extensions directory for legacy-only users", () => {
     const root = createTempDir();
     try {
-      const legacyDirectory = path.join(root, ".letta", "extensions");
+      const legacyDirectory = path.join(root, ".haruyuki", "extensions");
       mkdirSync(legacyDirectory, { recursive: true });
 
       expect(getDefaultModDiagnosticsRoot(root)).toBe(

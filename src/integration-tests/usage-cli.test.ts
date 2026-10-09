@@ -75,9 +75,9 @@ test("usage CLI reads live credits and model quota and rejects invalid auth", as
     // Exercise saved OAuth initialization against the real token endpoint.
     // A deliberately invalid refresh token must fail there, not use the expired
     // access token for the balance or quota request.
-    await mkdir(join(home, ".letta"), { recursive: true });
+    await mkdir(join(home, ".haruyuki"), { recursive: true });
     await writeFile(
-      join(home, ".letta", "settings.json"),
+      join(home, ".haruyuki", "settings.json"),
       JSON.stringify({
         env: { LETTA_API_KEY: "expired-usage-cli-test-token" },
         refreshToken: "invalid-usage-cli-test-refresh-token",

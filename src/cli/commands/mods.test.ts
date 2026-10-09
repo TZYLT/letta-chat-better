@@ -205,7 +205,7 @@ describe("/mods command", () => {
     let learningStarted = false;
 
     const result = handleModsCommand(
-      "/mods learn memory-citations --model current --out .letta/test-run",
+      "/mods learn memory-citations --model current --out .haruyuki/test-run",
       {
         commandRunner: runner,
         currentModelId: "openai/gpt-5.5",
@@ -222,7 +222,7 @@ describe("/mods command", () => {
           expect(options.env?.LETTA_API_KEY).toBe("test-key");
           expect(options.generationModel).toBe("openai/gpt-5.5");
           expect(options.evalModel).toBe("openai/gpt-5.5");
-          expect(options.runDir).toBe(path.join(cwd, ".letta", "test-run"));
+          expect(options.runDir).toBe(path.join(cwd, ".haruyuki", "test-run"));
           expect(options.candidateCount).toBe(5);
           expect(options.scenarioLimit).toBeUndefined();
           options.onProgress?.({
@@ -230,7 +230,7 @@ describe("/mods command", () => {
             candidateIndex: 1,
             candidatePath: path.join(
               cwd,
-              ".letta",
+              ".haruyuki",
               "test-run",
               "candidates",
               "001",
@@ -239,7 +239,7 @@ describe("/mods command", () => {
             ),
             message: "Generating optimization iteration 1/5",
             phase: "generating",
-            runDir: path.join(cwd, ".letta", "test-run"),
+            runDir: path.join(cwd, ".haruyuki", "test-run"),
           });
           options.onProgress?.({
             attempts: [
@@ -247,7 +247,7 @@ describe("/mods command", () => {
                 candidateIndex: 1,
                 candidatePath: path.join(
                   cwd,
-                  ".letta",
+                  ".haruyuki",
                   "test-run",
                   "mods",
                   "memory-citations.ts",
@@ -259,8 +259,13 @@ describe("/mods command", () => {
                 passed: true,
                 presentForbiddenResultMarkers: [],
                 presentForbiddenTraceMarkers: [],
-                reportPath: path.join(cwd, ".letta", "test-run", "report.md"),
-                runDir: path.join(cwd, ".letta", "test-run"),
+                reportPath: path.join(
+                  cwd,
+                  ".haruyuki",
+                  "test-run",
+                  "report.md",
+                ),
+                runDir: path.join(cwd, ".haruyuki", "test-run"),
                 maxScore: 6,
                 score: 2,
               },
@@ -269,7 +274,7 @@ describe("/mods command", () => {
             candidateIndex: 2,
             candidatePath: path.join(
               cwd,
-              ".letta",
+              ".haruyuki",
               "test-run",
               "candidates",
               "002",
@@ -280,14 +285,14 @@ describe("/mods command", () => {
             message:
               "Evaluating optimization iteration 2/5: scenario 1/7 mod-loads",
             phase: "evaluating",
-            runDir: path.join(cwd, ".letta", "test-run"),
+            runDir: path.join(cwd, ".haruyuki", "test-run"),
             score: 4,
           });
           await learningGate;
           return {
             candidatePath: path.join(
               cwd,
-              ".letta",
+              ".haruyuki",
               "test-run",
               "candidates",
               "002",
@@ -299,7 +304,7 @@ describe("/mods command", () => {
                 candidateIndex: 1,
                 candidatePath: path.join(
                   cwd,
-                  ".letta",
+                  ".haruyuki",
                   "test-run",
                   "candidates",
                   "001",
@@ -315,7 +320,7 @@ describe("/mods command", () => {
                 presentForbiddenTraceMarkers: [],
                 reportPath: path.join(
                   cwd,
-                  ".letta",
+                  ".haruyuki",
                   "test-run",
                   "candidates",
                   "001",
@@ -323,7 +328,7 @@ describe("/mods command", () => {
                 ),
                 runDir: path.join(
                   cwd,
-                  ".letta",
+                  ".haruyuki",
                   "test-run",
                   "candidates",
                   "001",
@@ -335,7 +340,7 @@ describe("/mods command", () => {
                 candidateIndex: 2,
                 candidatePath: path.join(
                   cwd,
-                  ".letta",
+                  ".haruyuki",
                   "test-run",
                   "candidates",
                   "002",
@@ -351,7 +356,7 @@ describe("/mods command", () => {
                 presentForbiddenTraceMarkers: [],
                 reportPath: path.join(
                   cwd,
-                  ".letta",
+                  ".haruyuki",
                   "test-run",
                   "candidates",
                   "002",
@@ -359,7 +364,7 @@ describe("/mods command", () => {
                 ),
                 runDir: path.join(
                   cwd,
-                  ".letta",
+                  ".haruyuki",
                   "test-run",
                   "candidates",
                   "002",
@@ -370,7 +375,12 @@ describe("/mods command", () => {
             ],
             candidateCount: 5,
             candidateIndex: 2,
-            evalMemoryDir: path.join(cwd, ".letta", "test-run", "eval-memory"),
+            evalMemoryDir: path.join(
+              cwd,
+              ".haruyuki",
+              "test-run",
+              "eval-memory",
+            ),
             evalResult: null,
             evaluation: {
               assertionChecks: [],
@@ -384,8 +394,8 @@ describe("/mods command", () => {
             generationResult: null,
             passed: true,
             promotedToPath: null,
-            reportPath: path.join(cwd, ".letta", "test-run", "report.md"),
-            runDir: path.join(cwd, ".letta", "test-run"),
+            reportPath: path.join(cwd, ".haruyuki", "test-run", "report.md"),
+            runDir: path.join(cwd, ".haruyuki", "test-run"),
             maxScore: 6,
             selectedCandidateIndex: 2,
             score: 4,

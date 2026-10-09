@@ -130,7 +130,7 @@ describe("Settings Manager - Initialization", () => {
 
   test("Initialize tolerates obsolete keys and strips them on persist", async () => {
     const { writeFile, readFile, mkdir } = await import("@/utils/fs.js");
-    const settingsDir = join(testHomeDir, ".letta");
+    const settingsDir = join(testHomeDir, ".haruyuki");
     await mkdir(settingsDir, { recursive: true });
     const settingsPath = join(settingsDir, "settings.json");
 
@@ -358,7 +358,7 @@ describe("Settings Manager - Global Settings", () => {
 });
 
 // ============================================================================
-// Project Settings Tests (.letta/settings.json)
+// Project Settings Tests (.haruyuki/settings.json)
 // ============================================================================
 
 describe("Settings Manager - Project Settings", () => {
@@ -428,7 +428,7 @@ describe("Settings Manager - Project Settings", () => {
   test("When cwd is HOME, project settings resolve to defaults (no global collision)", async () => {
     await settingsManager.initialize();
 
-    // Seed a global windowTitle config in ~/.letta/settings.json
+    // Seed a global windowTitle config in ~/.haruyuki/settings.json
     settingsManager.updateSettings({
       windowTitle: { items: ["agent-name"] },
     });
@@ -477,7 +477,7 @@ describe("Settings Manager - Project Settings", () => {
 });
 
 // ============================================================================
-// Local Project Settings Tests (.letta/settings.local.json)
+// Local Project Settings Tests (.haruyuki/settings.local.json)
 // ============================================================================
 
 describe("Settings Manager - Local Project Settings", () => {
@@ -494,7 +494,7 @@ describe("Settings Manager - Local Project Settings", () => {
 
   test("Load local settings tolerates legacy reflectionBehavior key and strips it", async () => {
     const { writeFile, readFile, mkdir } = await import("@/utils/fs.js");
-    const settingsDir = join(testProjectDir, ".letta");
+    const settingsDir = join(testProjectDir, ".haruyuki");
     await mkdir(settingsDir, { recursive: true });
     const settingsPath = join(settingsDir, "settings.local.json");
 
@@ -674,10 +674,10 @@ describe("Settings Manager - Session Persistence", () => {
     );
     await settingsManager.flush();
 
-    const globalSettingsPath = join(testHomeDir, ".letta", "settings.json");
+    const globalSettingsPath = join(testHomeDir, ".haruyuki", "settings.json");
     const localSettingsPath = join(
       testProjectDir,
-      ".letta",
+      ".haruyuki",
       "settings.local.json",
     );
     const firstGlobalMtime = (await stat(globalSettingsPath)).mtimeMs;
@@ -727,7 +727,7 @@ describe("Settings Manager - Reset", () => {
 
   test("Reset clears managedKeys so stale keys don't leak into next session", async () => {
     const { writeFile, mkdir } = await import("@/utils/fs.js");
-    const settingsDir = join(testHomeDir, ".letta");
+    const settingsDir = join(testHomeDir, ".haruyuki");
     await mkdir(settingsDir, { recursive: true });
 
     // First session: write a setting that will be tracked in managedKeys
@@ -963,7 +963,7 @@ describe("Settings Manager - Edge Cases", () => {
   test("Handles corrupted settings file gracefully", async () => {
     // Create corrupted settings file
     const { writeFile, mkdir } = await import("@/utils/fs.js");
-    const settingsDir = join(testHomeDir, ".letta");
+    const settingsDir = join(testHomeDir, ".haruyuki");
     await mkdir(settingsDir, { recursive: true });
     await writeFile(join(settingsDir, "settings.json"), "{ invalid json");
 
@@ -1034,7 +1034,7 @@ describe("Settings Manager - Agents Array Migration", () => {
     "Subagent process skips token migration to secrets",
     async () => {
       const { writeFile, mkdir } = await import("@/utils/fs.js");
-      const settingsDir = join(testHomeDir, ".letta");
+      const settingsDir = join(testHomeDir, ".haruyuki");
       await mkdir(settingsDir, { recursive: true });
       await writeFile(
         join(settingsDir, "settings.json"),
@@ -1368,7 +1368,7 @@ describe("Settings Manager - Pinned Agents", () => {
 describe("Settings Manager - Managed Keys Preservation", () => {
   test("Unknown top-level keys in the file are preserved across writes", async () => {
     const { writeFile, mkdir } = await import("@/utils/fs.js");
-    const settingsDir = join(testHomeDir, ".letta");
+    const settingsDir = join(testHomeDir, ".haruyuki");
     await mkdir(settingsDir, { recursive: true });
 
     // Simulate a user manually adding a key that Letta Code doesn't know about
@@ -1399,7 +1399,7 @@ describe("Settings Manager - Managed Keys Preservation", () => {
 
   test("External updates to managed keys are preserved when this process didn't change them", async () => {
     const { writeFile, readFile, mkdir } = await import("@/utils/fs.js");
-    const settingsDir = join(testHomeDir, ".letta");
+    const settingsDir = join(testHomeDir, ".haruyuki");
     const settingsPath = join(settingsDir, "settings.json");
     await mkdir(settingsDir, { recursive: true });
 
@@ -1441,7 +1441,7 @@ describe("Settings Manager - Managed Keys Preservation", () => {
 
   test("External deletion of managed keys is preserved when this process didn't change them", async () => {
     const { writeFile, readFile, mkdir } = await import("@/utils/fs.js");
-    const settingsDir = join(testHomeDir, ".letta");
+    const settingsDir = join(testHomeDir, ".haruyuki");
     const settingsPath = join(settingsDir, "settings.json");
     await mkdir(settingsDir, { recursive: true });
 
@@ -1493,7 +1493,7 @@ describe("Settings Manager - Managed Keys Preservation", () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       const { readFile } = await import("@/utils/fs.js");
-      const settingsDir = join(testHomeDir, ".letta");
+      const settingsDir = join(testHomeDir, ".haruyuki");
       const raw = JSON.parse(
         await readFile(join(settingsDir, "settings.json")),
       ) as Record<string, unknown>;
@@ -1510,7 +1510,7 @@ describe("Settings Manager - Managed Keys Preservation", () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       const { readFile } = await import("@/utils/fs.js");
-      const settingsDir = join(testHomeDir, ".letta");
+      const settingsDir = join(testHomeDir, ".haruyuki");
       const raw = JSON.parse(
         await readFile(join(settingsDir, "settings.json")),
       ) as Record<string, unknown>;
@@ -1529,7 +1529,7 @@ describe("Settings Manager - Managed Keys Preservation", () => {
 
     try {
       const { writeFile, readFile, mkdir } = await import("@/utils/fs.js");
-      const settingsDir = join(testHomeDir, ".letta");
+      const settingsDir = join(testHomeDir, ".haruyuki");
       const settingsPath = join(settingsDir, "settings.json");
       await mkdir(settingsDir, { recursive: true });
 
@@ -1589,7 +1589,7 @@ describe("readStartupBackendSettingsSync", () => {
   });
 
   function writeSettings(data: Record<string, unknown>): void {
-    const dir = join(tmpHome, ".letta");
+    const dir = join(tmpHome, ".haruyuki");
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, "settings.json"), JSON.stringify(data));
   }
@@ -1623,7 +1623,7 @@ describe("readStartupBackendSettingsSync", () => {
   });
 
   test("returns empty settings for malformed JSON", () => {
-    const dir = join(tmpHome, ".letta");
+    const dir = join(tmpHome, ".haruyuki");
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, "settings.json"), "not json{{{");
 

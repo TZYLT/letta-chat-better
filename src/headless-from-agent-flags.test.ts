@@ -18,9 +18,9 @@ async function runStartup(args: string[]) {
   const home = await mkdtemp(join(tmpdir(), "letta-from-agent-flags-"));
   const requestLog = join(home, "requests.jsonl");
   try {
-    await mkdir(join(home, ".letta"));
+    await mkdir(join(home, ".haruyuki"));
     await writeFile(
-      join(home, ".letta", "settings.json"),
+      join(home, ".haruyuki", "settings.json"),
       JSON.stringify({
         agents: [{ agentId: "agent-named-target", pinned: true }],
       }),

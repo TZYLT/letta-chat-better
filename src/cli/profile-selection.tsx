@@ -21,6 +21,7 @@ import { getBackendForMode } from "@/backend";
 import { listPinnedAgentsForCurrentUser } from "@/cli/helpers/pinned-agent-listing";
 import { getRecentAgentOptions } from "@/cli/helpers/recent-agent-options";
 import { settingsManager } from "@/settings-manager";
+import { appHomeDirName } from "@/utils/app-paths";
 import { colors } from "./components/colors";
 import { ModelReasoningSelector } from "./components/ModelReasoningSelector";
 import { registryHandleForBackendModel } from "./components/model-selector-helpers";
@@ -366,7 +367,7 @@ function ProfileSelectionUI({
   const contextMessage = externalFreshRepoMode
     ? `${options.length} pinned agent${options.length !== 1 ? "s" : ""} available.`
     : hasLocalDir
-      ? "Existing `.letta` folder detected."
+      ? `Existing \`${appHomeDirName()}\` folder detected.`
       : `${options.length} agent profile${options.length !== 1 ? "s" : ""} detected.`;
 
   return (

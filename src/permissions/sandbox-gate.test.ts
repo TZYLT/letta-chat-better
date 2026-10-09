@@ -60,7 +60,7 @@ test("false when no backend is available", () => {
 });
 
 test("false when cwd is inside the agents tree", () => {
-  const cwdInTree = join(homedir(), ".letta", "agents", "self", "memory");
+  const cwdInTree = join(homedir(), ".haruyuki", "agents", "self", "memory");
   const env = { LETTA_FS_SANDBOX: "1", MEMORY_DIR: cwdInTree };
   expect(willSandboxShell(cwdInTree, env, SEATBELT)).toBe(false);
 });
@@ -91,7 +91,7 @@ test("false when api backend cwd is inside the local memfs tree", () => {
   const env = {
     LETTA_FS_SANDBOX: "1",
     LETTA_LOCAL_BACKEND_DIR: storageDir,
-    MEMORY_DIR: join(homedir(), ".letta", "agents", "self", "memory"),
+    MEMORY_DIR: join(homedir(), ".haruyuki", "agents", "self", "memory"),
   };
   expect(willSandboxShell(cwdInTree, env, SEATBELT)).toBe(false);
 });

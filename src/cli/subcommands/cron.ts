@@ -11,7 +11,7 @@
  *   letta cron delete <id|name>   (alias: remove)
  *   letta cron delete --all [--agent <id>]
  *
- * Every schedule is device-local: it lives in ~/.letta/crons.json and fires
+ * Every schedule is device-local: it lives in ~/.haruyuki/crons.json and fires
  * from the WS listener process on this device. Durable Cloud schedules were
  * removed with the rest of the Cloud surface.
  */

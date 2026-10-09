@@ -222,9 +222,9 @@ export function resetPermissionLoaderCacheForTests(): void {
  * Load permissions from all settings files and merge them hierarchically.
  *
  * Precedence (highest to lowest):
- * 1. Local project settings (.letta/settings.local.json)
- * 2. Project settings (.letta/settings.json)
- * 3. User settings (~/.letta/settings.json)
+ * 1. Local project settings (.haruyuki/settings.local.json)
+ * 2. Project settings (.haruyuki/settings.json)
+ * 3. User settings (~/.haruyuki/settings.json)
  * 4. Legacy user settings (~/.config/letta/settings.json)
  *
  * Rules are merged by concatenating arrays (more specific settings add to broader ones)
@@ -396,14 +396,14 @@ export async function savePermissionRule(
   await writeFile(settingsPath, JSON.stringify(settings, null, 2));
   invalidatePermissionSource(settingsPath);
 
-  // If saving to .letta/settings.local.json, ensure it's gitignored
+  // If saving to .haruyuki/settings.local.json, ensure it's gitignored
   if (scope === "local") {
     await ensureLocalSettingsIgnored(normalizedWorkingDirectory);
   }
 }
 
 /**
- * Ensure .letta/settings.local.json is in .gitignore
+ * Ensure .haruyuki/settings.local.json is in .gitignore
  */
 async function ensureLocalSettingsIgnored(
   workingDirectory: string,

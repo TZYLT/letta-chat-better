@@ -71,7 +71,7 @@ describe.skipIf(isWindows)("Hooks Integration Tests", () => {
 
   // Helper to create hook config
   function createHooksConfig(hooks: Record<string, unknown>) {
-    const settingsDir = join(tempDir, ".letta");
+    const settingsDir = join(tempDir, ".haruyuki");
     mkdirSync(settingsDir, { recursive: true });
     writeFileSync(
       join(settingsDir, "settings.json"),

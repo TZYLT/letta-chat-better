@@ -7,6 +7,13 @@ const [, , cliPath, projectRoot, runtime = "node", scenario = "fresh"] =
   process.argv;
 const INK_BRACKETED_PASTE_ENABLE = "\x1b[?2004h";
 
+/**
+ * Harness state directory name. Mirrors `APP_DIR_NAME` in
+ * `src/utils/app-paths.ts`; this file is a plain `.cjs` child process and
+ * cannot import that TS module, so it carries its own copy. Rename checklist.
+ */
+const HARNESS_DIR_NAME = ".haruyuki";
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -24,7 +31,7 @@ async function waitForOutput(getOutput, predicate, label, timeoutMs = 10000) {
 }
 
 function writeBrokenLocalTranscriptStore(homeDir) {
-  const lettaDir = path.join(homeDir, ".letta");
+  const lettaDir = path.join(homeDir, HARNESS_DIR_NAME);
   const conversationDir = path.join(
     lettaDir,
     "lc-local-backend",
@@ -73,9 +80,9 @@ async function main() {
     if (scenario === "explicit-cloud") {
       writeBrokenLocalTranscriptStore(homeDir);
     } else if (scenario === "saved-cloud") {
-      fs.mkdirSync(path.join(homeDir, ".letta"), { recursive: true });
+      fs.mkdirSync(path.join(homeDir, HARNESS_DIR_NAME), { recursive: true });
       fs.writeFileSync(
-        path.join(homeDir, ".letta", "settings.json"),
+        path.join(homeDir, HARNESS_DIR_NAME, "settings.json"),
         JSON.stringify({ preferredBackendMode: "api" }),
       );
     }
@@ -164,7 +171,7 @@ async function main() {
           globalThis.stripAnsi(current).includes("Setup complete!") &&
           JSON.parse(
             fs.readFileSync(
-              path.join(homeDir, ".letta", "settings.json"),
+              path.join(homeDir, HARNESS_DIR_NAME, "settings.json"),
               "utf8",
             ),
           ).preferredBackendMode === "local",
@@ -191,7 +198,10 @@ async function main() {
       "setup cancellation",
     );
     const settings = JSON.parse(
-      fs.readFileSync(path.join(homeDir, ".letta", "settings.json"), "utf8"),
+      fs.readFileSync(
+        path.join(homeDir, HARNESS_DIR_NAME, "settings.json"),
+        "utf8",
+      ),
     );
     const expectedPreference =
       scenario === "explicit-cloud"

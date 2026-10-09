@@ -362,7 +362,7 @@ export function getBackendForMode(_mode: BackendMode): Backend {
  *  - the settings bucket (`local:<dir>` vs `api.letta.com`) that namespaces
  *    pins, per-agent settings and last-session refs, and
  *  - the agent memory directory (`<storageDir>/memfs/<agentId>/memory` vs
- *    `~/.letta/agents/<agentId>/memory`).
+ *    `~/.haruyuki/agents/<agentId>/memory`).
  *
  * A process that runs the local backend but leaves the variable unset would
  * therefore read and write the legacy Cloud namespace: its local pins and

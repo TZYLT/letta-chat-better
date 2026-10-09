@@ -71,7 +71,7 @@ type TranscriptEntry =
     };
 
 export interface ReflectionTranscriptPaths {
-  /** ~/.letta/transcripts/{agentId}/{conversationId}/ */
+  /** ~/.haruyuki/transcripts/{agentId}/{conversationId}/ */
   rootDir: string;
   transcriptPath: string;
   statePath: string;

@@ -140,7 +140,7 @@ describe("EnterWorktree tool", () => {
 
     expect(result.status).toBe("success");
     expect(result.worktree_path).toBe(
-      path.join(repo, ".letta", "worktrees", "fix-login-flow"),
+      path.join(repo, ".haruyuki", "worktrees", "fix-login-flow"),
     );
     if (!result.worktree_path) {
       throw new Error("Expected EnterWorktree to return a worktree path");
@@ -465,7 +465,7 @@ describe("EnterWorktree tool", () => {
 
     expect(result.status).toBe("success");
     expect(result.worktree_path).toBe(
-      path.join(repo, ".letta", "worktrees", "repo-path-feature"),
+      path.join(repo, ".haruyuki", "worktrees", "repo-path-feature"),
     );
     if (!result.worktree_path) {
       throw new Error("Expected EnterWorktree to return a worktree path");
@@ -583,11 +583,11 @@ describe("EnterWorktree tool", () => {
     expect(result.content[0]?.text).toContain("via .worktreeinclude");
   });
 
-  test("copies .letta/settings.local.json into the worktree", async () => {
+  test("copies .haruyuki/settings.local.json into the worktree", async () => {
     const repo = await trackRepo();
-    await mkdir(path.join(repo, ".letta"), { recursive: true });
+    await mkdir(path.join(repo, ".haruyuki"), { recursive: true });
     await writeFile(
-      path.join(repo, ".letta", "settings.local.json"),
+      path.join(repo, ".haruyuki", "settings.local.json"),
       JSON.stringify({ lastAgent: null }),
     );
 
@@ -605,12 +605,12 @@ describe("EnterWorktree tool", () => {
     }
     expect(
       await readFile(
-        path.join(result.worktree_path, ".letta", "settings.local.json"),
+        path.join(result.worktree_path, ".haruyuki", "settings.local.json"),
         "utf8",
       ),
     ).toContain("lastAgent");
     expect(result.content[0]?.text).toContain(
-      "copied .letta/settings.local.json",
+      "copied .haruyuki/settings.local.json",
     );
   });
 
@@ -683,7 +683,7 @@ describe("EnterWorktree tool", () => {
     );
   });
 
-  test("refuses to enter a worktree outside .letta/worktrees", async () => {
+  test("refuses to enter a worktree outside .haruyuki/worktrees", async () => {
     const repo = await trackRepo();
     const external = await mkdtemp(
       path.join(tmpdir(), "letta-enter-worktree-external-"),
@@ -711,9 +711,9 @@ describe("EnterWorktree tool", () => {
     expect(result.content[0]?.text).toContain("only worktrees under");
   });
 
-  test("refuses to enter an unregistered directory under .letta/worktrees", async () => {
+  test("refuses to enter an unregistered directory under .haruyuki/worktrees", async () => {
     const repo = await trackRepo();
-    const ghost = path.join(repo, ".letta", "worktrees", "ghost");
+    const ghost = path.join(repo, ".haruyuki", "worktrees", "ghost");
     await mkdir(ghost, { recursive: true });
 
     const result = await runWithRuntimeContext({ workingDirectory: repo }, () =>

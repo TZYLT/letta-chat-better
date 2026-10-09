@@ -3,6 +3,7 @@
 
 import { homedir } from "node:os";
 import { dirname, relative, resolve, win32 } from "node:path";
+import { APP_DIR_NAME } from "@/utils/app-paths";
 import {
   canonicalToolName,
   isFileToolName,
@@ -523,7 +524,7 @@ function detectSkillScript(
   }
 
   const agentRegex = new RegExp(
-    `^${escapeRegex(normalizedHomeDir)}/\\.letta/agents/[^/]+/(?:memory/)?skills/(.+?)/scripts/`,
+    `^${escapeRegex(normalizedHomeDir)}/${escapeRegex(APP_DIR_NAME)}/agents/[^/]+/(?:memory/)?skills/(.+?)/scripts/`,
   );
   const agentSkill = detect("agent-scoped", agentRegex);
   if (agentSkill) {
@@ -531,7 +532,7 @@ function detectSkillScript(
   }
 
   const globalRegex = new RegExp(
-    `^${escapeRegex(normalizedHomeDir)}/\\.letta/skills/(.+?)/scripts/`,
+    `^${escapeRegex(normalizedHomeDir)}/${escapeRegex(APP_DIR_NAME)}/skills/(.+?)/scripts/`,
   );
   const globalSkill = detect("global", globalRegex);
   if (globalSkill) {

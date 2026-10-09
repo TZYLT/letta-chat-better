@@ -221,8 +221,8 @@ For manual installation:
 
 | Location | Path | When to Use |
 |----------|------|-------------|
-| **Agent-scoped** | `~/.letta/agents/<agent-id>/memory/skills/<skill>/` | Skills for a single agent (default) |
-| **Global** | `~/.letta/skills/<skill>/` | General-purpose skills useful across projects |
+| **Agent-scoped** | `~/.haruyuki/agents/<agent-id>/memory/skills/<skill>/` | Skills for a single agent (default) |
+| **Global** | `~/.haruyuki/skills/<skill>/` | General-purpose skills useful across projects |
 | **Project** | `.skills/<skill>/` | Project-specific skills |
 
 **Rule**: Default to **agent-scoped**. Use **project** for repo-specific skills. Use **global** only if all agents should inherit the skill.
@@ -234,13 +234,13 @@ Skills are directories containing SKILL.md and optionally scripts/, references/,
 ```bash
 # Clone, copy, cleanup
 git clone --depth 1 https://github.com/anthropics/skills /tmp/skills-temp
-cp -r /tmp/skills-temp/skills/webapp-testing ~/.letta/agents/<agent-id>/memory/skills/
+cp -r /tmp/skills-temp/skills/webapp-testing ~/.haruyuki/agents/<agent-id>/memory/skills/
 rm -rf /tmp/skills-temp
 ```
 
 ## Registering New Skills
 
-After installing (via CLI or manual copy), skills are automatically discovered on the next message. Skills are discovered from `~/.letta/skills/`, `.skills/`, and agent-scoped `~/.letta/agents/<agent-id>/memory/skills/` directories.
+After installing (via CLI or manual copy), skills are automatically discovered on the next message. Skills are discovered from `~/.haruyuki/skills/`, `.skills/`, and agent-scoped `~/.haruyuki/agents/<agent-id>/memory/skills/` directories.
 
 ## Search Strategy
 

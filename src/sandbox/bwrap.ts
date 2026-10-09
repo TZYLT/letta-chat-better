@@ -24,7 +24,7 @@ import type { FsSandboxPolicy } from "./policy.js";
  * Mount order matters — later operations layer over earlier ones: root → dev →
  * proc → base writable → mask denied → restore readonly → restore writable.
  * The base-writable binds come BEFORE the masks so a denied root nested inside a
- * broad base carve (the cross-agent tree under `~/.letta`) is still masked.
+ * broad base carve (the cross-agent tree under `~/.haruyuki`) is still masked.
  */
 
 /** Default discovery name; availability probing may substitute a bundled path. */
@@ -46,7 +46,7 @@ export function buildBwrapArgs(policy: FsSandboxPolicy): string[] {
   args.push("--dev", "/dev");
   args.push("--proc", "/proc");
 
-  // Base writable roots: re-bind a broad harness dir (~/.letta) read-write on top
+  // Base writable roots: re-bind a broad harness dir (~/.haruyuki) read-write on top
   // of the read-only root. Emitted BEFORE the masks below so a denied root nested
   // inside (the cross-agent tree) is still masked — the ancestor-carve hazard is
   // intentional and safe HERE precisely because the mask runs last. `-try` for

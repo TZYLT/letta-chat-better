@@ -74,7 +74,7 @@ export function isFsSandboxEnabled(
  * Whether the cross-agent shell sandbox (per-shell-command confinement of the
  * agent process's spawned shells) is enabled. It is **off by default**: an
  * interactive agent's own shells walling off other agents' memory broke
- * legitimate workflows (agents inspecting `~/.letta/agents`) with kernel
+ * legitimate workflows (agents inspecting `~/.haruyuki/agents`) with kernel
  * `Operation not permitted` errors that no permission mode could approve
  * through. Set `LETTA_FS_SANDBOX=1` (or `true`) to opt in — recommended for
  * multi-tenant deployments (app server, experiment runners) where one host

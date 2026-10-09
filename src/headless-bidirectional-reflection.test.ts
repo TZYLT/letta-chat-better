@@ -116,13 +116,13 @@ async function runBidirectionalReflectionScenario(): Promise<BidirectionalReflec
   const projectDir = join(tmpRoot, "project");
   const localBackendDir = join(tmpRoot, "local-backend");
   const transcriptRoot = join(tmpRoot, "transcripts");
-  mkdirSync(join(homeDir, ".letta"), { recursive: true });
+  mkdirSync(join(homeDir, ".haruyuki"), { recursive: true });
   mkdirSync(projectDir, { recursive: true });
   mkdirSync(localBackendDir, { recursive: true });
   mkdirSync(transcriptRoot, { recursive: true });
 
   writeFileSync(
-    join(homeDir, ".letta", "settings.json"),
+    join(homeDir, ".haruyuki", "settings.json"),
     JSON.stringify(
       {
         tokenStreaming: false,

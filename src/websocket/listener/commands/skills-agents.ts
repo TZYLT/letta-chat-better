@@ -96,7 +96,7 @@ export async function handleSkillCommand(
       const linkName = basename(parsed.skill_path);
       const linkPath = join(globalSkillsDir, linkName);
 
-      // Ensure ~/.letta/skills/ exists
+      // Ensure ~/.haruyuki/skills/ exists
       mkdirSync(globalSkillsDir, { recursive: true });
 
       // If symlink/junction already exists, remove it first

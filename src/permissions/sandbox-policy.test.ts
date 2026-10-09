@@ -60,13 +60,13 @@ test("canonicalizeRoot resolves through a symlink for a not-yet-existing leaf", 
 
 test("getDefaultAgentsTreeRoot ends with the agents tree path", () => {
   const home = makeTempDir();
-  mkdirSync(join(home, ".letta", "agents"), { recursive: true });
+  mkdirSync(join(home, ".haruyuki", "agents"), { recursive: true });
   expect(getDefaultAgentsTreeRoot(home)).toBe(
-    canonicalizeRoot(join(home, ".letta", "agents")),
+    canonicalizeRoot(join(home, ".haruyuki", "agents")),
   );
 });
 
-test("memory-subagent policy: writes scoped to ~/.letta, agents tree read-denied with agent dir carved readonly", () => {
+test("memory-subagent policy: writes scoped to ~/.haruyuki, agents tree read-denied with agent dir carved readonly", () => {
   // Use the real agents tree so deriveSelfAgentRootsForTrees resolves the agent
   // dir (the policy always denies getDefaultAgentsTreeRoot(), keyed to homedir()).
   const agentDir = join(getDefaultAgentsTreeRoot(), "memmode-self");
@@ -77,12 +77,12 @@ test("memory-subagent policy: writes scoped to ~/.letta, agents tree read-denied
   });
 
   expect(policy.restrictWrites).toBe(true);
-  // Writes are scoped to the harness state dir (~/.letta) as the base — so the
+  // Writes are scoped to the harness state dir (~/.haruyuki) as the base — so the
   // subagent can persist harness metadata but not the repo/home/temp.
   expect(policy.baseWritableRoots).toEqual([getLettaHomeRoot()]);
   expect(policy.baseWritableRoots).not.toContain(canonicalizeRoot("/tmp"));
   // Self memory is re-carved writable (it's nested inside the denied tree, where
-  // the base ~/.letta carve is overridden by the deny).
+  // the base ~/.haruyuki carve is overridden by the deny).
   expect(policy.writableRoots).toEqual([canonicalizeRoot(memoryRoot)]);
   // Cross-agent reads denied: the whole agents tree is walled off...
   expect(policy.deniedRoots).toEqual(getCrossBackendAgentsTreeRoots());
@@ -91,7 +91,7 @@ test("memory-subagent policy: writes scoped to ~/.letta, agents tree read-denied
   expect(policy.readonlyRoots).toEqual([canonicalizeRoot(agentDir)]);
 });
 
-test("memory-subagent policy folds harness roots outside ~/.letta into the base", () => {
+test("memory-subagent policy folds harness roots outside ~/.haruyuki into the base", () => {
   const agentDir = join(getDefaultAgentsTreeRoot(), "memmode-self");
   const memoryRoot = join(agentDir, "memory");
   const extra = makeTempDir(); // a harness root relocated off the default tree
@@ -101,20 +101,20 @@ test("memory-subagent policy folds harness roots outside ~/.letta into the base"
     harnessWritableRoots: [extra],
   });
 
-  // ~/.letta is always the base; explicit harness roots fold in alongside it.
+  // ~/.haruyuki is always the base; explicit harness roots fold in alongside it.
   expect(policy.baseWritableRoots).toContain(getLettaHomeRoot());
   expect(policy.baseWritableRoots).toContain(canonicalizeRoot(extra));
   // No temp dir is auto-granted.
   expect(policy.baseWritableRoots).not.toContain(canonicalizeRoot("/tmp"));
 });
 
-test("memory-subagent policy (local backend): custom tree, ~/.letta base, self memory re-carved", () => {
-  // The local backend walls off `lc-local-backend/memfs` (not ~/.letta/agents)
+test("memory-subagent policy (local backend): custom tree, ~/.haruyuki base, self memory re-carved", () => {
+  // The local backend walls off `lc-local-backend/memfs` (not ~/.haruyuki/agents)
   // and stays write-scoped. The storage dir is added to the base (BEFORE the
   // deny) so conversations/agents/providers under it are writable while memfs
   // stays denied; only self memory is re-carved in the final writable set.
   const home = makeTempDir();
-  const storage = join(home, ".letta", "lc-local-backend");
+  const storage = join(home, ".haruyuki", "lc-local-backend");
   const memfsTree = join(storage, "memfs");
   const selfAgentDir = join(memfsTree, "agent-self");
   const memoryRoot = join(selfAgentDir, "memory");
@@ -127,7 +127,7 @@ test("memory-subagent policy (local backend): custom tree, ~/.letta base, self m
   });
 
   expect(policy.restrictWrites).toBe(true);
-  // The memfs tree is walled off (read+write) — NOT ~/.letta/agents.
+  // The memfs tree is walled off (read+write) — NOT ~/.haruyuki/agents.
   expect(policy.deniedRoots).toEqual([canonicalizeRoot(memfsTree)]);
   // Self agent dir carved readonly (env survival + own reads).
   expect(policy.readonlyRoots).toEqual([canonicalizeRoot(selfAgentDir)]);
@@ -151,7 +151,7 @@ test("memory-subagent policy: defaults to both backend trees with write-scoping 
 
 test("cross-agent policy denies the agents tree and carves out self", () => {
   const home = makeTempDir();
-  const agentsTree = join(home, ".letta", "agents");
+  const agentsTree = join(home, ".haruyuki", "agents");
   const selfDir = join(agentsTree, "self");
   mkdirSync(selfDir, { recursive: true });
 

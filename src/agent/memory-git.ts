@@ -84,12 +84,12 @@ export interface CommitMemoryWriteResult {
   sha?: string;
 }
 
-/** Get the agent root directory (~/.letta/agents/{id}/) */
+/** Get the agent root directory (~/.haruyuki/agents/{id}/) */
 export function getAgentRootDir(agentId: string): string {
   return appHomePath([APP_SUBDIRS.agents, agentId]);
 }
 
-/** Get the git repo directory for memory (now ~/.letta/agents/{id}/memory/) */
+/** Get the git repo directory for memory (now ~/.haruyuki/agents/{id}/memory/) */
 export function getMemoryRepoDir(agentId: string): string {
   return join(getAgentRootDir(agentId), "memory");
 }
@@ -1498,7 +1498,7 @@ export async function syncAttachedAgentRepositories(
 /**
  * Clone the agent's state repo into the memory directory.
  *
- * Git root is ~/.letta/agents/{id}/memory/ (not the agent root).
+ * Git root is ~/.haruyuki/agents/{id}/memory/ (not the agent root).
  */
 export async function cloneMemoryRepo(agentId: string): Promise<void> {
   startAttachedAgentRepositories(agentId);

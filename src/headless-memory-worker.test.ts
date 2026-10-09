@@ -50,8 +50,8 @@ for (const mode of [
       git("commit", "-am", "main");
       expect(() => git("merge", "other")).toThrow();
       const before = git("status", "--porcelain");
-      mkdirSync(join(home, ".letta"), { recursive: true });
-      const settingsPath = join(home, ".letta", "settings.json");
+      mkdirSync(join(home, ".haruyuki"), { recursive: true });
+      const settingsPath = join(home, ".haruyuki", "settings.json");
       writeFileSync(
         settingsPath,
         JSON.stringify({

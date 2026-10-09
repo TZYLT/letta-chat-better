@@ -86,11 +86,11 @@ describe("shared toolset construction", () => {
       join(tmpdir(), "letta-toolset-agents-"),
     );
     temporaryDirectories.push(workingDirectory);
-    await mkdir(join(workingDirectory, ".letta", "agents"), {
+    await mkdir(join(workingDirectory, ".haruyuki", "agents"), {
       recursive: true,
     });
     await writeFile(
-      join(workingDirectory, ".letta", "agents", "toolset-auditor.md"),
+      join(workingDirectory, ".haruyuki", "agents", "toolset-auditor.md"),
       "---\nname: toolset-auditor\ndescription: Inspect toolset assembly\nmodel: anthropic/claude-sonnet-4\ntools: Read\n---\nInspect tools.\n",
     );
     const manual = await prepare({

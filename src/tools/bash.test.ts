@@ -347,21 +347,21 @@ describe("Bash tool", () => {
     );
 
     expect(result.content[0]?.text).not.toContain(
-      "Worktrees must be created under .letta/worktrees/",
+      "Worktrees must be created under .haruyuki/worktrees/",
     );
   });
 
-  test("allows git worktree add under .letta/worktrees/", async () => {
+  test("allows git worktree add under .haruyuki/worktrees/", async () => {
     // This tests the validation only — the command itself will fail
     // because there's no git repo, but it should NOT be blocked by
     // the worktree path check.
     const result = await runBashInTemp(
-      "git worktree add -b fix/feature .letta/worktrees/my-feature main",
+      "git worktree add -b fix/feature .haruyuki/worktrees/my-feature main",
     );
 
     // Should fail with a git error (not our validation error)
     expect(result.content[0]?.text).not.toContain(
-      "Worktrees must be created under .letta/worktrees/",
+      "Worktrees must be created under .haruyuki/worktrees/",
     );
   });
 
@@ -371,7 +371,7 @@ describe("Bash tool", () => {
     );
 
     expect(result.content[0]?.text).not.toContain(
-      "Worktrees must be created under .letta/worktrees/",
+      "Worktrees must be created under .haruyuki/worktrees/",
     );
   });
 });

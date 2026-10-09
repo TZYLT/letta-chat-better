@@ -1,11 +1,11 @@
 # Statusline Mod API
 
-Use this reference when creating or editing `~/.letta/mods/statusline.tsx`.
+Use this reference when creating or editing `~/.haruyuki/mods/statusline.tsx`.
 
 ## Location
 
 ```text
-~/.letta/mods/statusline.tsx
+~/.haruyuki/mods/statusline.tsx
 ```
 
 This is a trusted, user-owned global mod file. Project mods are intentionally unsupported for now.
@@ -147,7 +147,7 @@ render: ({ width, columns }) => columns(["left", "middle", "right"], width),
 
 ## Reload behavior
 
-After editing `~/.letta/mods/statusline.tsx`, tell the user to run:
+After editing `~/.haruyuki/mods/statusline.tsx`, tell the user to run:
 
 ```text
 /reload

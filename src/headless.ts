@@ -1161,7 +1161,7 @@ export async function handleHeadlessCommand(
     agent = result.agent;
   }
 
-  // Priority 4: Try to resume from project settings (.letta/settings.local.json)
+  // Priority 4: Try to resume from project settings (.haruyuki/settings.local.json)
   if (!agent && startupBackendMode === "local") {
     await settingsManager.loadLocalProjectSettings();
     const localAgentId = settingsManager.getLocalLastAgentId(
@@ -1173,7 +1173,7 @@ export async function handleHeadlessCommand(
       process.env.AGENT_ID !== localAgentId
     ) {
       console.error(
-        `Using local backend agent ${localAgentId} from project-local settings (.letta/settings.local.json). \n` +
+        `Using local backend agent ${localAgentId} from project-local settings (.haruyuki/settings.local.json). \n` +
           `Current session AGENT_ID=${process.env.AGENT_ID}; ` +
           `--backend local switches to a separate persisted local agent.\n`,
       );
@@ -1188,7 +1188,7 @@ export async function handleHeadlessCommand(
         });
       } catch (_error) {
         // Local LRU agent doesn't exist - log and continue
-        console.error(`Unable to locate agent ${localAgentId} in .letta/`);
+        console.error(`Unable to locate agent ${localAgentId} in .haruyuki/`);
       }
     }
   }

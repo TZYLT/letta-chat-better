@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Skill, SkillSource } from "@/agent/skills";
 import { estimateTokens } from "@/cli/helpers/format";
 import { useTerminalWidth } from "@/cli/hooks/use-terminal-width";
+import { appHomeDirName } from "@/utils/app-paths";
 import { colors } from "./colors";
 import { Text } from "./Text";
 
@@ -20,15 +21,20 @@ const TAB_LABELS: Record<SkillTab, string> = {
   bundled: "Bundled",
 };
 
+/** Display form of the global skills dir, e.g. `~/.haruyuki/skills/`. */
+const GLOBAL_SKILLS_DISPLAY = `~/${appHomeDirName()}/skills/`;
+
+const EMPTY_HINT = `Create skills in .skills/ or ${GLOBAL_SKILLS_DISPLAY}`;
+
 function getTabDescription(tab: SkillTab, agentId: string): string {
   const shortId = agentId.length > 20 ? `${agentId.slice(0, 20)}...` : agentId;
   switch (tab) {
     case "project":
       return ".skills/";
     case "agent":
-      return `~/.letta/agents/${shortId}/memory/skills/`;
+      return `~/${appHomeDirName()}/agents/${shortId}/memory/skills/`;
     case "global":
-      return "~/.letta/skills/";
+      return GLOBAL_SKILLS_DISPLAY;
     case "bundled":
       return "Built-in skills shipped with Letta Code";
   }
@@ -199,7 +205,7 @@ export function SkillsDialog({ onClose, agentId }: SkillsDialogProps) {
         {!loading && skills.length === 0 && (
           <Box flexDirection="column" paddingLeft={2}>
             <Text dimColor>No skills found</Text>
-            <Text dimColor>Create skills in .skills/ or ~/.letta/skills/</Text>
+            <Text dimColor>{EMPTY_HINT}</Text>
           </Box>
         )}
 

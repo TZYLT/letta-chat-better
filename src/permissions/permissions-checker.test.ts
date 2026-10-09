@@ -443,7 +443,7 @@ test("Allow exact Bash command", () => {
 test("Issue #969: legacy Windows Edit allow rule matches memory project file", () => {
   const permissions: PermissionRules = {
     allow: [
-      "Edit(/C:\\Users\\Aaron\\.letta\\agents\\agent-7dcc\\memory\\system\\project/**)",
+      "Edit(/C:\\Users\\Aaron\\.haruyuki\\agents\\agent-7dcc\\memory\\system\\project/**)",
     ],
     deny: [],
     ask: [],
@@ -453,7 +453,7 @@ test("Issue #969: legacy Windows Edit allow rule matches memory project file", (
     "Edit",
     {
       file_path:
-        "C:\\Users\\Aaron\\.letta\\agents\\agent-7dcc\\memory\\system\\project\\tech_stack.md",
+        "C:\\Users\\Aaron\\.haruyuki\\agents\\agent-7dcc\\memory\\system\\project\\tech_stack.md",
     },
     permissions,
     "C:\\Users\\Aaron\\repo",
@@ -461,14 +461,14 @@ test("Issue #969: legacy Windows Edit allow rule matches memory project file", (
 
   expect(result.decision).toBe("allow");
   expect(result.matchedRule).toBe(
-    "Edit(/C:\\Users\\Aaron\\.letta\\agents\\agent-7dcc\\memory\\system\\project/**)",
+    "Edit(/C:\\Users\\Aaron\\.haruyuki\\agents\\agent-7dcc\\memory\\system\\project/**)",
   );
 });
 
 test("Issue #969 guardrail: Windows legacy Edit rule does not over-match sibling subtree", () => {
   const permissions: PermissionRules = {
     allow: [
-      "Edit(/C:\\Users\\Aaron\\.letta\\agents\\agent-7dcc\\memory\\system\\project/**)",
+      "Edit(/C:\\Users\\Aaron\\.haruyuki\\agents\\agent-7dcc\\memory\\system\\project/**)",
     ],
     deny: [],
     ask: [],
@@ -478,7 +478,7 @@ test("Issue #969 guardrail: Windows legacy Edit rule does not over-match sibling
     "Edit",
     {
       file_path:
-        "C:\\Users\\Aaron\\.letta\\agents\\agent-7dcc\\memory\\system\\other\\x.md",
+        "C:\\Users\\Aaron\\.haruyuki\\agents\\agent-7dcc\\memory\\system\\other\\x.md",
     },
     permissions,
     "C:\\Users\\Aaron\\repo",

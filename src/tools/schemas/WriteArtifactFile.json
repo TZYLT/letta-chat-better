@@ -4,7 +4,7 @@
   "properties": {
     "path": {
       "type": "string",
-      "description": "Path relative to ~/.letta/artifacts, e.g. todo-app/ui/index.html. The aliases artifacts/... and external/artifacts/... are accepted."
+      "description": "Path relative to ~/.haruyuki/artifacts, e.g. todo-app/ui/index.html. The aliases artifacts/... and external/artifacts/... are accepted."
     },
     "content": {
       "type": "string",

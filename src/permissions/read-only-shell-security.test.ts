@@ -29,7 +29,7 @@ test("FIX: isReadOnlyShellCommand should not auto-approve reading sensitive file
 test("FIX: isMemoryDirCommand should not allow command injection via cd bypass", () => {
   const agentId = "agent123";
   const home = homedir();
-  const memoryDir = resolve(home, ".letta", "agents", agentId, "memory");
+  const memoryDir = resolve(home, ".haruyuki", "agents", agentId, "memory");
 
   // This command starts with cd to memory dir, then tries to delete root
   const dangerousCommand = `cd ${memoryDir} && rm -rf /`;

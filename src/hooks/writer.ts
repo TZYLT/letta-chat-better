@@ -24,7 +24,7 @@ export type SaveLocation = "user" | "project" | "project-local";
 /**
  * Check whether project settings path collides with global settings path.
  *
- * When cwd is HOME, both resolve to ~/.letta/settings.json.
+ * When cwd is HOME, both resolve to ~/.haruyuki/settings.json.
  */
 function isProjectSettingsPathCollidingWithGlobal(
   workingDirectory: string,

@@ -532,7 +532,7 @@ describe("mods subcommand", () => {
   test("disable command updates the global package registry and prints reload hint", async () => {
     const root = createTempDir();
     const home = join(root, "home");
-    const modsRoot = join(home, ".letta", "mods");
+    const modsRoot = join(home, ".haruyuki", "mods");
     mkdirSync(modsRoot, { recursive: true });
     writeManagedPackage({ modsRoot });
     const consoleCapture = captureConsole();
@@ -608,7 +608,7 @@ describe("mods subcommand", () => {
   test("remove command deletes package root", async () => {
     const root = createTempDir();
     const home = join(root, "home");
-    const modsRoot = join(home, ".letta", "mods");
+    const modsRoot = join(home, ".haruyuki", "mods");
     mkdirSync(modsRoot, { recursive: true });
     const packageRoot = writeManagedPackage({ modsRoot });
     const consoleCapture = captureConsole();

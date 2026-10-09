@@ -1,5 +1,5 @@
 /**
- * Persistent cron task storage backed by ~/.letta/crons.json.
+ * Persistent cron task storage backed by ~/.haruyuki/crons.json.
  *
  * Provides CRUD operations with:
  * - Atomic writes (temp file + rename)

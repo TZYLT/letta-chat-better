@@ -95,7 +95,7 @@ describe("conversation title settings", () => {
 
   test("rolls back legacy opt-ins once before allowing re-enable", async () => {
     await settingsManager.reset();
-    const settingsDir = join(testHomeDir, ".letta");
+    const settingsDir = join(testHomeDir, ".haruyuki");
     const settingsPath = join(settingsDir, "settings.json");
     await mkdir(settingsDir, { recursive: true });
     await writeFile(

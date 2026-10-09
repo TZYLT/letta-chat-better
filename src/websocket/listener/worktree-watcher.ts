@@ -1,5 +1,6 @@
 import { readdir, stat, watch } from "node:fs/promises";
 import path from "node:path";
+import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 import { debugLog, debugWarn } from "@/utils/debug";
 import {
   getConversationWorkingDirectory,
@@ -13,7 +14,7 @@ import {
   hasExpectedWorktreePath,
 } from "./worktree-ownership";
 
-const WORKTREES_DIR = ".letta/worktrees";
+const WORKTREES_DIR = path.join(APP_DIR_NAME, APP_SUBDIRS.worktrees);
 
 /**
  * Debounce delay after a filesystem event before we act on it.
@@ -25,12 +26,12 @@ const DEBOUNCE_MS = 500;
 export interface WorktreeWatcherState {
   /** The AbortController whose signal cancels the watch loop. */
   abort: AbortController;
-  /** The directory being watched (e.g. `<cwd>/.letta/worktrees`). */
+  /** The directory being watched (e.g. `<cwd>/.haruyuki/worktrees`). */
   watchedDir: string;
 }
 
 /**
- * Start watching `<cwd>/.letta/worktrees/` for new directories.
+ * Start watching `<cwd>/.haruyuki/worktrees/` for new directories.
  *
  * When a new directory appears that wasn't present at watch-start time,
  * the conversation's CWD is automatically updated to point at the new
@@ -123,15 +124,15 @@ async function runWatchLoop(params: {
   // Check if the worktrees directory exists.
   const dirExists = await directoryExists(worktreesDir);
   if (!dirExists) {
-    // Watch the parent (.letta/) for worktrees/ creation, then recurse.
+    // Watch the parent (.haruyuki/) for worktrees/ creation, then recurse.
     const lettaDir = path.dirname(worktreesDir);
     const lettaDirExists = await directoryExists(lettaDir);
     if (!lettaDirExists) {
-      // No .letta/ directory either — nothing to watch.
+      // No .haruyuki/ directory either — nothing to watch.
       return;
     }
 
-    // Wait for `worktrees/` to appear inside `.letta/`.
+    // Wait for `worktrees/` to appear inside `.haruyuki/`.
     await waitForDirectoryCreation(lettaDir, "worktrees", abort.signal);
 
     // Now the worktrees dir exists — fall through to watch it.
@@ -183,7 +184,7 @@ async function handleNewWorktree(params: {
 
   // Only react if THIS conversation asked git to create this exact worktree
   // path. Multiple conversations in the same project share
-  // `.letta/worktrees/`, so they all receive the same filesystem event when
+  // `.haruyuki/worktrees/`, so they all receive the same filesystem event when
   // any agent creates a worktree. Ownership comes from the tracked expected
   // path, which stays live briefly after the turn so the debounced watcher can
   // still attribute the event correctly.

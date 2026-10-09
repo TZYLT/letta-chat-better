@@ -3,7 +3,7 @@
 Memory Logger Hook - Tracks memory block changes with git-style diffs.
 
 Structure:
-  .letta/memory_logs/
+  .haruyuki/memory_logs/
     human.json       # Current state from server
     human.jsonl      # Log of diffs (git-style patches)
     persona.json
@@ -36,17 +36,17 @@ import urllib.error
 def get_logs_dir(working_dir: Optional[str] = None) -> Path:
     """Get the memory logs directory."""
     if working_dir:
-        return Path(working_dir) / ".letta" / "memory_logs"
+        return Path(working_dir) / ".haruyuki" / "memory_logs"
     # For CLI usage, look relative to the script's parent directory (project root)
     # since the script lives in /hooks/memory_logger.py
     script_dir = Path(__file__).parent
     project_root = script_dir.parent
-    return project_root / ".letta" / "memory_logs"
+    return project_root / ".haruyuki" / "memory_logs"
 
 
 def get_letta_settings() -> dict:
-    """Read Letta settings from ~/.letta/settings.json."""
-    settings_path = Path.home() / ".letta" / "settings.json"
+    """Read Letta settings from ~/.haruyuki/settings.json."""
+    settings_path = Path.home() / ".haruyuki" / "settings.json"
     if settings_path.exists():
         try:
             return json.loads(settings_path.read_text())
@@ -449,7 +449,7 @@ def cmd_debug(agent_id: str):
         print("API Key: NOT FOUND")
         print("  - macOS Keychain (service: letta-code, account: letta-api-key)")
         print("  - Environment variable: LETTA_API_KEY")
-        print("  - Settings file: ~/.letta/settings.json -> env.LETTA_API_KEY")
+        print("  - Settings file: ~/.haruyuki/settings.json -> env.LETTA_API_KEY")
         return
 
     # Check base URL

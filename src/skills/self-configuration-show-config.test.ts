@@ -168,7 +168,7 @@ test.skipIf(!pythonAvailable)(
     });
 
     mkdirSync(cwd, { recursive: true });
-    writeJson(join(homeDir, ".letta", "settings.json"), {
+    writeJson(join(homeDir, ".haruyuki", "settings.json"), {
       preferredBackendMode: "api",
       env: {
         LETTA_API_KEY: "settings-secret",
@@ -176,7 +176,7 @@ test.skipIf(!pythonAvailable)(
         LETTA_BACKEND: "api",
       },
     });
-    writeJson(join(cwd, ".letta", "settings.local.json"), {
+    writeJson(join(cwd, ".haruyuki", "settings.local.json"), {
       preferredBackendMode: "local",
       env: {
         LETTA_SETTINGS_BASE_URL: "https://settings-scope.example",
@@ -230,7 +230,7 @@ test.skipIf(!pythonAvailable)(
     const homeDir = join(root, "home");
     const cwd = join(root, "project");
     mkdirSync(cwd, { recursive: true });
-    writeJson(join(homeDir, ".letta", "settings.json"), {
+    writeJson(join(homeDir, ".haruyuki", "settings.json"), {
       agents: [
         {
           agentId: "agent-test",

@@ -7,7 +7,7 @@
     },
     "path": {
       "type": "string",
-      "description": "Path to an EXISTING worktree under .letta/worktrees/ to switch this conversation into, instead of creating one. Mutually exclusive with `name`, `branch_name`, and `base_ref`. The path must be a registered, non-prunable linked worktree of this repository."
+      "description": "Path to an EXISTING worktree under .haruyuki/worktrees/ to switch this conversation into, instead of creating one. Mutually exclusive with `name`, `branch_name`, and `base_ref`. The path must be a registered, non-prunable linked worktree of this repository."
     },
     "branch_name": {
       "type": "string",

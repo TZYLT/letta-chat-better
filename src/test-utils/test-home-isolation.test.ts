@@ -48,7 +48,7 @@ test("unit tests write home-relative state under a disposable home", () => {
 
   const routingPath = getChannelRoutingPath("slack");
   expect(routingPath).toBe(
-    join(testHome, ".letta", "channels", "slack", "routing.json"),
+    join(testHome, ".haruyuki", "channels", "slack", "routing.json"),
   );
   expect(existsSync(routingPath)).toBe(true);
   expect(readFileSync(routingPath, "utf-8")).toContain("test-conversation");
@@ -60,14 +60,14 @@ test.each(["routing.json", "routing.yaml"])(
     const operatorHome = mkdtempSync(join(tmpdir(), "letta-operator-home-"));
     const liveRoutePath = join(
       operatorHome,
-      ".letta",
+      ".haruyuki",
       "channels",
       "slack",
       filename,
     );
     const liveMemoryDir = join(
       operatorHome,
-      ".letta",
+      ".haruyuki",
       "agents",
       "operator-agent",
       "memory",
@@ -76,7 +76,7 @@ test.each(["routing.json", "routing.yaml"])(
     const routeSentinel = '{"routes":[{"conversationId":"operator-route"}]}\n';
 
     try {
-      mkdirSync(join(operatorHome, ".letta", "channels", "slack"), {
+      mkdirSync(join(operatorHome, ".haruyuki", "channels", "slack"), {
         recursive: true,
       });
       mkdirSync(liveMemoryDir, { recursive: true });

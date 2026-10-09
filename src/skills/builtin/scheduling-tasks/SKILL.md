@@ -17,7 +17,7 @@ For ordinary one-shot or recurring work in the current conversation, use Wake in
 
 ## Where Schedules Run
 
-Every schedule is device-local. It lives in `~/.letta/crons.json` and fires from the Letta process on this computer:
+Every schedule is device-local. It lives in `~/.haruyuki/crons.json` and fires from the Letta process on this computer:
 
 - A schedule only fires while a Letta session is running on this computer. A fire that comes due while nothing is running is recorded as missed and is not replayed later.
 - There is no runner selection flag and no remote target. `--computer` is rejected, and a schedule cannot run on another computer or in a hosted sandbox.

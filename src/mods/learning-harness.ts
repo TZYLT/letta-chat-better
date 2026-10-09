@@ -345,7 +345,7 @@ function timestampForPath(now: Date): string {
 
 export function defaultModLearningRunDirectory(
   spec: ModLearningSpec,
-  baseDir: string = path.join(".letta", "mod-learning-runs"),
+  baseDir: string = path.join(".haruyuki", "mod-learning-runs"),
   now: Date = new Date(),
 ): string {
   return path.join(
@@ -2232,7 +2232,7 @@ export async function runModLearning(
       defaultModLearningRunDirectory(
         normalizedOptions.spec,
         normalizedOptions.outputBaseDir ??
-          path.join(".letta", "mod-learning-runs"),
+          path.join(".haruyuki", "mod-learning-runs"),
       ),
   );
   const candidateFileName = normalizeCandidateFileName(

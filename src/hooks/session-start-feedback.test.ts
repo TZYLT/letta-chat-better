@@ -39,7 +39,7 @@ describe.skipIf(isWindows)("SessionStart hook feedback", () => {
     const fakeHome = join(baseDir, "home");
     projectDir = join(baseDir, "project");
     mkdirSync(fakeHome, { recursive: true });
-    mkdirSync(join(projectDir, ".letta"), { recursive: true });
+    mkdirSync(join(projectDir, ".haruyuki"), { recursive: true });
     originalHome = process.env.HOME;
     process.env.HOME = fakeHome;
 
@@ -54,7 +54,7 @@ describe.skipIf(isWindows)("SessionStart hook feedback", () => {
 
   function configureSessionStartHook(command: string) {
     writeFileSync(
-      join(projectDir, ".letta", "settings.json"),
+      join(projectDir, ".haruyuki", "settings.json"),
       JSON.stringify({
         hooks: {
           SessionStart: [

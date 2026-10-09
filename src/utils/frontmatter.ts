@@ -75,7 +75,7 @@ export function parseFrontmatter(content: string): {
   body: string;
 } {
   // Normalize common cross-platform file encodings so frontmatter parsing
-  // works for user-authored files in .letta/agents/.
+  // works for user-authored files in .haruyuki/agents/.
   // - Strip UTF-8 BOM when present
   // - Normalize CRLF (and lone CR) to LF
   const normalized = content

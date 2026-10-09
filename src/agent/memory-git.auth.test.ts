@@ -304,10 +304,10 @@ describe("formatGitCredentialHelperPath", () => {
   test("normalizes slashes and escapes whitespace for helper command parsing", () => {
     expect(
       formatGitCredentialHelperPath(
-        String.raw`C:\Users\Jane Doe\.letta\agents\agent-1\memory\.git\letta-credential-helper.cmd`,
+        String.raw`C:\Users\Jane Doe\.haruyuki\agents\agent-1\memory\.git\letta-credential-helper.cmd`,
       ),
     ).toBe(
-      "C:/Users/Jane\\ Doe/.letta/agents/agent-1/memory/.git/letta-credential-helper.cmd",
+      "C:/Users/Jane\\ Doe/.haruyuki/agents/agent-1/memory/.git/letta-credential-helper.cmd",
     );
   });
 });

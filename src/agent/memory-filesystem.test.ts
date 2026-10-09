@@ -462,7 +462,7 @@ describe("syncMemoryFilesystem", () => {
   test("creates block from new file", async () => {
     const systemDir = join(
       tempDir,
-      ".letta",
+      ".haruyuki",
       "agents",
       agentId,
       "memory",
@@ -491,7 +491,7 @@ describe("syncMemoryFilesystem", () => {
     // This tests the fix we just made
     const systemDir = join(
       tempDir,
-      ".letta",
+      ".haruyuki",
       "agents",
       agentId,
       "memory",
@@ -549,14 +549,21 @@ describe("memory filesystem paths", () => {
   test("getMemoryFilesystemRoot returns correct path", () => {
     const root = getMemoryFilesystemRoot("agent-123", "/home/user");
     expect(root).toBe(
-      join("/home/user", ".letta", "agents", "agent-123", "memory"),
+      join("/home/user", ".haruyuki", "agents", "agent-123", "memory"),
     );
   });
 
   test("getMemorySystemDir returns correct path", () => {
     const systemDir = getMemorySystemDir("agent-123", "/home/user");
     expect(systemDir).toBe(
-      join("/home/user", ".letta", "agents", "agent-123", "memory", "system"),
+      join(
+        "/home/user",
+        ".haruyuki",
+        "agents",
+        "agent-123",
+        "memory",
+        "system",
+      ),
     );
   });
 

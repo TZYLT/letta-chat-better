@@ -76,8 +76,8 @@ describe("Hooks Loader", () => {
       expect(hooks).toEqual({});
     });
 
-    test("loads hooks from .letta/settings.json", async () => {
-      const settingsDir = join(tempDir, ".letta");
+    test("loads hooks from .haruyuki/settings.json", async () => {
+      const settingsDir = join(tempDir, ".haruyuki");
       mkdirSync(settingsDir, { recursive: true });
 
       const settings = {
@@ -463,7 +463,7 @@ describe("Hooks Loader", () => {
 
   describe("Edge cases", () => {
     test("handles settings without hooks field", async () => {
-      const settingsDir = join(tempDir, ".letta");
+      const settingsDir = join(tempDir, ".haruyuki");
       mkdirSync(settingsDir, { recursive: true });
       writeFileSync(
         join(settingsDir, "settings.json"),
@@ -485,8 +485,8 @@ describe("Hooks Loader", () => {
       expect(hooks).toEqual({});
     });
 
-    test("loads hooks from .letta/settings.local.json", async () => {
-      const settingsDir = join(tempDir, ".letta");
+    test("loads hooks from .haruyuki/settings.local.json", async () => {
+      const settingsDir = join(tempDir, ".haruyuki");
       mkdirSync(settingsDir, { recursive: true });
 
       const settings = {
@@ -617,7 +617,7 @@ describe("Hooks Loader", () => {
 
   describe("loadHooks (full merge)", () => {
     test("loads and merges all three config sources", async () => {
-      const settingsDir = join(tempDir, ".letta");
+      const settingsDir = join(tempDir, ".haruyuki");
       mkdirSync(settingsDir, { recursive: true });
 
       // Create project settings
@@ -658,7 +658,7 @@ describe("Hooks Loader", () => {
     });
 
     test("handles missing local settings gracefully", async () => {
-      const settingsDir = join(tempDir, ".letta");
+      const settingsDir = join(tempDir, ".haruyuki");
       mkdirSync(settingsDir, { recursive: true });
 
       // Only create project settings (no local)
@@ -685,7 +685,7 @@ describe("Hooks Loader", () => {
     });
 
     test("does not double-load global hooks when cwd is HOME", async () => {
-      const globalSettingsDir = join(fakeHome, ".letta");
+      const globalSettingsDir = join(fakeHome, ".haruyuki");
       mkdirSync(globalSettingsDir, { recursive: true });
 
       writeFileSync(

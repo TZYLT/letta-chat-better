@@ -768,7 +768,7 @@ function getDefaultDecision(
     // Channel sends are scoped by routing + parentScope checks in the tool.
     "MessageChannel",
     // These only touch agent-owned state: the session task list, the
-    // ~/.letta/artifacts store, and prompts scheduled back to this agent.
+    // ~/.haruyuki/artifacts store, and prompts scheduled back to this agent.
     "TaskCreate",
     "TaskGet",
     "TaskList",

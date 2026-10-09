@@ -25,7 +25,7 @@ describe("buildCliModContext", () => {
       reflectionMode: "step-count",
       reflectionStepCount: 10,
       memfsEnabled: true,
-      memfsDirectory: "/Users/test/.letta/agents/agent-123/memory",
+      memfsDirectory: "/Users/test/.haruyuki/agents/agent-123/memory",
       permissionMode: "standard",
       networkPhase: "download",
       terminalWidth: 120,
@@ -55,7 +55,7 @@ describe("buildCliModContext", () => {
     expect(context.reflection.stepCount).toBe(10);
     expect(context.memfs.enabled).toBe(true);
     expect(context.memfs.memoryDir).toBe(
-      "/Users/test/.letta/agents/agent-123/memory",
+      "/Users/test/.haruyuki/agents/agent-123/memory",
     );
     expect(context.permissionMode).toBe("standard");
     expect(context.networkPhase).toBe("download");

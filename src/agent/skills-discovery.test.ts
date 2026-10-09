@@ -40,7 +40,7 @@ test("keeps the bundled browser-use skill environment-neutral", async () => {
   // precedence over this one; the builtin must not carry sandbox-only
   // launchers, paths, or GUI-driver fallbacks.
   for (const cloudOnly of [
-    "/root/.letta/cloud-skills",
+    "/root/.haruyuki/cloud-skills",
     "open-visible-browser",
     "start-letta-desktop",
     "cua-driver",
@@ -295,7 +295,7 @@ describe("agent skills discovery", () => {
     mkdirSync(projectSkillsDir, { recursive: true });
     const skillDir = join(
       testDir,
-      ".letta",
+      ".haruyuki",
       "agents",
       "agent-test",
       "skills",

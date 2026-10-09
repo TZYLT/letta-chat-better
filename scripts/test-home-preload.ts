@@ -62,7 +62,7 @@ process.env.LETTA_CODE_TELEM ??= "0";
 process.env.LETTA_DISABLE_SKILL_WATCHERS ??= "1";
 
 // Managed tools (ripgrep for the Glob/Grep tools) are bootstrapped into
-// `<home>/.letta/bin`. This home is disposable, so leaving the tools directory
+// `<home>/.haruyuki/bin`. This home is disposable, so leaving the tools directory
 // inside it means every test run re-downloads ripgrep from GitHub — which times
 // out under a parallel run and makes the Glob/Grep suites fail for reasons that
 // have nothing to do with the code under test. Point the tools directory at a

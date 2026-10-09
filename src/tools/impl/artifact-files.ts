@@ -61,7 +61,7 @@ function normalizeArtifactRelativePath(path: string): string {
     throw new Error("artifact path must be a non-empty relative path");
   }
   if (isAbsolute(normalized)) {
-    throw new Error("artifact path must be relative to ~/.letta/artifacts");
+    throw new Error("artifact path must be relative to ~/.haruyuki/artifacts");
   }
   if (normalized.split("/").some((part) => part === "..")) {
     throw new Error("artifact path cannot contain '..'");
@@ -78,7 +78,7 @@ function resolveArtifactPath(path: string): {
   const absolutePath = resolve(root, relativePath);
   const relativeToRoot = relative(root, absolutePath);
   if (relativeToRoot.startsWith("..") || isAbsolute(relativeToRoot)) {
-    throw new Error("artifact path must resolve inside ~/.letta/artifacts");
+    throw new Error("artifact path must resolve inside ~/.haruyuki/artifacts");
   }
   return { absolutePath, relativePath };
 }

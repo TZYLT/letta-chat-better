@@ -3,7 +3,7 @@
  *
  * Built-in subagents are bundled with the package.
  * Users can also define custom subagents as Markdown files with YAML frontmatter
- * in the .letta/agents/ directory.
+ * in the .haruyuki/agents/ directory.
  */
 
 import { existsSync } from "node:fs";
@@ -501,7 +501,7 @@ async function discoverSubagentsFromDir(
 }
 
 /**
- * Discover subagents from global (~/.letta/agents) and project (.letta/agents) directories
+ * Discover subagents from global (~/.haruyuki/agents) and project (.haruyuki/agents) directories
  * Project-level subagents override global ones with the same name
  */
 export async function discoverSubagents(
@@ -514,7 +514,7 @@ export async function discoverSubagents(
   const warnings: Array<{ path: string; message: string }> = [];
   const subagents: SubagentConfig[] = [];
 
-  // First, discover from global directory (~/.letta/agents)
+  // First, discover from global directory (~/.haruyuki/agents)
   await discoverSubagentsFromDir(
     getGlobalAgentsDir(),
     inheritedConfigs,
@@ -523,7 +523,7 @@ export async function discoverSubagents(
     warnings,
   );
 
-  // Then, discover from project directory (.letta/agents)
+  // Then, discover from project directory (.haruyuki/agents)
   // Project-level overrides global with same name
   const projectAgentsDir = join(workingDirectory, AGENTS_DIR);
   await discoverSubagentsFromDir(
@@ -539,7 +539,7 @@ export async function discoverSubagents(
 
 /**
  * Get all subagent configurations
- * Includes built-in subagents and any user-defined ones from .letta/agents/
+ * Includes built-in subagents and any user-defined ones from .haruyuki/agents/
  * User-defined subagents override built-ins with the same name
  * Results are cached per working directory
  */
@@ -561,7 +561,7 @@ export async function getAllSubagentConfigs(
     ...getBuiltinSubagents(localMemfs),
   };
 
-  // Discover user-defined subagents from .letta/agents/
+  // Discover user-defined subagents from .haruyuki/agents/
   const { subagents, errors } = await discoverSubagents(
     workingDirectory,
     configs,

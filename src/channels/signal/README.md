@@ -239,7 +239,7 @@ letta server --channels signal
 
 ## Config fields
 
-Signal accounts live in `~/.letta/channels/signal/accounts.json`.
+Signal accounts live in `~/.haruyuki/channels/signal/accounts.json`.
 
 Important fields:
 

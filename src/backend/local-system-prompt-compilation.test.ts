@@ -254,7 +254,7 @@ describe("local system prompt compilation", () => {
       {
         name: "linear-cli",
         description: "Manage Linear issues",
-        location: "/home/user/.letta/skills/linear-cli/SKILL.md",
+        location: "/home/user/.haruyuki/skills/linear-cli/SKILL.md",
       },
     ]);
 

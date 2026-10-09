@@ -114,7 +114,9 @@ export async function runSlackSetup(): Promise<boolean> {
 
     await upsertChannelAccountWithSecrets("slack", account);
     console.log("\n✓ Slack app configured!");
-    console.log("Config written to: ~/.letta/channels/slack/accounts.json\n");
+    console.log(
+      "Config written to: ~/.haruyuki/channels/slack/accounts.json\n",
+    );
     console.log("Next steps:");
     console.log("  1. Start the listener: letta server --channels slack");
     console.log("  2. Open Channels > Slack in Letta Code");

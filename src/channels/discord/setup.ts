@@ -164,7 +164,7 @@ export async function runDiscordSetup(): Promise<boolean> {
         "  You can bind later: letta channels bind --channel discord --agent <id>",
       );
       console.log(
-        "  Or set agentId in ~/.letta/channels/discord/accounts.json\n",
+        "  Or set agentId in ~/.haruyuki/channels/discord/accounts.json\n",
       );
     }
 
@@ -189,7 +189,9 @@ export async function runDiscordSetup(): Promise<boolean> {
 
     await upsertChannelAccountWithSecrets("discord", account);
     console.log("\n✓ Discord bot configured!");
-    console.log("Config written to: ~/.letta/channels/discord/accounts.json\n");
+    console.log(
+      "Config written to: ~/.haruyuki/channels/discord/accounts.json\n",
+    );
     console.log("Next steps:");
     console.log("  1. Start the listener: letta server --channels discord");
     if (channelMode === "open") {

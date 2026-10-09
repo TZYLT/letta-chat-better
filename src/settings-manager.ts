@@ -120,7 +120,7 @@ export interface StartupBackendSettings {
   envBaseUrl?: string;
 }
 
-// Shape of the `worktree` block in `.letta/settings.json`. The worktree tool
+// Shape of the `worktree` block in `.haruyuki/settings.json`. The worktree tool
 // reads this directly from disk (see readProvisionConfig) rather than through
 // the settings manager, because provisioning runs against the primary checkout,
 // which may not be the loaded project root.
@@ -129,7 +129,7 @@ export interface WorktreeProjectConfig {
   // duplicating large gitignored trees. Defaults to ["node_modules"] when unset;
   // set to [] to disable.
   symlinkDirectories?: string[];
-  // Copy .letta/settings.local.json into new worktrees. Defaults to true.
+  // Copy .haruyuki/settings.local.json into new worktrees. Defaults to true.
   copyLocalSettings?: boolean;
   // Point new worktrees at the primary checkout's git hooks (e.g. husky's
   // .husky/_), whose contents are otherwise gitignored and absent. Defaults to true.
@@ -768,7 +768,7 @@ class SettingsManager {
   async loadProjectSettings(
     workingDirectory: string = process.cwd(),
   ): Promise<ProjectSettings> {
-    // If cwd is HOME, .letta/settings.json is the global settings file.
+    // If cwd is HOME, .haruyuki/settings.json is the global settings file.
     // Never treat it as project settings or we risk duplicate project/global behavior.
     if (this.isProjectSettingsPathCollidingWithGlobal(workingDirectory)) {
       const defaults = { ...DEFAULT_PROJECT_SETTINGS };
@@ -974,7 +974,7 @@ class SettingsManager {
   }
 
   private getSettingsPath(): string {
-    // Use ~/.letta/ like other AI tools (.claude, .cursor, etc.)
+    // Use ~/.haruyuki/ like other AI tools (.claude, .cursor, etc.)
     return appHomePath([APP_SUBDIRS.settingsFile]);
   }
 
@@ -996,7 +996,7 @@ class SettingsManager {
   }
 
   /**
-   * Load local project settings (.letta/settings.local.json)
+   * Load local project settings (.haruyuki/settings.local.json)
    */
   async loadLocalProjectSettings(
     workingDirectory: string = process.cwd(),
@@ -1838,7 +1838,7 @@ class SettingsManager {
   }
 
   /**
-   * Check if local .letta directory exists (indicates existing project)
+   * Check if local .haruyuki directory exists (indicates existing project)
    */
   hasLocalLettaDir(workingDirectory: string = process.cwd()): boolean {
     const dirPath = appHomeRoot(workingDirectory);

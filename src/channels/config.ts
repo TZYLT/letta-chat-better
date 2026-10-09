@@ -1,7 +1,7 @@
 /**
  * Channel config read/write helpers.
  *
- * Channel configs live at ~/.letta/channels/<channel_name>/config.yaml.
+ * Channel configs live at ~/.haruyuki/channels/<channel_name>/config.yaml.
  * This module handles reading, writing, and validating channel configs.
  */
 

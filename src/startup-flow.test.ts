@@ -142,9 +142,9 @@ async function runMcpEcho(
   let stdoutFile: Awaited<ReturnType<typeof open>> | undefined;
 
   try {
-    await mkdir(join(homeDir, ".letta"), { recursive: true });
+    await mkdir(join(homeDir, ".haruyuki"), { recursive: true });
     await writeFile(
-      join(homeDir, ".letta", "settings.json"),
+      join(homeDir, ".haruyuki", "settings.json"),
       JSON.stringify({
         agents: [
           {

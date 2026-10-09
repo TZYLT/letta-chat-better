@@ -1,6 +1,6 @@
 import { APP_DIR_NAME, APP_SUBDIRS } from "@/utils/app-paths";
 // src/settings.ts
-// Manages user settings stored in ~/.letta/settings.json and project settings in ./.letta/settings.local.json
+// Manages user settings stored in ~/.haruyuki/settings.json and project settings in ./.haruyuki/settings.local.json
 
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -37,7 +37,7 @@ function getSettingsPath(): string {
 }
 
 /**
- * Load settings from ~/.letta/settings.json
+ * Load settings from ~/.haruyuki/settings.json
  * If the file doesn't exist, creates it with default settings
  */
 export async function loadSettings(): Promise<Settings> {
@@ -64,7 +64,7 @@ export async function loadSettings(): Promise<Settings> {
 }
 
 /**
- * Save settings to ~/.letta/settings.json
+ * Save settings to ~/.haruyuki/settings.json
  */
 export async function saveSettings(settings: Settings): Promise<void> {
   const settingsPath = getSettingsPath();
@@ -100,14 +100,14 @@ export async function getSetting<K extends keyof Settings>(
 }
 
 /**
- * Get project settings path (./.letta/settings.local.json)
+ * Get project settings path (./.haruyuki/settings.local.json)
  */
 function getProjectSettingsPath(): string {
   return join(process.cwd(), APP_DIR_NAME, APP_SUBDIRS.localSettingsFile);
 }
 
 /**
- * Load project settings from ./.letta/settings.local.json
+ * Load project settings from ./.haruyuki/settings.local.json
  * Returns null if file doesn't exist
  */
 export async function loadProjectSettings(): Promise<ProjectSettings | null> {
@@ -128,8 +128,8 @@ export async function loadProjectSettings(): Promise<ProjectSettings | null> {
 }
 
 /**
- * Save project settings to ./.letta/settings.local.json
- * Creates .letta directory if it doesn't exist
+ * Save project settings to ./.haruyuki/settings.local.json
+ * Creates .haruyuki directory if it doesn't exist
  */
 export async function saveProjectSettings(
   settings: ProjectSettings,
@@ -138,7 +138,7 @@ export async function saveProjectSettings(
   const dirPath = join(process.cwd(), APP_DIR_NAME);
 
   try {
-    // Create .letta directory if it doesn't exist
+    // Create .haruyuki directory if it doesn't exist
     if (!exists(dirPath)) {
       await mkdir(dirPath, { recursive: true });
     }

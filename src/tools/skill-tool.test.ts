@@ -109,7 +109,7 @@ describe("Skill tool memory filesystem lookup", () => {
     process.env.HOME = tempRoot;
     const scopedMemoryDir = join(
       tempRoot,
-      ".letta",
+      ".haruyuki",
       "agents",
       TEST_AGENT_ID,
       "memory",
@@ -170,7 +170,7 @@ describe("Skill tool memory filesystem lookup", () => {
     const staleSkillDir = join(staleMemoryDir, "skills", skillName);
     const scopedSkillDir = join(
       tempRoot,
-      ".letta",
+      ".haruyuki",
       "agents",
       TEST_AGENT_ID,
       "memory",
@@ -213,7 +213,7 @@ describe("Skill tool memory filesystem lookup", () => {
     const staleSkillDir = join(staleMemoryDir, "skills", skillName);
     const scopedMemorySkillsDir = join(
       tempRoot,
-      ".letta",
+      ".haruyuki",
       "agents",
       TEST_AGENT_ID,
       "memory",
@@ -242,11 +242,11 @@ describe("Skill tool memory filesystem lookup", () => {
     expect(consumeQueuedSkillContent()).toHaveLength(0);
   });
 
-  test("falls back to ~/.letta/agents/<id>/memory/skills when MEMORY_DIR is unset", async () => {
+  test("falls back to ~/.haruyuki/agents/<id>/memory/skills when MEMORY_DIR is unset", async () => {
     const skillName = "agent-memory-fallback-skill";
     const skillDir = join(
       tempRoot,
-      ".letta",
+      ".haruyuki",
       "agents",
       TEST_AGENT_ID,
       "memory",
@@ -316,11 +316,11 @@ describe("Skill tool memory filesystem lookup", () => {
     });
   });
 
-  test("does not load legacy ~/.letta/agents/<id>/skills entries", async () => {
+  test("does not load legacy ~/.haruyuki/agents/<id>/skills entries", async () => {
     const skillName = "legacy-agent-skill";
     const skillDir = join(
       tempRoot,
-      ".letta",
+      ".haruyuki",
       "agents",
       TEST_AGENT_ID,
       "skills",
@@ -353,7 +353,7 @@ describe("Skill tool memory filesystem lookup", () => {
     const injectedAgentId = "agent-scoped-parent";
     const skillDir = join(
       tempRoot,
-      ".letta",
+      ".haruyuki",
       "agents",
       injectedAgentId,
       "memory",
@@ -619,7 +619,7 @@ describe("Skill tool memory filesystem lookup", () => {
     const injectedAgentId = "agent-execute-tool-parent";
     const skillDir = join(
       tempRoot,
-      ".letta",
+      ".haruyuki",
       "agents",
       injectedAgentId,
       "memory",

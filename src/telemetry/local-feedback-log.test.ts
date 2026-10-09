@@ -43,7 +43,7 @@ describe("local feedback log", () => {
 
   test("defaults to the local logs directory", () => {
     expect(localFeedbackLogPath()).toBe(
-      join(homedir(), ".letta", "logs", "feedback.jsonl"),
+      join(homedir(), ".haruyuki", "logs", "feedback.jsonl"),
     );
   });
 

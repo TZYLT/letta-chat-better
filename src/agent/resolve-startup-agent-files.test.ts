@@ -21,12 +21,12 @@ async function writeJson(path: string, value: unknown): Promise<void> {
 }
 
 async function writeGlobalSettings(settings: Record<string, unknown>) {
-  await writeJson(join(testHomeDir, ".letta", "settings.json"), settings);
+  await writeJson(join(testHomeDir, ".haruyuki", "settings.json"), settings);
 }
 
 async function writeLocalSettings(settings: Record<string, unknown>) {
   await writeJson(
-    join(testProjectDir, ".letta", "settings.local.json"),
+    join(testProjectDir, ".haruyuki", "settings.local.json"),
     settings,
   );
 }

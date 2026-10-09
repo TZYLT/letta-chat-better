@@ -276,7 +276,7 @@ describe("shellEnv letta shim", () => {
       const shimDir = getLettaShimDir();
 
       expect(shimDir.replace(/\\/g, "/")).toContain(
-        "/.letta/letta-code-shell-shim",
+        "/.haruyuki/letta-code-shell-shim",
       );
     });
   });

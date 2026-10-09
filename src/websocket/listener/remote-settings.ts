@@ -1,5 +1,5 @@
 /**
- * Persistent remote session settings stored in ~/.letta/remote-settings.json.
+ * Persistent remote session settings stored in ~/.haruyuki/remote-settings.json.
  *
  * Stores per-conversation CWD and permission mode so both survive letta server
  * restarts. Mirrors the in-memory Map keys used by cwd.ts and permissionMode.ts.
@@ -102,7 +102,7 @@ export function getRemoteSettingsPath(): string {
  * Populates the in-memory cache. Returns {} on any read/parse error.
  *
  * Applies a one-time migration: if cwdMap is absent, tries to load
- * the legacy ~/.letta/cwd-cache.json.
+ * the legacy ~/.haruyuki/cwd-cache.json.
  */
 export function loadRemoteSettings(): RemoteSettings {
   const settingsPath = getRemoteSettingsPath();

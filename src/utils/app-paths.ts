@@ -2,11 +2,11 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 /**
- * Single source of truth for the harness state directory (`~/.letta`) and the
+ * Single source of truth for the harness state directory (`~/.haruyuki`) and the
  * names of everything inside it.
  *
  * Why this module exists: the directory name used to be a bare `".letta"`
- * literal in ~46 non-test files, so a rename had no single point of control.
+ * literal in ~46 non-test files, so the rename had no single point of control.
  * `LETTA_HOME` did override the root, but only two call sites read it. Resolve
  * every harness path through the helpers here so the name (and the override)
  * really is global.
@@ -17,13 +17,13 @@ import { join } from "node:path";
  */
 
 /** Directory name of the harness root, as created under the user's home dir. */
-export const APP_DIR_NAME = ".letta";
+export const APP_DIR_NAME = ".haruyuki";
 
-/** Env override for the harness root. When set, it replaces `~/.letta` outright. */
+/** Env override for the harness root. When set, it replaces `~/.haruyuki` outright. */
 export const APP_HOME_ENV = "LETTA_HOME";
 
-/** Name of the repo-local ignore file, e.g. `<repo>/.letta/.lettaignore`. */
-export const APP_IGNORE_FILE_NAME = ".lettaignore";
+/** Name of the repo-local ignore file, e.g. `<repo>/.haruyuki/.haruyukiignore`. */
+export const APP_IGNORE_FILE_NAME = ".haruyukiignore";
 
 /** Directory name of the legacy project-level skills dir (`.skills`). */
 export const LEGACY_SKILLS_DIR_NAME = ".skills";
@@ -40,7 +40,7 @@ export function resolveHomeDir(env: NodeJS.ProcessEnv = process.env): string {
   return env.HOME?.trim() || env.USERPROFILE?.trim() || homedir();
 }
 
-/** `".letta"` — for the few places that need the name as a path segment. */
+/** `".haruyuki"` — for the few places that need the name as a path segment. */
 export function appHomeDirName(): string {
   return APP_DIR_NAME;
 }
@@ -92,7 +92,7 @@ export function appHomeRoot(
 }
 
 export interface AppHomePathOptions {
-  /** Home directory to resolve `~/.letta` against. Defaults to {@link resolveHomeDir}. */
+  /** Home directory to resolve `~/.haruyuki` against. Defaults to {@link resolveHomeDir}. */
   homeDir?: string;
   /** Environment used for the harness-root override. Defaults to `process.env`. */
   env?: NodeJS.ProcessEnv;
@@ -114,7 +114,7 @@ export function appHomePath(
 
 /**
  * Absolute path of a named directory inside the *project*-level harness dir,
- * e.g. `<repo>/.letta/settings.local.json`.
+ * e.g. `<repo>/.haruyuki/settings.local.json`.
  */
 export function projectAppHomePath(
   workingDirectory: string,

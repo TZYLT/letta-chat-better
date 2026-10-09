@@ -3,8 +3,8 @@
  *
  * Skills are discovered from four sources (in order of priority):
  * 1. Project skills: .agents/skills/ in current directory, with .skills/ as a legacy fallback (highest priority - overrides)
- * 2. Agent skills: ~/.letta/agents/{agent-id}/memory/skills/ for agent-specific skills
- * 3. Global skills: ~/.letta/skills/ for user's personal skills
+ * 2. Agent skills: ~/.haruyuki/agents/{agent-id}/memory/skills/ for agent-specific skills
+ * 3. Global skills: ~/.haruyuki/skills/ for user's personal skills
  * 4. Bundled skills: embedded in package (lowest priority - defaults)
  */
 
@@ -185,7 +185,7 @@ export const GLOBAL_SKILLS_DIR = appHomePath(["skills"]);
 
 /**
  * Get the agent-scoped skills directory for a specific agent.
- * Primary path is ~/.letta/agents/{id}/memory/skills/ (memfs).
+ * Primary path is ~/.haruyuki/agents/{id}/memory/skills/ (memfs).
  */
 export function getAgentSkillsDir(agentId: string): string {
   return appHomePath([APP_SUBDIRS.agents, agentId, "memory/skills"]);
@@ -241,8 +241,8 @@ async function discoverSkillsFromDir(
  *
  * Priority order (highest to lowest):
  * 1. Project skills (the provided project skills path; callers may scan .agents/skills before .skills)
- * 2. Agent skills (~/.letta/agents/{agent-id}/memory/skills/)
- * 3. Global skills (~/.letta/skills/)
+ * 2. Agent skills (~/.haruyuki/agents/{agent-id}/memory/skills/)
+ * 3. Global skills (~/.haruyuki/skills/)
  * 4. Bundled skills (embedded in package)
  *
  * @param projectSkillsPath - The project skills directory (default: .skills in current directory)

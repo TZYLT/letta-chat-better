@@ -147,10 +147,10 @@ function listSkillResources(skillMdPath: string): SkillResources {
  *
  * Search order (highest priority first):
  * 1. Project skills (.agents/skills/, then legacy .skills/ fallback)
- * 2. Agent memory skills (~/.letta/agents/{id}/memory/skills/)
+ * 2. Agent memory skills (~/.haruyuki/agents/{id}/memory/skills/)
  * 3. Agent memory skills fallback ($MEMORY_DIR/skills/)
  * 4. Attached shared-memory skills
- * 5. Global skills (~/.letta/skills/)
+ * 5. Global skills (~/.haruyuki/skills/)
  * 6. Bundled skills
  */
 export async function readSkillContent(

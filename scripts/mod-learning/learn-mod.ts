@@ -133,7 +133,7 @@ Runs the mod learning dogfood loop:
 
 Options:
   --env <path>                  Learning env JSON (default: memory-citations env)
-  --out <dir>                   Run artifact directory (default: .letta/mod-learning-runs/<slug>-<timestamp>)
+  --out <dir>                   Run artifact directory (default: .haruyuki/mod-learning-runs/<slug>-<timestamp>)
   --candidate <path>            Use an existing candidate mod instead of generation
   --candidates <n>              Run N optimization iterations for one learned mod (default: 5 for generated runs)
   --candidate-file-name <name>  Candidate filename inside the eval mod directory

@@ -2,14 +2,14 @@
 
 Letta Code channels connect agents to external chat systems. Telegram, Slack,
 and Discord are first-party bundled plugins with custom Desktop UI. User-defined
-plugins are loaded from `~/.letta/channels/<channel-id>/` and run headlessly:
+plugins are loaded from `~/.haruyuki/channels/<channel-id>/` and run headlessly:
 they can receive inbound messages, participate in pairing/routing, and extend
 the shared `MessageChannel` tool, but they do not get custom Desktop screens.
 
 ## Directory layout
 
 ```text
-~/.letta/channels/
+~/.haruyuki/channels/
   whatsapp/
     channel.json
     plugin.mjs
@@ -285,7 +285,7 @@ By default, once a Slack bot participates in a thread, subsequent human replies
 in that thread route to the agent without another mention. To require an
 explicit `@mention` in selected channels, add their Slack channel IDs to the
 account's `mention_only_channels` list in
-`~/.letta/channels/slack/accounts.json`:
+`~/.haruyuki/channels/slack/accounts.json`:
 
 ```json
 {
@@ -311,7 +311,7 @@ adapter loads the new policy.
 First-party plugins are bundled in `src/channels/<id>/` and registered by the
 built-in registry. They can have bespoke Desktop UI and compatibility shims.
 
-User plugins are discovered from `~/.letta/channels/<id>/channel.json`. They are
+User plugins are discovered from `~/.haruyuki/channels/<id>/channel.json`. They are
 intentionally headless in this MVP. They should be configured by editing
 `accounts.json` or by sending generic websocket/CLI account updates whose
 plugin-owned fields live under `config` / `plugin_config`.

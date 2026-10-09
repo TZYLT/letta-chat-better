@@ -33,7 +33,7 @@ const feedbackLog = createJsonlLog({
 });
 
 export interface FeedbackLogOptions {
-  /** Override the log directory (tests). Defaults to `~/.letta/logs`. */
+  /** Override the log directory (tests). Defaults to `~/.haruyuki/logs`. */
   dir?: string;
   /** Override the per-file byte cap (tests). */
   maxBytes?: number;

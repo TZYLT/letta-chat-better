@@ -165,7 +165,7 @@ const SHELL_SHIM_DIR_NAME = "letta-code-shell-shim";
 export function getLettaShimDir(env: NodeJS.ProcessEnv = process.env): string {
   // Subagents with the memory-subagent profile run under a write-restricted filesystem sandbox. The
   // default OS temp dir is intentionally not writable there, so keep the shim in
-  // harness state when already sandboxed. `~/.letta` is writable in that profile,
+  // harness state when already sandboxed. `~/.haruyuki` is writable in that profile,
   // while the cross-agent memory subtrees inside it remain masked.
   if (env.LETTA_SANDBOX) {
     return path.join(homedir(), APP_DIR_NAME, SHELL_SHIM_DIR_NAME);

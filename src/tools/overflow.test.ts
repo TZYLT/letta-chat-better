@@ -50,11 +50,11 @@ describe("overflow utilities", () => {
       expect(dir1).toBe(dir2);
     });
 
-    test("creates path under ~/.letta", () => {
+    test("creates path under ~/.haruyuki", () => {
       const dir = getOverflowDirectory(testWorkingDir);
       const homeDir = os.homedir();
 
-      expect(dir).toContain(path.join(homeDir, ".letta"));
+      expect(dir).toContain(path.join(homeDir, ".haruyuki"));
     });
 
     test("sanitizes working directory path", () => {

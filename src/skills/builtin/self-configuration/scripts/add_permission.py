@@ -22,11 +22,11 @@ from typing import Any
 def get_settings_path(scope: str, working_directory: str) -> Path:
     """Get the settings file path for a given scope."""
     if scope == "user":
-        return Path.home() / ".letta" / "settings.json"
+        return Path.home() / ".haruyuki" / "settings.json"
     if scope == "project":
-        return Path(working_directory) / ".letta" / "settings.json"
+        return Path(working_directory) / ".haruyuki" / "settings.json"
     if scope == "local":
-        return Path(working_directory) / ".letta" / "settings.local.json"
+        return Path(working_directory) / ".haruyuki" / "settings.local.json"
     raise ValueError(f"Unknown scope: {scope}")
 
 
@@ -104,9 +104,9 @@ def add_rule(settings: dict[str, Any], rule: str, rule_type: str) -> bool:
 
 
 def ensure_local_gitignored(working_directory: str) -> None:
-    """Ensure .letta/settings.local.json is in .gitignore."""
+    """Ensure .haruyuki/settings.local.json is in .gitignore."""
     gitignore_path = Path(working_directory) / ".gitignore"
-    pattern = ".letta/settings.local.json"
+    pattern = ".haruyuki/settings.local.json"
 
     try:
         content = ""
@@ -152,7 +152,7 @@ def main() -> None:
     parser.add_argument(
         "--confirm-user-scope",
         action="store_true",
-        help="Required for writes to ~/.letta/settings.json",
+        help="Required for writes to ~/.haruyuki/settings.json",
     )
     parser.add_argument(
         "--dry-run",

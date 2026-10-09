@@ -41,7 +41,7 @@ Examples:
   letta memory backup --agent agent-123
   letta memory export --agent agent-123 --out /tmp/letta-memory-agent-123
   letta memory tokens
-  letta memory tokens --memory-dir ~/.letta/agents/agent-123/memory --format json
+  letta memory tokens --memory-dir ~/.haruyuki/agents/agent-123/memory --format json
 `.trim(),
   );
 }

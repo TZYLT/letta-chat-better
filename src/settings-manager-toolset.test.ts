@@ -81,7 +81,7 @@ describe("Settings Manager - Toolset Preferences", () => {
   test("unknown stored toolsets fall back to auto in both conversation scopes", async () => {
     await settingsManager.reset();
     await writeFile(
-      join(testHomeDir, ".letta", "settings.json"),
+      join(testHomeDir, ".haruyuki", "settings.json"),
       JSON.stringify({
         agents: [
           {

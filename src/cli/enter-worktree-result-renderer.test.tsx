@@ -33,7 +33,7 @@ function createInputStream(): NodeJS.ReadStream {
 const enterWorktreeResult = [
   "Created worktree.",
   "",
-  "Path: /Users/loaner/dev/letta-code-prod/.letta/worktrees/render-test-worktree",
+  "Path: /Users/loaner/dev/letta-code-prod/.haruyuki/worktrees/render-test-worktree",
   "Branch: letta/render-test-worktree-a90824a8",
   "Base: origin/main",
   "",
@@ -47,7 +47,7 @@ const enterWorktreeResult = [
 const switchedWorktreeResult = [
   "Switched to existing worktree.",
   "",
-  "Path: /Users/loaner/dev/letta-code-prod/.letta/worktrees/render-test-worktree",
+  "Path: /Users/loaner/dev/letta-code-prod/.haruyuki/worktrees/render-test-worktree",
   "Branch: letta/render-test-worktree-a90824a8",
   "",
   "This conversation's working directory is now this worktree.",
@@ -96,7 +96,7 @@ async function renderEnterWorktreeToolCall(
 test("parses EnterWorktree tool result fields", () => {
   expect(parseEnterWorktreeResult(enterWorktreeResult)).toEqual({
     action: "created",
-    path: "/Users/loaner/dev/letta-code-prod/.letta/worktrees/render-test-worktree",
+    path: "/Users/loaner/dev/letta-code-prod/.haruyuki/worktrees/render-test-worktree",
     branch: "letta/render-test-worktree-a90824a8",
     base: "origin/main",
     switchedCwd: false,
@@ -123,7 +123,7 @@ test("EnterWorktree tool result renders a compact structured summary", async () 
 test("EnterWorktree tool result identifies an existing worktree switch", async () => {
   expect(parseEnterWorktreeResult(switchedWorktreeResult)).toEqual({
     action: "switched",
-    path: "/Users/loaner/dev/letta-code-prod/.letta/worktrees/render-test-worktree",
+    path: "/Users/loaner/dev/letta-code-prod/.haruyuki/worktrees/render-test-worktree",
     branch: "letta/render-test-worktree-a90824a8",
     base: undefined,
     switchedCwd: true,

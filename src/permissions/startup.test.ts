@@ -23,7 +23,7 @@ afterEach(async () => {
 test("startup applies permissions.mode from settings", async () => {
   const projectDir = join(testDir, "project-settings-mode");
   await Bun.write(
-    join(projectDir, ".letta", "settings.json"),
+    join(projectDir, ".haruyuki", "settings.json"),
     JSON.stringify({
       permissions: {
         mode: "bypassPermissions",
@@ -55,7 +55,7 @@ test("startup applies permissions.mode from settings", async () => {
 test("startup CLI permission mode overrides settings", async () => {
   const projectDir = join(testDir, "project-cli-mode");
   await Bun.write(
-    join(projectDir, ".letta", "settings.json"),
+    join(projectDir, ".haruyuki", "settings.json"),
     JSON.stringify({
       permissions: {
         mode: "standard",

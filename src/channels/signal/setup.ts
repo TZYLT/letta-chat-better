@@ -731,7 +731,9 @@ export async function runSignalSetup(): Promise<boolean> {
 
     upsertChannelAccount("signal", accountRecord);
     console.log("\n✓ Signal account configured!");
-    console.log("Config written to: ~/.letta/channels/signal/accounts.json\n");
+    console.log(
+      "Config written to: ~/.haruyuki/channels/signal/accounts.json\n",
+    );
     console.log("Next steps:");
     console.log("  1. Start/restart: letta server --channels signal");
     console.log("  2. Send the Signal account a DM to receive a pairing code");

@@ -149,7 +149,7 @@ describe("Workflow tool (background launch)", () => {
     previousHome = process.env.HOME;
     scratchpad = mkdtempSync(join(tmpdir(), "workflow-tool-test-"));
     process.env.LETTA_SCRATCHPAD = scratchpad;
-    // Executions journal under ~/.letta; keep the test's out of the real home.
+    // Executions journal under ~/.haruyuki; keep the test's out of the real home.
     process.env.HOME = scratchpad;
     queuedMessages = [];
     releaseAgents = null;
@@ -336,7 +336,7 @@ describe("Workflow tool (background launch)", () => {
     expect(result.toolReturn).toContain("timed out after 40ms");
     expect(backgroundProcesses.size).toBe(0);
     expect(listWorkflowExecutions()).toHaveLength(0);
-    expect(existsSync(join(scratchpad, ".letta", "workflows"))).toBe(false);
+    expect(existsSync(join(scratchpad, ".haruyuki", "workflows"))).toBe(false);
     expect(queuedMessages).toHaveLength(0);
   });
 
@@ -391,7 +391,9 @@ describe("Workflow tool (background launch)", () => {
       expect(spawned).toBe(0);
       expect(backgroundProcesses.size).toBe(0);
       expect(listWorkflowExecutions()).toHaveLength(0);
-      expect(existsSync(join(scratchpad, ".letta", "workflows"))).toBe(false);
+      expect(existsSync(join(scratchpad, ".haruyuki", "workflows"))).toBe(
+        false,
+      );
       expect(queuedMessages).toHaveLength(0);
     },
   );
@@ -427,7 +429,7 @@ describe("Workflow tool (background launch)", () => {
     expect(spawned).toBe(0);
     expect(backgroundProcesses.size).toBe(0);
     expect(listWorkflowExecutions()).toHaveLength(0);
-    expect(existsSync(join(scratchpad, ".letta", "workflows"))).toBe(false);
+    expect(existsSync(join(scratchpad, ".haruyuki", "workflows"))).toBe(false);
   });
 
   test("returns immediately with a task id, streams progress, then notifies", async () => {

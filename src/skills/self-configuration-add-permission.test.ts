@@ -92,7 +92,7 @@ test.skipIf(!pythonAvailable)(
   async () => {
     const root = makeTempDir("self-config-add-permission-user-");
     const homeDir = join(root, "home");
-    const settingsPath = join(homeDir, ".letta", "settings.json");
+    const settingsPath = join(homeDir, ".haruyuki", "settings.json");
     writeJson(settingsPath, { permissions: { allow: [] } });
     const before = readFileSync(settingsPath, "utf8");
 
@@ -113,9 +113,9 @@ test.skipIf(!pythonAvailable)(
   async () => {
     const root = makeTempDir("self-config-add-permission-malformed-");
     const cwd = join(root, "project");
-    const settingsPath = join(cwd, ".letta", "settings.json");
+    const settingsPath = join(cwd, ".haruyuki", "settings.json");
     const malformed = '{"permissions": {"allow": [}\n';
-    mkdirSync(join(cwd, ".letta"), { recursive: true });
+    mkdirSync(join(cwd, ".haruyuki"), { recursive: true });
     writeFileSync(settingsPath, malformed, "utf8");
 
     const result = await runAddPermission([
@@ -141,7 +141,7 @@ test.skipIf(!pythonAvailable)(
   async () => {
     const root = makeTempDir("self-config-add-permission-dry-run-");
     const homeDir = join(root, "home");
-    const settingsPath = join(homeDir, ".letta", "settings.json");
+    const settingsPath = join(homeDir, ".haruyuki", "settings.json");
 
     const result = await runAddPermission(
       [
@@ -168,7 +168,7 @@ test.skipIf(!pythonAvailable)(
     expectPathSuffix(output.path, [
       basename(root),
       "home",
-      ".letta",
+      ".haruyuki",
       "settings.json",
     ]);
     expect(() => readFileSync(settingsPath, "utf8")).toThrow();
@@ -180,7 +180,7 @@ test.skipIf(!pythonAvailable)(
   async () => {
     const root = makeTempDir("self-config-add-permission-confirmed-");
     const homeDir = join(root, "home");
-    const settingsPath = join(homeDir, ".letta", "settings.json");
+    const settingsPath = join(homeDir, ".haruyuki", "settings.json");
     writeJson(settingsPath, { permissions: { allow: [] } });
     chmodSync(settingsPath, 0o640);
     const beforeMode = statSync(settingsPath).mode & 0o777;

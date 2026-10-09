@@ -172,7 +172,7 @@ describe("mod learning harness", () => {
     const repoRoot = createTempDir();
     const runDir = path.join(
       repoRoot,
-      ".letta",
+      ".haruyuki",
       "mod-learning-runs",
       "test-run",
     );
@@ -299,7 +299,7 @@ describe("mod learning harness", () => {
     const repoRoot = createTempDir();
     const runDir = path.join(
       repoRoot,
-      ".letta",
+      ".haruyuki",
       "mod-learning-runs",
       "scenarios",
     );
@@ -412,7 +412,12 @@ describe("mod learning harness", () => {
 
   test("limits scenarios in smoke evals and generation prompts", async () => {
     const repoRoot = createTempDir();
-    const runDir = path.join(repoRoot, ".letta", "mod-learning-runs", "smoke");
+    const runDir = path.join(
+      repoRoot,
+      ".haruyuki",
+      "mod-learning-runs",
+      "smoke",
+    );
     const candidatePath = path.join(runDir, "mods", "memory-citations.ts");
     let generationPrompt = "";
     const spec: ModLearningSpec = {
@@ -473,7 +478,7 @@ describe("mod learning harness", () => {
     const repoRoot = createTempDir();
     const runDir = path.join(
       repoRoot,
-      ".letta",
+      ".haruyuki",
       "mod-learning-runs",
       "assertions",
     );
@@ -604,7 +609,7 @@ describe("mod learning harness", () => {
     const repoRoot = createTempDir();
     const runDir = path.join(
       repoRoot,
-      ".letta",
+      ".haruyuki",
       "mod-learning-runs",
       "early-stop",
     );
@@ -665,7 +670,7 @@ describe("mod learning harness", () => {
     const repoRoot = createTempDir();
     const runDir = path.join(
       repoRoot,
-      ".letta",
+      ".haruyuki",
       "mod-learning-runs",
       "assertion-failure",
     );
@@ -719,7 +724,7 @@ describe("mod learning harness", () => {
     const repoRoot = createTempDir();
     const runDir = path.join(
       repoRoot,
-      ".letta",
+      ".haruyuki",
       "mod-learning-runs",
       "outer-loop",
     );

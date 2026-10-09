@@ -4,7 +4,7 @@ import path from "node:path";
 import picomatch from "picomatch";
 import type WebSocket from "ws";
 import { trackBoundaryError } from "@/telemetry/error-reporting";
-import { appHomeDirName } from "@/utils/app-paths";
+import { APP_IGNORE_FILE_NAME, appHomeDirName } from "@/utils/app-paths";
 import { debugLog, debugWarn } from "@/utils/debug";
 import { readUtf8TextStrict, writeUtf8Text } from "@/utils/text-files";
 import { runGrepInFiles } from "./grep-in-files";
@@ -177,7 +177,7 @@ async function getIgnoreConfig(root: string): Promise<IgnoreConfig> {
   let patterns: string[] = [];
   try {
     const content = await readFile(
-      path.join(absRoot, appHomeDirName(), ".lettaignore"),
+      path.join(absRoot, appHomeDirName(), APP_IGNORE_FILE_NAME),
       "utf-8",
     );
     patterns = parseLettaIgnore(content);
