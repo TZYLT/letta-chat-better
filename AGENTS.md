@@ -269,6 +269,23 @@ also rejects staged parent-relative imports (`../`); use the `@/` alias.
 | `HARUYUKI_HOME` | Overrides the harness root outright, in place of `~/.haruyuki` (every path that resolves through `src/utils/app-paths.ts`) |
 | `HARUYUKI_PREFIX_PROBE_DIR` | Dump each local provider request payload to `payload-<conversationId>-<seq>.json` for the prefix-freeze probe (default off) |
 
+**Eight names still carry the `LETTA_` prefix, deliberately.** The env prefix
+was renamed to `HARUYUKI_`, but `@letta-ai/letta-agent-sdk` — loaded at runtime
+by the Workflow tool — reads these itself, and `node_modules` cannot be edited
+(a reinstall reverts it). Renaming only our side makes the SDK silently fall
+back to its own bundled `@letta-ai/letta-code` (`LETTA_CLI_PATH` unset) and
+compute memory-confinement writable roots from stale names
+(`LETTA_LOCAL_BACKEND_DIR`, `LETTA_MEMORY_DIR`, `LETTA_TRANSCRIPT_ROOT`), which
+is the same silent-divergence class the `.haruyuki` rename had to fix:
+
+`LETTA_CLI_PATH` · `LETTA_LOCAL_BACKEND_DIR` · `LETTA_MEMORY_DIR` ·
+`LETTA_TRANSCRIPT_ROOT` · `LETTA_SANDBOX` · `LETTA_API_KEY` ·
+`LETTA_BASE_URL` · `LETTA_LOG`
+
+Do not rename these to match the new prefix. The freeze is lifted in a
+follow-up once that dependency is removed (execution doc ⑬-B / Q8); the
+per-name read coordinates are recorded in the ⑫ replacement script.
+
 When manually smoke-testing the local backend (`letta --backend local` or
 `bun run dev --backend local`), set `LETTA_LOCAL_BACKEND_DIR` to a temporary
 directory first. Otherwise the run reads and mutates your real
