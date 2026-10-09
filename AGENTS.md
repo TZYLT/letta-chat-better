@@ -266,6 +266,7 @@ also rejects staged parent-relative imports (`../`); use the `@/` alias.
 | `LETTA_LOCAL_BACKEND_EXPERIMENTAL=1` | Enable local in-process backend |
 | `LETTA_LOCAL_BACKEND_EXECUTOR=deterministic` | Use fake deterministic executor (for tests) |
 | `LETTA_LOCAL_BACKEND_DIR` | Local-backend storage root (defaults to `~/.letta/lc-local-backend`) |
+| `LETTA_HOME` | Overrides the harness root outright, in place of `~/.letta` (every path that resolves through `src/utils/app-paths.ts`) |
 | `LETTA_PREFIX_PROBE_DIR` | Dump each local provider request payload to `payload-<conversationId>-<seq>.json` for the prefix-freeze probe (default off) |
 
 When manually smoke-testing the local backend (`letta --backend local` or
@@ -322,6 +323,19 @@ directory first. Otherwise the run reads and mutates your real
   (`just setup-code-desktop`).
 - **Remote log rotation.** `~/.letta/logs/remote/` grows unbounded. Long
   desktop sessions can produce 50GB+ in a single log file. Not yet fixed.
+- **Harness paths come from `src/utils/app-paths.ts`.** Never spell `.letta` (or
+  a path under it) as a literal in new code. Use `appHomeRoot()` for the harness
+  root, `appHomePath([APP_SUBDIRS.x, ...])` for a path inside it,
+  `projectAppHomePath(cwd, ...)` for the project-level `<repo>/.letta/...`, and
+  `appHomeDirName()` for the few places that need the name as a path *segment*.
+  `resolveHomeDir()` is the shared `HOME` → `USERPROFILE` → `os.homedir()`
+  fallback. All of them honour `LETTA_HOME`, which overrides the root outright —
+  that is the one supported way tests and operators relocate harness state.
+  A file that must keep a literal belongs to the rename checklist, not to a
+  random call site: prose in `src/tools/descriptions/*.md`, `.md` code samples
+  under `src/skills/builtin/`, and repo-relative paths such as
+  `mods/learning-harness.ts`'s `path.join(".letta", "mod-learning-runs")`
+  (that one is inside the working tree, not under the home dir).
 - **`*Rich.tsx` naming inversion.** The `*Rich.tsx` files are the ACTIVE
   components, not the plain-named siblings. `App.tsx` imports Rich files and
   renames them on import. The non-Rich files were dead stubs. When auditing a
