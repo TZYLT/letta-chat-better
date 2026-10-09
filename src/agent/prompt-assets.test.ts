@@ -184,7 +184,7 @@ describe("buildSystemPrompt", () => {
       expect(result).toContain(
         "Use Wake for a future turn in the current conversation",
       );
-      expect(result).toContain("advanced `letta cron` schedules");
+      expect(result).toContain("advanced `haruyuki cron` schedules");
       expect(result).not.toContain("Create one-shot or recurring crons");
       expect(result).not.toContain("proactive in creating crons");
       expect(result).toContain(
@@ -206,7 +206,7 @@ describe("buildSystemPrompt", () => {
     expect(first).toBe(second);
   });
 
-  test("default and letta presets resolve to same content in both memory modes", () => {
+  test("default and haruyuki presets resolve to same content in both memory modes", () => {
     expect(buildSystemPrompt("default", "standard")).toBe(
       buildSystemPrompt("letta", "standard"),
     );

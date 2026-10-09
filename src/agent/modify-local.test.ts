@@ -131,7 +131,7 @@ describe("local model updates", () => {
     clearAvailableModelsCache();
   });
 
-  test("uses pi catalog token settings instead of static Letta model presets", async () => {
+  test("uses pi catalog token settings instead of static haruyuki model presets", async () => {
     const storageDir = await mkdtemp(
       join(tmpdir(), "local-model-update-pi-catalog-"),
     );

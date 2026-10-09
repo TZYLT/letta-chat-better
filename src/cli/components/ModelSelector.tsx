@@ -1101,7 +1101,7 @@ export function ModelSelector({
           <Box flexDirection="column" paddingLeft={1} marginTop={1}>
             <Text dimColor>No models available.</Text>
             <Text dimColor>
-              Set an LLM API key in your env and restart `letta` or use the
+              Set an LLM API key in your env and restart `haruyuki` or use the
               following options:
             </Text>
             <Box height={1} />

@@ -609,7 +609,7 @@ describe("message search backend routing", () => {
                 type: "toolCall",
                 id: `search-${index}`,
                 name: "exec_command",
-                arguments: { cmd: "letta messages search --query orchid" },
+                arguments: { cmd: "haruyuki messages search --query orchid" },
               },
             ],
             timestamp: index * 2 + 4,
@@ -677,7 +677,7 @@ describe("message search backend routing", () => {
                 id: "search-call",
                 name: "exec_command",
                 arguments: {
-                  cmd: 'letta messages search --query "orchid migration"',
+                  cmd: 'haruyuki messages search --query "orchid migration"',
                 },
               },
             ],

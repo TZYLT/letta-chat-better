@@ -18,8 +18,8 @@ signal-cli -c ~/.local/share/signal-cli-letta daemon \
   --receive-mode on-connection \
   --ignore-stories
 
-letta channels configure signal
-letta server --channels signal
+haruyuki channels configure signal
+haruyuki server --channels signal
 ```
 
 Use a dedicated Signal number when possible. If you use your personal number,
@@ -63,7 +63,7 @@ that mode only permits messages to/from the linked account itself.
 
 2. Register or link the Signal account in the daemon/config directory.
 
-   `letta channels configure signal` can help with this after it starts/probes
+   `haruyuki channels configure signal` can help with this after it starts/probes
    the daemon:
 
    - It lists already-linked accounts from `/v1/accounts` when available.
@@ -94,10 +94,10 @@ that mode only permits messages to/from the linked account itself.
    - <https://github.com/AsamK/signal-cli/wiki/Linking-other-devices-(Provisioning)>
    - <https://github.com/AsamK/signal-cli/wiki/Registration-with-captcha>
 
-3. Run Letta setup:
+3. Run haruyuki setup:
 
    ```bash
-   letta channels configure signal
+   haruyuki channels configure signal
    ```
 
    The wizard first checks `http://127.0.0.1:8080`. If no daemon responds and
@@ -109,9 +109,9 @@ that mode only permits messages to/from the linked account itself.
 4. Start Letta with Signal enabled:
 
    ```bash
-   letta server --channels signal
+   haruyuki server --channels signal
    # or local backend:
-   letta server --backend local --channels signal
+   haruyuki server --backend local --channels signal
    ```
 
 5. Send the Signal account a DM. With `dm_policy: pairing` (recommended), Letta
@@ -148,7 +148,7 @@ signal-cli -c "$SIGNAL_CLI_CONFIG" link -n "Haruyuki"
 4. Scan the QR/URI shown by `signal-cli`.
 
 When linking succeeds, `signal-cli` prints an associated phone number. Use that
-number as the Signal account in `letta channels configure signal`.
+number as the Signal account in `haruyuki channels configure signal`.
 
 If `signal-cli` says the user already exists in the config directory, you can
 reuse that account or remove the account directory it reports and link again.
@@ -233,8 +233,8 @@ account/config changes.
 Then run:
 
 ```bash
-letta channels configure signal
-letta server --channels signal
+haruyuki channels configure signal
+haruyuki server --channels signal
 ```
 
 ## Config fields
@@ -307,14 +307,14 @@ If `ffmpeg` is missing, the agent receives an
 - **No inbound messages:** confirm the native daemon is listening on
   `/api/v1/events` or the wrapper is running in JSON-RPC mode, and that Letta's
   `base_url` points at it.
-- **Don't know what base URL to use:** run `letta channels configure signal` on
+- **Don't know what base URL to use:** run `haruyuki channels configure signal` on
   the same machine as the listener and let it start/probe the local Docker
   daemon. Use a custom URL only when the daemon runs elsewhere.
 - **No account listed by the daemon:** use the configure wizard's QR link flow
   or SMS/voice registration flow, then rerun account detection.
 - **QR page says 404:** your daemon exposes runtime JSON-RPC but not `/v1/*`
   wrapper setup endpoints. Use the native setup path in
-  `letta channels configure signal`; it renders the `signal-cli link` URI as a
+  `haruyuki channels configure signal`; it renders the `signal-cli link` URI as a
   QR when possible.
 - **Captcha required:** the wizard opens `signalcaptchas.org`, asks for the
   returned `signalcaptcha://...` URL, and runs native
@@ -323,7 +323,7 @@ If `ffmpeg` is missing, the agent receives an
   restart the listener after changing config, and check the daemon's attachment
   directory.
 - **Voice transcription says unsupported audio or ffmpeg required:** install
-  `ffmpeg` on the machine running `letta server`.
+  `ffmpeg` on the machine running `haruyuki server`.
 - **Pairing repeats:** approve the code in the target Letta conversation with
   `/channels signal pair <code>` or use the CLI pairing command.
 - **Messages from yourself are ignored / bot seems to ignore own linked-device messages:** this is loop protection in normal mode. Enable `self_chat_mode` only when you intentionally want Note to Self/self-chat routing.

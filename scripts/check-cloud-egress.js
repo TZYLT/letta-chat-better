@@ -9,7 +9,7 @@
  *
  * How the forbidden list was decided (the test applied to each module):
  *
- *   Delete the module. Does `letta --backend local` lose a feature? Yes -> the
+ *   Delete the module. Does `haruyuki --backend local` lose a feature? Yes -> the
  *   module carries domain logic the local backend shares -> EXEMPT.
  *   No -> the module exists only to reach Cloud -> FORBIDDEN.
  *
@@ -25,14 +25,14 @@
  *   reflection.ts             GET/PATCH cloud reflection config
  *   reflection-runs.ts        cloud reflection run records
  *   sandbox-files.ts          cloud sandbox file IO
- *   schedules.ts              cloud schedules (local `letta cron` is the only scheduler)
+ *   schedules.ts              cloud schedules (local `haruyuki cron` is the only scheduler)
  *   search.ts                 POST /v1/_internal_search/cache-warm
  *
  * EXEMPT — in-repo path lives under `src/backend/api/` (see EXEMPT_PREFIXES), and
  * each one has a local reason to exist:
  *   request.ts, http-headers.ts  the single fetch seam; base URL comes from
  *                                `LETTA_BASE_URL`/settings and falls back to
- *                                localhost:8283, so `letta server` is a target
+ *                                localhost:8283, so `haruyuki server` is a target
  *   client.ts                    the Letta SDK client; the only production use is
  *                                gated on `!backend.capabilities.localModelCatalog`
  *                                (self-hosted server, not Cloud)

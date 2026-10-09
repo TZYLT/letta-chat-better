@@ -5,7 +5,7 @@
  * This module must stay free of host-local dependencies (plugin registry,
  * adapters, feedback handlers) so external channel hosts — e.g. Letta Cloud's
  * Slack gateway — can render the exact same command surface as
- * `letta server --channel`. Command execution stays host-injected via
+ * `haruyuki server --channel`. Command execution stays host-injected via
  * `ChannelSlashCommandHandlers`.
  *
  * Hosts with commands beyond the shared surface (e.g. Cloud's `/agent`,

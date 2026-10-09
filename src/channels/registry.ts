@@ -147,10 +147,10 @@ export function formatChannelStartupFailures(
     ...lines,
     "",
     "The listener is not running for these channels.",
-    `Install missing runtimes with: letta server --channels ${failedChannels.join(",")} --install-channel-runtimes`,
+    `Install missing runtimes with: haruyuki server --channels ${failedChannels.join(",")} --install-channel-runtimes`,
     "Or install them once with:",
     ...failedChannels.map(
-      (channelId) => `  letta channels install ${channelId}`,
+      (channelId) => `  haruyuki channels install ${channelId}`,
     ),
   ].join("\n");
 }
@@ -803,7 +803,7 @@ export async function initializeChannels(
       `${channelId}: accounts=${accounts.length}, enabled=${enabledAccountIds.length > 0 ? enabledAccountIds.join(",") : "none"}`,
     );
     if (accounts.length === 0) {
-      const error = `Channel "${channelId}" not configured. Run: letta channels configure ${channelId}`;
+      const error = `Channel "${channelId}" not configured. Run: haruyuki channels configure ${channelId}`;
       failures.push({ channelId, error });
       console.error(error);
       continue;

@@ -66,7 +66,7 @@ export async function runSubcommand(argv: string[]): Promise<number | null> {
       return runModelSubcommand(rest);
     case "app-server":
       console.error(
-        "Warning: `letta app-server` is deprecated. Use `letta server` instead.",
+        "Warning: `haruyuki app-server` is deprecated. Use `haruyuki server` instead.",
       );
       return runServerSubcommand(rest);
     case "messages":

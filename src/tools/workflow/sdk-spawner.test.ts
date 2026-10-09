@@ -204,7 +204,7 @@ describe("createSdkSpawner", () => {
       new AbortController().signal,
     );
     expect(unknown.failed).toBe(true);
-    expect(unknown.error).toContain("letta model list");
+    expect(unknown.error).toContain("haruyuki model list");
     expect(client.calls).toHaveLength(1);
   });
 

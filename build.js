@@ -81,7 +81,7 @@ await Bun.build({
   minify: false, // Keep readable for debugging
   sourcemap: "external",
   naming: {
-    entry: "letta.js",
+    entry: "haruyuki.js",
   },
   define: {
     HARUYUKI_VERSION: JSON.stringify(version),
@@ -96,7 +96,7 @@ await Bun.build({
   },
   // Keep most native Node.js modules external to avoid bundling issues.
   // grammY must stay external too: bundling its node-fetch/abort-controller
-  // stack into letta.js breaks Telegram startup because node-fetch rejects the
+  // stack into haruyuki.js breaks Telegram startup because node-fetch rejects the
   // bundled AbortSignal class during bot.init().
   // But don't make `sharp` external, causes issues with global Bun-based installs
   // ref: #745, #1200
@@ -139,7 +139,7 @@ await Bun.build({
 });
 
 // Add shebang to output file
-const outputPath = join(__dirname, "letta.js");
+const outputPath = join(__dirname, "haruyuki.js");
 let content = readFileSync(outputPath, "utf-8");
 
 // Remove any existing shebang first
@@ -159,7 +159,7 @@ await Bun.write(outputPath, withShebang);
 
 // Make executable
 if (process.platform !== "win32") {
-  await Bun.$`chmod +x letta.js`;
+  await Bun.$`chmod +x haruyuki.js`;
 }
 
 await Bun.build({
@@ -367,6 +367,6 @@ rewriteDeclarationAliases(join(__dirname, "dist/types"));
 console.log("   Output: dist/types/protocol.d.ts");
 
 console.log("✅ Build complete!");
-console.log(`   Output: letta.js`);
+console.log(`   Output: haruyuki.js`);
 console.log("   Output: dist/app-server-client.js and .cjs");
 console.log(`   Size: ${(Bun.file(outputPath).size / 1024).toFixed(0)}KB`);

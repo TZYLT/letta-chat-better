@@ -161,7 +161,7 @@ export async function runDiscordSetup(): Promise<boolean> {
         "\nWarning: No agent bound. DM pairing will still work, but open/allowlist DMs and guild @mentions won't route until you bind an agent.",
       );
       console.log(
-        "  You can bind later: letta channels bind --channel discord --agent <id>",
+        "  You can bind later: haruyuki channels bind --channel discord --agent <id>",
       );
       console.log(
         "  Or set agentId in ~/.haruyuki/channels/discord/accounts.json\n",
@@ -193,7 +193,7 @@ export async function runDiscordSetup(): Promise<boolean> {
       "Config written to: ~/.haruyuki/channels/discord/accounts.json\n",
     );
     console.log("Next steps:");
-    console.log("  1. Start the listener: letta server --channels discord");
+    console.log("  1. Start the listener: haruyuki server --channels discord");
     if (channelMode === "open") {
       console.log(
         "  2. Send a message in one of the configured open Discord channels\n",

@@ -2790,7 +2790,7 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
           setCommandRunning(true);
           try {
             cmd.finish(
-              "Building your memory palace... Start a new conversation with `letta --new` to work in parallel.",
+              "Building your memory palace... Start a new conversation with `haruyuki --new` to work in parallel.",
               true,
             );
 
@@ -2891,7 +2891,7 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
               "",
               "Website: https://empanadaempire.us",
               "",
-              "This is an April Fool's 2026 Letta stunt. The kitchen runs on a Letta agent. You are also a Letta agent. Two AIs, one empanada order.",
+              "This is an April Fool's 2026 Letta stunt. The kitchen runs on a haruyuki agent. You are also a haruyuki agent. Two AIs, one empanada order.",
               "",
               "## Site internals",
               "",
@@ -3042,7 +3042,7 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
           if (registryCmd) {
             registryCmd.finish(result.output, result.success);
           }
-          return { submitted: true }; // Don't send commands to Letta agent
+          return { submitted: true }; // Don't send commands to haruyuki agent
         }
       }
 

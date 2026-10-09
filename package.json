@@ -1,17 +1,17 @@
 {
-  "name": "@letta-ai/letta-code",
+  "name": "haruyuki",
   "version": "0.36.2-better",
   "lettaStartupLogProtocol": 1,
-  "description": "Haruyuki is a CLI tool for interacting with stateful Letta agents from the terminal.",
+  "description": "Haruyuki is a terminal CLI for stateful Letta agents.",
   "type": "module",
   "packageManager": "bun@1.3.14",
   "bin": {
-    "letta": "letta.js"
+    "haruyuki": "haruyuki.js"
   },
   "files": [
     "LICENSE",
     "README.md",
-    "letta.js",
+    "haruyuki.js",
     "image-resize-worker.js",
     "assets/tutor-profile.png",
     "scripts",
@@ -46,12 +46,12 @@
     "dist/channels-telegram.js",
     "dist/channels-telegram.js.map",
     "dist/types",
-    "docs",
+    "docs/examples",
     "dist/agent-presets-*.js",
     "dist/agent-presets-*.js.map"
   ],
   "exports": {
-    ".": "./letta.js",
+    ".": "./haruyuki.js",
     "./ask-user-question": {
       "types": "./dist/types/ask-user-question.d.ts",
       "browser": "./dist/ask-user-question.js",
@@ -137,7 +137,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/letta-ai/letta-code.git"
+    "url": "https://github.com/TZYLT/letta-chat-better.git"
   },
   "license": "Apache-2.0",
   "engines": {

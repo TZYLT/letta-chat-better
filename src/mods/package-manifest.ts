@@ -264,7 +264,9 @@ export function parseHaruyukiPackageManifest(
   }
   if (!isRecord(rawManifest)) {
     return {
-      errors: [{ message: "letta manifest must be an object", path: "letta" }],
+      errors: [
+        { message: "haruyuki manifest must be an object", path: "letta" },
+      ],
       manifest: null,
       ok: false,
     };

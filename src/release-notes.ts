@@ -23,11 +23,11 @@ export const releaseNotes: Record<string, string> = {
 → Run **/permissions** and choose **standard** if you want the old request-approval behavior back
 → You can also press **shift+tab** to cycle modes until you reach **standard**`,
   "0.13.4": `🔄 **Haruyuki 0.13.4: Back to the OG experience**
-→ Running **letta** now resumes your "default" conversation (instead of spawning a new one)
-→ Use **letta --new** if you want to create a new conversation for concurrent sessions`,
+→ Running **haruyuki** now resumes your "default" conversation (instead of spawning a new one)
+→ Use **haruyuki --new** if you want to create a new conversation for concurrent sessions`,
   "0.13.0": `🎁 **Haruyuki 0.13.0: Introducing Conversations!**
 → Haruyuki now starts a new conversation on each startup (memory is shared across all conversations)
-→ Use **/resume** to switch conversations, or run **letta --conv <id>** to continue a specific conversation`,
+→ Use **/resume** to switch conversations, or run **haruyuki --conv <id>** to continue a specific conversation`,
 };
 
 /**

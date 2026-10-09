@@ -47,7 +47,7 @@ describe("local mod package scaffolder", () => {
     });
 
     expect(result).toMatchObject({
-      installCommand: `letta install ${outputDirectory}`,
+      installCommand: `haruyuki install ${outputDirectory}`,
       manifestEntry: "mods/hello.ts",
       modGuidePath: path.join(outputDirectory, "MOD.md"),
       outputDirectory,
@@ -76,7 +76,7 @@ describe("local mod package scaffolder", () => {
       ok: true,
     });
     expect(readFileSync(result.readmePath, "utf8")).toContain(
-      "letta install .",
+      "haruyuki install .",
     );
     expect(readFileSync(result.modGuidePath, "utf8")).toContain(
       "TODO: Describe what this mod does.",

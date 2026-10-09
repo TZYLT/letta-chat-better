@@ -76,7 +76,7 @@ export class LocalTranscriptRepairRequiredError extends Error {
 
 export function localTranscriptMigrationCommand(storageDir: string): string {
   const quotedStorageDir = `"${storageDir.replace(/"/g, '\\"')}"`;
-  return `letta local-backend migrate-transcripts --storage-dir ${quotedStorageDir}`;
+  return `haruyuki local-backend migrate-transcripts --storage-dir ${quotedStorageDir}`;
 }
 
 export function transcriptManifestPath(conversationDir: string): string {

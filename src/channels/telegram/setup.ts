@@ -1,12 +1,12 @@
 /**
- * Telegram bot setup wizard for `letta channels configure telegram`.
+ * Telegram bot setup wizard for `haruyuki channels configure telegram`.
  *
  * Interactive CLI flow:
  * 1. Prompt for bot token from @BotFather
  * 2. Validate via getMe()
  * 3. Choose DM policy
  * 4. Write config to ~/.haruyuki/channels/telegram/accounts.json
- * 5. Start `letta server --channels telegram`
+ * 5. Start `haruyuki server --channels telegram`
  * 6. Message the bot from Telegram to get a pairing code
  * 7. Run `/channels telegram pair <code>` in the target ADE/Desktop conversation
  */
@@ -139,7 +139,7 @@ export async function runTelegramSetup(): Promise<boolean> {
       "Config written to: ~/.haruyuki/channels/telegram/accounts.json\n",
     );
     console.log("Next steps:");
-    console.log("  1. Start the listener: letta server --channels telegram");
+    console.log("  1. Start the listener: haruyuki server --channels telegram");
     console.log("  2. Message the bot from Telegram to get a pairing code");
     console.log(
       "  3. In the target ADE/Desktop conversation, run: /channels telegram pair <code>\n",

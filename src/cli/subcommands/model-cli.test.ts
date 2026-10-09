@@ -193,8 +193,8 @@ describe("model CLI", () => {
     expect(removed.stderr).toContain("Unknown action: config");
     const help = await cli(["--help"], {}, "agents");
     expect(help.code, help.stderr).toBe(0);
-    expect(help.stdout).toContain("letta agents list");
-    expect(help.stdout).toContain("letta agents create");
+    expect(help.stdout).toContain("haruyuki agents list");
+    expect(help.stdout).toContain("haruyuki agents create");
     expect(help.stdout).not.toContain("agents config");
     expect(help.stdout).not.toContain("--conversation");
     const legacyOption = await cli(["list", "--agent", agentId], {}, "agents");

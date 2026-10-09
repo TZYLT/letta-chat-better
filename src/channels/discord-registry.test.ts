@@ -772,12 +772,12 @@ describe("discord channel registry", () => {
     expect(replies).toHaveLength(1);
     expect(replies[0]?.text).toContain("Pairing code:");
     expect(replies[0]?.text).toContain(
-      "letta channels pair --channel discord --code",
+      "haruyuki channels pair --channel discord --code",
     );
     expect(replies[0]?.text).toContain("--agent agent-1");
     expect(replies[0]?.text).not.toContain("--agent <agent-id>");
     expect(replies[0]?.text).not.toContain(
-      "Find your agent id with letta agents list.",
+      "Find your agent id with haruyuki agents list.",
     );
   });
 

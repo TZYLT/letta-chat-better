@@ -176,7 +176,7 @@ describe("signalInboundFromSseEvent", () => {
     const account = signalAccount({
       groupMode: "mention",
       allowedGroups: ["group-1"],
-      mentionPatterns: ["letta"],
+      mentionPatterns: ["haruyuki"],
     });
 
     expect(
@@ -206,7 +206,7 @@ describe("signalInboundFromSseEvent", () => {
             timestamp: 112,
             dataMessage: {
               timestamp: 112,
-              message: "letta can you look at this?",
+              message: "haruyuki can you look at this?",
               groupInfo: { groupId: "group-1", groupName: "Friends" },
             },
           },
@@ -221,7 +221,7 @@ describe("signalInboundFromSseEvent", () => {
       senderId: "+15555550123",
       senderName: "Alice",
       chatLabel: "Friends",
-      text: "letta can you look at this?",
+      text: "haruyuki can you look at this?",
       timestamp: 112,
       messageId: "112:+15555550123",
       threadId: null,

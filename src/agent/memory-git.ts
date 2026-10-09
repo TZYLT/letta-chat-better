@@ -490,7 +490,7 @@ export function buildGitAuthArgs(
     "-c",
     "core.askPass=",
     "-c",
-    `http.extraHeader=Authorization: Basic ${Buffer.from(`letta:${token}`).toString("base64")}`,
+    `http.extraHeader=Authorization: Basic ${Buffer.from(`haruyuki:${token}`).toString("base64")}`,
   ];
   if (isHostedBackendRequested(env)) {
     args.push(
@@ -717,7 +717,7 @@ async function configureLocalCredentialHelper(
     debugLog("memfs-git", `Wrote Windows credential helper script`);
   } else {
     // Unix/macOS: use inline bash helper
-    helper = `!f() { echo "username=letta"; echo "password=${token}"; }; f`;
+    helper = `!f() { echo "username=haruyuki"; echo "password=${token}"; }; f`;
   }
 
   // Reset inherited helpers (for example, a stale macOS osxkeychain entry)

@@ -95,7 +95,7 @@ describe("classifyApprovals", () => {
         toolCallId: `call_evidence_${backend}`,
         toolName: "Bash",
         toolArgs: JSON.stringify({
-          command: `letta --backend ${backend} messages list --agent agent-target --conversation conv-target --limit 30 --include-errors`,
+          command: `haruyuki --backend ${backend} messages list --agent agent-target --conversation conv-target --limit 30 --include-errors`,
           description: "Retrieve conversation evidence",
         }),
       }));

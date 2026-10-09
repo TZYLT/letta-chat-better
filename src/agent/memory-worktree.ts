@@ -141,7 +141,7 @@ export async function createReflectionMemoryWorktree(
   const worktreeBaseDir = join(dirname(parentMemoryDir), "memory-worktrees");
   const label = options.label ?? "reflection";
   const worktreeDir = join(worktreeBaseDir, `${label}-${id}`);
-  const branchName = `letta/${label}/${id}`;
+  const branchName = `haruyuki/${label}/${id}`;
 
   await mkdir(worktreeBaseDir, { recursive: true });
 

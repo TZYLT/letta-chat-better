@@ -6,7 +6,7 @@ import { join } from "node:path";
 const projectRoot = process.cwd();
 
 function ensureBuiltCli(): string {
-  const cliPath = join(projectRoot, "letta.js");
+  const cliPath = join(projectRoot, "haruyuki.js");
   if (existsSync(cliPath)) {
     return cliPath;
   }
@@ -17,7 +17,7 @@ function ensureBuiltCli(): string {
   });
   if (result.status !== 0) {
     throw new Error(
-      `Failed to build letta.js\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`,
+      `Failed to build haruyuki.js\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`,
     );
   }
   return cliPath;

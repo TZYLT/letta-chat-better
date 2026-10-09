@@ -16,7 +16,7 @@ describe("stripSlackBotMention", () => {
   test("handles labelled bot mentions without removing labelled humans", () => {
     expect(
       stripSlackBotMention(
-        "<@UBOT|letta> ask <@UALICE|alice> and <@UBOB>",
+        "<@UBOT|haruyuki> ask <@UALICE|alice> and <@UBOB>",
         "UBOT",
       ),
     ).toBe("ask <@UALICE|alice> and <@UBOB>");

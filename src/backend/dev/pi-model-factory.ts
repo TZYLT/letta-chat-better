@@ -103,7 +103,7 @@ function alwaysOnZaiThinking(modelId?: string): boolean {
   );
 }
 
-// Maps Letta model settings to a pi-ai ThinkingLevel. Every pi-ai Anthropic
+// Maps haruyuki model settings to a pi-ai ThinkingLevel. Every pi-ai Anthropic
 // call against a reasoning-capable model must pass this when available:
 // pi-ai sends `thinking: {type: "disabled"}` for reasoning models when
 // `options.reasoning` is absent, and adaptive-thinking models (for example

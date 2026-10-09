@@ -128,7 +128,7 @@ describe("MCP tool listing", () => {
     expect(JSON.parse(harness.stderr[0] ?? "{}")).toEqual({
       error: {
         code: "invalid_arguments",
-        message: "Usage: letta mcp schema <tool-name>",
+        message: "Usage: haruyuki mcp schema <tool-name>",
       },
     });
   });

@@ -118,10 +118,10 @@ export async function runSlackSetup(): Promise<boolean> {
       "Config written to: ~/.haruyuki/channels/slack/accounts.json\n",
     );
     console.log("Next steps:");
-    console.log("  1. Start the listener: letta server --channels slack");
+    console.log("  1. Start the listener: haruyuki server --channels slack");
     console.log("  2. Open Channels > Slack in Haruyuki");
     console.log(
-      "  3. Choose which Letta agent this Slack app should represent",
+      "  3. Choose which haruyuki agent this Slack app should represent",
     );
     console.log("  4. DM the app or @mention it in Slack to start chatting\n");
 

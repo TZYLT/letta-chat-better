@@ -96,7 +96,7 @@ Haruyuki mod package.
 ## Install locally
 
 \`\`\`bash
-letta install .
+haruyuki install .
 \`\`\`
 
 Run /reload in active sessions for changes to take effect.
@@ -143,7 +143,7 @@ export function scaffoldLocalModPackage(
   const packageJsonPath = path.join(outputDirectory, "package.json");
   const readmePath = path.join(outputDirectory, "README.md");
   const modGuidePath = path.join(outputDirectory, "MOD.md");
-  const installCommand = `letta install ${outputDirectory}`;
+  const installCommand = `haruyuki install ${outputDirectory}`;
 
   try {
     mkdirSync(targetModsDirectory, { recursive: true });

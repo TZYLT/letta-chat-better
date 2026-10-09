@@ -4,7 +4,7 @@ A broken link, missing index, or conflicting instruction is direct evidence;
 no conversation incident or provider trace is required to diagnose it.
 
 Start with the target memory directory's file inventory, core memory, indexes,
-and `letta memory tokens --memory-dir <path> --format json --quiet`. Inspect
+and `haruyuki memory tokens --memory-dir <path> --format json --quiet`. Inspect
 relevant file contents and links to check:
 
 - **Structure:** required files, frontmatter, skill layout, and overlapping

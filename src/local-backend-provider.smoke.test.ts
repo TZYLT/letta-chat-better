@@ -96,7 +96,9 @@ describe.skipIf(!providerSmokeEnabled)("headless local provider smoke", () => {
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain("LOCAL_PROVIDER_SMOKE_OK");
       expect(result.stderr).not.toContain("Missing LETTA_API_KEY");
-      expect(result.stderr).not.toContain("Failed to connect to Letta server");
+      expect(result.stderr).not.toContain(
+        "Failed to connect to haruyuki server",
+      );
     },
   );
 
@@ -111,7 +113,9 @@ describe.skipIf(!providerSmokeEnabled)("headless local provider smoke", () => {
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain("LOCAL_PROVIDER_SMOKE_OK");
       expect(result.stderr).not.toContain("Missing LETTA_API_KEY");
-      expect(result.stderr).not.toContain("Failed to connect to Letta server");
+      expect(result.stderr).not.toContain(
+        "Failed to connect to haruyuki server",
+      );
     },
   );
 });

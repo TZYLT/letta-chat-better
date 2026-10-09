@@ -74,7 +74,7 @@ afterEach(() => {
 test("loadChannelRuntimeModule throws a friendly install hint when runtime is missing", async () => {
   expect(isChannelRuntimeInstalled("telegram")).toBe(false);
   await expect(loadChannelRuntimeModule("telegram")).rejects.toThrow(
-    "letta channels install telegram",
+    "haruyuki channels install telegram",
   );
 });
 

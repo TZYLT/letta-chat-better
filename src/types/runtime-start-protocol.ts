@@ -66,7 +66,7 @@ export interface RuntimeStartResponseMessage {
 }
 
 export interface RuntimeStartCreateAgentOptions {
-  /** Body forwarded to the Letta agents create API. */
+  /** Body forwarded to the haruyuki agents create API. */
   body: AgentCreateParams;
   /** Whether to pin the created agent globally. Defaults to true. */
   pin_global?: boolean;

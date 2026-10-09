@@ -38,7 +38,7 @@ test("channel progress uses web_search query as task details", () => {
         tool_call_id: "call-1",
         name: "web_search",
         arguments: JSON.stringify({
-          query: "letta blog",
+          query: "haruyuki blog",
           category: "article",
         }),
       },
@@ -53,7 +53,7 @@ test("channel progress uses web_search query as task details", () => {
       runId: "run-1",
       toolCallId: "call-1",
       toolName: "web_search",
-      toolDetails: "letta blog",
+      toolDetails: "haruyuki blog",
     },
   ]);
 });

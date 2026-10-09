@@ -26,8 +26,8 @@ node_modules
 bun.lockb
 package-lock.json
 bin/
-letta.js
-letta.js.map
+haruyuki.js
+haruyuki.js.map
 image-resize-worker.js
 image-resize-worker.js.map
 /skills/

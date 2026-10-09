@@ -80,9 +80,9 @@ describe("curating-memory-palace guidance", () => {
   });
 
   test("routine health guidance supplies the required schedule ID for run history", () => {
-    expect(guidance).toContain("`letta cron list --agent <agent-id>`");
+    expect(guidance).toContain("`haruyuki cron list --agent <agent-id>`");
     expect(guidance).toContain(
-      "`letta cron runs --id <id> --agent <agent-id>`",
+      "`haruyuki cron runs --id <id> --agent <agent-id>`",
     );
   });
 });

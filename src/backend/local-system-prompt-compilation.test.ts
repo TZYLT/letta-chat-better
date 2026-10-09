@@ -288,7 +288,7 @@ describe("local system prompt compilation", () => {
     expect(prompt).not.toContain("--author=");
     expect(prompt).toContain("git commit -m");
     expect(prompt).not.toContain(
-      "Changes you commit and push sync to the Letta server",
+      "Changes you commit and push sync to the haruyuki server",
     );
     expect(prompt).not.toContain("git push");
   });

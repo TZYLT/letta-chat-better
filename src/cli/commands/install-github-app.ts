@@ -259,7 +259,7 @@ export function buildInstallPrBody(workflowPath: string): string {
     "",
     "Once this PR is merged, you can interact with Haruyuki by mentioning `@letta-code` in a pull request or issue comment.",
     "",
-    "When triggered, Haruyuki will analyze the comment and surrounding context and execute on the request in a GitHub Action. Because Letta agents are **stateful**, every interaction builds on the same persistent memory \u2014 the agent learns your codebase and preferences over time.",
+    "When triggered, Haruyuki will analyze the comment and surrounding context and execute on the request in a GitHub Action. Because haruyuki agents are **stateful**, every interaction builds on the same persistent memory \u2014 the agent learns your codebase and preferences over time.",
     "",
     "### Conversations",
     "",

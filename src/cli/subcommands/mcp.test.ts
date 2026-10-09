@@ -156,11 +156,11 @@ describe("mcp subcommand", () => {
         stdout: (message) => output.push(message),
       }),
     ).toBe(0);
-    expect(output[0]).toContain("letta mcp tools");
-    expect(output[0]).toContain("letta mcp search");
-    expect(output[0]).toContain("letta mcp call");
+    expect(output[0]).toContain("haruyuki mcp tools");
+    expect(output[0]).toContain("haruyuki mcp search");
+    expect(output[0]).toContain("haruyuki mcp call");
     for (const action of ["add", "remove", "login", "logout"]) {
-      expect(output[0]).not.toContain(`letta mcp ${action}`);
+      expect(output[0]).not.toContain(`haruyuki mcp ${action}`);
     }
   });
 

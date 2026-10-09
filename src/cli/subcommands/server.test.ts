@@ -5,7 +5,7 @@ import {
   runServerSubcommand,
 } from "@/cli/subcommands/server";
 
-/** Capture what `letta server --help` prints. */
+/** Capture what `haruyuki server --help` prints. */
 async function captureServerHelp(): Promise<string> {
   const messages: string[] = [];
   const originalLog = console.log;

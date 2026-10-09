@@ -34,7 +34,7 @@ function trimBaseUrl(value: string): string {
 }
 
 /**
- * Get the current Letta memfs server URL from environment or settings.
+ * Get the current haruyuki memfs server URL from environment or settings.
  * Falls back to the local server when no memfs-specific URL is set.
  *
  * Intentionally ignores LETTA_BASE_URL: Desktop sets LETTA_BASE_URL to an

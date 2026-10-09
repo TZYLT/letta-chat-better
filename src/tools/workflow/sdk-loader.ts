@@ -5,7 +5,7 @@
  * a computed specifier rather than statically: the SDK itself depends on a
  * published @letta-ai/letta-code (the Workflow tool accepts that its
  * subagents may run a version behind), and bundling that nested copy into
- * letta.js would be circular and heavy. Resolution order:
+ * haruyuki.js would be circular and heavy. Resolution order:
  *
  *   1. HARUYUKI_AGENT_SDK_PATH env var (installed copy or checkout; overrides)
  *   2. letta-code's own dependency (resolved from this module)
@@ -57,14 +57,14 @@ export interface LoadedSdk {
  * The SDK spawns a letta-code app-server for subagents and, by default,
  * resolves the published @letta-ai/letta-code copy it depends on — which can
  * lag behind the CLI that is running (agent-free conversations, for one, need
- * this branch's app-server). When this process *is* a built letta.js bundle,
+ * this branch's app-server). When this process *is* a built haruyuki.js bundle,
  * point the SDK at it so subagents run the same version. `bun run dev` runs
  * from source, so there the caller sets LETTA_CLI_PATH explicitly.
  */
 function preferRunningCliForSubagents(): void {
   if (process.env.LETTA_CLI_PATH) return;
   const entry = process.argv[1];
-  if (entry && /(^|[\\/])letta\.js$/.test(entry) && existsSync(entry)) {
+  if (entry && /(^|[\\/])haruyuki\.js$/.test(entry) && existsSync(entry)) {
     process.env.LETTA_CLI_PATH = entry;
   }
 }

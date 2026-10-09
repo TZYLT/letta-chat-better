@@ -19,7 +19,7 @@ bun run check                    # 本地护栏（13 项）：循环依赖 / 分
                                  # 文件命名 / 文件体积 / 模块归属 / 前缀冻结应用点 /
                                  # 测试隔离 / 测试覆盖 / skill frontmatter / 内置 skill
                                  # 脚本 / biome / tsc
-bun run build                    # 构建：根目录 letta.js（已 gitignore）+ dist/app-server-client.*
+bun run build                    # 构建：根目录 haruyuki.js（已 gitignore）+ dist/app-server-client.*
 
 bun test <file>                  # 单文件单测
 node scripts/run-unit-tests.cjs  # 全量单测

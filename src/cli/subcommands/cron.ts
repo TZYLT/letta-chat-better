@@ -1,15 +1,15 @@
 /**
- * `letta cron` CLI subcommand.
+ * `haruyuki cron` CLI subcommand.
  *
  * Usage:
- *   letta cron add --prompt <text> --every <interval> [--agent <id>] [--conversation <id>]
- *   letta cron add --prompt <text> --at <time> [--once] [--agent <id>]
- *   letta cron add --prompt <text> --cron <expr> [--agent <id>]
- *   letta cron list [--agent <id>] [--conversation <id>]
- *   letta cron get <id|name>
- *   letta cron runs --id <id>
- *   letta cron delete <id|name>   (alias: remove)
- *   letta cron delete --all [--agent <id>]
+ *   haruyuki cron add --prompt <text> --every <interval> [--agent <id>] [--conversation <id>]
+ *   haruyuki cron add --prompt <text> --at <time> [--once] [--agent <id>]
+ *   haruyuki cron add --prompt <text> --cron <expr> [--agent <id>]
+ *   haruyuki cron list [--agent <id>] [--conversation <id>]
+ *   haruyuki cron get <id|name>
+ *   haruyuki cron runs --id <id>
+ *   haruyuki cron delete <id|name>   (alias: remove)
+ *   haruyuki cron delete --all [--agent <id>]
  *
  * Every schedule is device-local: it lives in ~/.haruyuki/crons.json and fires
  * from the WS listener process on this device. Durable Cloud schedules were
@@ -42,14 +42,14 @@ function printUsage(): void {
   console.log(
     `
 Usage:
-  letta cron add --prompt <text> --every <interval> [options]
-  letta cron add --prompt <text> --at <time> [--once] [options]
-  letta cron add --prompt <text> --cron <expr> [options]
-  letta cron list [options]
-  letta cron get <id|name>
-  letta cron runs --id <id> [--limit <n>]
-  letta cron delete <id|name>   (alias: remove)
-  letta cron delete --all [--agent <id>]
+  haruyuki cron add --prompt <text> --every <interval> [options]
+  haruyuki cron add --prompt <text> --at <time> [--once] [options]
+  haruyuki cron add --prompt <text> --cron <expr> [options]
+  haruyuki cron list [options]
+  haruyuki cron get <id|name>
+  haruyuki cron runs --id <id> [--limit <n>]
+  haruyuki cron delete <id|name>   (alias: remove)
+  haruyuki cron delete --all [--agent <id>]
 
 Add options:
   --prompt <text>        Prompt to send to the agent (required)
@@ -271,7 +271,7 @@ function handleGet(positionals: string[]): number {
   const taskRef = positionals[1];
   if (!taskRef) {
     console.error(
-      "Error: task ID or name required. Usage: letta cron get <id|name>",
+      "Error: task ID or name required. Usage: haruyuki cron get <id|name>",
     );
     return 1;
   }
@@ -302,7 +302,9 @@ function handleGet(positionals: string[]): number {
 function handleRuns(values: CronArgValues): number {
   const id = values.id;
   if (!id || typeof id !== "string") {
-    console.error("Error: --id is required. Usage: letta cron runs --id <id>");
+    console.error(
+      "Error: --id is required. Usage: haruyuki cron runs --id <id>",
+    );
     return 1;
   }
 
@@ -338,7 +340,7 @@ function handleDelete(values: CronArgValues, positionals: string[]): number {
   const taskRef = positionals[1];
   if (!taskRef) {
     console.error(
-      "Error: task ID or name required. Usage: letta cron delete <id|name> or --all --agent <id>",
+      "Error: task ID or name required. Usage: haruyuki cron delete <id|name> or --all --agent <id>",
     );
     return 1;
   }

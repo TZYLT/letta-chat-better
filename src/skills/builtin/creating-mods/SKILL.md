@@ -20,7 +20,7 @@ Default to a single mod file unless the user asks for something larger.
 
 Do not create project mods.
 
-Packaging is an upgrade path, not the default authoring path. If the user asks to share, publish, distribute, or use third-party package dependencies, first build a working mod file, then use `letta mods package <mod-file> --name <package-name>`. Package install/update/download/publish details belong outside this skill.
+Packaging is an upgrade path, not the default authoring path. If the user asks to share, publish, distribute, or use third-party package dependencies, first build a working mod file, then use `haruyuki mods package <mod-file> --name <package-name>`. Package install/update/download/publish details belong outside this skill.
 
 ## Choose the right capability
 
@@ -56,7 +56,7 @@ Default to a **tool** when the model should decide when to use the capability. D
 6. Write a single-file mod unless the user asks for something larger.
 7. Return disposers for registered providers/commands/tools/events, timers, subscriptions, and panels that should close on reload.
 8. Do a basic review: valid names, descriptions present, schemas are object schemas, optional capabilities guarded, scoped APIs used, cleanup returned.
-9. Tell the user the absolute file path changed and to run `/reload`. If a mod breaks startup or command handling, recover with `letta --no-mods` or `HARUYUKI_DISABLE_MODS=1 letta`.
+9. Tell the user the absolute file path changed and to run `/reload`. If a mod breaks startup or command handling, recover with `haruyuki --no-mods` or `HARUYUKI_DISABLE_MODS=1 haruyuki`.
 
 ## Core mod shape
 

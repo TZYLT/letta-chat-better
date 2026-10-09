@@ -105,59 +105,59 @@ function trackCliBoundaryError(
 function printHelp() {
   // Keep this plaintext (no colors) so output pipes cleanly
   const usage = `
-Haruyuki is a general purpose CLI for interacting with Letta agents
+Haruyuki is a general purpose CLI for interacting with haruyuki agents
 
 USAGE
   # interactive TUI
-  letta                 Resume last conversation for this project
-  letta --new           Create a new conversation (for concurrent sessions)
-  letta --resume        Open agent selector UI to pick agent/conversation
-  letta --new-agent     Create a new agent directly (skip profile selector)
-  letta --agent <id>    Open a specific agent by ID
+  haruyuki                 Resume last conversation for this project
+  haruyuki --new           Create a new conversation (for concurrent sessions)
+  haruyuki --resume        Open agent selector UI to pick agent/conversation
+  haruyuki --new-agent     Create a new agent directly (skip profile selector)
+  haruyuki --agent <id>    Open a specific agent by ID
 
   # headless
-  letta -p "..."        One-off prompt in headless mode (no TTY UI)
+  haruyuki -p "..."        One-off prompt in headless mode (no TTY UI)
 
   # maintenance
-  letta memory ...      Memory filesystem subcommands
-  letta agents ...      Agents subcommands (JSON-only)
-  letta model ...       Get, list, or set models and reasoning (JSON-only)
-  letta messages ...    Messages subcommands (JSON-only)
-  letta mcp ...         List, search, and call MCP servers available to an agent
-  letta mods ...        List and manage local mods
-  letta server ...      Run the local agent server (App Server + channels)
-  letta connect ...     Connect providers from terminal
-  letta install ...     Install a skill or mod package
-  letta skills ...      List or delete installed agent skills
+  haruyuki memory ...      Memory filesystem subcommands
+  haruyuki agents ...      Agents subcommands (JSON-only)
+  haruyuki model ...       Get, list, or set models and reasoning (JSON-only)
+  haruyuki messages ...    Messages subcommands (JSON-only)
+  haruyuki mcp ...         List, search, and call MCP servers available to an agent
+  haruyuki mods ...        List and manage local mods
+  haruyuki server ...      Run the local agent server (App Server + channels)
+  haruyuki connect ...     Connect providers from terminal
+  haruyuki install ...     Install a skill or mod package
+  haruyuki skills ...      List or delete installed agent skills
 OPTIONS
 ${renderCliOptionsHelp()}
 SUBCOMMANDS
-  letta memory status --agent <id>
-  letta memory diff --agent <id>
-  letta memory resolve --agent <id> --resolutions '<JSON>'
-  letta memory backup --agent <id>
-  letta memory backups --agent <id>
-  letta memory restore --agent <id> --from <backup> --force
-  letta memory export --agent <id> --out <dir>
-  letta memory pull --agent <id>
-  letta memory tokens [--memory-dir <path>] [--agent <id>] [--format text|json]
-  letta agents list [--query <text> | --name <name> | --tags <tags>]
-  letta messages search --query <text> [--all-agents]
-  letta messages list [--agent <id>]
-  letta messages transcript --conversation <id> [--out <path>]
-  letta steps trace --agent <id> --step <id>
-  letta mods list [--agent <id>]
-  letta mods package <mod-file> --name <package-name> [--out <dir>]
-  letta mods enable <package-spec>
-  letta mods disable <package-spec>
-  letta mods remove <package-spec>
-  letta mcp list|get|tools|search|call ... [--agent <id>]
-  letta server [--listen [url]] [options]
-  letta connect <provider> [options]
-  letta install <thing> [--agent <id> | -n <name>]
-  letta skills list [--agent <id> | -n <name>]
-  letta skills delete <skill_name> --agent <id>
-  letta local-backend migrate-transcripts [--storage-dir <path>] [--dry-run]
+  haruyuki memory status --agent <id>
+  haruyuki memory diff --agent <id>
+  haruyuki memory resolve --agent <id> --resolutions '<JSON>'
+  haruyuki memory backup --agent <id>
+  haruyuki memory backups --agent <id>
+  haruyuki memory restore --agent <id> --from <backup> --force
+  haruyuki memory export --agent <id> --out <dir>
+  haruyuki memory pull --agent <id>
+  haruyuki memory tokens [--memory-dir <path>] [--agent <id>] [--format text|json]
+  haruyuki agents list [--query <text> | --name <name> | --tags <tags>]
+  haruyuki messages search --query <text> [--all-agents]
+  haruyuki messages list [--agent <id>]
+  haruyuki messages transcript --conversation <id> [--out <path>]
+  haruyuki steps trace --agent <id> --step <id>
+  haruyuki mods list [--agent <id>]
+  haruyuki mods package <mod-file> --name <package-name> [--out <dir>]
+  haruyuki mods enable <package-spec>
+  haruyuki mods disable <package-spec>
+  haruyuki mods remove <package-spec>
+  haruyuki mcp list|get|tools|search|call ... [--agent <id>]
+  haruyuki server [--listen [url]] [options]
+  haruyuki connect <provider> [options]
+  haruyuki install <thing> [--agent <id> | -n <name>]
+  haruyuki skills list [--agent <id> | -n <name>]
+  haruyuki skills delete <skill_name> --agent <id>
+  haruyuki local-backend migrate-transcripts [--storage-dir <path>] [--dry-run]
 
 BEHAVIOR
   On startup, Haruyuki checks for saved profiles:
@@ -167,15 +167,15 @@ BEHAVIOR
 
   Agent pins are stored in ~/.haruyuki/settings.json.
 
-  Providers are connected from the terminal: letta connect <provider>.
+  Providers are connected from the terminal: haruyuki connect <provider>.
 
 EXAMPLES
   # when installed as an executable
-  letta                    # Show profile selector or create new
-  letta --new              # Create new conversation
-  letta --agent agent_123  # Open specific agent
-  letta install official/finance/stocks --agent agent-123
-  letta install npm:@letta-ai/mod-plan-mode
+  haruyuki                    # Show profile selector or create new
+  haruyuki --new              # Create new conversation
+  haruyuki --agent agent_123  # Open specific agent
+  haruyuki install official/finance/stocks --agent agent-123
+  haruyuki install npm:@letta-ai/mod-plan-mode
 
   # inside the interactive session
   /profile save MyAgent    # Save current agent as profile
@@ -185,7 +185,7 @@ EXAMPLES
   /logout                  # Clear saved credentials and exit
 
   # headless with JSON output (includes stats)
-  letta -p "hello" --output-format json
+  haruyuki -p "hello" --output-format json
 
 `.trim();
 
@@ -602,7 +602,7 @@ async function main(): Promise<void> {
     } else {
       console.error(`Error: ${errorMsg}`);
     }
-    console.error("Run 'letta --help' for usage information.");
+    console.error("Run 'haruyuki --help' for usage information.");
     process.exit(1);
   }
 
@@ -672,8 +672,8 @@ async function main(): Promise<void> {
     console.error(
       error instanceof Error ? `Error: ${error.message}` : String(error),
     );
-    console.error("Usage: letta --agent agent-xyz --conv default");
-    console.error("   or: letta --conv agent-xyz (shorthand)");
+    console.error("Usage: haruyuki --agent agent-xyz --conv default");
+    console.error("   or: haruyuki --conv agent-xyz (shorthand)");
     process.exit(1);
   }
 
@@ -766,7 +766,7 @@ async function main(): Promise<void> {
 
   if (command && !isHeadless) {
     console.error(`Error: Unknown command or argument "${command}"`);
-    console.error("Run 'letta --help' for usage information.");
+    console.error("Run 'haruyuki --help' for usage information.");
     process.exit(1);
   }
 
@@ -1259,7 +1259,7 @@ async function main(): Promise<void> {
 
           // No valid agent found anywhere
           console.error("No recent session in .haruyuki/ or ~/.haruyuki.");
-          console.error("Run 'letta' to get started.");
+          console.error("Run 'haruyuki' to get started.");
           process.exit(1);
         }
 
@@ -1549,7 +1549,7 @@ async function main(): Promise<void> {
             console.error(
               "When using --agent, the specified agent ID must exist.",
             );
-            console.error("Run 'letta' without --agent to create a new agent.");
+            console.error("Run 'haruyuki' without --agent to create an agent.");
             process.exit(1);
           }
         }

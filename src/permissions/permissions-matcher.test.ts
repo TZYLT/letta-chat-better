@@ -251,14 +251,14 @@ test("Bash pattern: special characters in command", () => {
 test("Bash pattern: skill-scoped prefix matches same skill scripts", () => {
   expect(
     matchesBashPattern(
-      "Bash(npx tsx /tmp/letta/src/skills/builtin/creating-skills/scripts/init-skill.ts foo)",
-      "Bash(npx tsx /tmp/letta/src/skills/builtin/creating-skills:*)",
+      "Bash(npx tsx /tmp/haruyuki/src/skills/builtin/creating-skills/scripts/init-skill.ts foo)",
+      "Bash(npx tsx /tmp/haruyuki/src/skills/builtin/creating-skills:*)",
     ),
   ).toBe(true);
   expect(
     matchesBashPattern(
-      "Bash(npx tsx /tmp/letta/src/skills/builtin/creating-skills/scripts/package-skill.ts bar)",
-      "Bash(npx tsx /tmp/letta/src/skills/builtin/creating-skills:*)",
+      "Bash(npx tsx /tmp/haruyuki/src/skills/builtin/creating-skills/scripts/package-skill.ts bar)",
+      "Bash(npx tsx /tmp/haruyuki/src/skills/builtin/creating-skills:*)",
     ),
   ).toBe(true);
 });
@@ -266,8 +266,8 @@ test("Bash pattern: skill-scoped prefix matches same skill scripts", () => {
 test("Bash pattern: skill-scoped prefix does not match other skills", () => {
   expect(
     matchesBashPattern(
-      "Bash(npx tsx /tmp/letta/src/skills/builtin/messaging-agents/scripts/send.ts)",
-      "Bash(npx tsx /tmp/letta/src/skills/builtin/creating-skills:*)",
+      "Bash(npx tsx /tmp/haruyuki/src/skills/builtin/messaging-agents/scripts/send.ts)",
+      "Bash(npx tsx /tmp/haruyuki/src/skills/builtin/creating-skills:*)",
     ),
   ).toBe(false);
 });

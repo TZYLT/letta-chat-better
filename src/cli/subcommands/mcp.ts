@@ -594,7 +594,10 @@ async function runGet(
   stdout: McpOutput,
 ): Promise<number> {
   if (!selector) {
-    throw new McpCliError("invalid_arguments", "Usage: letta mcp get <server>");
+    throw new McpCliError(
+      "invalid_arguments",
+      "Usage: haruyuki mcp get <server>",
+    );
   }
   const server = resolveServer(
     await listUnifiedServers(deps, agentId),
@@ -642,7 +645,7 @@ async function runSchema(
   if (!toolName) {
     throw new McpCliError(
       "invalid_arguments",
-      "Usage: letta mcp schema <tool-name>",
+      "Usage: haruyuki mcp schema <tool-name>",
     );
   }
   const catalog = await buildToolCatalog(deps, agentId, { toolName });
@@ -767,7 +770,7 @@ async function runCall(
   if (!toolName) {
     throw new McpCliError(
       "invalid_arguments",
-      "Usage: letta mcp call <tool-name> [--args '<json>']",
+      "Usage: haruyuki mcp call <tool-name> [--args '<json>']",
     );
   }
   const args = await loadMcpToolArgs(

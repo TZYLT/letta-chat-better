@@ -339,7 +339,7 @@ test("update-agent-settings refuses server operations without a base URL", async
   expect(result.stdout).toBe("");
   expect(result.exitCode).toBe(1);
   expect(result.stderr).toContain("Set LETTA_BASE_URL or pass --base-url");
-  expect(result.stderr).toContain("current Letta server");
+  expect(result.stderr).toContain("current haruyuki server");
 });
 
 test("update-agent-settings rejects cross-agent server operations without escape hatch", async () => {
@@ -769,7 +769,7 @@ test("update-compaction-prompt refuses server operations without a base URL", as
   expect(result.stdout).toBe("");
   expect(result.exitCode).toBe(1);
   expect(result.stderr).toContain("Set LETTA_BASE_URL or pass --base-url");
-  expect(result.stderr).toContain("current Letta server");
+  expect(result.stderr).toContain("current haruyuki server");
 });
 
 test("update-compaction-prompt confirmed live write fetches then patches", async () => {

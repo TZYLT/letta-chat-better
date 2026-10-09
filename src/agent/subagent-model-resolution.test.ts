@@ -66,7 +66,7 @@ describe("resolveSubagentLauncher", () => {
       env: {
         HARUYUKI_CODE_BIN: "custom-node",
       } as NodeJS.ProcessEnv,
-      argv: ["node", "/tmp/letta.js"],
+      argv: ["node", "/tmp/haruyuki.js"],
       execPath: "/usr/local/bin/node",
       platform: "win32",
     });
@@ -136,32 +136,32 @@ describe("resolveSubagentLauncher", () => {
   test("uses node runtime for bundled js on win32", () => {
     const launcher = resolveSubagentLauncher(["-p", "prompt"], {
       env: {} as NodeJS.ProcessEnv,
-      argv: ["node", "C:\\Program Files\\Letta\\letta.js"],
+      argv: ["node", "C:\\Program Files\\Letta\\haruyuki.js"],
       execPath: "C:\\Program Files\\nodejs\\node.exe",
       platform: "win32",
     });
 
     expect(launcher).toEqual({
       command: "C:\\Program Files\\nodejs\\node.exe",
-      args: ["C:\\Program Files\\Letta\\letta.js", "-p", "prompt"],
+      args: ["C:\\Program Files\\Letta\\haruyuki.js", "-p", "prompt"],
     });
   });
 
   test("keeps direct js spawn behavior on non-win32", () => {
     const launcher = resolveSubagentLauncher(["-p", "prompt"], {
       env: {} as NodeJS.ProcessEnv,
-      argv: ["node", "/usr/local/lib/letta.js"],
+      argv: ["node", "/usr/local/lib/haruyuki.js"],
       execPath: "/usr/local/bin/node",
       platform: "linux",
     });
 
     expect(launcher).toEqual({
-      command: "/usr/local/lib/letta.js",
+      command: "/usr/local/lib/haruyuki.js",
       args: ["-p", "prompt"],
     });
   });
 
-  test("falls back to global letta when no launcher hints available", () => {
+  test("falls back to global haruyuki when no launcher hints available", () => {
     const launcher = resolveSubagentLauncher(["-p", "prompt"], {
       env: {} as NodeJS.ProcessEnv,
       argv: ["node", ""],
@@ -181,16 +181,16 @@ describe("resolveSubagentLauncher", () => {
       {
         env: {
           HARUYUKI_CODE_BIN:
-            '"C:\\Users\\Example User\\AppData\\Roaming\\npm\\letta.cmd"',
+            '"C:\\Users\\Example User\\AppData\\Roaming\\npm\\haruyuki.cmd"',
         } as NodeJS.ProcessEnv,
-        argv: ["node", "C:\\Program Files\\Letta\\letta.js"],
+        argv: ["node", "C:\\Program Files\\Letta\\haruyuki.js"],
         execPath: "C:\\Program Files\\nodejs\\node.exe",
         platform: "win32",
       },
     );
 
     expect(launcher).toEqual({
-      command: "C:\\Users\\Example User\\AppData\\Roaming\\npm\\letta.cmd",
+      command: "C:\\Users\\Example User\\AppData\\Roaming\\npm\\haruyuki.cmd",
       args: ["--output-format", "stream-json"],
     });
   });

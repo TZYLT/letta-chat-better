@@ -62,7 +62,7 @@ describe("shared CLI arg schema", () => {
     expect(help).toContain("-h, --help");
     expect(help).toContain("--backend <mode>");
     expect(help).toContain("--no-mods");
-    expect(help).toContain("HARUYUKI_DISABLE_MODS=1 letta");
+    expect(help).toContain("HARUYUKI_DISABLE_MODS=1 haruyuki");
     expect(help).toContain("--memfs-startup <m>");
     expect(help).toContain("--stateless");
     expect(help).toContain("--computer <selector>");

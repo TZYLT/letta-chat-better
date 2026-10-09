@@ -115,17 +115,17 @@ test("requires an explicit target even when a current agent is in the environmen
 
 test("help works without initializing authentication", async () => {
   expect(await run(["--help"])).toBe(0);
-  expect(stdout.join("\n")).toContain("letta steps trace");
+  expect(stdout.join("\n")).toContain("haruyuki steps trace");
   expect(initialize).not.toHaveBeenCalled();
 });
 
 test("trace retrieval is classified as read only without allowing arbitrary steps commands", () => {
   expect(
     isReadOnlyShellCommand(
-      "letta --backend api steps trace --agent agent-target --step step-1",
+      "haruyuki --backend api steps trace --agent agent-target --step step-1",
     ),
   ).toBe(true);
   expect(
-    isReadOnlyShellCommand("letta --backend api steps delete --step step-1"),
+    isReadOnlyShellCommand("haruyuki --backend api steps delete --step step-1"),
   ).toBe(false);
 });

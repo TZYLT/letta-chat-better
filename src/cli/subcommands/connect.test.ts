@@ -99,7 +99,7 @@ describe("connect subcommand", () => {
       'Provider "ollama" is only available with the local backend.',
     );
     expect(output).toContain(
-      "letta --backend local connect ollama --base-url http://192.168.1.50:11434/v1",
+      "haruyuki --backend local connect ollama --base-url http://192.168.1.50:11434/v1",
     );
     expect(deps.checkProviderApiKey).not.toHaveBeenCalled();
   });

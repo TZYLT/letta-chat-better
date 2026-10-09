@@ -5,7 +5,7 @@ description: Find other agents on the same server. Use when the user asks about 
 
 # Finding Agents
 
-This skill helps you find other agents on the same Letta server.
+This skill helps you find other agents on the same haruyuki server.
 
 ## When to Use This Skill
 
@@ -18,7 +18,7 @@ This skill helps you find other agents on the same Letta server.
 ## CLI Usage
 
 ```bash
-letta agents list [options]
+haruyuki agents list [options]
 ```
 
 ### Options
@@ -40,7 +40,7 @@ letta agents list [options]
 Agents created by Haruyuki are tagged with `origin:letta-code`. To find only Haruyuki agents:
 
 ```bash
-letta agents list --tags "origin:letta-code"
+haruyuki agents list --tags "origin:letta-code"
 ```
 
 This is useful when the user is looking for agents they've worked with in Haruyuki CLI sessions.
@@ -50,8 +50,8 @@ This is useful when the user is looking for agents they've worked with in Haruyu
 List agents owned by the current user, then list agents shared with them:
 
 ```bash
-letta agents list
-letta agents list --shared
+haruyuki agents list
+haruyuki agents list --shared
 ```
 
 Use `--query <text>` with either command to search by name.
@@ -60,32 +60,32 @@ Use `--query <text>` with either command to search by name.
 
 **List all agents (up to 20):**
 ```bash
-letta agents list
+haruyuki agents list
 ```
 
 **Find agent by exact name:**
 ```bash
-letta agents list --name "ProjectX-v1"
+haruyuki agents list --name "ProjectX-v1"
 ```
 
 **Search agents by name (fuzzy):**
 ```bash
-letta agents list --query "project"
+haruyuki agents list --query "project"
 ```
 
 **Find only Haruyuki agents:**
 ```bash
-letta agents list --tags "origin:letta-code"
+haruyuki agents list --tags "origin:letta-code"
 ```
 
 **Find agents with multiple tags:**
 ```bash
-letta agents list --tags "frontend,production" --match-all-tags
+haruyuki agents list --tags "frontend,production" --match-all-tags
 ```
 
 **Include memory blocks in results:**
 ```bash
-letta agents list --query "project" --include-blocks
+haruyuki agents list --query "project" --include-blocks
 ```
 
 ## Output
@@ -107,11 +107,11 @@ If you need to find which agent worked on a specific topic:
 
 1. Search messages across all agents:
    ```bash
-   letta messages search --query "topic" --all-agents --limit 10
+   haruyuki messages search --query "topic" --all-agents --limit 10
    ```
 2. Note the `agent_id` values from matching messages
 3. Get agent details:
    ```bash
-   letta agents list --query "partial-name"
+   haruyuki agents list --query "partial-name"
    ```
    Or use the agent_id directly in the Letta API

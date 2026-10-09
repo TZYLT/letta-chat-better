@@ -309,7 +309,7 @@ describe("ChannelRegistry command routing", () => {
     });
     expect(replies[0]?.text).toContain("Telegram status");
     expect(replies[0]?.text).toContain(
-      "Route: Connected to a Letta agent conversation.",
+      "Route: Connected to a haruyuki agent conversation.",
     );
     expect(replies[0]?.text).toContain("Agent: agent-status.");
     expect(replies[0]?.text).toContain("Conversation: conv-status.");
@@ -424,7 +424,7 @@ describe("ChannelRegistry command routing", () => {
       threadId: "175380",
     });
     expect(replies.at(-1)?.text).toContain(
-      "Route: Connected to a Letta agent conversation.",
+      "Route: Connected to a haruyuki agent conversation.",
     );
   });
 

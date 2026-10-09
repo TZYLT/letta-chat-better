@@ -41,7 +41,7 @@ read this repository's source when the reference is silent.
    `--search` prints `document.md:line: text` hits, so you can locate a flag or
    settings key and then read the section around it.
 4. **When the reference does not cover it, say so and go to the source.** The
-   authority for this build is its own code: `letta --help`, `<command>
+   authority for this build is its own code: `haruyuki --help`, `<command>
    --help`, the slash commands listed by `/help`, and the source file that
    implements the behavior. Do not answer from the upstream project's hosted
    documentation, blog posts, or marketing copy — this build has diverged from
@@ -73,14 +73,14 @@ applies_to:
 
 ## Inspect or change your model from the CLI
 
-- `letta model list [--byok | --hosted] [--structured-outputs]` lists the active
+- `haruyuki model list [--byok | --hosted] [--structured-outputs]` lists the active
   backend's models with their catalog IDs, reasoning levels, and
   structured-output support.
-- `letta model set [handle] [--reasoning <level>] [--default]` selects a model,
+- `haruyuki model set [handle] [--reasoning <level>] [--default]` selects a model,
   or changes reasoning only.
-- `letta model get [--default]` shows the effective model and the redacted
+- `haruyuki model get [--default]` shows the effective model and the redacted
   model settings.
-- Run `letta model --help` before using a flag that is not listed here.
+- Run `haruyuki model --help` before using a flag that is not listed here.
 
 ## Hard rules
 

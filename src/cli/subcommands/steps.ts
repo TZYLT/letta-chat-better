@@ -32,7 +32,7 @@ export async function runStepsSubcommand(
     });
     if (values.help || positionals.length === 0) {
       console.log(
-        "Usage: letta steps trace --agent <agent-id> --step <step-id>\nRead step metadata and an available provider trace with CLI authentication. Local provider traces are unsupported. Output is JSON.",
+        "Usage: haruyuki steps trace --agent <agent-id> --step <step-id>\nRead step metadata and an available provider trace with CLI authentication. Local provider traces are unsupported. Output is JSON.",
       );
       return 0;
     }
@@ -43,7 +43,7 @@ export async function runStepsSubcommand(
       !values.step
     ) {
       throw new Error(
-        "Expected: letta steps trace --agent <agent-id> --step <step-id>",
+        "Expected: haruyuki steps trace --agent <agent-id> --step <step-id>",
       );
     }
     await (deps.initialize ?? (() => settingsManager.initialize()))();

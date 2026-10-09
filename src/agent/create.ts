@@ -190,7 +190,7 @@ export interface CreateAgentOptions {
   updateArgs?: Record<string, unknown>;
   skillsDirectory?: string;
   parallelToolCalls?: boolean;
-  /** System prompt preset (e.g., 'default', 'letta', 'source-claude') */
+  /** System prompt preset (e.g., 'default', 'haruyuki', 'source-claude') */
   systemPromptPreset?: string;
   /** Raw system prompt string (mutually exclusive with systemPromptPreset) */
   systemPromptCustom?: string;

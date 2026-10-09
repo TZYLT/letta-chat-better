@@ -30,7 +30,7 @@ This is the recommended flow:
 
 1. **Export the source agent's memfs to a temp directory**
    ```bash
-   letta memory export --agent <source-agent-id> --out /tmp/letta-memory-<source-agent-id>
+   haruyuki memory export --agent <source-agent-id> --out /tmp/letta-memory-<source-agent-id>
    ```
 
 2. **Copy the files you want into your own memfs**
@@ -81,7 +81,7 @@ Scenario: You're a new agent and want to inherit memory from an existing agent "
 
 2. **Export their memfs:**
    ```bash
-   letta memory export --agent agent-abc123 --out /tmp/letta-memory-agent-abc123
+   haruyuki memory export --agent agent-abc123 --out /tmp/letta-memory-agent-abc123
    ```
 
 3. **Copy the relevant files into your memfs:**

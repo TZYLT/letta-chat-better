@@ -63,7 +63,7 @@ export const SHARED_REMINDER_CATALOG: ReadonlyArray<SharedReminderDefinition> =
     },
     {
       id: "mcp-servers-info",
-      description: "MCP servers with tools available through letta mcp",
+      description: "MCP servers with tools available through haruyuki mcp",
       modes: [
         "interactive",
         "headless-one-shot",

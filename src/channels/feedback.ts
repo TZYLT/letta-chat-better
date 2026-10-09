@@ -53,7 +53,7 @@ export function buildChannelFeedbackNoRouteMessage(channelId: string): string {
       ? "Mention the app with a normal message in this chat or thread first so it can connect, then send /feedback <message> while mentioning the app."
       : "Send a normal message first and follow the pairing instructions, then try /feedback <message>.";
   return [
-    `${displayName} cannot submit /feedback until this chat is connected to a Letta agent conversation.`,
+    `${displayName} cannot submit /feedback until this chat is connected to a haruyuki agent conversation.`,
     instruction,
   ].join("\n\n");
 }

@@ -1,15 +1,15 @@
 /**
- * `letta channels` CLI subcommand.
+ * `haruyuki channels` CLI subcommand.
  *
  * Usage:
- *   letta channels install telegram
- *   letta channels configure telegram
- *   letta channels status
- *   letta channels route list
- *   letta channels route add --channel telegram --chat-id <id> --agent <id> --conversation <id>
- *   letta channels route remove --channel telegram --chat-id <id>
- *   letta channels pair --channel telegram --code <code> --agent <id> --conversation <id>
- *   letta channels bind --channel slack --agent <id>
+ *   haruyuki channels install telegram
+ *   haruyuki channels configure telegram
+ *   haruyuki channels status
+ *   haruyuki channels route list
+ *   haruyuki channels route add --channel telegram --chat-id <id> --agent <id> --conversation <id>
+ *   haruyuki channels route remove --channel telegram --chat-id <id>
+ *   haruyuki channels pair --channel telegram --code <code> --agent <id> --conversation <id>
+ *   haruyuki channels bind --channel slack --agent <id>
  */
 
 import { parseArgs } from "node:util";
@@ -55,14 +55,14 @@ function printUsage(): void {
   console.log(
     `
 Usage:
-  letta channels install <channel>            Install channel runtime dependencies
-  letta channels configure <channel>          Set up a channel (interactive wizard)
-  letta channels status                       Show channel config, routing, pairing state
-  letta channels route list [--channel <ch>]  Show routing table
-  letta channels route add [options]          Add a route
-  letta channels route remove [options]       Remove a route
-  letta channels bind [options]               Bind a Slack app to an agent
-  letta channels pair [options]               Approve pairing + bind to agent
+  haruyuki channels install <channel>            Install channel runtime dependencies
+  haruyuki channels configure <channel>          Set up a channel (interactive wizard)
+  haruyuki channels status                       Show channel config, routing, pairing state
+  haruyuki channels route list [--channel <ch>]  Show routing table
+  haruyuki channels route add [options]          Add a route
+  haruyuki channels route remove [options]       Remove a route
+  haruyuki channels bind [options]               Bind a Slack app to an agent
+  haruyuki channels pair [options]               Approve pairing + bind to agent
 
 Bind options (Slack only):
   --channel slack        Required
@@ -88,9 +88,9 @@ Note: "configure" and "status" are standalone-safe. "route add/remove" and
 WS command from ADE/desktop for live changes, or restart the server.
 
 Recommended first-party flow:
-  1. letta channels install <channel>         # optional for most channels
-  2. letta channels configure <channel>       # when an interactive wizard exists
-  3. letta server --channels <channel>
+  1. haruyuki channels install <channel>         # optional for most channels
+  2. haruyuki channels configure <channel>       # when an interactive wizard exists
+  3. haruyuki server --channels <channel>
   4. Message the channel once to get a pairing code
   5. In the target ADE/desktop conversation, run:
      /channels <channel> pair <code>
@@ -109,14 +109,14 @@ Signal notes:
     audio formats such as raw .aac are converted with ffmpeg when available.
 
 Headless deploy flow:
-  letta server --channels telegram --install-channel-runtimes
+  haruyuki server --channels telegram --install-channel-runtimes
 
 Local backend flow:
-  1. letta channels install <channel>
-  2. letta channels configure <channel>
-  3. letta server --backend local --channels <channel>
+  1. haruyuki channels install <channel>
+  2. haruyuki channels configure <channel>
+  3. haruyuki server --backend local --channels <channel>
   4. Message the bot once to get a pairing code
-  5. letta channels pair --channel <channel> --code <code> --agent <agent-id> --conversation default
+  5. haruyuki channels pair --channel <channel> --code <code> --agent <agent-id> --conversation default
 
 Only set LETTA_BASE_URL when targeting a separate self-hosted server. Do not set
 a dummy LETTA_BASE_URL for --backend local.
@@ -186,7 +186,7 @@ function resolveSelectedAccountId(
   const accounts = listChannelAccounts(channelId);
   if (accounts.length === 0) {
     throw new Error(
-      `Channel "${channelId}" has no configured accounts. Run letta channels configure ${channelId}.`,
+      `Channel "${channelId}" has no configured accounts. Run haruyuki channels configure ${channelId}.`,
     );
   }
   if (accounts.length === 1) {

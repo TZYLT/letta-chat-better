@@ -73,7 +73,7 @@ function expectPathSuffix(value: unknown, suffixParts: string[]): void {
 function writeFakeLetta(binDir: string, version: FakeLettaVersion): string {
   mkdirSync(binDir, { recursive: true });
   const isWindows = process.platform === "win32";
-  const executableName = isWindows ? "letta.cmd" : "letta";
+  const executableName = isWindows ? "haruyuki.cmd" : "letta";
   const lettaPath = join(binDir, executableName);
   if (isWindows) {
     const versionLines = [
@@ -273,7 +273,7 @@ test.skipIf(!pythonAvailable)(
 );
 
 test.skipIf(!pythonAvailable)(
-  "show_config runtime represents letta version failures safely",
+  "show_config runtime represents haruyuki version failures safely",
   async () => {
     const root = makeTempDir("self-config-show-config-failure-");
     const homeDir = join(root, "home");

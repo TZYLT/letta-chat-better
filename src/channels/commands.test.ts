@@ -315,7 +315,7 @@ describe("channel slash commands", () => {
           createdAt: "2026-05-15T00:00:00.000Z",
         },
       }),
-    ).toContain("Route: Connected to a Letta agent conversation.");
+    ).toContain("Route: Connected to a haruyuki agent conversation.");
 
     const unconnectedText = buildChannelStatusMessage(msg, {
       adapterRunning: false,
@@ -369,7 +369,7 @@ describe("channel slash commands", () => {
       "Maximum is 10,000 characters",
     );
     expect(buildChannelFeedbackNoRouteMessage("custom")).toContain(
-      "connected to a Letta agent conversation",
+      "connected to a haruyuki agent conversation",
     );
     expect(buildChannelFeedbackSubmittedMessage("signal")).toContain(
       "feedback submitted",

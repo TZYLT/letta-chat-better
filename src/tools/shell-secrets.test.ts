@@ -28,7 +28,7 @@ const seededSecrets = {
   PASSWORD: "he$$o",
   TOKEN: "$foo$bar",
   BACKTICK: "`whoami`",
-  PROFILE: "letta",
+  PROFILE: "haruyuki",
 } as const;
 
 afterEach(() => {
@@ -164,7 +164,9 @@ describe("shell secret execution", () => {
 
     try {
       const command =
-        process.platform === "win32" ? "Write-Output letta" : "printf letta";
+        process.platform === "win32"
+          ? "Write-Output haruyuki"
+          : "printf haruyuki";
       const result = await executeTool(
         "Bash",
         { command, description: "Print ordinary text" },
@@ -172,7 +174,7 @@ describe("shell secret execution", () => {
       );
 
       expect(result.status).toBe("success");
-      expect(toolReturnText(result.toolReturn)).toContain("letta");
+      expect(toolReturnText(result.toolReturn)).toContain("haruyuki");
       expect(toolReturnText(result.toolReturn)).not.toContain(
         "PROFILE=<REDACTED>",
       );

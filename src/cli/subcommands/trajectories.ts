@@ -21,11 +21,11 @@ function printUsage(): void {
   console.log(
     `
 Usage:
-  letta trajectories export [options]
-  letta trajectories detect [--json]
-  letta trajectories list [--out <dir>] [--source <name>] [--project <path>] [--json]
-  letta trajectories view <file|sessionId> [--out <dir>] [--tools] [--reasoning]
-  letta trajectories search <keyword> [--out <dir>] [--source <name>]
+  haruyuki trajectories export [options]
+  haruyuki trajectories detect [--json]
+  haruyuki trajectories list [--out <dir>] [--source <name>] [--project <path>] [--json]
+  haruyuki trajectories view <file|sessionId> [--out <dir>] [--tools] [--reasoning]
+  haruyuki trajectories search <keyword> [--out <dir>] [--source <name>]
                             [--project <path>] [--role user|assistant] [--json]
 
 Normalize historical coding-agent sessions into a single directory of
@@ -164,7 +164,7 @@ async function runView(
 ): Promise<number> {
   if (!target) {
     console.error(
-      "Usage: letta trajectories view <file|sessionId> [--out <dir>] [--tools] [--reasoning]",
+      "Usage: haruyuki trajectories view <file|sessionId> [--out <dir>] [--tools] [--reasoning]",
     );
     return 1;
   }
@@ -181,7 +181,7 @@ async function runSearch(
 ): Promise<number> {
   if (!keyword) {
     console.error(
-      "Usage: letta trajectories search <keyword> [--out <dir>] [--source <name>] [--project <path>] [--role user|assistant]",
+      "Usage: haruyuki trajectories search <keyword> [--out <dir>] [--source <name>] [--project <path>] [--role user|assistant]",
     );
     return 1;
   }

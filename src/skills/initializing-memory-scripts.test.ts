@@ -23,7 +23,7 @@ const scriptsDir = join(
   "initializing-memory",
   "scripts",
 );
-// Render through the real `letta trajectories view` implementation.
+// Render through the real `haruyuki trajectories view` implementation.
 const lettaCmd: [string, string] = [
   process.execPath,
   join(repoRoot, "src", "index.ts"),
@@ -125,9 +125,9 @@ function prepare(exportDir: string, extra: string[] = []) {
     exportDir,
     "--out",
     outDir,
-    "--letta",
+    "--haruyuki",
     lettaCmd[0],
-    "--letta-arg",
+    "--haruyuki-arg",
     lettaCmd[1],
     ...extra,
   ]);
@@ -218,9 +218,9 @@ describe("prepare-history.mjs", () => {
       makeExport(makeTempDir()),
       "--out",
       outDir,
-      "--letta",
+      "--haruyuki",
       executable,
-      "--letta-arg",
+      "--haruyuki-arg",
       entry,
     ]);
     expect(result.status).toBe(0);
@@ -244,7 +244,7 @@ describe("prepare-history.mjs", () => {
       makeTempDir(),
     ]);
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain("letta trajectories export");
+    expect(result.stderr).toContain("haruyuki trajectories export");
   });
 });
 

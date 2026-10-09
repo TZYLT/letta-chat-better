@@ -2,11 +2,11 @@ import { HARUYUKI_CLOUD_API_URL } from "@/auth/oauth";
 import { settingsManager } from "@/settings-manager";
 
 /**
- * Default Letta server for a local install.
+ * Default haruyuki server for a local install.
  *
  * Cloud is deliberately not a default anywhere: with no `LETTA_BASE_URL` and no
  * saved env override, requests and skill scripts target the self-hosted server
- * on its documented port (`letta server`, `docker run -p 8283:8283`). Nothing
+ * on its documented port (`haruyuki server`, `docker run -p 8283:8283`). Nothing
  * reaches the network unless something is actually listening there.
  */
 export const DEFAULT_LOCAL_SERVER_URL = "http://localhost:8283";
@@ -25,7 +25,7 @@ export function getConfiguredServerUrl(): string | undefined {
 }
 
 /**
- * Get the current Letta server URL from environment or settings.
+ * Get the current haruyuki server URL from environment or settings.
  * Used for cache keys and API operations.
  */
 export function getServerUrl(): string {

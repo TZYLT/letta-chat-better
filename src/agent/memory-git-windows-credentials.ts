@@ -19,7 +19,7 @@ export function writeWindowsCredentialHelper(
   );
   writeFileSync(
     helperScriptPath,
-    `@echo off\necho username=letta\necho password=${token}\n`,
+    `@echo off\necho username=haruyuki\necho password=${token}\n`,
     "utf8",
   );
   return formatGitCredentialHelperPath(

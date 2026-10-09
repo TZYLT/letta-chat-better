@@ -301,7 +301,7 @@ export const CLI_FLAG_CATALOG = {
     mode: "both",
     help: {
       description: "Disable local mods for this session",
-      continuationLines: ["Recovery alias: HARUYUKI_DISABLE_MODS=1 letta"],
+      continuationLines: ["Recovery alias: HARUYUKI_DISABLE_MODS=1 haruyuki"],
     },
   },
   "reflection-trigger": {

@@ -154,7 +154,7 @@ export async function runWhatsAppSetup(): Promise<boolean> {
       "Config written to: ~/.haruyuki/channels/whatsapp/accounts.json\n",
     );
     console.log("Next steps:");
-    console.log("  1. Start the listener: letta server --channels whatsapp");
+    console.log("  1. Start the listener: haruyuki server --channels whatsapp");
     console.log("  2. Scan the QR from WhatsApp linked devices");
     console.log(
       "  3. Message yourself in WhatsApp to pair or route the chat\n",

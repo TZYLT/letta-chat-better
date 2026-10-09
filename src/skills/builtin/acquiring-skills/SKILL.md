@@ -116,16 +116,16 @@ rm -rf /tmp/hermes-browse
 **Installing Hermes skills** into Letta uses the `official/` prefix (for official optional skills):
 
 ```bash
-letta skills install official/finance/stocks
-letta skills install official/blockchain/solana
-letta skills install official/research/duckduckgo-search
-letta skills install official/mlops/flash-attention
-letta skills install official/creative/meme-generation
+haruyuki skills install official/finance/stocks
+haruyuki skills install official/blockchain/solana
+haruyuki skills install official/research/duckduckgo-search
+haruyuki skills install official/mlops/flash-attention
+haruyuki skills install official/creative/meme-generation
 ```
 
 The `official/<category>/<skill>` form clones `NousResearch/hermes-agent` and copies from `optional-skills/<category>/<skill>`.
 
-For non-official Hermes hub skills, use the GitHub URL or shorthand form to install into Haruyuki (e.g., `letta skills install openai/skills/k8s`).
+For non-official Hermes hub skills, use the GitHub URL or shorthand form to install into Haruyuki (e.g., `haruyuki skills install openai/skills/k8s`).
 
 ### 2. ClawHub (OpenClaw)
 
@@ -149,13 +149,13 @@ curl -s "https://clawhub.ai/api/v1/skills?q=calendar" | jq '.items[].slug'
 **Installing ClawHub skills** uses the `clawhub/` or `clawhub:` prefix:
 
 ```bash
-letta skills install clawhub/nano-banana-pro
-letta skills install clawhub:nano-banana-pro
-letta skills install clawhub:nano-banana-pro@1.0.1      # pin a version
-letta skills install https://clawhub.ai/skills/my-skill  # URL form also works
+haruyuki skills install clawhub/nano-banana-pro
+haruyuki skills install clawhub:nano-banana-pro
+haruyuki skills install clawhub:nano-banana-pro@1.0.1      # pin a version
+haruyuki skills install https://clawhub.ai/skills/my-skill  # URL form also works
 ```
 
-**Note:** A bare slug like `letta skills install nano-banana-pro` will NOT resolve through ClawHub — you must include the `clawhub/` or `clawhub:` prefix.
+**Note:** A bare slug like `haruyuki skills install nano-banana-pro` will NOT resolve through ClawHub — you must include the `clawhub/` or `clawhub:` prefix.
 
 ### 3. GitHub Repositories
 
@@ -163,16 +163,16 @@ Any GitHub repository containing a `SKILL.md` can be installed directly.
 
 ```bash
 # Full repo (installs from repo root)
-letta skills install https://github.com/owner/repo
+haruyuki skills install https://github.com/owner/repo
 
 # Subdirectory (tree URL)
-letta skills install https://github.com/owner/repo/tree/main/path/to/skill
+haruyuki skills install https://github.com/owner/repo/tree/main/path/to/skill
 
 # SKILL.md blob URL (installs parent directory)
-letta skills install https://github.com/owner/repo/blob/main/path/to/skill/SKILL.md
+haruyuki skills install https://github.com/owner/repo/blob/main/path/to/skill/SKILL.md
 
 # Shorthand: owner/repo/path
-letta skills install owner/repo/path/to/skill
+haruyuki skills install owner/repo/path/to/skill
 ```
 
 ### 4. Anthropic Community Repos
@@ -183,19 +183,19 @@ letta skills install owner/repo/path/to/skill
 
 These can be installed via the GitHub URL forms above, or manually cloned and copied.
 
-## The `letta skills install` Command
+## The `haruyuki skills install` Command
 
 The CLI handles downloading, placing the skill in the agent's memory, and committing the change:
 
 ```bash
-letta skills install <source> --agent $AGENT_ID [--force]
+haruyuki skills install <source> --agent $AGENT_ID [--force]
 ```
 
 Your agent ID is always available as `$AGENT_ID` in the environment. Pass it explicitly with `--agent` to install into your own memfs:
 
 ```bash
-letta skills install official/finance/stocks --agent $AGENT_ID
-letta skills install clawhub/nano-banana-pro --agent $AGENT_ID
+haruyuki skills install official/finance/stocks --agent $AGENT_ID
+haruyuki skills install clawhub/nano-banana-pro --agent $AGENT_ID
 ```
 
 | Flag | Purpose |
@@ -204,18 +204,18 @@ letta skills install clawhub/nano-banana-pro --agent $AGENT_ID
 | `-n <name>` | Resolve agent by name instead of id |
 | `--force` | Replace an existing skill with the same name |
 
-Also available as a top-level alias: `letta install <source> --agent $AGENT_ID`.
+Also available as a top-level alias: `haruyuki install <source> --agent $AGENT_ID`.
 
 **Managing installed skills:**
 
 ```bash
-letta skills list --agent $AGENT_ID
-letta skills delete <skill-name> --agent $AGENT_ID
+haruyuki skills list --agent $AGENT_ID
+haruyuki skills delete <skill-name> --agent $AGENT_ID
 ```
 
 ## Installation Locations
 
-When using `letta skills install`, skills are placed in the agent's memfs at `<memory-dir>/skills/<skill-name>/`.
+When using `haruyuki skills install`, skills are placed in the agent's memfs at `<memory-dir>/skills/<skill-name>/`.
 
 For manual installation:
 
@@ -259,7 +259,7 @@ User asks: "Can you help me track stock prices?"
 2. **Ask user**: "Hermes has an official stocks skill that covers quotes, history, search, and crypto via Yahoo. Want me to install it?"
 3. **If user agrees, install**:
    ```bash
-   letta skills install official/finance/stocks --agent $AGENT_ID
+   haruyuki skills install official/finance/stocks --agent $AGENT_ID
    ```
 4. **Review for compatibility**: Read the installed SKILL.md. Check for harness-specific commands, paths, or tools that need adaptation (see Cross-Harness Compatibility above). Confirm the skill's instructions make sense in Letta before using it.
 5. **Invoke**: `Skill(skill: "stocks")`
@@ -271,7 +271,7 @@ User asks: "Can you generate images with Nano Banana Pro?"
 2. **Ask user**: "There's a nano-banana-pro skill on ClawHub. Want me to install it?"
 3. **Install**:
    ```bash
-   letta skills install clawhub/nano-banana-pro --agent $AGENT_ID
+   haruyuki skills install clawhub/nano-banana-pro --agent $AGENT_ID
    ```
 4. **Review for compatibility**: Read the SKILL.md, check for any OpenClaw-specific commands or setup, adapt as needed.
 5. **Invoke**: `Skill(skill: "nano-banana-pro")`

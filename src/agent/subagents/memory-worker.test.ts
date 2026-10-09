@@ -102,7 +102,7 @@ test("a worker edits a private worktree; its commit is merged, synced and refres
   );
   expect(git("log", "--format=%s", "-1")).toBe("remember correction");
   expect(existsSync(workerDir)).toBe(false);
-  expect(git("branch", "--list", "letta/memory-worker/*")).toBe("");
+  expect(git("branch", "--list", "haruyuki/memory-worker/*")).toBe("");
   const release = await claimMemoryOperation(root);
   expect(release).not.toBeNull();
   await release?.();
@@ -173,7 +173,7 @@ test("cancellation discards the worker's worktree and never touches the primary'
   );
   expect(readFileSync(join(root, "draft.md"), "utf8")).toBe("primary draft\n");
   expect(existsSync(join(root, "new.md"))).toBe(false);
-  expect(git("branch", "--list", "letta/memory-worker/*")).toBe("");
+  expect(git("branch", "--list", "haruyuki/memory-worker/*")).toBe("");
 });
 
 test("a worker commit that conflicts with the primary's is kept on its branch", async () => {
@@ -190,10 +190,10 @@ test("a worker commit that conflicts with the primary's is kept on its branch", 
     { sync: localSync("clean") },
   );
   expect(result.success).toBe(false);
-  expect(result.error).toContain("letta/memory-worker/");
+  expect(result.error).toContain("haruyuki/memory-worker/");
   expect(readFileSync(join(root, "note.md"), "utf8")).toBe("primary version\n");
   expect(git("status", "--porcelain")).toBe("");
-  expect(git("branch", "--list", "letta/memory-worker/*")).not.toBe("");
+  expect(git("branch", "--list", "haruyuki/memory-worker/*")).not.toBe("");
 });
 
 test("reflection integrates its own worktree after a memory edit releases the checkout", async () => {
@@ -303,7 +303,7 @@ test("a worker that changed nothing does not report a memory change", async () =
     },
   );
   expect(changed).toBe(0);
-  expect(git("branch", "--list", "letta/memory-worker/*")).toBe("");
+  expect(git("branch", "--list", "haruyuki/memory-worker/*")).toBe("");
 });
 
 test("a worker that crashes after committing still has its commit merged, synced and reported", async () => {
@@ -328,7 +328,7 @@ test("a worker that crashes after committing still has its commit merged, synced
     "committed before crash\n",
   );
   expect(changed).toBe(1);
-  expect(git("branch", "--list", "letta/memory-worker/*")).toBe("");
+  expect(git("branch", "--list", "haruyuki/memory-worker/*")).toBe("");
 });
 
 test("repairs a real Git conflict in place and skips a duplicate repair", async () => {

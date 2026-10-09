@@ -471,7 +471,7 @@ describe("local managed mod package installer", () => {
     ]);
   });
 
-  test("missing letta manifest fails before writing", () => {
+  test("missing haruyuki manifest fails before writing", () => {
     const root = createTempDir();
     const packageRoot = path.join(root, "source");
     const modsRoot = path.join(root, "mods");
@@ -985,7 +985,7 @@ describe("local managed mod package installer", () => {
     expect(existsSync(path.join(modsRoot, "packages.json"))).toBe(false);
   });
 
-  test("npm packages without letta manifests fail without writing", async () => {
+  test("npm packages without haruyuki manifests fail without writing", async () => {
     const root = createTempDir();
     const modsRoot = path.join(root, "mods");
     __testOverrideNpmManagedModPackageInstaller({

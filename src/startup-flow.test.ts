@@ -18,7 +18,7 @@ import { createIsolatedCliTestEnv } from "@/test-utils/test-process-env";
  * Startup flow tests that validate flag conflict handling.
  *
  * These must remain runnable in fork PR CI (no secrets), so they should not
- * require a working Letta server or LETTA_API_KEY.
+ * require a working haruyuki server or LETTA_API_KEY.
  */
 
 const projectRoot = process.cwd();
@@ -309,7 +309,7 @@ describe("Startup Flow - Smoke", () => {
       'Error: Unknown command or argument "whoami"',
     );
     expect(result.stderr).toContain(
-      "Run 'letta --help' for usage information.",
+      "Run 'haruyuki --help' for usage information.",
     );
     expect(result.stderr).not.toContain("Model catalog is unavailable.");
   });
@@ -334,7 +334,7 @@ describe("Startup Flow - Smoke", () => {
     expect(result.stderr).not.toContain("Invalid toolset");
   });
 
-  test("--toolset letta is accepted", async () => {
+  test("--toolset haruyuki is accepted", async () => {
     const result = await runCli(
       ["--new-agent", "--toolset", "letta", "-p", "Say OK"],
       { expectExit: 1 },

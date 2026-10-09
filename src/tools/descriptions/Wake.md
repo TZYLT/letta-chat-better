@@ -12,4 +12,4 @@ For calendar requests such as “tomorrow at 9am,” resolve the date in the use
 
 Every wake uses the local scheduler on this computer and only fires while a listener is active. List and cancel cover every wake bound to this conversation, including wakes created by older CLI versions, so they stay manageable.
 
-For advanced scheduling, load the `scheduling-tasks` skill and use `letta cron`. It can target fresh, default, or other conversations, inspect run history, and manage schedules outside the current conversation.
+For advanced scheduling, load the `scheduling-tasks` skill and use `haruyuki cron`. It can target fresh, default, or other conversations, inspect run history, and manage schedules outside the current conversation.

@@ -60,11 +60,11 @@ credential-helper edits:
 From a shell, the standalone status and pull commands are:
 
 ```bash
-letta memory status --agent "$AGENT_ID"
-letta memory pull --agent "$AGENT_ID"
+haruyuki memory status --agent "$AGENT_ID"
+haruyuki memory pull --agent "$AGENT_ID"
 ```
 
-`letta memory pull` is a no-op and says so: there is no remote to pull from.
+`haruyuki memory pull` is a no-op and says so: there is no remote to pull from.
 
 Do not reproduce `/memfs enable` by PATCHing agent tags or constructing a Git
 remote by hand. The enable flow also updates the system prompt mode, recompiles

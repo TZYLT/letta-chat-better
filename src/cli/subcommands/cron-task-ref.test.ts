@@ -5,7 +5,7 @@ import { addTask } from "@/cron";
 import { resolveTaskName } from "./cron-task-ref";
 
 /**
- * Name resolution for `letta cron get`/`delete` (LET-10492).
+ * Name resolution for `haruyuki cron get`/`delete` (LET-10492).
  *
  * These tests exercise the device-local store, which never touches the network.
  * The Cloud schedule inventory this resolver used to search was removed with

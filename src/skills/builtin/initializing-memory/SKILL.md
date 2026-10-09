@@ -86,7 +86,7 @@ Read what exists before changing anything. A fresh agent has defaults to replace
 
 ### 2. Detect historical session data
 ```bash
-letta trajectories detect
+haruyuki trajectories detect
 ```
 Via the installed `@letta-ai/trajectory` package, reports every coding-agent session store on this machine with per-source counts — Claude Code, Codex, Hermes, Haruyuki, OpenClaw, OpenHands, Deep Agents, and anything added later. Run it *before* Step 4 so you know whether to ask the history question.
 
@@ -100,14 +100,14 @@ Ask one bundle of questions, using AskUserQuestion when available or an ordinary
 Only if the user approved in Step 4. Skip entirely otherwise; Step 6 still runs. These sessions are evidence of what happened, not proof of who wrote each prompt.
 
 ```bash
-letta trajectories export --out /tmp/letta-trajectories
+haruyuki trajectories export --out /tmp/letta-trajectories
 jq '{sessions: (.sessions | length), sources, errors: (.errors | length)}' /tmp/letta-trajectories/manifest.json
 node <SKILL_DIR>/scripts/prepare-history.mjs --export /tmp/letta-trajectories --out /tmp/letta-init-history
 ```
 
-The export normalizes every session into `<source>/<startedAt>_<sessionId>.json` plus `manifest.json` — **the authoritative inventory**, in which every session must end up either analyzed or explicitly excluded with a reason. Scope it with `--project $(pwd)` (a pathname prefix, not a directory boundary — check the manifest for similarly named siblings), `--source`, `--root`, or `--transcript`; browse it with `letta trajectories list`, `view`, `search`.
+The export normalizes every session into `<source>/<startedAt>_<sessionId>.json` plus `manifest.json` — **the authoritative inventory**, in which every session must end up either analyzed or explicitly excluded with a reason. Scope it with `--project $(pwd)` (a pathname prefix, not a directory boundary — check the manifest for similarly named siblings), `--source`, `--root`, or `--transcript`; browse it with `haruyuki trajectories list`, `view`, `search`.
 
-`prepare-history.mjs` groups the sessions into chronological cohorts of roughly 200 KB / 20 sessions (`--max-bytes`, `--max-sessions`), writing `cohorts.json` (absolute paths per session) and `ledger.json` (exclusions with reasons). If `letta` is not on PATH, pass `--letta <executable>` with repeated `--letta-arg`. You may merge small cohorts or drop low-value ones first — anything dropped is reported as not analyzed in Step 8, so tell the user.
+`prepare-history.mjs` groups the sessions into chronological cohorts of roughly 200 KB / 20 sessions (`--max-bytes`, `--max-sessions`), writing `cohorts.json` (absolute paths per session) and `ledger.json` (exclusions with reasons). If `haruyuki` is not on PATH, pass `--haruyuki <executable>` with repeated `--haruyuki-arg`. You may merge small cohorts or drop low-value ones first — anything dropped is reported as not analyzed in Step 8, so tell the user.
 
 ### 6. Research the codebase first-hand
 Read the README, agent docs (`AGENTS.md`, `CLAUDE.md`, nested ones), the package manifest, entry points, and recent git history yourself. By the end you should be able to trace a key feature from entry point to implementation; if you can't, you haven't read enough.
@@ -126,7 +126,7 @@ Load the `workflow-authoring` skill and design the script. Whatever shape you ch
 - **Ask code areas for the delta, not the documentation.** Name the repo docs covering each area and say those facts are available; the agent reports what they omit, contradict, or leave stale.
 - **Check code claims against current code** — history describes the code as it was. Verify claims about a cohort's `repo` against the current tree and report what changed.
 - **Budget time** — subagents time out after 10 minutes; raise `timeoutMs` for large cohorts.
-- **Gather on a fast model.** Pass `model: "deepseek/deepseek-v4.1-flash"`; omit `model` if `letta model list` doesn't show that handle. If inference fails at that model (including quota), use your current model for the follow-up run rather than retrying the failed route. Never synthesize memory on the fan-out model.
+- **Gather on a fast model.** Pass `model: "deepseek/deepseek-v4.1-flash"`; omit `model` if `haruyuki model list` doesn't show that handle. If inference fails at that model (including quota), use your current model for the follow-up run rather than retrying the failed route. Never synthesize memory on the fan-out model.
 
 ```js
 // Every finding carries a claim, its evidence, and where that evidence lives.

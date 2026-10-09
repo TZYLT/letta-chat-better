@@ -1,7 +1,7 @@
 /**
  * Pure startup agent resolution logic.
  *
- * Encodes the decision tree for which agent to use when `letta` starts:
+ * Encodes the decision tree for which agent to use when `haruyuki` starts:
  *   project LRU → pinned → global LRU → selector → create default
  *
  * Extracted from index.ts/headless.ts so it can be unit-tested without

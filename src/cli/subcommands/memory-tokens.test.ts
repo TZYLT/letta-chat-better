@@ -32,7 +32,7 @@ function captureConsole(): { capture: Capture; restore: () => void } {
   };
 }
 
-describe("letta memory tokens", () => {
+describe("haruyuki memory tokens", () => {
   let tmpRoot: string;
   let priorMemoryDir: string | undefined;
   let priorAgentId: string | undefined;
@@ -312,7 +312,7 @@ describe("letta memory tokens", () => {
     try {
       const code = await runMemorySubcommand([]);
       expect(code).toBe(0);
-      expect(capture.stdout.join("\n")).toContain("letta memory tokens");
+      expect(capture.stdout.join("\n")).toContain("haruyuki memory tokens");
     } finally {
       restore();
     }

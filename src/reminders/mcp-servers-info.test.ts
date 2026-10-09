@@ -45,10 +45,10 @@ describe("mcp servers info reminder", () => {
     expect(text).toContain(
       "MCP servers with available tools: filesystem, betterstack (111 tools), Exa (1 tool), uncounted",
     );
-    expect(text).toContain('letta mcp search "<what you want to do>"');
-    expect(text).toContain("letta mcp tools <server>");
-    expect(text).toContain("letta mcp schema <tool-name>");
-    expect(text).toContain("letta mcp call <tool-name>");
+    expect(text).toContain('haruyuki mcp search "<what you want to do>"');
+    expect(text).toContain("haruyuki mcp tools <server>");
+    expect(text).toContain("haruyuki mcp schema <tool-name>");
+    expect(text).toContain("haruyuki mcp call <tool-name>");
   });
 
   test("stays silent when an available backend fails to list servers", async () => {

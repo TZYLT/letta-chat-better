@@ -2,7 +2,7 @@
  * Shared system-prompt size estimator.
  *
  * Used by:
- *   - The `letta memory tokens` CLI command (for subagents + scripts)
+ *   - The `haruyuki memory tokens` CLI command (for subagents + scripts)
  *   - The startup system-prompt warning
  *   - The bundled `context-doctor` skill script (via CLI)
  *

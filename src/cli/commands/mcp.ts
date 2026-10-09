@@ -357,7 +357,7 @@ export function mcpHelpText(): string {
     "",
     "Manage MCP servers for the current agent. OAuth-protected remote servers open a browser automatically.",
     "",
-    "The /mcp manager lists both client-local servers (run on this machine) and server-side servers registered on the Letta server. Server-side servers are configured via the ADE or API; use /mcp to enable or disable their tools for this agent — enabled tools execute on the Letta server.",
+    "The /mcp manager lists both client-local servers (run on this machine) and server-side servers registered on the haruyuki server. Server-side servers are configured via the ADE or API; use /mcp to enable or disable their tools for this agent — enabled tools execute on the haruyuki server.",
     "",
     "USAGE",
     "  /mcp              — open the MCP manager (local + server-side)",

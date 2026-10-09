@@ -463,7 +463,7 @@ export interface ChannelRoute {
   chatType?: ChannelChatType;
   /** Canonical thread identifier for threaded channels, if any. */
   threadId?: string | null;
-  /** Letta agent ID this chat is bound to. */
+  /** haruyuki agent ID this chat is bound to. */
   agentId: string;
   /** Letta conversation ID this chat is bound to. */
   conversationId: string;

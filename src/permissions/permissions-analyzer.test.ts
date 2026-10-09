@@ -367,13 +367,13 @@ test("Skill script in bundled skill suggests bundled-scope message", () => {
     "Bash",
     {
       command:
-        "cd /Users/test/project && npx tsx /tmp/letta/src/skills/builtin/creating-skills/scripts/init-skill.ts my-skill",
+        "cd /Users/test/project && npx tsx /tmp/haruyuki/src/skills/builtin/creating-skills/scripts/init-skill.ts my-skill",
     },
     "/Users/test/project",
   );
 
   expect(context.recommendedRule).toBe(
-    "Bash(cd /Users/test/project && npx tsx /tmp/letta/src/skills/builtin/creating-skills:*)",
+    "Bash(cd /Users/test/project && npx tsx /tmp/haruyuki/src/skills/builtin/creating-skills:*)",
   );
   expect(context.approveAlwaysText).toBe(
     "Yes, and don't ask again for scripts in bundled skill 'creating-skills'",
@@ -448,7 +448,7 @@ test("Dangerous skill script command still blocks persistence", () => {
     "Bash",
     {
       command:
-        "npx tsx /tmp/letta/src/skills/builtin/creating-skills/scripts/init-skill.ts --force",
+        "npx tsx /tmp/haruyuki/src/skills/builtin/creating-skills/scripts/init-skill.ts --force",
     },
     "/Users/test/project",
   );
@@ -464,13 +464,13 @@ test("Skill script path in quoted command is detected", () => {
     "Bash",
     {
       command:
-        "bash -lc \"npx tsx '/tmp/letta/src/skills/builtin/creating-skills/scripts/package-skill.ts'\"",
+        "bash -lc \"npx tsx '/tmp/haruyuki/src/skills/builtin/creating-skills/scripts/package-skill.ts'\"",
     },
     "/Users/test/project",
   );
 
   expect(context.recommendedRule).toContain(
-    "/tmp/letta/src/skills/builtin/creating-skills:*",
+    "/tmp/haruyuki/src/skills/builtin/creating-skills:*",
   );
   expect(context.approveAlwaysText).toBe(
     "Yes, and don't ask again for scripts in bundled skill 'creating-skills'",

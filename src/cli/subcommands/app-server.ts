@@ -6,7 +6,7 @@ import { parseAppServerWebsocketAuthSettings } from "@/websocket/app-server-auth
 /**
  * The documented App Server options, in display order.
  *
- * This table is the single source for `letta server --help`. It is deliberately
+ * This table is the single source for `haruyuki server --help`. It is deliberately
  * separate from the parser's option list (which needs literal types), so
  * `server.test.ts` re-parses every flag printed here: a help line that names a
  * flag the parser rejects — the `--debug` drift — fails a test instead of
@@ -68,17 +68,17 @@ const APP_SERVER_OPTION_HELP: ReadonlyArray<{
 ];
 
 const APP_SERVER_EXAMPLES: readonly string[] = [
-  "letta server",
-  "letta server --listen ws://127.0.0.1:4500",
-  "letta server --channels telegram",
-  "letta server --channels telegram --install-channel-runtimes",
-  "letta server --listen ws://0.0.0.0:4500 --ws-auth capability-token --ws-token-file /path/to/token",
-  "letta server --listen ws://0.0.0.0:4500 --ws-auth signed-bearer-token --ws-shared-secret-file /path/to/secret",
-  "letta server --listen ws://127.0.0.1:4500 --openai-api",
+  "haruyuki server",
+  "haruyuki server --listen ws://127.0.0.1:4500",
+  "haruyuki server --channels telegram",
+  "haruyuki server --channels telegram --install-channel-runtimes",
+  "haruyuki server --listen ws://0.0.0.0:4500 --ws-auth capability-token --ws-token-file /path/to/token",
+  "haruyuki server --listen ws://0.0.0.0:4500 --ws-auth signed-bearer-token --ws-shared-secret-file /path/to/secret",
+  "haruyuki server --listen ws://127.0.0.1:4500 --openai-api",
 ];
 
 /**
- * The one help text for `letta server` and `letta app-server`.
+ * The one help text for `haruyuki server` and `haruyuki app-server`.
  *
  * `server.ts` prints this rather than keeping a second copy: the copy it used to
  * keep advertised `--debug`, which the parser below has never accepted.
@@ -89,7 +89,7 @@ export function printAppServerHelp(): void {
   ).join("\n");
   const examples = APP_SERVER_EXAMPLES.join("\n  ");
   console.log(`Usage:
-  letta server [App Server options]
+  haruyuki server [App Server options]
 
 Run the local agent server: accept App Server connections and serve messaging
 channels. The server binds a local WebSocket endpoint; it never registers with,

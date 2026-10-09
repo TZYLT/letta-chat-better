@@ -126,7 +126,7 @@ export function buildChannelStatusMessage(
   const displayName = channelDisplayName(msg.channel);
   const route = context.route;
   const routeStatus = route
-    ? "Connected to a Letta agent conversation."
+    ? "Connected to a haruyuki agent conversation."
     : "No route is connected for this chat yet.";
   const accountStatus = !context.accountConfigured
     ? "No channel account is configured for this receiver."

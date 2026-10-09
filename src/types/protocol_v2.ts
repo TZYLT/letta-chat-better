@@ -1547,7 +1547,7 @@ export interface AgentListCommand {
   type: "agent_list";
   /** Echoed back in the response for request correlation. */
   request_id: string;
-  /** Query params forwarded to the Letta agents list API. */
+  /** Query params forwarded to the haruyuki agents list API. */
   query?: AgentListParams;
 }
 
@@ -1562,7 +1562,7 @@ export interface AgentCreateCommand {
   type: "agent_create";
   /** Echoed back in the response for request correlation. */
   request_id: string;
-  /** Body forwarded to the Letta agents create API. */
+  /** Body forwarded to the haruyuki agents create API. */
   body: AgentCreateParams;
 }
 
@@ -1571,7 +1571,7 @@ export interface AgentUpdateCommand {
   /** Echoed back in the response for request correlation. */
   request_id: string;
   agent_id: string;
-  /** Body forwarded to the Letta agents update API. */
+  /** Body forwarded to the haruyuki agents update API. */
   body: AgentUpdateParams;
 }
 

@@ -61,7 +61,7 @@ and resolves to `null`.
 
 Their model defaults to the invoking conversation's model. `opts.model` (or
 the tool's `model` input) accepts any handle or alias listed by
-`letta model list`; an unknown value resolves that call to `null`. Use a
+`haruyuki model list`; an unknown value resolves that call to `null`. Use a
 cheaper model for mechanical stages only when you know a valid handle.
 
 Use the invoking backend for workflow workers. Local execution requires an Agent

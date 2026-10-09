@@ -2,7 +2,7 @@ export function buildLogoutSuccessMessage(hasEnvApiKey: boolean): string {
   if (!hasEnvApiKey) {
     // `/login` no longer exists, so re-authenticating is no longer the next
     // step. `/connect` is how a provider gets configured now.
-    return "✓ Logged out successfully. Run 'letta' and use /connect to configure a provider.";
+    return "✓ Logged out successfully. Run 'haruyuki' and use /connect to configure a provider.";
   }
 
   return [

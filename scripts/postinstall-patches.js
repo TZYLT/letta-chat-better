@@ -276,7 +276,7 @@ if (process.platform !== "win32") {
   try {
     const bunVersion = execSync("bun --version", { encoding: "utf-8" }).trim();
     if (isBunVersionSupported(bunVersion)) {
-      const lettaPath = join(pkgRoot, "letta.js");
+      const lettaPath = join(pkgRoot, "haruyuki.js");
       if (existsSync(lettaPath)) {
         let content = readFileSync(lettaPath, "utf-8");
         if (content.startsWith("#!/usr/bin/env node")) {
@@ -286,7 +286,7 @@ if (process.platform !== "win32") {
 ":" //#; exec /usr/bin/env sh -c 'command -v bun >/dev/null && exec bun "$0" "$@" || exec node "$0" "$@"' "$0" "$@"`,
           );
           writeFileSync(lettaPath, content);
-          console.log("[patch] Configured letta to prefer Bun runtime");
+          console.log("[patch] Configured haruyuki to prefer Bun runtime");
         }
       }
     } else {

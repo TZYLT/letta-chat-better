@@ -18,14 +18,14 @@ function printUsage(): void {
   console.log(
     `
 Usage:
-  letta memory status [--agent <id>]
-  letta memory diff [--agent <id>]
-  letta memory backup [--agent <id>]
-  letta memory backups [--agent <id>]
-  letta memory restore --from <backup> --force [--agent <id>]
-  letta memory export --agent <id> --out <dir>
-  letta memory pull [--agent <id>]
-  letta memory tokens [--memory-dir <path>] [--agent <id>] [--top <N>]
+  haruyuki memory status [--agent <id>]
+  haruyuki memory diff [--agent <id>]
+  haruyuki memory backup [--agent <id>]
+  haruyuki memory backups [--agent <id>]
+  haruyuki memory restore --from <backup> --force [--agent <id>]
+  haruyuki memory export --agent <id> --out <dir>
+  haruyuki memory pull [--agent <id>]
+  haruyuki memory tokens [--memory-dir <path>] [--agent <id>] [--top <N>]
                      [--format text|json] [--quiet]
 
 Notes:
@@ -36,12 +36,12 @@ Notes:
   - Memory is git-backed. Use git commands for commit/push.
 
 Examples:
-  HARUYUKI_AGENT_ID=agent-123 letta memory status
-  letta memory pull --agent agent-123
-  letta memory backup --agent agent-123
-  letta memory export --agent agent-123 --out /tmp/letta-memory-agent-123
-  letta memory tokens
-  letta memory tokens --memory-dir ~/.haruyuki/agents/agent-123/memory --format json
+  HARUYUKI_AGENT_ID=agent-123 haruyuki memory status
+  haruyuki memory pull --agent agent-123
+  haruyuki memory backup --agent agent-123
+  haruyuki memory export --agent agent-123 --out /tmp/letta-memory-agent-123
+  haruyuki memory tokens
+  haruyuki memory tokens --memory-dir ~/.haruyuki/agents/agent-123/memory --format json
 `.trim(),
   );
 }

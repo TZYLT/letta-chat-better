@@ -1,7 +1,7 @@
 /**
  * Channel routing table.
  *
- * Maps platform chat IDs to Letta agent+conversation pairs.
+ * Maps platform chat IDs to haruyuki agent+conversation pairs.
  * Persisted in ~/.haruyuki/channels/<channel>/routing.json. The file holds JSON
  * content (it was originally misnamed `routing.yaml`; legacy files are migrated
  * on load — see #3076).

@@ -54,7 +54,7 @@ const HELP_TEXT = `Memory repository commands:
   /memory-repository push         Force a push to the configured URL now
 
 Your agent's memory repo will push to this URL after every commit, in addition
-to the Letta server. The URL is stored in the memfs repo's local git config
+to the haruyuki server. The URL is stored in the memfs repo's local git config
 (letta.memoryRepository.url) so each agent has its own setting.
 
 Auth uses your existing git credentials — SSH keys, credential helpers, or

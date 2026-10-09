@@ -16,7 +16,7 @@ describe("memory confinement launcher", () => {
     );
     const result = createMemoryConfinementLauncherWithAvailability(
       {
-        launcher: [process.execPath, "letta.js", "app-server"],
+        launcher: [process.execPath, "haruyuki.js", "app-server"],
         env: { MEMORY_DIR: memoryDir, PATH: "/usr/bin" },
       },
       { backend: "seatbelt", reason: "test" },
@@ -38,7 +38,7 @@ describe("memory confinement launcher", () => {
   test("includes relocated harness state roots", () => {
     const result = createMemoryConfinementLauncherWithAvailability(
       {
-        launcher: ["node", "letta.js"],
+        launcher: ["node", "haruyuki.js"],
         env: {
           MEMORY_DIR: "/state/memory",
           LETTA_LOCAL_BACKEND_DIR: "/state/local-backend",
@@ -59,7 +59,7 @@ describe("memory confinement launcher", () => {
   test("fails closed without a memory root", () => {
     expect(() =>
       createMemoryConfinementLauncherWithAvailability(
-        { launcher: ["node", "letta.js"], env: {} },
+        { launcher: ["node", "haruyuki.js"], env: {} },
         { backend: "seatbelt", reason: "test" },
       ),
     ).toThrow("requires MEMORY_DIR or LETTA_MEMORY_DIR");
@@ -69,7 +69,7 @@ describe("memory confinement launcher", () => {
     expect(() =>
       createMemoryConfinementLauncherWithAvailability(
         {
-          launcher: ["node", "letta.js"],
+          launcher: ["node", "haruyuki.js"],
           env: { MEMORY_DIR: "/state/memory" },
         },
         { backend: null, reason: "unsupported host" },

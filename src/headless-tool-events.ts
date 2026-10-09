@@ -1,7 +1,7 @@
 /**
  * Stream-json wire events for LOCALLY-executed tools.
  *
- * The Letta server only streams `tool_call_message` / `tool_return_message`
+ * The haruyuki server only streams `tool_call_message` / `tool_return_message`
  * for tools it runs itself (e.g. `web_search`, `fetch_webpage`). Tools executed
  * client-side by the CLI — Bash, Read, Edit, Write, Grep, … — run through
  * `executeApprovalBatch`, and their results are fed back to the server as the

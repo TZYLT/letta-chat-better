@@ -416,7 +416,7 @@ async function linkSignalAccountWithNativeCli(
       console.log(qr);
     } else {
       console.log(
-        "\nCould not render an ASCII QR code. Run `letta channels install signal` to install QR rendering support, or copy the sgnl:// link above into a QR generator.\n",
+        "\nCould not render an ASCII QR code. Run `haruyuki channels install signal` to install QR rendering support, or copy the sgnl:// link above into a QR generator.\n",
       );
     }
   };
@@ -680,7 +680,7 @@ export async function runSignalSetup(): Promise<boolean> {
       groupMode === "mention"
         ? parseSignalCsv(
             await rl.question(
-              "Mention text aliases/substrings (comma-separated, default: letta): ",
+              "Mention text aliases/substrings (comma-separated, default: haruyuki): ",
             ),
           )
         : [];
@@ -736,7 +736,7 @@ export async function runSignalSetup(): Promise<boolean> {
       "Config written to: ~/.haruyuki/channels/signal/accounts.json\n",
     );
     console.log("Next steps:");
-    console.log("  1. Start/restart: letta server --channels signal");
+    console.log("  1. Start/restart: haruyuki server --channels signal");
     console.log("  2. Send the Signal account a DM to receive a pairing code");
     console.log(
       "  3. In the target ADE/Desktop conversation, run: /channels signal pair <code>",

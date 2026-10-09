@@ -11,7 +11,7 @@
     },
     "branch_name": {
       "type": "string",
-      "description": "Optional git branch name to create (new worktrees only). If omitted, a unique branch name like letta/<name>-<suffix> is generated."
+      "description": "Optional git branch name to create (new worktrees only). If omitted, a unique branch name like haruyuki/<name>-<suffix> is generated."
     },
     "base_ref": {
       "type": "string",

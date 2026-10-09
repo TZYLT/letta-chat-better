@@ -105,7 +105,7 @@ export function getDefaultModel(): string {
     throw new Error(
       "Model catalog is unavailable. This build offers the models of the " +
         "providers you configure, and none is configured yet: run " +
-        "`letta connect <provider>` (for example `letta connect deepseek`), " +
+        "`haruyuki connect <provider>` (for example `haruyuki connect deepseek`), " +
         "or set that provider's API key in the environment, then start again.",
     );
   }

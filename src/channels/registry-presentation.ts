@@ -48,13 +48,13 @@ export function buildPairingInstructions(
 ): string {
   const displayName = channelDisplayName(channelId);
   const configuredAgentId = normalizeAgentId(options.agentId);
-  const pairingCommand = `letta channels pair --channel ${channelId} --code ${code} --agent ${configuredAgentId ?? "<agent-id>"}`;
+  const pairingCommand = `haruyuki channels pair --channel ${channelId} --code ${code} --agent ${configuredAgentId ?? "<agent-id>"}`;
   const agentLookupLines = configuredAgentId
     ? []
-    : ["Find the target agent with: letta agents list"];
+    : ["Find the target agent with: haruyuki agents list"];
   if (!isFirstPartyChannelPlugin(channelId)) {
     return [
-      "Connect this chat to a Letta agent.",
+      "Connect this chat to a haruyuki agent.",
       "",
       `Pairing code: ${code}`,
       "",
@@ -66,7 +66,7 @@ export function buildPairingInstructions(
     ].join("\n");
   }
   return [
-    "Connect this chat to a Letta agent.",
+    "Connect this chat to a haruyuki agent.",
     "",
     `Pairing code: ${code}`,
     "",
@@ -87,24 +87,24 @@ export function buildUnboundRouteInstructions(
   const displayName = channelDisplayName(channelId);
   if (!isFirstPartyChannelPlugin(channelId)) {
     return (
-      `This chat isn't connected to a Letta agent yet.\n\n` +
+      `This chat isn't connected to a haruyuki agent yet.\n\n` +
       `On the machine where your listener runs:\n\n` +
-      `letta channels route add --channel ${channelId} --chat-id ${chatId} --agent <agent-id>\n\n` +
-      `Find your agent id with letta agents list.`
+      `haruyuki channels route add --channel ${channelId} --chat-id ${chatId} --agent <agent-id>\n\n` +
+      `Find your agent id with haruyuki agents list.`
     );
   }
   return (
-    `This chat isn't connected to a Letta agent yet.\n\n` +
+    `This chat isn't connected to a haruyuki agent yet.\n\n` +
     `Open Channels > ${displayName} in Haruyuki and connect this chat there.\n\n` +
     `CLI on the listener machine:\n\n` +
-    `letta channels route add --channel ${channelId} --chat-id ${chatId} --agent <agent-id>\n\n` +
-    `Find your agent id with letta agents list.`
+    `haruyuki channels route add --channel ${channelId} --chat-id ${chatId} --agent <agent-id>\n\n` +
+    `Find your agent id with haruyuki agents list.`
   );
 }
 
 export function buildSlackAppSetupInstructions(): string {
   return (
-    "This Slack app isn't connected to a Letta agent yet.\n\n" +
+    "This Slack app isn't connected to a haruyuki agent yet.\n\n" +
     "Open Channels > Slack in Haruyuki, choose which agent this app should represent, and try again."
   );
 }

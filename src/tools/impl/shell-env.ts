@@ -186,7 +186,7 @@ export function ensureLettaShimDir(
   mkdirSync(shimDir, { recursive: true });
 
   if (process.platform === "win32") {
-    const cmdPath = path.join(shimDir, "letta.cmd");
+    const cmdPath = path.join(shimDir, "haruyuki.cmd");
     const quotedCommand = `"${invocation.command.replaceAll('"', '""')}"`;
     const quotedArgs = invocation.args
       .map((arg) => `"${arg.replaceAll('"', '""')}"`)
@@ -198,7 +198,7 @@ export function ensureLettaShimDir(
     return shimDir;
   }
 
-  const shimPath = path.join(shimDir, "letta");
+  const shimPath = path.join(shimDir, "haruyuki");
   const commandWithArgs = [invocation.command, ...invocation.args]
     .map(shellEscape)
     .join(" ");
@@ -535,7 +535,7 @@ export function getShellEnv(): NodeJS.ProcessEnv {
   applyMemfsGitProxyEnv(env);
   if (desktopAccessToken) {
     const memfsPrefix = `${trimBaseUrl(getShellMemfsBaseUrl(env))}/v1/git/`;
-    const encoded = Buffer.from(`letta:${desktopAccessToken}`).toString(
+    const encoded = Buffer.from(`haruyuki:${desktopAccessToken}`).toString(
       "base64",
     );
     appendGitConfigEnv(env, `credential.${memfsPrefix}.helper`, "");

@@ -1,6 +1,6 @@
 # Haruyuki
 
-[![npm](https://img.shields.io/npm/v/@letta-ai/letta-code.svg?style=flat-square)](https://www.npmjs.com/package/@letta-ai/letta-code) [![Discord](https://img.shields.io/badge/discord-join-blue?style=flat-square&logo=discord)](https://discord.gg/letta)
+[![Discord](https://img.shields.io/badge/discord-join-blue?style=flat-square&logo=discord)](https://discord.gg/letta)
 
 Haruyuki is a stateful agent harness for creating agents that are more like people than tools. Haruyuki agents have memory, identity, and a sense of experience over time. They learn and evolve over long horizons through rewriting their own memory, skills, prompts, and even the harness itself (through mods). 
 
@@ -22,11 +22,11 @@ Haruyuki can be used interactively, or to power always-on agents that work proac
 | [MemFS](https://docs.letta.com/letta-code/memfs) | All context (including memory blocks) is tracked via git. Sync context to a custom GitHub repository by setting `/memory-repository set git@github.com:...` |
 | [Skills](https://docs.letta.com/letta-code/skills) | Loads global skills (`~/.haruyuki`), project-scoped skills (`.agents/skills`), and agent-scoped skills (stored in MemFS). View skills with `/skills` and create with `/skill-creator` |
 | [Subagents & Multi-agent](https://docs.letta.com/letta-code/subagents) | Call built-in subagents (general-purpose, forked, recall) in the background. Agents can call any other agent (including themselves) as subagents |
-| [Messaging Integrations](https://docs.letta.com/letta-code/channels) | Chat with the same agent from Slack, Telegram, your browser (chat.letta.com) including mobile, and through [custom channels](https://github.com/letta-ai/skills/blob/main/letta/creating-letta-code-channels/SKILL.md) |
+| [Messaging Integrations](https://docs.letta.com/letta-code/channels) | Chat with the same agent from Slack, Telegram, your browser (chat.letta.com) including mobile, and through [custom channels](https://github.com/letta-ai/skills/blob/main/haruyuki/creating-letta-code-channels/SKILL.md) |
 | [Hooks](https://docs.letta.com/letta-code/hooks) | Run custom scripts at key points of agent execution to automate workflows |
 | [Permissions](https://docs.letta.com/letta-code/permissions) | Set permission modes and customize what actions are auto-approved or auto-denied |
 | [Crons & Schedules](https://docs.letta.com/letta-code/scheduling) | Configure heartbeats and crons, and let agents work across time with self-managed schedules |
-| [Remote computers](https://docs.letta.com/platform/computers/byom) (requires signing in with Letta) | Agents work across multiple computers. Connect any machine by running `letta server --computer-name "..."` |
+| [Remote computers](https://docs.letta.com/platform/computers/byom) (requires signing in with Letta) | Agents work across multiple computers. Connect any machine by running `haruyuki server --computer-name "..."` |
 | [Secrets](https://docs.letta.com/letta-code/secrets) (requires signing in with Letta) | Make secrets available as environment variables (across machines) while obfuscating their values from context |
 
 Automatic client-side dreaming is disabled by default on native Windows, including when saved `/sleeptime` settings enable it. Manual `/dream` and `/reflect` commands remain available. To opt in, set `HARUYUKI_ENABLE_WINDOWS_AUTO_REFLECTION=1` in the environment of the Haruyuki process. This does not affect macOS, Linux (including WSL), or server-side dreaming.
@@ -35,18 +35,20 @@ See the full list of slash commands in our [documentation](https://docs.letta.co
 
 ## Get started
 
-Install the package via [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm):
+Build from source (this fork is not published to npm):
 
 ```bash
-npm install -g @letta-ai/letta-code
+bun install
+bun run build
+node ./haruyuki.js
 ```
 
-Navigate to your project directory and run `letta` (see command-line options [in the docs](https://docs.letta.com/letta-code/commands)). You can also run the tutorial agent with: 
+Navigate to your project directory and run `haruyuki` (see command-line options [in the docs](https://docs.letta.com/letta-code/commands)). You can also run the tutorial agent with: 
 ```
-letta --new-agent --personality tutorial
+haruyuki --new-agent --personality tutorial
 ```
 
-Letta Cloud is the default. On first launch, choose to sign in with Letta or proceed locally; your choice is saved for future runs. Run `letta setup` to choose again, or `letta backend cloud` / `letta backend local` to change the default. Use `--backend cloud` or `--backend local` for a one-off override without changing the saved default.
+Letta Cloud is the default. On first launch, choose to sign in with Letta or proceed locally; your choice is saved for future runs. Run `haruyuki setup` to choose again, or `haruyuki backend cloud` / `haruyuki backend local` to change the default. Use `--backend cloud` or `--backend local` for a one-off override without changing the saved default.
 
 Run `/connect` to configure your own LLM API keys (OpenAI / ChatGPT, Anthropic, Z.ai coding plan, etc.), and use `/model` to swap models.
 
@@ -70,20 +72,20 @@ Run `/login` from the CLI or sign in through the desktop app to access agents in
 ### Remote computers
 Agents stored in Letta Cloud can run across multiple machines. Connect any machine by running:
 ```bash
-letta server
-letta server --computer-name "work-laptop"
+haruyuki server
+haruyuki server --computer-name "work-laptop"
 ```
 List discoverable computers from the CLI:
 ```bash
-letta computers list --online-only
+haruyuki computers list --online-only
 ```
 Get the current computer connection for routing another agent onto this same machine:
 ```bash
-letta computers current
+haruyuki computers current
 ```
 Route a headless message through a specific computer:
 ```bash
-letta -p --agent <agent-id> --computer "work-laptop" "hello from that machine"
+haruyuki -p --agent <agent-id> --computer "work-laptop" "hello from that machine"
 ```
 Use `--computer cloud` to start or reuse the target agent's cloud sandbox.
 Agent-to-agent headless messages without `--computer` run on the same computer.
@@ -100,28 +102,29 @@ This does not affect memory import/export or conversation transcript export.
 
 ## Installing external skills
 
-Install skills into a specific agent's memory with `letta skills install <skill>`: 
+Install skills into a specific agent's memory with `haruyuki skills install <skill>`: 
 
 | Source | Example |
 |---|---|
-| GitHub | `letta skills install https://github.com/owner/repo`<br>`letta skills install https://github.com/owner/repo/tree/main/path/to/skill`<br>`letta skills install https://github.com/owner/repo/blob/main/path/to/skill/SKILL.md` |
-| [ClawHub](https://clawhub.ai/) | `openclaw skills install <skill-slug>` → `letta skills install <skill-slug>` |
-| [Hermes Skills Hub](https://hermes-agent.nousresearch.com/docs/skills/) | `hermes skills install <skill-path>` → `letta skills install <skill-path>` |
+| GitHub | `haruyuki skills install https://github.com/owner/repo`<br>`haruyuki skills install https://github.com/owner/repo/tree/main/path/to/skill`<br>`haruyuki skills install https://github.com/owner/repo/blob/main/path/to/skill/SKILL.md` |
+| [ClawHub](https://clawhub.ai/) | `openclaw skills install <skill-slug>` → `haruyuki skills install <skill-slug>` |
+| [Hermes Skills Hub](https://hermes-agent.nousresearch.com/docs/skills/) | `hermes skills install <skill-path>` → `haruyuki skills install <skill-path>` |
 
-To view skills run `letta skills list --agent <agent-id>`, and delete skills with `letta skills delete <skill-name> --agent <agent-id>`.
+To view skills run `haruyuki skills list --agent <agent-id>`, and delete skills with `haruyuki skills delete <skill-name> --agent <agent-id>`.
 
 ## Research
 
-Haruyuki is developed by the creators of [MemGPT](https://arxiv.org/abs/2310.08560) and [sleep-time compute](https://arxiv.org/abs/2504.13171) (now called "dreaming"), and driven by our [research](https://www.letta.com/research) in AI memory and continual learning.
+Haruyuki is a fork of [letta-code](https://github.com/letta-ai/letta-code), which
+is developed by the creators of [MemGPT](https://arxiv.org/abs/2310.08560) and
+[sleep-time compute](https://arxiv.org/abs/2504.13171) (now called "dreaming").
 
 ## Other
 
-Community maintained packages are available for Arch Linux users on the [AUR](https://aur.archlinux.org/packages/letta-code):
-
-```bash
-yay -S letta-code # release
-yay -S letta-code-git # nightly
-```
+This fork is a private, unpublished build. `npm install -g haruyuki` will not
+resolve; build it from source instead (see "Get started"). The upstream
+project's Arch Linux packages
+([AUR `letta-code`](https://aur.archlinux.org/packages/letta-code)) track the
+upstream package, not this one.
 
 ---
 

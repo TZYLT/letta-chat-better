@@ -41,7 +41,7 @@ describe("runtime model catalog", () => {
     } catch (error) {
       message = error instanceof Error ? error.message : String(error);
     }
-    expect(message).toContain("letta connect <provider>");
+    expect(message).toContain("haruyuki connect <provider>");
     expect(message).toContain("API key");
   });
 

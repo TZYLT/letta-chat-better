@@ -3,7 +3,7 @@
  * semantics are pure app-server protocol: `/model <handle>`, `/model list`,
  * `/cancel`, `/reflection`, and `/reload`.
  *
- * Every channel host — the local `letta server --channel` gateway and Letta
+ * Every channel host — the local `haruyuki server --channel` gateway and Letta
  * Cloud's Slack gateway — ends up sending the same protocol commands
  * (`update_model`, `list_models`, `abort_message`, `execute_command`) and
  * rendering a reply. Implementing that twice lets the two hosts drift, so the

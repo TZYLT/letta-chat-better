@@ -44,7 +44,7 @@ Rules:
   `_`, or `-`.
 - `entry` is resolved relative to the channel directory.
 - `runtimePackages` are installed into `runtime/` by
-  `letta channels install <id>`.
+  `haruyuki channels install <id>`.
 - `runtimeModules` are resolved from bundled first-party runtimes first, then
   from the user channel `runtime/` directory.
 
@@ -155,16 +155,16 @@ remote computer. In this mode the backend is in-process, so no
 `LETTA_BASE_URL` is required.
 
 ```bash
-letta channels install telegram
-letta channels configure telegram
-letta server --backend local --channels telegram
+haruyuki channels install telegram
+haruyuki channels configure telegram
+haruyuki server --backend local --channels telegram
 ```
 
 Then send the bot a message to get a pairing code and bind it to the local agent
 and conversation:
 
 ```bash
-letta channels pair \
+haruyuki channels pair \
   --channel telegram \
   --code XXXXXX \
   --agent <agent-id> \
@@ -172,7 +172,7 @@ letta channels pair \
 ```
 
 Only set `LETTA_BASE_URL` for a separate self-hosted server. For example,
-`LETTA_BASE_URL=http://localhost:8283 letta server --channels telegram` talks to
+`LETTA_BASE_URL=http://localhost:8283 haruyuki server --channels telegram` talks to
 a server running at that URL. Do not set a dummy `LETTA_BASE_URL` for
 `--backend local`.
 
@@ -240,7 +240,7 @@ features:
   slash_commands:
     - command: /cancel
       url: https://example.com/slack/commands
-      description: Cancel the in-progress Letta agent turn
+      description: Cancel the in-progress haruyuki agent turn
       usage_hint: ""
       should_escape: false
 oauth_config:

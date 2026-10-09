@@ -87,12 +87,12 @@ export async function printMcpUsage(stdout: McpOutput): Promise<void> {
   await stdout(
     `
 Usage:
-  letta mcp list [--agent <id>]
-  letta mcp get <server> [--agent <id>]
-  letta mcp tools [server] [--full] [--agent <id>]
-  letta mcp schema <tool-name> [--agent <id>]
-  letta mcp search <query> [--mode <hybrid|vector|fts>] [--limit <n>] [--agent <id>]
-  letta mcp call <tool-name> [--args '<json>' | --args-file <path|->] [--agent <id>]
+  haruyuki mcp list [--agent <id>]
+  haruyuki mcp get <server> [--agent <id>]
+  haruyuki mcp tools [server] [--full] [--agent <id>]
+  haruyuki mcp schema <tool-name> [--agent <id>]
+  haruyuki mcp search <query> [--mode <hybrid|vector|fts>] [--limit <n>] [--agent <id>]
+  haruyuki mcp call <tool-name> [--args '<json>' | --args-file <path|->] [--agent <id>]
 
 Commands:
   list      List MCP servers available to the agent

@@ -128,7 +128,7 @@ describe("public Slack message ingress policy", () => {
     const event = {
       channel: "C123",
       user: "U123",
-      text: "<@UBOT|letta> <@UALICE|alice> please review",
+      text: "<@UBOT|haruyuki> <@UALICE|alice> please review",
       ts: "100.2",
     };
 

@@ -79,13 +79,13 @@ def main():
     wheel = Path(sys.argv[1]).resolve()
     if wheel.stat().st_size >= 100 * 1024 * 1024:
         raise SystemExit("Wheel exceeds the default PyPI 100 MiB artifact limit")
-    with tempfile.TemporaryDirectory(prefix="letta wheel smoke ") as temporary:
+    with tempfile.TemporaryDirectory(prefix="haruyuki wheel smoke ") as temporary:
         root = Path(temporary)
         environment = root / "venv"
         venv.create(environment, with_pip=True)
         binary = environment / ("Scripts" if os.name == "nt" else "bin")
         python = binary / ("python.exe" if os.name == "nt" else "python")
-        cli = binary / ("letta.exe" if os.name == "nt" else "letta")
+        cli = binary / ("haruyuki.exe" if os.name == "nt" else "letta")
         subprocess.run(
             [
                 str(python),
@@ -117,7 +117,7 @@ def main():
         for args, expected, code in [
             (["--help"], "USAGE", 0),
             (["--version"], "Haruyuki", 0),
-            (["update"], "uv tool upgrade letta", 1),
+            (["update"], "uv tool upgrade haruyuki", 1),
         ]:
             result = subprocess.run(
                 [str(cli), *args],
@@ -184,7 +184,7 @@ def main():
             ).strip()
         )
         node = payload / "bin" / ("node.exe" if os.name == "nt" else "node")
-        installed_cli = payload / "app" / "letta.js"
+        installed_cli = payload / "app" / "haruyuki.js"
         runtime_probe = root / "runtime-probe.mjs"
         runtime_probe.write_text(RUNTIME_PROBE, encoding="utf-8")
         env["PATH"] = str(node.parent) + os.pathsep + env["PATH"]

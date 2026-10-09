@@ -311,9 +311,9 @@ describe("mods subcommand", () => {
 
       expect(exitCode).toBe(0);
       expect(consoleCapture.logs.join("\n")).toContain("Usage:");
-      expect(consoleCapture.logs.join("\n")).toContain("letta mods list");
-      expect(consoleCapture.logs.join("\n")).toContain("letta mods package");
-      expect(consoleCapture.logs.join("\n")).toContain("letta mods update");
+      expect(consoleCapture.logs.join("\n")).toContain("haruyuki mods list");
+      expect(consoleCapture.logs.join("\n")).toContain("haruyuki mods package");
+      expect(consoleCapture.logs.join("\n")).toContain("haruyuki mods update");
       expect(consoleCapture.errors).toEqual([]);
     } finally {
       consoleCapture.restore();
@@ -357,7 +357,7 @@ describe("mods subcommand", () => {
         `Created mod package ${outputDirectory}`,
       );
       expect(consoleCapture.logs.join("\n")).toContain(
-        "Install with: letta install",
+        "Install with: haruyuki install",
       );
       expect(
         JSON.parse(readFileSync(join(outputDirectory, "package.json"), "utf8")),
@@ -408,7 +408,7 @@ describe("mods subcommand", () => {
 
       expect(exitCode).toBe(1);
       expect(consoleCapture.errors.join("\n")).toContain(
-        "--agent is not supported for 'letta mods package'",
+        "--agent is not supported for 'haruyuki mods package'",
       );
     } finally {
       consoleCapture.restore();
@@ -522,7 +522,7 @@ describe("mods subcommand", () => {
 
       expect(exitCode).toBe(1);
       expect(consoleCapture.errors.join("\n")).toContain(
-        "--agent is not supported for 'letta mods update'",
+        "--agent is not supported for 'haruyuki mods update'",
       );
     } finally {
       consoleCapture.restore();

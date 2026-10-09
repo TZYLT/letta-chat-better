@@ -122,25 +122,25 @@ const DEFAULT_DEPS: ConnectSubcommandDeps = {
 function formatUsage(): string {
   return [
     "Usage:",
-    "  letta connect <provider> [options]",
+    "  haruyuki connect <provider> [options]",
     "",
     "Providers:",
     `  ${listConnectProvidersForHelp().join("\n  ")}`,
     "",
     "Examples:",
-    "  letta connect chatgpt",
-    "  letta connect chatgpt --name chatgpt-work",
-    "  letta connect grok",
-    "  letta connect codex",
-    "  letta connect codex --method device-code",
-    "  letta connect anthropic <api_key>",
-    "  letta connect openai --api-key <api_key>",
-    "  letta connect openai-compatible --base-url http://localhost:8000/v1 [--api-key <api_key>]",
-    "  letta connect ollama --base-url http://192.168.1.50:11434/v1",
-    "  letta connect lmstudio --base-url http://127.0.0.1:1234/v1 --timeout 600s",
-    "  letta connect llama-cpp --base-url http://localhost:8080/v1",
-    "  letta connect bedrock --method iam --access-key <id> --secret-key <key> --region <region>",
-    "  letta connect bedrock --method profile --profile <name> --region <region>",
+    "  haruyuki connect chatgpt",
+    "  haruyuki connect chatgpt --name chatgpt-work",
+    "  haruyuki connect grok",
+    "  haruyuki connect codex",
+    "  haruyuki connect codex --method device-code",
+    "  haruyuki connect anthropic <api_key>",
+    "  haruyuki connect openai --api-key <api_key>",
+    "  haruyuki connect openai-compatible --base-url http://localhost:8000/v1 [--api-key <api_key>]",
+    "  haruyuki connect ollama --base-url http://192.168.1.50:11434/v1",
+    "  haruyuki connect lmstudio --base-url http://127.0.0.1:1234/v1 --timeout 600s",
+    "  haruyuki connect llama-cpp --base-url http://localhost:8080/v1",
+    "  haruyuki connect bedrock --method iam --access-key <id> --secret-key <key> --region <region>",
+    "  haruyuki connect bedrock --method profile --profile <name> --region <region>",
   ].join("\n");
 }
 
@@ -170,7 +170,7 @@ function normalizeOAuthLoginMethod(value: string): string {
 
 function formatBedrockUsage(): string {
   return [
-    "Usage: letta connect bedrock [--method iam|profile] [options]",
+    "Usage: haruyuki connect bedrock [--method iam|profile] [options]",
     "",
     "IAM method:",
     "  --method iam --access-key <id> --secret-key <key> --region <region>",
@@ -248,7 +248,7 @@ export async function runConnectSubcommand(
     if (localProvider) {
       io.stderr(
         `Provider "${providerToken}" is only available with the local backend.\n` +
-          `Retry with: letta --backend local connect ${argv.join(" ")}`,
+          `Retry with: haruyuki --backend local connect ${argv.join(" ")}`,
       );
       return 1;
     }
@@ -487,8 +487,8 @@ export async function runConnectSubcommand(
     if (!apiKey && isConnectZaiBaseProvider(provider)) {
       io.stdout(
         "Do you have a Z.ai Coding plan?\n" +
-          "  • Coding plan:  letta connect zai-coding [--api-key <key>]\n" +
-          "  • Regular API:  letta connect zai [--api-key <key>]",
+          "  • Coding plan:  haruyuki connect zai-coding [--api-key <key>]\n" +
+          "  • Regular API:  haruyuki connect zai [--api-key <key>]",
       );
       return 0;
     }

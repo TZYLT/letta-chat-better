@@ -15,8 +15,8 @@ function printUsage(): void {
   console.log(
     `
 Usage:
-  letta agents list [options]
-  letta agents create [options]
+  haruyuki agents list [options]
+  haruyuki agents create [options]
 
 List Options:
   --name <name>         Exact name match

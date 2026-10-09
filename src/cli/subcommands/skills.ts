@@ -101,9 +101,9 @@ function printUsage(): void {
   console.log(
     `
 Usage:
-  letta install <thing> [--agent <id> | -n <agent name>] [--force]
-  letta skills list [--agent <id> | -n <agent name>]
-  letta skills delete <skill_name> --agent <id>
+  haruyuki install <thing> [--agent <id> | -n <agent name>] [--force]
+  haruyuki skills list [--agent <id> | -n <agent name>]
+  haruyuki skills delete <skill_name> --agent <id>
 
 Sources:
   npm:<package>         npm mod package, e.g. npm:@letta-ai/mod-plan-mode
@@ -217,7 +217,7 @@ async function promptForAgent(statusMessage: string): Promise<string> {
       React.createElement(AgentSelector, {
         currentAgentId:
           process.env.HARUYUKI_AGENT_ID || process.env.AGENT_ID || "",
-        command: "letta skills",
+        command: "haruyuki skills",
         title: "Select an agent",
         showNewTab: false,
         allowDelete: false,

@@ -260,7 +260,7 @@ describe("Workflow tool (background launch)", () => {
         model: "no-such-model",
         parentScope: { agentId: "agent-parent", conversationId: "default" },
       }),
-    ).rejects.toThrow(/letta model list/);
+    ).rejects.toThrow(/haruyuki model list/);
   });
 
   test("reads relative script paths from the conversation directory", async () => {

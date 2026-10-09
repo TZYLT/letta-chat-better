@@ -679,7 +679,7 @@ describe("isReadOnlyShellCommand", () => {
     });
 
     test("allows gh search commands", () => {
-      expect(isReadOnlyShellCommand("gh search repos letta")).toBe(true);
+      expect(isReadOnlyShellCommand("gh search repos haruyuki")).toBe(true);
       expect(isReadOnlyShellCommand("gh search issues bug")).toBe(true);
       expect(isReadOnlyShellCommand("gh search prs fix")).toBe(true);
     });
@@ -776,7 +776,7 @@ describe("isReadOnlyShellCommand", () => {
     test("allows pipe characters inside quoted args", () => {
       expect(
         isReadOnlyShellCommand(
-          'rg -n "memfs|memory filesystem|memory_filesystem|skills/|SKILL.md|git-backed|sync" letta tests -S',
+          'rg -n "memfs|memory filesystem|memory_filesystem|skills/|SKILL.md|git-backed|sync" haruyuki tests -S',
         ),
       ).toBe(true);
       expect(isReadOnlyShellCommand("grep 'foo|bar|baz' file.txt")).toBe(true);

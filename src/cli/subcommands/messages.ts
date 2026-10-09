@@ -49,9 +49,9 @@ function printUsage(): void {
   console.log(
     `
 Usage:
-  letta messages search --query <text> [options]
-  letta messages list [options]
-  letta messages transcript --conversation <id> [options]
+  haruyuki messages search --query <text> [options]
+  haruyuki messages list [options]
+  haruyuki messages transcript --conversation <id> [options]
 
 Search options:
   --query <text>        Search query (required)
@@ -93,7 +93,7 @@ Transcript options:
 Notes:
   - Output is JSON only.
   - Uses CLI auth; override with LETTA_API_KEY/LETTA_BASE_URL if needed.
-  - For agent-to-agent messaging, use: letta -p --from-agent <sender-id> --agent <target-id> "message"
+  - For agent-to-agent messaging, use: haruyuki -p --from-agent <sender-id> --agent <target-id> "message"
 `.trim(),
   );
 }
@@ -540,7 +540,7 @@ export async function runMessagesSubcommand(
       return 0;
     }
 
-    // Agent-to-agent messaging uses `letta -p --from-agent <sender-id> ...`
+    // Agent-to-agent messaging uses `haruyuki -p --from-agent <sender-id> ...`
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));
     return 1;

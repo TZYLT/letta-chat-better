@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test";
 import { runMemorySubcommand } from "@/cli/subcommands/memory";
 
-describe("letta memory pull", () => {
+describe("haruyuki memory pull", () => {
   const agentId = "agent-00000000-0000-4000-8000-000000000001";
   let priorLocalBackend: string | undefined;
   let logSpy: ReturnType<typeof spyOn>;
@@ -25,7 +25,7 @@ describe("letta memory pull", () => {
   });
 
   test("initializes settings before pulling memory", async () => {
-    // Regression guard for `letta memory pull` exiting with
+    // Regression guard for `haruyuki memory pull` exiting with
     // "Settings not initialized. Call settingsManager.initialize() first."
     // Subcommands run before the main CLI bootstrap initializes settings, and
     // pullMemory resolves the backend auth token through getSettings().

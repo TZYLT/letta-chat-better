@@ -65,7 +65,7 @@ export function formatDiscordDeliveryError(error: unknown): string {
     return (
       "Sorry, I couldn't deliver your message — the agent I'm bound to " +
       "wasn't found. The operator needs to rebind this bot with " +
-      "`letta channels bind --channel discord --agent <id>`."
+      "`haruyuki channels bind --channel discord --agent <id>`."
     );
   }
 

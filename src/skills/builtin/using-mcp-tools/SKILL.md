@@ -1,22 +1,22 @@
 ---
 name: using-mcp-tools
-description: Reference for the `letta mcp` CLI, which finds and invokes MCP tools available to this agent. A system reminder already lists your connected MCP servers and the basic search/schema/call commands; invoke this skill when you need more — browsing a server's tools, passing large or file-based arguments, tuning search, or troubleshooting missing servers, tools, and errors.
+description: Reference for the `haruyuki mcp` CLI, which finds and invokes MCP tools available to this agent. A system reminder already lists your connected MCP servers and the basic search/schema/call commands; invoke this skill when you need more — browsing a server's tools, passing large or file-based arguments, tuning search, or troubleshooting missing servers, tools, and errors.
 ---
 
 # Using MCP tools
 
-`letta mcp` gives the agent one unified view of every MCP server it can reach: servers configured locally on this machine. It works on Letta Desktop and in terminals. All output is JSON.
+`haruyuki mcp` gives the agent one unified view of every MCP server it can reach: servers configured locally on this machine. It works on Letta Desktop and in terminals. All output is JSON.
 
 ## Commands
 
 ```bash
-letta mcp list                                # servers: [{name, transport}]
-letta mcp get <server>                        # one server's connection configuration (credentials redacted)
-letta mcp tools [server]                      # tool names + descriptions only
-letta mcp tools [server] --full               # ...including every tool's complete schema
-letta mcp schema <tool-name>                  # one tool's complete schema
-letta mcp search <query> [--mode] [--limit]   # ranked tool schemas: [{tool, rank, score}]
-letta mcp call <tool-name> [--args | --args-file]  # run a tool, print a CallToolResult
+haruyuki mcp list                                # servers: [{name, transport}]
+haruyuki mcp get <server>                        # one server's connection configuration (credentials redacted)
+haruyuki mcp tools [server]                      # tool names + descriptions only
+haruyuki mcp tools [server] --full               # ...including every tool's complete schema
+haruyuki mcp schema <tool-name>                  # one tool's complete schema
+haruyuki mcp search <query> [--mode] [--limit]   # ranked tool schemas: [{tool, rank, score}]
+haruyuki mcp call <tool-name> [--args | --args-file]  # run a tool, print a CallToolResult
 ```
 
 Every command accepts `--agent <id>`, defaulting to `HARUYUKI_AGENT_ID`/`AGENT_ID` — do not pass it unless targeting another agent.

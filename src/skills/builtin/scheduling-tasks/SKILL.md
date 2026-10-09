@@ -1,11 +1,11 @@
 ---
 name: scheduling-tasks
-description: Advanced scheduling through the letta cron CLI for other conversations, run history, and schedule replacement. Use Wake for ordinary create/list/cancel operations in the current conversation.
+description: Advanced scheduling through the haruyuki cron CLI for other conversations, run history, and schedule replacement. Use Wake for ordinary create/list/cancel operations in the current conversation.
 ---
 
 # Scheduling Tasks
 
-This skill lets you create, list, and manage scheduled tasks using the `letta cron` CLI. Scheduled tasks send a prompt to the agent on a timer — useful for reminders, periodic check-ins, and deferred follow-ups.
+This skill lets you create, list, and manage scheduled tasks using the `haruyuki cron` CLI. Scheduled tasks send a prompt to the agent on a timer — useful for reminders, periodic check-ins, and deferred follow-ups.
 
 For ordinary one-shot or recurring work in the current conversation, use Wake instead. Wake is self-bound and covers create, list, and cancel without routing choices.
 
@@ -24,12 +24,12 @@ Every schedule is device-local. It lives in `~/.haruyuki/crons.json` and fires f
 
 ## CLI Usage
 
-All commands go through `letta cron` via the Bash tool. Output is JSON.
+All commands go through `haruyuki cron` via the Bash tool. Output is JSON.
 
 ### Creating a Task
 
 ```bash
-letta cron add --name <short-name> --description <text> --prompt <text> <schedule>
+haruyuki cron add --name <short-name> --description <text> --prompt <text> <schedule>
 ```
 
 **Required flags:**
@@ -62,7 +62,7 @@ Exactly one of the three is required. `--once` is accepted with `--at` (already 
 ### Listing Tasks
 
 ```bash
-letta cron list
+haruyuki cron list
 ```
 
 Optional filters: `--agent <id>`, `--conversation <id>`
@@ -72,13 +72,13 @@ Optional filters: `--agent <id>`, `--conversation <id>`
 `get` accepts an ID or name:
 
 ```bash
-letta cron get <id-or-name> [--agent <id>]
+haruyuki cron get <id-or-name> [--agent <id>]
 ```
 
 ### Reading Run History
 
 ```bash
-letta cron runs --id <task-id> [--limit <n>] [--agent <id>]
+haruyuki cron runs --id <task-id> [--limit <n>] [--agent <id>]
 ```
 
 `--run-id <id>` selects one run.
@@ -87,12 +87,12 @@ letta cron runs --id <task-id> [--limit <n>] [--agent <id>]
 
 If exact routing matters, pass both `--agent` and `--conversation` explicitly.
 
-`letta cron add` falls back to `HARUYUKI_AGENT_ID` for the agent. An omitted `--conversation` means `"new"`, so every fire gets a fresh conversation. Pass `--conversation self` to capture the current `HARUYUKI_CONVERSATION_ID`, `--conversation default` for the agent default, or a concrete conversation ID.
+`haruyuki cron add` falls back to `HARUYUKI_AGENT_ID` for the agent. An omitted `--conversation` means `"new"`, so every fire gets a fresh conversation. Pass `--conversation self` to capture the current `HARUYUKI_CONVERSATION_ID`, `--conversation default` for the agent default, or a concrete conversation ID.
 
 Safest pattern:
 
 ```bash
-letta cron add \
+haruyuki cron add \
   --name "email-check" \
   --description "Daily email summary in this conversation" \
   --prompt "Check the user's email and post a summary here." \
@@ -104,7 +104,7 @@ letta cron add \
 Then verify the binding explicitly:
 
 ```bash
-letta cron list --agent "$HARUYUKI_AGENT_ID" --conversation self
+haruyuki cron list --agent "$HARUYUKI_AGENT_ID" --conversation self
 ```
 
 ### Deleting or Replacing Tasks
@@ -113,10 +113,10 @@ letta cron list --agent "$HARUYUKI_AGENT_ID" --conversation self
 
 ```bash
 # Delete a specific task
-letta cron delete <id-or-name> [--agent <id>]
+haruyuki cron delete <id-or-name> [--agent <id>]
 
 # Delete all tasks for one agent
-letta cron delete --all --agent "$AGENT_ID"
+haruyuki cron delete --all --agent "$AGENT_ID"
 ```
 
 In-place editing is not available. To change a schedule, create and verify the replacement before deleting the old one.
@@ -134,7 +134,7 @@ For a one-shot calendar request such as "tomorrow at 9am," resolve the date in t
 ### "Remind me every morning at 9am to walk the dog" (user in UTC−7)
 
 ```bash
-letta cron add \
+haruyuki cron add \
   --name "dog-walk-reminder" \
   --description "Daily 9am (America/Los_Angeles) reminder to walk the dog" \
   --prompt "Hey! It's 9am — time to walk the dog." \
@@ -146,7 +146,7 @@ letta cron add \
 ### "Check on the deploy in 30 minutes"
 
 ```bash
-letta cron add \
+haruyuki cron add \
   --name "deploy-check" \
   --description "One-time check on deployment status" \
   --prompt "Check the deployment status and report the result here." \
@@ -158,7 +158,7 @@ letta cron add \
 ### "Every weekday at 5pm, remind me to submit my timesheet" (user in UTC−7)
 
 ```bash
-letta cron add \
+haruyuki cron add \
   --name "timesheet-reminder" \
   --description "Weekday 5pm (America/Los_Angeles) timesheet reminder" \
   --prompt "Friendly reminder: don't forget to submit your timesheet before EOD!" \
@@ -170,19 +170,19 @@ The day-of-week field is the user's own weekday because the expression is read i
 ### "What reminders do I have?"
 
 ```bash
-letta cron list
+haruyuki cron list
 ```
 
 If you need to confirm the exact conversation a task is bound to, list with explicit filters instead:
 
 ```bash
-letta cron list --agent "$AGENT_ID" --conversation "$CONVERSATION_ID"
+haruyuki cron list --agent "$AGENT_ID" --conversation "$CONVERSATION_ID"
 ```
 
 ### "Cancel the dog walk reminder"
 
 ```bash
-letta cron delete dog-walk-reminder
+haruyuki cron delete dog-walk-reminder
 ```
 
 ## Writing Good Prompts
@@ -199,10 +199,10 @@ Include context about what the user originally asked for, so you can give a help
 - **Minimum granularity**: 1 minute. Intervals under 60 seconds are rounded up.
 - **Recurring tasks**: No longer auto-expire. They remain active until explicitly cancelled.
 - **Terminal task cleanup**: A task that reached a terminal state — fired, missed, or cancelled — is removed 24 hours later.
-- **Default binding**: `letta cron add` uses `--agent` first, then `HARUYUKI_AGENT_ID`. Omit `--conversation` for a fresh conversation per fire; use `--conversation self` to capture `HARUYUKI_CONVERSATION_ID` explicitly.
+- **Default binding**: `haruyuki cron add` uses `--agent` first, then `HARUYUKI_AGENT_ID`. Omit `--conversation` for a fresh conversation per fire; use `--conversation self` to capture `HARUYUKI_CONVERSATION_ID` explicitly.
 - **Scheduler requirement**: A schedule only fires while a Haruyuki session is running on this computer; a fire that comes due while nothing is running is marked missed.
 - **`--at` for specific times**: prefer RFC 3339 with an explicit offset. A bare `--at "3:00pm"` uses the process timezone and schedules tomorrow if that time has already passed there.
-- **Creation failures are loud**: `letta cron add` exits nonzero and prints the reason to stderr, and no task is stored. Check the exit code instead of assuming the task exists.
+- **Creation failures are loud**: `haruyuki cron add` exits nonzero and prints the reason to stderr, and no task is stored. Check the exit code instead of assuming the task exists.
 
 ## Cron Expression Reference
 

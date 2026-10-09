@@ -1,5 +1,5 @@
 /**
- * `letta secret` subcommand for managing agent-scoped secrets.
+ * `haruyuki secret` subcommand for managing agent-scoped secrets.
  * Values are ingested through the environment (--env) or stdin so agents can
  * persist credentials without the value appearing in shell history, process
  * listings, or agent context.
@@ -32,11 +32,11 @@ function printUsage(): void {
   console.log(
     `
 Usage:
-  letta secret set KEY --env SOURCE_VAR   Set KEY from environment variable SOURCE_VAR
-  letta secret set KEY --stdin            Set KEY from piped stdin
-  letta secret set KEY VALUE              Set KEY directly (exposes the value in argv)
-  letta secret list                       List secret names (never values)
-  letta secret unset KEY                  Unset a secret (aliases: delete | remove | rm)
+  haruyuki secret set KEY --env SOURCE_VAR   Set KEY from environment variable SOURCE_VAR
+  haruyuki secret set KEY --stdin            Set KEY from piped stdin
+  haruyuki secret set KEY VALUE              Set KEY directly (exposes the value in argv)
+  haruyuki secret list                       List secret names (never values)
+  haruyuki secret unset KEY                  Unset a secret (aliases: delete | remove | rm)
 
 Options:
   --agent <agent-id>   Target agent (defaults to HARUYUKI_AGENT_ID / AGENT_ID)
@@ -47,7 +47,7 @@ Options:
 Notes:
   - Prefer --env or --stdin so the value never appears in shell history,
     process listings, or agent context. For example:
-      openssl rand -hex 32 | letta secret set WEBHOOK_TOKEN --stdin
+      openssl rand -hex 32 | haruyuki secret set WEBHOOK_TOKEN --stdin
   - Pass the variable name to --env (not $NAME). $NAME is substituted by the
     harness and would place the resolved value in process arguments.
   - A running session picks up CLI-side changes at its next session start.
@@ -152,7 +152,7 @@ export async function runSecretSubcommand(
     case "set": {
       if (!rawKey) {
         console.error(
-          "Usage: letta secret set KEY [--env VAR | --stdin | VALUE]",
+          "Usage: haruyuki secret set KEY [--env VAR | --stdin | VALUE]",
         );
         return 1;
       }
@@ -195,7 +195,7 @@ export async function runSecretSubcommand(
       } else {
         if (rawValue === undefined) {
           console.error(
-            "Usage: letta secret set KEY [--env VAR | --stdin | VALUE]",
+            "Usage: haruyuki secret set KEY [--env VAR | --stdin | VALUE]",
           );
           return 1;
         }
@@ -229,7 +229,7 @@ export async function runSecretSubcommand(
     case "remove":
     case "rm": {
       if (!rawKey) {
-        console.error("Usage: letta secret unset KEY");
+        console.error("Usage: haruyuki secret unset KEY");
         return 1;
       }
       const key = normalizeKey(rawKey);

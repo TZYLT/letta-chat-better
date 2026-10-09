@@ -93,7 +93,7 @@ function assistantText(messages: Message[]): string | null {
 }
 
 function noReplyMessage(receipt: EnqueueReceipt): string {
-  return `Remote task finished. Its reply was not collected. Read the conversation with: letta messages list --agent ${receipt.agent_id} --conversation ${receipt.conversation_id}. Do not launch the task again to retrieve its result.`;
+  return `Remote task finished. Its reply was not collected. Read the conversation with: haruyuki messages list --agent ${receipt.agent_id} --conversation ${receipt.conversation_id}. Do not launch the task again to retrieve its result.`;
 }
 
 /** Follow the exact accepted send. Reads may retry; the task is never resubmitted. */

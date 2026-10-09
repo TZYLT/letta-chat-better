@@ -941,8 +941,8 @@ export async function handleHeadlessCommand(
     console.error(
       error instanceof Error ? `Error: ${error.message}` : String(error),
     );
-    console.error("Usage: letta --agent agent-xyz --conv default");
-    console.error("   or: letta --conv agent-xyz (shorthand)");
+    console.error("Usage: haruyuki --agent agent-xyz --conv default");
+    console.error("   or: haruyuki --conv agent-xyz (shorthand)");
     process.exit(1);
   }
 
@@ -1402,7 +1402,7 @@ export async function handleHeadlessCommand(
     conversationOpenReason = "startup";
   } else {
     // Default for headless: always create a new conversation to avoid
-    // 409 "conversation busy" races (e.g., parent agent calling letta -p).
+    // 409 "conversation busy" races (e.g., parent agent calling haruyuki -p).
     // Use --conv default to explicitly target the agent's primary conversation.
     const conversation = await backend.createConversation({
       agent_id: agent.id,

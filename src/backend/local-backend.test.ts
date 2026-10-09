@@ -2295,7 +2295,7 @@ describe("local backend pi transcript", () => {
         order: "asc",
       } as never),
     ).rejects.toThrow(
-      `letta local-backend migrate-transcripts --storage-dir "${storageDir}"`,
+      `haruyuki local-backend migrate-transcripts --storage-dir "${storageDir}"`,
     );
   });
 
@@ -2421,7 +2421,7 @@ describe("local backend pi transcript", () => {
         order: "asc",
       } as never),
     ).rejects.toThrow(
-      `letta local-backend migrate-transcripts --storage-dir "${storageDir}"`,
+      `haruyuki local-backend migrate-transcripts --storage-dir "${storageDir}"`,
     );
 
     const result = migrateLocalBackendTranscripts({ storageDir });

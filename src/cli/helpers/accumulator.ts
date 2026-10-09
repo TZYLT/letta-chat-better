@@ -236,7 +236,7 @@ export type Line =
 
 /**
  * Tracks server-side tool calls for hook triggering.
- * Server-side tools (tool_call_message) are executed by the Letta server,
+ * Server-side tools (tool_call_message) are executed by the haruyuki server,
  * not the client, so we need to trigger hooks when we receive the stream messages.
  */
 export interface ServerToolCallInfo {

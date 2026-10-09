@@ -1,7 +1,7 @@
 /**
  * Persistent remote session settings stored in ~/.haruyuki/remote-settings.json.
  *
- * Stores per-conversation CWD and permission mode so both survive letta server
+ * Stores per-conversation CWD and permission mode so both survive haruyuki server
  * restarts. Mirrors the in-memory Map keys used by cwd.ts and permissionMode.ts.
  */
 

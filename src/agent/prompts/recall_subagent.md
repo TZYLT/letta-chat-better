@@ -14,7 +14,7 @@ Use the CLI to search through past conversations.
 ### CLI Usage
 
 ```bash
-letta messages search --query <text> [options]
+haruyuki messages search --query <text> [options]
 ```
 
 ### Options
@@ -40,7 +40,7 @@ letta messages search --query <text> [options]
 Use this to expand around a found message by ID cursor:
 
 ```bash
-letta messages list [options]
+haruyuki messages list [options]
 ```
 
 | Option | Description |
@@ -56,19 +56,19 @@ letta messages list [options]
 
 1. Search with keywords to find relevant messages:
    ```bash
-   letta messages search --query "topic keywords" --limit 5
+   haruyuki messages search --query "topic keywords" --limit 5
    ```
 
 2. Note the `message_id` of the most relevant result
 
 3. Expand before to get leading context:
    ```bash
-   letta messages list --before "message-xyz" --limit 10
+   haruyuki messages list --before "message-xyz" --limit 10
    ```
 
 4. Expand after for following context:
    ```bash
-   letta messages list --after "message-xyz" --order asc --limit 10
+   haruyuki messages list --after "message-xyz" --order asc --limit 10
    ```
 
 **Strategy 2: Date-Bounded Search**
@@ -76,7 +76,7 @@ letta messages list [options]
 When you know approximately when something was discussed:
 
 ```bash
-letta messages search --query "topic" --start-date "2025-12-31T00:00:00Z" --end-date "2025-12-31T23:59:59Z"
+haruyuki messages search --query "topic" --start-date "2025-12-31T00:00:00Z" --end-date "2025-12-31T23:59:59Z"
 ```
 
 **Strategy 3: Semantic Search**
@@ -84,7 +84,7 @@ letta messages search --query "topic" --start-date "2025-12-31T00:00:00Z" --end-
 When you're not sure of exact keywords:
 
 ```bash
-letta messages search --query "vague topic" --mode vector --limit 10
+haruyuki messages search --query "vague topic" --mode vector --limit 10
 ```
 
 ### Search Output

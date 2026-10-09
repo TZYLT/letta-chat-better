@@ -140,7 +140,7 @@ Options:
   --model <handle>              Model for generation and eval
   --generation-model <handle>   Model for candidate generation
   --eval-model <handle>         Model for headless eval
-  --backend <mode>              Backend flag forwarded to letta (api or local)
+  --backend <mode>              Backend flag forwarded to haruyuki (api or local)
   --scenario-limit <n>          Evaluate only the first N scenarios (fast smoke testing)
   --repo-root <path>            Repo root (default: cwd)
   --foreground                  Run learning in this process and return a pass/fail exit code
@@ -295,7 +295,7 @@ async function main(): Promise<void> {
   console.log(`${status} ${report.reportPath}`);
   console.log(`candidate ${candidateForPromote(report)}`);
   if (report.passed) {
-    console.log(`promote letta mods promote ${candidateForPromote(report)}`);
+    console.log(`promote haruyuki mods promote ${candidateForPromote(report)}`);
   }
   if (!report.passed) process.exit(1);
 }

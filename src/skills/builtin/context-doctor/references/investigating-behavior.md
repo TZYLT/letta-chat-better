@@ -38,7 +38,7 @@ and each `*_PATH` placeholder with a file path in the chosen writable scratch
 location. Save the JSON output, then parse it into a compact inventory:
 
 ```text
-letta --backend BACKEND messages list --agent agent-TARGET --conversation conv-TARGET --limit 30 --include-errors > "MESSAGES_PATH"
+haruyuki --backend BACKEND messages list --agent agent-TARGET --conversation conv-TARGET --limit 30 --include-errors > "MESSAGES_PATH"
 ```
 
 Start with a compact inventory, then inspect the messages relevant to the
@@ -54,16 +54,16 @@ Use a supplied message reference or a scoped search to reach an older incident
 directly. Choose the next bounded read to test the hypothesis, for example:
 
 ```text
-letta --backend BACKEND messages search --agent agent-TARGET --conversation conv-TARGET --query "distinctive correction" --limit 5 > "SEARCH_PATH"
-letta --backend BACKEND messages list --agent agent-TARGET --conversation conv-TARGET --before message-ID --limit 10 --include-errors > "BEFORE_PATH"
-letta --backend BACKEND messages list --agent agent-TARGET --conversation conv-TARGET --after message-ID --order asc --limit 10 --include-errors > "AFTER_PATH"
+haruyuki --backend BACKEND messages search --agent agent-TARGET --conversation conv-TARGET --query "distinctive correction" --limit 5 > "SEARCH_PATH"
+haruyuki --backend BACKEND messages list --agent agent-TARGET --conversation conv-TARGET --before message-ID --limit 10 --include-errors > "BEFORE_PATH"
+haruyuki --backend BACKEND messages list --agent agent-TARGET --conversation conv-TARGET --after message-ID --order asc --limit 10 --include-errors > "AFTER_PATH"
 ```
 
 Project these saved results into a compact view, then read selected full text or
 tool fields. Avoid dumping raw JSON into the model context or fetching a large
 list and a transcript export of the same span together. If output is clipped,
 filter the saved result instead of increasing the output limit or refetching it.
-Use `letta --backend BACKEND messages transcript` when a longer sequence is
+Use `haruyuki --backend BACKEND messages transcript` when a longer sequence is
 needed; save its output to scratch and select the relevant span. Stop collecting
 when the causal chain and its remaining uncertainty are clear.
 
@@ -111,7 +111,7 @@ or compaction defects from these records. Do not invent a historical request.
 For API-backed agents, when a message provides a step ID:
 
 ```text
-letta --backend api steps trace --agent agent-TARGET --step step-ID
+haruyuki --backend api steps trace --agent agent-TARGET --step step-ID
 ```
 
 This uses normal Letta API access to retrieve step metadata and any available
@@ -124,7 +124,7 @@ the other evidence relevant to the hypothesis.
 The current memory files are not necessarily what a past request contained.
 Use existing captured requests, compiled prompts, and memory revisions when
 available. Otherwise label historical prompt claims as uncertain. Tokens from
-`letta memory tokens --memory-dir <path> --format json --quiet` are estimates of
+`haruyuki memory tokens --memory-dir <path> --format json --quiet` are estimates of
 core memory, not the full historical provider input.
 
 Prompt and cached-token counts establish size and cache usage, not which messages

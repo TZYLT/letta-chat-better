@@ -47,7 +47,7 @@ Offer a Schedule button when the evidence shows recurring work: the user asked f
 
 Do not offer one for one-off work, for work that reports when it finishes (such as CI or a deploy), for anything more often than hourly, for work that needs the user during the run, or for anything on the Dismissed list. Offer at most two at a time.
 
-The label names the work and when it runs, with a time zone. The instruction asks you to set it up and says what to do, when, where to send results, and when to stay quiet. Set it up with `letta cron` on the computer the agent runs on, record it in memory, and tell the user where it runs: it only fires while a Haruyuki session is running on that machine.
+The label names the work and when it runs, with a time zone. The instruction asks you to set it up and says what to do, when, where to send results, and when to stay quiet. Set it up with `haruyuki cron` on the computer the agent runs on, record it in memory, and tell the user where it runs: it only fires while a Haruyuki session is running on that machine.
 
 ### Button format
 
@@ -57,7 +57,7 @@ A fenced code block with the language `palace-action` becomes a button. It holds
 **The dependency report is still manual.** You asked for it on Sep 15, Sep 22, and Sep 29.
 
 ```palace-action
-{"actionId": "schedule-dep-report", "label": "Send the dependency report Mondays at 9am PT", "conversationId": "new", "instruction": "Set up a schedule for Mondays at 9am PT with letta cron: run the dependency report, post it to #eng-deps, and skip weeks with no changes. Record it in memory and tell me where it runs."}
+{"actionId": "schedule-dep-report", "label": "Send the dependency report Mondays at 9am PT", "conversationId": "new", "instruction": "Set up a schedule for Mondays at 9am PT with haruyuki cron: run the dependency report, post it to #eng-deps, and skip weeks with no changes. Record it in memory and tell me where it runs."}
 ```
 ````
 
@@ -134,7 +134,7 @@ For a scheduled update, a reflection, or when the user asks for one:
 2. Remove items that are done, no longer true, dismissed, or past a date with nothing left to do.
 3. Add items the evidence supports and the user would want to see.
 4. Edit sections in place and keep what is still true. Keep the first three sections first and in order.
-5. Check each routine's latest runs when you can, not just what memory says. For schedules, find IDs with `letta cron list --agent <agent-id>` and inspect each with `letta cron runs --id <id> --agent <agent-id>`. Report their health in the Overview even when nothing changed.
+5. Check each routine's latest runs when you can, not just what memory says. For schedules, find IDs with `haruyuki cron list --agent <agent-id>` and inspect each with `haruyuki cron runs --id <id> --agent <agent-id>`. Report their health in the Overview even when nothing changed.
 6. Check every button against the format above before you save, counting each instruction's characters with a script.
 
 ## In a conversation

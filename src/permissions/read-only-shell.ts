@@ -1174,7 +1174,7 @@ function isSafeSegment(
     return allowedActions.has(action);
   }
 
-  if (command === "letta") {
+  if (command === "haruyuki") {
     return isReadOnlyHaruyukiCommand(tokens.slice(1));
   }
 

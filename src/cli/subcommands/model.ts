@@ -24,9 +24,9 @@ import { isRecord } from "@/utils/type-guards";
 
 function printUsage(): void {
   console.log(`Usage:
-  letta model get [--default] [--agent <id> | --conversation <id>]
-  letta model list [--byok | --hosted] [--structured-outputs]
-  letta model set [handle] [--reasoning <level>] [--default] [--agent <id> | --conversation <id>]
+  haruyuki model get [--default] [--agent <id> | --conversation <id>]
+  haruyuki model list [--byok | --hosted] [--structured-outputs]
+  haruyuki model set [handle] [--reasoning <level>] [--default] [--agent <id> | --conversation <id>]
 
   get   Show the effective model, context limit, and full redacted model_settings.
   list  List the active backend's models, catalog IDs, reasoning levels, and structured-output support.
@@ -114,7 +114,7 @@ export async function runModelSubcommand(argv: string[]): Promise<number> {
         : positionals.length !== 1
     ) {
       throw new Error(
-        "Usage: letta model get | list | set [handle] [--reasoning <level>] (set requires a model or --reasoning)",
+        "Usage: haruyuki model get | list | set [handle] [--reasoning <level>] (set requires a model or --reasoning)",
       );
     }
     if (action !== "set" && values.reasoning !== undefined)

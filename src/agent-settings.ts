@@ -7,7 +7,7 @@ import type { ClientPreferences } from "./types/client-preferences";
 export interface AgentSettings {
   clientPreferencesByConversation?: Record<string, ClientPreferences>;
   agentId: string;
-  baseUrl?: string; // undefined = the configured Letta server
+  baseUrl?: string; // undefined = the configured haruyuki server
   pinned?: boolean; // true if agent is pinned
   memfs?: boolean; // true if memory filesystem is enabled
   toolset?: ToolsetPreference; // Virtual default-conversation preference

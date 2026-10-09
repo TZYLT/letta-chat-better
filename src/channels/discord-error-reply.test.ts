@@ -57,7 +57,7 @@ describe("formatDiscordDeliveryError", () => {
     };
     const msg = formatDiscordDeliveryError(err);
     expect(msg).toContain("agent I'm bound to");
-    expect(msg).toContain("letta channels bind --channel discord");
+    expect(msg).toContain("haruyuki channels bind --channel discord");
   });
 
   test("special-cases 404 agent-not-found", () => {
@@ -67,7 +67,7 @@ describe("formatDiscordDeliveryError", () => {
     };
     const msg = formatDiscordDeliveryError(err);
     expect(msg).toContain("agent I'm bound to");
-    expect(msg).toContain("letta channels bind --channel discord");
+    expect(msg).toContain("haruyuki channels bind --channel discord");
   });
 
   test("does not match generic 404s as agent-not-found", () => {

@@ -168,7 +168,7 @@ export async function runMcpSearch(params: {
   if (!query) {
     throw new McpCliError(
       "invalid_arguments",
-      "Usage: letta mcp search <query>",
+      "Usage: haruyuki mcp search <query>",
     );
   }
   const searchMode = parseSearchMode(params.mode);

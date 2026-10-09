@@ -46,7 +46,9 @@ test("usage CLI reads live credits and model quota and rejects invalid auth", as
     if (!apiKey) throw new Error("LETTA_API_KEY is required");
     const result = await cli(apiKey);
     expect(result.code, result.stderr).toBe(0);
-    expect(result.stdout).toStartWith("# Letta usage overview\nCurrent plan: ");
+    expect(result.stdout).toStartWith(
+      "# haruyuki usage overview\nCurrent plan: ",
+    );
     expect(result.stdout).toMatch(/\* Balance: -?\d+(\.\d+)? credits\n/);
     expect(result.stdout).toContain("## Usage Quota (`letta/*` models)");
     const response = await fetch(`${baseURL}/v1/organizations/self/quotas`, {
@@ -90,7 +92,7 @@ test("usage CLI reads live credits and model quota and rejects invalid auth", as
     expect(expired.stderr).toContain("Failed to refresh access token");
     const overridden = await cli(apiKey);
     expect(overridden.code, overridden.stderr).toBe(0);
-    expect(overridden.stdout).toStartWith("# Letta usage overview\n");
+    expect(overridden.stdout).toStartWith("# haruyuki usage overview\n");
   } finally {
     await rm(home, { recursive: true, force: true });
   }

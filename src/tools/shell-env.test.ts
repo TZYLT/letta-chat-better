@@ -72,7 +72,7 @@ function withTemporaryEnv<T>(
   }
 }
 
-describe("shellEnv letta shim", () => {
+describe("shellEnv haruyuki shim", () => {
   test("resolveHaruyukiInvocation prefers explicit launcher env", () => {
     const invocation = resolveHaruyukiInvocation(
       {
@@ -93,14 +93,14 @@ describe("shellEnv letta shim", () => {
     const invocation = resolveHaruyukiInvocation(
       {
         HARUYUKI_CODE_BIN:
-          '"C:\\Users\\Example User\\AppData\\Roaming\\npm\\letta.cmd"',
+          '"C:\\Users\\Example User\\AppData\\Roaming\\npm\\haruyuki.cmd"',
       },
       ["node", "/irrelevant/script.js"],
       "/opt/homebrew/bin/bun",
     );
 
     expect(invocation).toEqual({
-      command: "C:\\Users\\Example User\\AppData\\Roaming\\npm\\letta.cmd",
+      command: "C:\\Users\\Example User\\AppData\\Roaming\\npm\\haruyuki.cmd",
       args: [],
     });
   });
@@ -180,12 +180,12 @@ describe("shellEnv letta shim", () => {
     expect(invocation).toBeNull();
   });
 
-  test("resolveHaruyukiInvocation does not infer production letta.js entrypoint", () => {
+  test("resolveHaruyukiInvocation does not infer production haruyuki.js entrypoint", () => {
     const invocation = resolveHaruyukiInvocation(
       {},
       [
         "/usr/local/bin/node",
-        "/usr/local/lib/node_modules/@letta-ai/letta-code/letta.js",
+        "/usr/local/lib/node_modules/@letta-ai/letta-code/haruyuki.js",
       ],
       "/usr/local/bin/node",
     );
@@ -193,7 +193,7 @@ describe("shellEnv letta shim", () => {
     expect(invocation).toBeNull();
   });
 
-  test("letta shim resolves first on PATH for subprocess shells", () => {
+  test("haruyuki shim resolves first on PATH for subprocess shells", () => {
     if (process.platform === "win32") {
       return;
     }
@@ -208,21 +208,21 @@ describe("shellEnv letta shim", () => {
       ...process.env,
       PATH: `${shimDir}${path.delimiter}${process.env.PATH || ""}`,
     };
-    const whichResult = spawnSync("which", ["letta"], {
+    const whichResult = spawnSync("which", ["haruyuki"], {
       env,
       encoding: "utf8",
     });
     expect(whichResult.status).toBe(0);
     expect(whichResult.stdout.trim()).toBe(
-      path.join(shimDir as string, "letta"),
+      path.join(shimDir as string, "haruyuki"),
     );
 
-    const versionResult = spawnSync("letta", ["--version"], {
+    const versionResult = spawnSync("haruyuki", ["--version"], {
       env,
       encoding: "utf8",
     });
     expect(versionResult.status).toBe(0);
-    expect(versionResult.stdout.trim()).toBe("shimmed-letta --version");
+    expect(versionResult.stdout.trim()).toBe("shimmed-haruyuki --version");
   });
 
   test("Electron shim exports Node mode from a fresh shell without changing other launchers", () => {
@@ -244,7 +244,7 @@ describe("shellEnv letta shim", () => {
         stub,
       );
       const electronResult = spawnSync(
-        path.join(electronShim as string, "letta"),
+        path.join(electronShim as string, "haruyuki"),
         ["--version", "user argument"],
         { env, encoding: "utf8" },
       );
@@ -258,7 +258,7 @@ describe("shellEnv letta shim", () => {
         args: ["fixed argument"],
       });
       const ordinaryResult = spawnSync(
-        path.join(ordinaryShim as string, "letta"),
+        path.join(ordinaryShim as string, "haruyuki"),
         ["--version"],
         { env, encoding: "utf8" },
       );
@@ -271,7 +271,7 @@ describe("shellEnv letta shim", () => {
     }
   });
 
-  test("sandboxed processes place the letta shim under harness state", () => {
+  test("sandboxed processes place the haruyuki shim under harness state", () => {
     withTemporaryEnv({ LETTA_SANDBOX: "seatbelt" }, () => {
       const shimDir = getLettaShimDir();
 

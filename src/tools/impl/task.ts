@@ -941,7 +941,7 @@ export async function launchSubagent(
     signal?.removeEventListener("abort", abortStartup);
   }
 
-  // Extract Letta agent ID from subagent state (available after link resolves)
+  // Extract haruyuki agent ID from subagent state (available after link resolves)
   const linkedAgent = getSubagentSnapshot().agents.find(
     (a) => a.id === subagentId,
   );

@@ -54,8 +54,8 @@ describe("subcommand router", () => {
       const exitCode = await runSubcommand(["mcp", "--help"]);
 
       expect(exitCode).toBe(0);
-      expect(messages.join("\n")).toContain("letta mcp tools");
-      expect(messages.join("\n")).toContain("letta mcp call");
+      expect(messages.join("\n")).toContain("haruyuki mcp tools");
+      expect(messages.join("\n")).toContain("haruyuki mcp call");
     } finally {
       process.stdout.write = originalWrite;
     }
@@ -73,7 +73,7 @@ describe("subcommand router", () => {
 
       expect(exitCode).toBe(0);
       expect(messages.join("\n")).toContain(
-        "letta server [App Server options]",
+        "haruyuki server [App Server options]",
       );
       expect(messages.join("\n")).toContain("--listen [url]");
     } finally {
@@ -98,10 +98,10 @@ describe("subcommand router", () => {
 
       expect(exitCode).toBe(0);
       expect(messages.join("\n")).toContain(
-        "letta server [App Server options]",
+        "haruyuki server [App Server options]",
       );
       expect(warnings).toEqual([
-        "Warning: `letta app-server` is deprecated. Use `letta server` instead.",
+        "Warning: `haruyuki app-server` is deprecated. Use `haruyuki server` instead.",
       ]);
     } finally {
       console.log = originalLog;
@@ -121,7 +121,7 @@ describe("subcommand router", () => {
 
       expect(exitCode).toBe(0);
       expect(messages.join("\n")).toContain("Usage:");
-      expect(messages.join("\n")).toContain("letta mods list");
+      expect(messages.join("\n")).toContain("haruyuki mods list");
     } finally {
       console.log = originalLog;
     }

@@ -37,7 +37,7 @@ export interface RegisterOptions {
  * instance.
  *
  * Surfaces:
- * - "server": `letta server` CLI process
+ * - "server": `haruyuki server` CLI process
  * - "listen": in-app /listen command
  */
 export function deriveListenerInstanceId(

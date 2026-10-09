@@ -278,7 +278,7 @@ async function renderDiffFiles(
 ): Promise<RenderedDiffFiles> {
   if (!patch.trim()) return { files: [], insertions: 0, deletions: 0 };
 
-  // @pierre/diffs is external to the letta.js bundle (see build.js); import it
+  // @pierre/diffs is external to the haruyuki.js bundle (see build.js); import it
   // dynamically so its shiki highlighter only loads when a diff is rendered.
   const [{ parsePatchFiles }, { preloadFileDiff }] = await Promise.all([
     import("@pierre/diffs"),

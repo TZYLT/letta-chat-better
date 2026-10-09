@@ -145,7 +145,7 @@ describe("EnterWorktree tool", () => {
     if (!result.worktree_path) {
       throw new Error("Expected EnterWorktree to return a worktree path");
     }
-    expect(result.branch_name).toStartWith("letta/fix-login-flow-");
+    expect(result.branch_name).toStartWith("haruyuki/fix-login-flow-");
     expect(result.base_ref).toBe("main");
     expect(result.switched_cwd).toBe(false);
     expect(result.content[0]?.text).toContain(
@@ -872,7 +872,7 @@ describe("EnterWorktree tool", () => {
     // A lock left by a process that no longer exists. 999999 is above the
     // default max pid on the platforms this runs on, so it is never live.
     await writeFile(
-      path.join(gitDir, "letta-enter.lock"),
+      path.join(gitDir, "haruyuki-enter.lock"),
       JSON.stringify({
         conversationId: "ghost-conv",
         agentId: null,

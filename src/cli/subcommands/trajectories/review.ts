@@ -9,7 +9,7 @@ import type {
 /**
  * Read-side helpers for a trajectory export directory: list the manifest,
  * render one session readably, and search message content. These back the
- * `letta trajectories list|view|search` commands and are source-agnostic —
+ * `haruyuki trajectories list|view|search` commands and are source-agnostic —
  * every session is trajectory-v1, whatever harness produced it.
  */
 
@@ -24,7 +24,7 @@ export async function readManifest(dir: string): Promise<TrajectoryManifest> {
     raw = await readFile(join(dir, "manifest.json"), "utf-8");
   } catch {
     throw new Error(
-      `No manifest at ${join(dir, "manifest.json")}. Run: letta trajectories export --out ${dir}`,
+      `No manifest at ${join(dir, "manifest.json")}. Run: haruyuki trajectories export --out ${dir}`,
     );
   }
   return JSON.parse(raw) as TrajectoryManifest;

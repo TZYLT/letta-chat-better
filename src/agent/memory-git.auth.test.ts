@@ -370,7 +370,7 @@ describe("git auth hardening", () => {
 
   test("redacts bearer headers and credential helper passwords", () => {
     const secret = "sk-let-test-secret-456";
-    const message = `Error: Authorization: Bearer ${secret}\ngit config credential.https://api.letta.com.helper !f() { echo "username=letta"; echo "password=${secret}"; }; f\n    at runGit (memoryGit.ts:1:1)`;
+    const message = `Error: Authorization: Bearer ${secret}\ngit config credential.https://api.letta.com.helper !f() { echo "username=haruyuki"; echo "password=${secret}"; }; f\n    at runGit (memoryGit.ts:1:1)`;
 
     const redacted = redactGitAuthInText(message);
 
@@ -666,7 +666,7 @@ describe("credential helper reset", () => {
       },
     });
 
-    expect(filled).toContain("username=letta");
+    expect(filled).toContain("username=haruyuki");
     expect(filled).toContain("password=fresh-token");
     expect(filled).not.toContain("stale-keychain-token");
   });

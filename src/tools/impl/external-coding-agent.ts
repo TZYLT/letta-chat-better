@@ -35,7 +35,7 @@ export interface ExternalCodingAgentRunOptions {
   prompt: string;
   /**
    * The external CLI's own model selector (`claude --model <value>`), never a
-   * Letta model handle. Haruyuki subagents have no model parameter of their own;
+   * haruyuki model handle. Haruyuki subagents have no model parameter of their own;
    * this exists because the spawned program is a different product with its own
    * model catalogue.
    */

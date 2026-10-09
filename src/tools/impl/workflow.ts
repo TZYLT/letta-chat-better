@@ -147,7 +147,7 @@ export async function createSdkSpawnerHandle(
     model = resolveModel(args.model);
     if (!model) {
       throw new Error(
-        `Unknown model "${args.model}". Run \`letta model list\` for valid handles.`,
+        `Unknown model "${args.model}". Run \`haruyuki model list\` for valid handles.`,
       );
     }
   } else {

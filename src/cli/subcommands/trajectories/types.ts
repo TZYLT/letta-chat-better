@@ -1,5 +1,5 @@
 /**
- * Shared contracts for `letta trajectories` — exporting historical coding-agent
+ * Shared contracts for `haruyuki trajectories` — exporting historical coding-agent
  * sessions (Claude Code, Codex, and every other harness supported by
  * `@letta-ai/trajectory`) into a single directory of normalized trajectory-v1
  * files for downstream review (memory init, reflection). Discovery and

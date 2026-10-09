@@ -1,6 +1,6 @@
 import { isRecord } from "@/utils/type-guards";
 
-/** Structural API surface used only by the unified `letta mcp` command. */
+/** Structural API surface used only by the unified `haruyuki mcp` command. */
 export interface UnifiedMcpClient {
   get(path: string): Promise<unknown>;
   post(path: string, options?: { body?: unknown }): Promise<unknown>;

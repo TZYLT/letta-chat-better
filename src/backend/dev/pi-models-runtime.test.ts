@@ -268,7 +268,7 @@ describe("LocalPiModelsRuntime + Ollama provider", () => {
     }
   });
 
-  test("Letta env aliases resolve inside the runtime's auth context", async () => {
+  test("haruyuki env aliases resolve inside the runtime's auth context", async () => {
     const saved = {
       GEMINI_API_KEY: process.env.GEMINI_API_KEY,
       GOOGLE_GENERATIVE_AI_API_KEY: process.env.GOOGLE_GENERATIVE_AI_API_KEY,

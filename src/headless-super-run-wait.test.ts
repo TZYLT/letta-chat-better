@@ -99,7 +99,7 @@ test("a successful child run does not require an assistant message", async () =>
     deps({ messages: async () => [] }),
   );
   expect(result.text).toContain("Remote task finished");
-  expect(result.text).toContain("letta messages list");
+  expect(result.text).toContain("haruyuki messages list");
 });
 
 test("returns assistant text when it is available", async () => {

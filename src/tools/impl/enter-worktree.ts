@@ -233,7 +233,7 @@ async function chooseUniqueBranchName(
 
   for (let index = 0; index < 10; index += 1) {
     const suffix = randomUUID().slice(0, 8);
-    const candidate = `letta/${slug}-${suffix}`;
+    const candidate = `haruyuki/${slug}-${suffix}`;
     await assertValidBranchName(repoRoot, candidate);
     if (!(await localBranchExists(repoRoot, candidate))) {
       return candidate;

@@ -122,7 +122,7 @@ export function closeOpenAiBridgeRuntime(): void {
 /**
  * Reuse the active listener runtime when one exists (a connected WS control
  * session or channels runtime); otherwise start a socket-free local runtime,
- * exactly like `letta server --channels` does. If a WS control client
+ * exactly like `haruyuki server --channels` does. If a WS control client
  * connects later it replaces the bridge-owned runtime, and subsequent
  * requests transparently use the new active runtime.
  */

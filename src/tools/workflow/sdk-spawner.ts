@@ -466,7 +466,7 @@ export function createSdkSpawner(
       return {
         value: null,
         failed: true,
-        error: `Unknown model "${options.model}". Run \`letta model list\` for valid handles.`,
+        error: `Unknown model "${options.model}". Run \`haruyuki model list\` for valid handles.`,
       };
     }
     if (signal.aborted) {

@@ -13,7 +13,7 @@ describe("MCP server details", () => {
         {
           name: "private",
           transport: "http",
-          url: "https://mcp.example.com/mcp?token=secret&tenant=letta",
+          url: "https://mcp.example.com/mcp?token=secret&tenant=haruyuki",
           headers: { Authorization: "Bearer secret", "X-Tenant": "letta" },
         },
       ],
@@ -24,7 +24,7 @@ describe("MCP server details", () => {
     expect(JSON.parse(stdout[0] ?? "{}")).toEqual({
       name: "private",
       transport: "streamable_http",
-      url: "https://mcp.example.com/mcp?token=%5BREDACTED%5D&tenant=letta",
+      url: "https://mcp.example.com/mcp?token=%5BREDACTED%5D&tenant=haruyuki",
       headers: {
         Authorization: "[REDACTED]",
         "X-Tenant": "[REDACTED]",
@@ -169,7 +169,7 @@ describe("MCP server details", () => {
         {
           name: "authparam",
           transport: "http",
-          url: "https://mcp.example.com/mcp?auth=xyz&tenant=letta",
+          url: "https://mcp.example.com/mcp?auth=xyz&tenant=haruyuki",
         },
       ],
       stdout: (message) => stdout.push(message),
@@ -188,7 +188,7 @@ describe("MCP server details", () => {
 
     expect(await runMcpSubcommand(["get", "authparam"], deps)).toBe(0);
     expect(JSON.parse(stdout[1] ?? "{}").url).toBe(
-      "https://mcp.example.com/mcp?auth=%5BREDACTED%5D&tenant=letta",
+      "https://mcp.example.com/mcp?auth=%5BREDACTED%5D&tenant=haruyuki",
     );
   });
 });

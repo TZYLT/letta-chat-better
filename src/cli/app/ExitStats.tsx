@@ -46,7 +46,9 @@ export function ExitStats({
       <Box height={1} />
       <Text dimColor>Resume this agent with:</Text>
       <Text color={colors.link.url}>
-        {isPinned ? `letta -n "${agentName}"` : `letta --agent ${agentId}`}
+        {isPinned
+          ? `haruyuki -n "${agentName}"`
+          : `haruyuki --agent ${agentId}`}
       </Text>
       {/* Only show conversation hint if not on default (default is resumed automatically) */}
       {conversationId !== "default" && conversationId !== agentId && (
@@ -55,7 +57,7 @@ export function ExitStats({
           <Text dimColor>Resume this conversation with:</Text>
           <Text
             color={colors.link.url}
-          >{`letta --conv ${conversationId}`}</Text>
+          >{`haruyuki --conv ${conversationId}`}</Text>
         </>
       )}
     </Box>

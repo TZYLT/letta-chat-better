@@ -225,7 +225,7 @@ export function resetPermissionLoaderCacheForTests(): void {
  * 1. Local project settings (.haruyuki/settings.local.json)
  * 2. Project settings (.haruyuki/settings.json)
  * 3. User settings (~/.haruyuki/settings.json)
- * 4. Legacy user settings (~/.config/letta/settings.json)
+ * 4. Legacy user settings (~/.config/haruyuki/settings.json)
  *
  * Rules are merged by concatenating arrays (more specific settings add to broader ones)
  */

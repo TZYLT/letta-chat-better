@@ -212,7 +212,7 @@ describe("recoverApprovalStateForSync restart recovery", () => {
     const runtime = createScopedRuntime();
 
     // A browser attaching or a readiness probe: another process (a TUI,
-    // `letta -p`, a different computer) may still be executing call-bash-1.
+    // `haruyuki -p`, a different computer) may still be executing call-bash-1.
     await recoverApprovalStateForSync(
       runtime,
       scope,
@@ -342,7 +342,7 @@ describe("recoverApprovalStateForSync restart recovery", () => {
     const processed: IncomingMessage[] = [];
 
     // A browser attaches to a prewarmed sandbox (recover_approvals=true,
-    // no resume_interrupted_turn) while `letta -p` on another machine is
+    // no resume_interrupted_turn) while `haruyuki -p` on another machine is
     // still running call-bash-1.
     await replaySyncStateForRuntime(
       runtime.listener,

@@ -13,7 +13,7 @@
   ],
   "modApiHints": [
     "Use export function activate(haruyuki) or a default export.",
-    "Use only the trusted local mod API exposed through the letta argument; do not import from repo source files."
+    "Use only the trusted local mod API exposed through the haruyuki argument; do not import from repo source files."
   ],
   "examples": [
     {

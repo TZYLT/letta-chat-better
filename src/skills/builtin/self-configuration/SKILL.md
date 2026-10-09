@@ -20,9 +20,9 @@ The important part is choosing the right layer. Do not smear a preference into d
 | Local settings | Permissions, environment variables, UI/runtime preferences, pinned agents, toolset overrides, reflection cadence | Edit `~/.haruyuki/settings.json`, `./.haruyuki/settings.json`, or `./.haruyuki/settings.local.json` |
 | Mods | New deterministic tools, slash commands, providers, statusline behavior, or lightweight UI | Load `creating-mods`, `customizing-commands`, or `customizing-statusline` |
 | Skills | Reusable procedural knowledge or bundled scripts | Load `creating-skills` or `acquiring-skills` |
-| Channels | Slack/Discord/Telegram/WhatsApp/Signal accounts, pairing, routing, listener state | Use `letta channels` or channel commands |
-| Schedules | Reminders and recurring prompts | Load `scheduling-tasks` and use `letta cron` |
-| Agent secrets | Per-agent `$NAME` credential values for shell commands | Use `letta secret` (or `/secret` in a session) |
+| Channels | Slack/Discord/Telegram/WhatsApp/Signal accounts, pairing, routing, listener state | Use `haruyuki channels` or channel commands |
+| Schedules | Reminders and recurring prompts | Load `scheduling-tasks` and use `haruyuki cron` |
+| Agent secrets | Per-agent `$NAME` credential values for shell commands | Use `haruyuki secret` (or `/secret` in a session) |
 
 Decision rule: if the model should remember and reason about it, use memory. If the runtime must enforce it or route it before the model decides anything, use settings, API fields, mods, channels, or schedules.
 
@@ -49,9 +49,9 @@ If a broken model or prompt prevents the agent from completing a turn, recover o
 
 Local settings, server state, and the current process are different sources of truth. Inspect the layer you intend to change before writing it.
 
-- `letta model list [--byok | --hosted]` lists available models.
-- `letta model set [model_handle] [--reasoning <reasoning-option>] [--default]` changes the current conversation's model or reasoning; add `--default` only when the user asks for the agent default.
-- `letta model get [--default]` gets the current model configuration; `--default` gets the agent's default configuration.
+- `haruyuki model list [--byok | --hosted]` lists available models.
+- `haruyuki model set [model_handle] [--reasoning <reasoning-option>] [--default]` changes the current conversation's model or reasoning; add `--default` only when the user asks for the agent default.
+- `haruyuki model get [--default]` gets the current model configuration; `--default` gets the agent's default configuration.
 
 ### Session usage
 
@@ -61,9 +61,9 @@ Session token and context statistics are available in the interactive TUI with `
 
 The same model can often be reached through more than one route: a connected subscription (for example a ChatGPT or Grok plan) or per-token billing against the user's own API key. Users choose provider names, so a handle's prefix does not reliably show which route it bills through.
 
-Before switching models, consider how the current model is billed and keep the user on that route unless they asked to change it. Use the current handle, the labels in `letta model list`, and anything the user has said about billing as evidence. If several available handles serve the requested model and you cannot tell which one uses the user's subscription, list the candidates and ask before switching. Do not silently move a user from a subscription to per-token billing.
+Before switching models, consider how the current model is billed and keep the user on that route unless they asked to change it. Use the current handle, the labels in `haruyuki model list`, and anything the user has said about billing as evidence. If several available handles serve the requested model and you cannot tell which one uses the user's subscription, list the candidates and ask before switching. Do not silently move a user from a subscription to per-token billing.
 
-`letta model list --byok` includes both connected subscriptions and user API keys, so it does not separate the two.
+`haruyuki model list --byok` includes both connected subscriptions and user API keys, so it does not separate the two.
 
 ### Harness and server settings
 
@@ -85,7 +85,7 @@ npx tsx <SKILL_DIR>/scripts/update-agent-settings.ts \
 
 Do not infer an agent default from one conversation or infer a conversation override from the agent. Report both when diagnosing model or context differences.
 
-If CLI behavior does not match the docs, stop and inspect `command -v letta`, `type -a letta`, and `letta --version`. A stale or shadowed binary is a config bug, not a reason to guess.
+If CLI behavior does not match the docs, stop and inspect `command -v haruyuki`, `type -a haruyuki`, and `haruyuki --version`. A stale or shadowed binary is a config bug, not a reason to guess.
 
 ## Memory and identity
 
@@ -286,7 +286,7 @@ Per-agent `agents[]` entries are keyed by `agentId` plus server. For api.letta.c
 
 Base URL resolution is split between runtime API calls and settings lookup. Runtime API calls require `LETTA_BASE_URL` or an explicit script `--base-url`; do not replace it with a hard-coded remote URL. Settings server keys resolve from `HARUYUKI_SETTINGS_BASE_URL`, `env.HARUYUKI_SETTINGS_BASE_URL`, `LETTA_BASE_URL`, `env.LETTA_BASE_URL`, then api.letta.com. Do not move `agents[]` entries across base URLs unless the user is deliberately migrating servers.
 
-Toolset values currently include `auto`, `letta`, `default`, `codex`, and `none`. Use `auto` unless the user explicitly wants a manual override.
+Toolset values currently include `auto`, `haruyuki`, `default`, `codex`, and `none`. Use `auto` unless the user explicitly wants a manual override.
 
 ## Permissions
 
@@ -345,10 +345,10 @@ Load `creating-mods` before implementing mods. Load `customizing-commands` for s
 Inspect and control managed mod packages with:
 
 ```bash
-letta mods list
-letta mods disable <package-spec>
-letta mods enable <package-spec>
-letta mods remove <package-spec>
+haruyuki mods list
+haruyuki mods disable <package-spec>
+haruyuki mods enable <package-spec>
+haruyuki mods remove <package-spec>
 ```
 
 Run `/reload` in active sessions afterward. Loose source files and agent-scoped mods are not individually registry-toggleable; move, rename, or remove the file, or use `--no-mods` / `HARUYUKI_DISABLE_MODS=1` to disable all mods for a new process.
@@ -369,10 +369,10 @@ Load `creating-skills` to create or edit a skill. Load `acquiring-skills` when t
 Agent-scoped secrets hold credential values that are referenced as `$NAME` in shell commands. They are kept in OS secure storage. The harness substitutes `$NAME` at exec time and scrubs values from tool output, so values never enter agent context.
 
 ```bash
-letta secret list                                   # names only, never values
-letta secret set GITHUB_TOKEN --env GITHUB_TOKEN    # ingest from the environment
-openssl rand -hex 32 | letta secret set WEBHOOK_TOKEN --stdin   # generate without seeing the value
-letta secret unset GITHUB_TOKEN                     # aliases: delete | remove | rm
+haruyuki secret list                                   # names only, never values
+haruyuki secret set GITHUB_TOKEN --env GITHUB_TOKEN    # ingest from the environment
+openssl rand -hex 32 | haruyuki secret set WEBHOOK_TOKEN --stdin   # generate without seeing the value
+haruyuki secret unset GITHUB_TOKEN                     # aliases: delete | remove | rm
 ```
 
 Rules:
@@ -389,29 +389,29 @@ Use channels when the user wants to talk through Slack, Discord, Telegram, Whats
 Useful commands:
 
 ```bash
-letta channels status
-letta channels configure <channel>
-letta channels install <channel>
-letta channels route list --channel <channel>
-letta channels pair --channel <channel> --code <code> --agent <agent-id> --conversation <conversation-id>
-letta server --channels <channel>
+haruyuki channels status
+haruyuki channels configure <channel>
+haruyuki channels install <channel>
+haruyuki channels route list --channel <channel>
+haruyuki channels pair --channel <channel> --code <code> --agent <agent-id> --conversation <conversation-id>
+haruyuki server --channels <channel>
 ```
 
 Channel state lives under `~/.haruyuki/channels/<channel>/` (`config.yaml`, `accounts.json`, routing/pairing files, and channel runtimes). Account tokens may be plaintext in `file` mode or keyring placeholders in `keyring`/`auto` mode. Configure storage with `channelCredentialsStore` (`file`, `keyring`, `auto`) or `HARUYUKI_CHANNEL_CREDENTIALS_STORE`; do not treat keyring placeholders as usable secrets and do not print tokens. Channel configuration and pairing can route external messages to other agents/conversations; verify IDs and get human consent for interactive authorization.
 
-`letta channels configure <channel>` is an interactive TTY wizard. Do not launch it as unattended work or claim setup succeeded while it is waiting for input; hand the authorization/setup step to the user.
+`haruyuki channels configure <channel>` is an interactive TTY wizard. Do not launch it as unattended work or claim setup succeeded while it is waiting for input; hand the authorization/setup step to the user.
 
 Changing the credential-store mode does not migrate existing tokens. A file/keyring mismatch can make an otherwise configured listener fail with `invalid_auth`; verify where credentials are stored before changing the mode.
 
 ## Schedules
 
-Use `scheduling-tasks` for reminders and recurring prompts. Under the hood it uses `letta cron`.
+Use `scheduling-tasks` for reminders and recurring prompts. Under the hood it uses `haruyuki cron`.
 
 Examples:
 
 ```bash
-letta cron list
-letta cron add --name "weekly-review" --description "Weekly project review" --prompt "Ask the user for the weekly project review." --cron "0 9 * * 1" --agent "$AGENT_ID" --conversation "$CONVERSATION_ID"
+haruyuki cron list
+haruyuki cron add --name "weekly-review" --description "Weekly project review" --prompt "Ask the user for the weekly project review." --cron "0 9 * * 1" --agent "$AGENT_ID" --conversation "$CONVERSATION_ID"
 ```
 
 Scheduled tasks fire only while a Haruyuki session/listener is running. Cron bindings can target other agents/conversations visible to the account; verify agent and conversation IDs explicitly when exact routing matters.
@@ -421,18 +421,18 @@ Scheduled tasks fire only while a Haruyuki session/listener is running. Cron bin
 Some behavior is easiest to change at startup:
 
 ```bash
-letta --model <model-id-or-handle>
-letta --system <preset-id>
-letta --system-custom /path/to/system.txt
-letta --toolset auto
-letta --permission-mode standard
-letta --skills /path/to/skills
-letta --skill-sources all,bundled,global,agent,project
-letta --pre-load-skills self-configuration,creating-mods
-letta --no-mods
-letta --reflection-trigger step-count --reflection-step-count 25
-letta --backend local
-letta --memfs
+haruyuki --model <model-id-or-handle>
+haruyuki --system <preset-id>
+haruyuki --system-custom /path/to/system.txt
+haruyuki --toolset auto
+haruyuki --permission-mode standard
+haruyuki --skills /path/to/skills
+haruyuki --skill-sources all,bundled,global,agent,project
+haruyuki --pre-load-skills self-configuration,creating-mods
+haruyuki --no-mods
+haruyuki --reflection-trigger step-count --reflection-step-count 25
+haruyuki --backend local
+haruyuki --memfs
 ```
 
 Startup flags affect a new process only. They do not rewrite an already-running listener. Persist long-term defaults in settings or server fields instead.

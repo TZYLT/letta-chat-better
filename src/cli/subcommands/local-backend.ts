@@ -20,7 +20,7 @@ function printUsage(): void {
   console.log(
     `
 Usage:
-  letta local-backend migrate-transcripts [--storage-dir <path>] [--dry-run]
+  haruyuki local-backend migrate-transcripts [--storage-dir <path>] [--dry-run]
 
 Migrates unversioned experimental local backend transcripts to the
 versioned pi-ai transcript format. Each converted messages.jsonl is backed up

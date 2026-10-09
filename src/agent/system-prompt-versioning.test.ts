@@ -222,7 +222,7 @@ describe("system prompt versioning", () => {
     expect(decision.kind).not.toBe("inherit");
   });
 
-  test("keeps an explicitly selected letta preset even when its text matches default", () => {
+  test("keeps an explicitly selected haruyuki preset even when its text matches default", () => {
     const prompt = buildSystemPrompt("letta", "memfs");
     const decision = decideManagedSystemPromptUpdate({
       agent: agent(prompt),

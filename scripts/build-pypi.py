@@ -1,4 +1,4 @@
-"""Build a self-contained letta wheel on its target OS/CPU.
+"""Build a self-contained haruyuki wheel on its target OS/CPU.
 
 Prerequisites: locked `bun install --frozen-lockfile`, Bun, npm, Python 3.9+,
 C/C++ toolchain (node-pty). Run from any directory; artifacts go to python/dist.

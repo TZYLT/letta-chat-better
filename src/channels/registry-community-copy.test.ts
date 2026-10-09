@@ -8,15 +8,15 @@ import {
 describe("registry copy: first-party channels", () => {
   test("pairing instructions point at both desktop UI and CLI for telegram", () => {
     const text = buildPairingInstructions("telegram", "ABC123");
-    expect(text).toContain("Connect this chat to a Letta agent.");
+    expect(text).toContain("Connect this chat to a haruyuki agent.");
     expect(text).toContain("In Haruyuki: open Channels > Telegram");
     expect(text).toContain("Telegram");
     expect(text).toContain("Pairing code: ABC123");
     expect(text).toContain("CLI on the listener machine:");
     expect(text).toContain(
-      "letta channels pair --channel telegram --code ABC123 --agent <agent-id>",
+      "haruyuki channels pair --channel telegram --code ABC123 --agent <agent-id>",
     );
-    expect(text).toContain("Find the target agent with: letta agents list");
+    expect(text).toContain("Find the target agent with: haruyuki agents list");
     expect(text).toContain("This code expires in 15 minutes.");
     expect(text).not.toContain("(community channel)");
   });
@@ -27,9 +27,9 @@ describe("registry copy: first-party channels", () => {
     expect(text).toContain("Telegram");
     expect(text).toContain("CLI on the listener machine:");
     expect(text).toContain(
-      "letta channels route add --channel telegram --chat-id 515978553 --agent <agent-id>",
+      "haruyuki channels route add --channel telegram --chat-id 515978553 --agent <agent-id>",
     );
-    expect(text).toContain("Find your agent id with letta agents list.");
+    expect(text).toContain("Find your agent id with haruyuki agents list.");
     expect(text).not.toContain("(community channel)");
   });
 
@@ -40,10 +40,12 @@ describe("registry copy: first-party channels", () => {
     expect(text).toContain("In Haruyuki: open Channels > Discord");
     expect(text).toContain("Discord");
     expect(text).toContain(
-      "letta channels pair --channel discord --code XYZ789 --agent agent-discord",
+      "haruyuki channels pair --channel discord --code XYZ789 --agent agent-discord",
     );
     expect(text).not.toContain("--agent <agent-id>");
-    expect(text).not.toContain("Find the target agent with: letta agents list");
+    expect(text).not.toContain(
+      "Find the target agent with: haruyuki agents list",
+    );
   });
 
   test("first-party whatsapp pairing includes the desktop and CLI paths", () => {
@@ -54,7 +56,7 @@ describe("registry copy: first-party channels", () => {
     expect(text).toContain("WhatsApp");
     expect(text).toContain("Pairing code: W123");
     expect(text).toContain(
-      "letta channels pair --channel whatsapp --code W123 --agent agent-whatsapp",
+      "haruyuki channels pair --channel whatsapp --code W123 --agent agent-whatsapp",
     );
     expect(text).not.toContain("--agent <agent-id>");
   });
@@ -67,14 +69,16 @@ describe("registry copy: first-party channels", () => {
     expect(text).toContain("Open Channels >");
     expect(text).toContain("WhatsApp");
     expect(text).toContain(
-      "letta channels route add --channel whatsapp --chat-id 15551234567@s.whatsapp.net --agent <agent-id>",
+      "haruyuki channels route add --channel whatsapp --chat-id 15551234567@s.whatsapp.net --agent <agent-id>",
     );
   });
 
-  test("first-party copy uses 'Letta agent' consistently", () => {
-    expect(buildPairingInstructions("telegram", "X")).toContain("Letta agent");
+  test("first-party copy uses 'haruyuki agent' consistently", () => {
+    expect(buildPairingInstructions("telegram", "X")).toContain(
+      "haruyuki agent",
+    );
     expect(buildUnboundRouteInstructions("slack", "Y")).toContain(
-      "Letta agent",
+      "haruyuki agent",
     );
     expect(buildPairingInstructions("telegram", "X")).not.toContain(
       "Haruyuki agent",
@@ -98,28 +102,28 @@ describe("registry copy: community channels", () => {
 
   test("pairing instructions surface the CLI command for community channels", () => {
     const text = buildPairingInstructions("custom-chat", "ABC123");
-    expect(text).toContain("Connect this chat to a Letta agent.");
+    expect(text).toContain("Connect this chat to a haruyuki agent.");
     expect(text).toContain("Pairing code: ABC123");
     expect(text).toContain("CLI on the listener machine:");
     expect(text).toContain(
-      "letta channels pair --channel custom-chat --code ABC123 --agent <agent-id>",
+      "haruyuki channels pair --channel custom-chat --code ABC123 --agent <agent-id>",
     );
-    expect(text).toContain("Find the target agent with: letta agents list");
+    expect(text).toContain("Find the target agent with: haruyuki agents list");
     expect(text).toContain("This code expires in 15 minutes.");
     expect(text).not.toContain("open Channels >");
     expect(text).not.toContain("(community channel)");
     // Hard-stop against shipping the wrong subcommand again.
-    expect(text).not.toContain("letta channels pair approve");
+    expect(text).not.toContain("haruyuki channels pair approve");
   });
 
   test("unbound route instructions surface the CLI command for community channels", () => {
     const text = buildUnboundRouteInstructions("custom-chat", "chat-123");
-    expect(text).toContain("isn't connected to a Letta agent yet");
+    expect(text).toContain("isn't connected to a haruyuki agent yet");
     expect(text).toContain("On the machine where your listener runs");
     expect(text).toContain(
-      "letta channels route add --channel custom-chat --chat-id chat-123 --agent <agent-id>",
+      "haruyuki channels route add --channel custom-chat --chat-id chat-123 --agent <agent-id>",
     );
-    expect(text).toContain("Find your agent id with letta agents list.");
+    expect(text).toContain("Find your agent id with haruyuki agents list.");
     expect(text).not.toContain("Open Channels >");
     expect(text).not.toContain("(community channel)");
     expect(text).not.toContain("paste a route");
@@ -131,17 +135,19 @@ describe("registry copy: community channels", () => {
       agentId: "agent-custom",
     });
     expect(text).toContain(
-      "letta channels pair --channel custom-chat --code ABC123 --agent agent-custom",
+      "haruyuki channels pair --channel custom-chat --code ABC123 --agent agent-custom",
     );
     expect(text).not.toContain("--agent <agent-id>");
-    expect(text).not.toContain("Find the target agent with: letta agents list");
+    expect(text).not.toContain(
+      "Find the target agent with: haruyuki agents list",
+    );
   });
 
   test("any non-first-party channel id triggers community copy", () => {
     const text = buildPairingInstructions("imessage", "QQQ");
-    expect(text).toContain("Connect this chat to a Letta agent.");
+    expect(text).toContain("Connect this chat to a haruyuki agent.");
     expect(text).toContain(
-      "letta channels pair --channel imessage --code QQQ --agent <agent-id>",
+      "haruyuki channels pair --channel imessage --code QQQ --agent <agent-id>",
     );
   });
 
@@ -153,11 +159,11 @@ describe("registry copy: community channels", () => {
   });
 
   test("community pairing copy points at a real subcommand", () => {
-    // The actual handler in src/cli/subcommands/channels.ts is `letta channels
+    // The actual handler in src/cli/subcommands/channels.ts is `haruyuki channels
     // pair` (no `approve` subcommand). If someone introduces an `approve`
     // subcommand, this test should be updated together with the copy.
     const text = buildPairingInstructions("custom-chat", "X");
-    expect(text).toMatch(/letta channels pair --channel custom-chat /);
-    expect(text).not.toMatch(/letta channels pair approve/);
+    expect(text).toMatch(/haruyuki channels pair --channel custom-chat /);
+    expect(text).not.toMatch(/haruyuki channels pair approve/);
   });
 });

@@ -30,11 +30,11 @@ When using the Agent tool, you must specify a subagent_type parameter to select 
 
 ## External Coding Agents
 
-Use `subagent_type: "claude-code"` or `subagent_type: "codex"` to start a coding worker through the corresponding locally installed CLI. These types use the same background task lifecycle and completion notifications as Haruyuki subagents, but they do not create Letta agents or conversations. Do not combine them with `agent_id` or `conversation_id`. External coding workers always run on the current machine and do not accept the remote-machine option.
+Use `subagent_type: "claude-code"` or `subagent_type: "codex"` to start a coding worker through the corresponding locally installed CLI. These types use the same background task lifecycle and completion notifications as Haruyuki subagents, but they do not create haruyuki agents or conversations. Do not combine them with `agent_id` or `conversation_id`. External coding workers always run on the current machine and do not accept the remote-machine option.
 
 The initial receipt includes a synthetic `claude_...` or `codex_...` agent ID as soon as the native session starts. That ID addresses the worker for the CLI's own bookkeeping; steering an active external worker from a tool call is not supported by this CLI.
 
-External coding agents can receive the current agent's MCP discovery metadata and use the existing `letta mcp` CLI through their shell:
+External coding agents can receive the current agent's MCP discovery metadata and use the existing `haruyuki mcp` CLI through their shell:
 
 ```typescript
 Agent({
@@ -48,7 +48,7 @@ Agent({
 })
 ```
 
-`mcp: { inherit: true }` advertises every MCP server currently available to the parent agent. Adding `servers` advertises exactly that named subset and fails before launch if a requested server is unavailable. This passes discovery metadata, not new authorization; the worker calls tools through `letta mcp` under the parent agent identity.
+`mcp: { inherit: true }` advertises every MCP server currently available to the parent agent. Adding `servers` advertises exactly that named subset and fails before launch if a requested server is unavailable. This passes discovery metadata, not new authorization; the worker calls tools through `haruyuki mcp` under the parent agent identity.
 
 `model` is only meaningful for these two types: it is handed to the CLI's own model flag (for example `claude --model opus`). Haruyuki subagents have no model argument — they always inherit the parent conversation's model, and passing `model` for any other subagent_type fails the launch.
 
@@ -183,7 +183,7 @@ Agent({
 Behavior notes:
 - The remote turn runs with the remote machine's working directory, tools, and skills. Subagent-type tool restrictions (e.g. recall's read-only toolset) travel with the turn on current servers; older servers ignore them.
 - The remote turn's final assistant message is returned as the task result. Token and step statistics are not available for remote runs.
-- Computer-routed tasks are submitted asynchronously and tracked through Cloud's existing Super Run status feed. Temporary status-read failures retry in the background; there is no one-hour tracking ceiling. Completion still notifies you if the reply could not be collected; use `letta messages list` to read the conversation rather than launching the task again. Stopping a task cancels its queued input or its executing listener run.
+- Computer-routed tasks are submitted asynchronously and tracked through Cloud's existing Super Run status feed. Temporary status-read failures retry in the background; there is no one-hour tracking ceiling. Completion still notifies you if the reply could not be collected; use `haruyuki messages list` to read the conversation rather than launching the task again. Stopping a task cancels its queued input or its executing listener run.
 
 ## Concurrency and Safety:
 

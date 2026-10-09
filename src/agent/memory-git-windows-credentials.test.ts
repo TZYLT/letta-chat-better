@@ -52,7 +52,7 @@ test("the configured Windows helper survives atomic checkout publication", async
           env: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
         },
       );
-      expect(credentials).toContain("username=letta");
+      expect(credentials).toContain("username=haruyuki");
       expect(credentials).toContain("password=test-token");
     }
   } finally {

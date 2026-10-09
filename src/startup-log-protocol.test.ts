@@ -93,7 +93,7 @@ for (const runtime of ["bun", "node"]) {
             ...(runtime === "bun"
               ? [`--config=${join(root, "bunfig.toml")}`]
               : []),
-            join(root, runtime === "bun" ? "src/index.ts" : "letta.js"),
+            join(root, runtime === "bun" ? "src/index.ts" : "haruyuki.js"),
             "server",
             "--debug",
             "--computer-name",
@@ -166,7 +166,7 @@ unixTest(
       [
         "--import",
         "file:///missing-letta-startup-import.mjs",
-        join(root, "letta.js"),
+        join(root, "haruyuki.js"),
         "--version",
       ],
       {

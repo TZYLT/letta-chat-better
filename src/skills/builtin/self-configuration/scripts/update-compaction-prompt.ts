@@ -139,7 +139,7 @@ async function main() {
   const configuredBaseUrl = args["base-url"] || process.env.LETTA_BASE_URL;
   if (!configuredBaseUrl) {
     throw new Error(
-      "Set LETTA_BASE_URL or pass --base-url so the request targets the current Letta server",
+      "Set LETTA_BASE_URL or pass --base-url so the request targets the current haruyuki server",
     );
   }
   const baseUrl = String(configuredBaseUrl).replace(/\/$/, "");

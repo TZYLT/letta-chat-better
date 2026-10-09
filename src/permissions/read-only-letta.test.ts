@@ -3,52 +3,52 @@ import { checkPermission } from "./checker";
 import { permissionMode } from "./mode";
 import { isReadOnlyShellCommand } from "./read-only-shell";
 
-describe("letta CLI commands", () => {
-  test("allows letta memory tokens", () => {
-    expect(isReadOnlyShellCommand("letta memory tokens")).toBe(true);
+describe("haruyuki CLI commands", () => {
+  test("allows haruyuki memory tokens", () => {
+    expect(isReadOnlyShellCommand("haruyuki memory tokens")).toBe(true);
   });
 
-  test("allows letta memory tokens with flags", () => {
+  test("allows haruyuki memory tokens with flags", () => {
     expect(
-      isReadOnlyShellCommand("letta memory tokens --quiet --format json"),
+      isReadOnlyShellCommand("haruyuki memory tokens --quiet --format json"),
     ).toBe(true);
     expect(
       isReadOnlyShellCommand(
-        "letta memory tokens --memory-dir /tmp/mem --top 10",
+        "haruyuki memory tokens --memory-dir /tmp/mem --top 10",
       ),
     ).toBe(true);
   });
 
-  test("allows letta memory help", () => {
-    expect(isReadOnlyShellCommand("letta memory help")).toBe(true);
+  test("allows haruyuki memory help", () => {
+    expect(isReadOnlyShellCommand("haruyuki memory help")).toBe(true);
   });
 
-  test("blocks unknown letta memory action", () => {
+  test("blocks unknown haruyuki memory action", () => {
     // restore/backup/pull/diff mutate state — not in read-only allowlist
-    expect(isReadOnlyShellCommand("letta memory restore")).toBe(false);
-    expect(isReadOnlyShellCommand("letta memory pull")).toBe(false);
-    expect(isReadOnlyShellCommand("letta memory delete")).toBe(false);
+    expect(isReadOnlyShellCommand("haruyuki memory restore")).toBe(false);
+    expect(isReadOnlyShellCommand("haruyuki memory pull")).toBe(false);
+    expect(isReadOnlyShellCommand("haruyuki memory delete")).toBe(false);
   });
 
-  test("blocks letta memory with no action", () => {
-    expect(isReadOnlyShellCommand("letta memory")).toBe(false);
+  test("blocks haruyuki memory with no action", () => {
+    expect(isReadOnlyShellCommand("haruyuki memory")).toBe(false);
   });
 
-  test("blocks unknown letta group", () => {
-    expect(isReadOnlyShellCommand("letta install plugin")).toBe(false);
-    expect(isReadOnlyShellCommand("letta doctor")).toBe(false);
-    expect(isReadOnlyShellCommand("letta blocks list --agent agent-123")).toBe(
-      false,
-    );
-  });
-
-  test("allows legacy letta memfs alias", () => {
-    expect(isReadOnlyShellCommand("letta memfs tokens")).toBe(true);
-  });
-
-  test("allows letta memory tokens piped to a safe command", () => {
+  test("blocks unknown haruyuki group", () => {
+    expect(isReadOnlyShellCommand("haruyuki install plugin")).toBe(false);
+    expect(isReadOnlyShellCommand("haruyuki doctor")).toBe(false);
     expect(
-      isReadOnlyShellCommand("letta memory tokens --format json | head -5"),
+      isReadOnlyShellCommand("haruyuki blocks list --agent agent-123"),
+    ).toBe(false);
+  });
+
+  test("allows legacy haruyuki memfs alias", () => {
+    expect(isReadOnlyShellCommand("haruyuki memfs tokens")).toBe(true);
+  });
+
+  test("allows haruyuki memory tokens piped to a safe command", () => {
+    expect(
+      isReadOnlyShellCommand("haruyuki memory tokens --format json | head -5"),
     ).toBe(true);
   });
 });
@@ -69,49 +69,49 @@ describe("explicit Letta backend selection", () => {
           "memfs status",
           "agents list",
         ]) {
-          expect(isReadOnlyShellCommand(`letta ${selection} ${command}`)).toBe(
-            true,
-          );
+          expect(
+            isReadOnlyShellCommand(`haruyuki ${selection} ${command}`),
+          ).toBe(true);
         }
       }
     },
   );
 
   test.each([
-    'letta --backend "api" messages list',
-    'letta --backend="local" messages list',
-    "letta messages --backend local list",
-    "letta messages list --backend=api",
-    "letta --backend local messages list --backend cloud",
-    "letta --backend local messages list | head -5",
+    'haruyuki --backend "api" messages list',
+    'haruyuki --backend="local" messages list',
+    "haruyuki messages --backend local list",
+    "haruyuki messages list --backend=api",
+    "haruyuki --backend local messages list --backend cloud",
+    "haruyuki --backend local messages list | head -5",
   ])("allows supported backend placement and quoting: %s", (command) => {
     expect(isReadOnlyShellCommand(command)).toBe(true);
   });
 
   test.each([
-    "letta --backend",
-    "letta --backend local",
-    "letta --backend messages list",
-    "letta --backend= messages list",
-    "letta --backend invalid messages list",
-    "letta --backend local messages list --backend invalid",
-    "letta --backend local --yolo messages list",
-    "letta --backend local memory pull",
-    "letta --backend api steps delete --step step-1",
-    "letta --backend local messages transcript --out transcript.json",
-    "letta --backend local messages list > messages.json",
-    "letta --backend local messages list >> messages.json",
-    "letta --backend local messages list && touch output.txt",
-    "letta --backend local messages list | sh",
-    "letta --backend $(touch output.txt) messages list",
-    "letta --backend `touch output.txt` messages list",
+    "haruyuki --backend",
+    "haruyuki --backend local",
+    "haruyuki --backend messages list",
+    "haruyuki --backend= messages list",
+    "haruyuki --backend invalid messages list",
+    "haruyuki --backend local messages list --backend invalid",
+    "haruyuki --backend local --yolo messages list",
+    "haruyuki --backend local memory pull",
+    "haruyuki --backend api steps delete --step step-1",
+    "haruyuki --backend local messages transcript --out transcript.json",
+    "haruyuki --backend local messages list > messages.json",
+    "haruyuki --backend local messages list >> messages.json",
+    "haruyuki --backend local messages list && touch output.txt",
+    "haruyuki --backend local messages list | sh",
+    "haruyuki --backend $(touch output.txt) messages list",
+    "haruyuki --backend `touch output.txt` messages list",
   ])("does not auto-allow invalid or unsafe commands: %s", (command) => {
     expect(isReadOnlyShellCommand(command)).toBe(false);
   });
 });
 
 describe("Letta evidence tool permissions", () => {
-  const command = "letta --backend local messages list --agent agent-target";
+  const command = "haruyuki --backend local messages list --agent agent-target";
   const emptyRules = { allow: [], deny: [], ask: [] };
 
   afterEach(() => permissionMode.reset());
@@ -135,7 +135,7 @@ describe("Letta evidence tool permissions", () => {
     );
     permissionMode.setMode("standard");
     for (const decision of ["deny", "alwaysAsk"] as const) {
-      const rules = { ...emptyRules, [decision]: ["Bash(letta:*)"] };
+      const rules = { ...emptyRules, [decision]: ["Bash(haruyuki:*)"] };
       expect(checkPermission("Bash", { command }, rules).decision).toBe(
         decision,
       );

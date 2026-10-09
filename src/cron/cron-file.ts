@@ -495,7 +495,7 @@ export function addTask(input: AddTaskInput): AddTaskResult {
       )
     ) {
       warning =
-        "No letta server is currently running. This task will only execute when a WS listener is active.";
+        "No haruyuki server is currently running. This task will only execute when a WS listener is active.";
     }
 
     return { task, warning };

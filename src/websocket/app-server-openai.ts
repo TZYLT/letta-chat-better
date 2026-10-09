@@ -42,7 +42,7 @@ export function __testResetConversationMap(): void {
   resetOpenAiCompatState();
 }
 
-// OpenAI-compatible surface for the App Server. Each Letta agent is
+// OpenAI-compatible surface for the App Server. Each haruyuki agent is
 // advertised as a "model". Conversation identity is explicit or absent:
 // clients that send a stable chat id header get a pinned Letta conversation
 // that receives only the newest message (stateful mode); header-less clients

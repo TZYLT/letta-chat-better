@@ -42,15 +42,15 @@ export type {
  * Use this to select a built-in system prompt with optional appended text.
  *
  * Available presets (validated at runtime by CLI):
- * - 'default' - Alias for letta
- * - 'letta' - Full Haruyuki system prompt
+ * - 'default' - Alias for haruyuki
+ * - 'haruyuki' - Full Haruyuki system prompt
  * - 'source-claude' - Source-faithful Claude Code prompt (for benchmarking)
  * - 'source-codex' - Source-faithful OpenAI Codex prompt (for benchmarking)
  * - 'source-gemini' - Source-faithful Gemini CLI prompt (for benchmarking)
  */
 export interface SystemPromptPresetConfig {
   type: "preset";
-  /** Preset ID (e.g., 'default', 'letta', 'source-claude'). Validated at runtime. */
+  /** Preset ID (e.g., 'default', 'haruyuki', 'source-claude'). Validated at runtime. */
   preset: string;
   /** Additional instructions to append to the preset */
   append?: string;

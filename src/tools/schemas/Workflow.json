@@ -19,7 +19,7 @@
     },
     "model": {
       "type": "string",
-      "description": "Default model handle or alias for subagents (see `letta model list`). Omit to inherit the invoking conversation's model; per-call opts.model overrides this."
+      "description": "Default model handle or alias for subagents (see `haruyuki model list`). Omit to inherit the invoking conversation's model; per-call opts.model overrides this."
     },
     "allowedTools": {
       "type": "array",

@@ -1,5 +1,5 @@
 /**
- * Task-reference resolution for `letta cron get`/`delete` (LET-10492).
+ * Task-reference resolution for `haruyuki cron get`/`delete` (LET-10492).
  *
  * `add` requires `--name`, so names are the handle users (and agents) actually
  * remember - but the store addresses tasks by ID. This module resolves a
@@ -18,7 +18,7 @@ export interface ResolvedTaskRef {
 
 /**
  * Resolve a `get`/`delete` positional that didn't match any task ID as a
- * task name. `letta cron delete <name>` failing with "not found" while the
+ * task name. `haruyuki cron delete <name>` failing with "not found" while the
  * schedule keeps firing is a footgun.
  *
  * Exact-match only. Returns:

@@ -1,6 +1,6 @@
 ---
 name: messaging-agents
-description: Send a message to another Letta agent, continue a thread with one, check on it, or reply to a message another agent sent you. Use when you need to ask, inform, or coordinate with another agent, or when a message from another agent arrives.
+description: Send a message to another haruyuki agent, continue a thread with one, check on it, or reply to a message another agent sent you. Use when you need to ask, inform, or coordinate with another agent, or when a message from another agent arrives.
 ---
 
 # Messaging Agents
@@ -25,7 +25,7 @@ is unrelated to subagents you launch with the Agent tool.
 
 ## How a send reaches the recipient
 
-A send runs the recipient's turn in the `letta -p` process you launched.
+A send runs the recipient's turn in the `haruyuki -p` process you launched.
 
 With only `--agent`, the CLI chooses the launch settings and normally creates a
 new conversation.
@@ -39,7 +39,7 @@ The recipient learns who is asking only when the send identifies a sender:
 `--from-agent`, or the caller IDs from the agent's shell environment
 (`AGENT_ID`/`HARUYUKI_AGENT_ID` and `CONVERSATION_ID`/`HARUYUKI_CONVERSATION_ID`).
 An identified send attaches a system reminder telling the recipient how to get
-its answer back to you. A `letta -p` with neither carries no sender or reply
+its answer back to you. A `haruyuki -p` with neither carries no sender or reply
 instructions; the recipient receives your text as user input, plus whatever
 context its harness normally adds.
 
@@ -48,10 +48,10 @@ environment does not inherit the current conversation as its return address.
 
 ## Waiting or not
 
-- **Waiting send** (`letta -p` without `--no-wait`). The process normally returns
+- **Waiting send** (`haruyuki -p` without `--no-wait`). The process normally returns
   the recipient's final message, in `result` with JSON output. When a sender is
   identified, the recipient is told to put its answer in that message.
-- **Non-waiting send** (`letta -p --no-wait`). Only valid with a routed
+- **Non-waiting send** (`haruyuki -p --no-wait`). Only valid with a routed
   destination (`--computer`/`--environment` or an inherited listener
   connection); the CLI rejects it otherwise, because a local send has no
   acceptance receipt to return. Cloud-side acceptance never guaranteed a reply,
@@ -67,15 +67,15 @@ For a managed child task with a completion notification, use the Agent tool.
 
 ## Send and keep working
 
-Not supported by this CLI. `letta -p --no-wait` depended on Cloud accepting the
+Not supported by this CLI. `haruyuki -p --no-wait` depended on Cloud accepting the
 message and returning a receipt. Use a waiting send in the background instead
 (see above) when you want to keep working.
 
 ## Send and wait
 
 ```bash
-letta -p --from-agent $HARUYUKI_AGENT_ID --agent <agent-id> --output-format json "message"
-letta -p --from-agent $HARUYUKI_AGENT_ID --conversation <conversation-id> --output-format json "follow-up"
+haruyuki -p --from-agent $HARUYUKI_AGENT_ID --agent <agent-id> --output-format json "message"
+haruyuki -p --from-agent $HARUYUKI_AGENT_ID --conversation <conversation-id> --output-format json "follow-up"
 ```
 
 `result` normally holds the recipient's final message; `conversation_id` is
@@ -83,7 +83,7 @@ the thread to continue. `--from-agent` names you and must be an agent on the
 same backend as the recipient.
 
 If your agent ID starts with `agent-local-`, add `--backend local` so the
-command uses the local store: `letta --backend local -p …`. The flag applies to
+command uses the local store: `haruyuki --backend local -p …`. The flag applies to
 that command only.
 
 The recipient's turn runs inside the process you launched, so
@@ -99,7 +99,7 @@ reminder naming its agent ID and, when it had one, its conversation ID.
   your response. Nothing more is needed.
 - If the reminder asks for an explicit reply: non-waiting sends are not
   supported by this CLI, so reply with a waiting send
-  (`letta -p --agent <sender-agent-id> --conversation <sender-conversation-id> "reply"`).
+  (`haruyuki -p --agent <sender-agent-id> --conversation <sender-conversation-id> "reply"`).
   Your ordinary output is not forwarded to the sender.
 - If it says no return conversation was supplied: your output is not forwarded
   and there is no thread to reply into. Answer as you normally would.
@@ -114,20 +114,20 @@ requests recent messages and prints the returned messages oldest to newest (add
 `--backend local` in the same cases as for sends):
 
 ```bash
-letta messages list --conversation <conversation-id> --limit 10
+haruyuki messages list --conversation <conversation-id> --limit 10
 ```
 
-`letta messages status --conversation <id>` is Cloud only, so this CLI does not
+`haruyuki messages status --conversation <id>` is Cloud only, so this CLI does not
 support it. Read the messages to see what was processed.
-`letta messages transcript --conversation <id>` exports the
+`haruyuki messages transcript --conversation <id>` exports the
 thread; check `truncated` before treating it as complete.
-`letta messages --help` lists the options.
+`haruyuki messages --help` lists the options.
 
 ## Finding an agent
 
 ```bash
-letta agents list --query "name"
-letta messages search --query "topic" --all-agents   # discovery; results include agent_id
+haruyuki agents list --query "name"
+haruyuki messages search --query "topic" --all-agents   # discovery; results include agent_id
 ```
 
 Load the `finding-agents` skill for more search options.
@@ -156,6 +156,6 @@ local-only setup nothing matches, and the send fails instead of routing.
 
 ## Related
 
-- `letta --help` and each subcommand's `--help` are the reference for flags;
+- `haruyuki --help` and each subcommand's `--help` are the reference for flags;
   this skill explains the concepts and the common recipes.
 - `finding-agents`: locate agents by name, tags, or search.

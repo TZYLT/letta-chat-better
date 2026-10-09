@@ -116,7 +116,7 @@ function resolveChannelRuntimeModulePath(
 export function getChannelInstallCommand(
   channelId: SupportedChannelId,
 ): string {
-  return `letta channels install ${channelId}`;
+  return `haruyuki channels install ${channelId}`;
 }
 
 export function buildMissingChannelRuntimeError(

@@ -14,7 +14,7 @@ Use the CLI to search through past conversations.
 ### CLI Usage
 
 ```bash
-letta messages search --query <text> [options]
+haruyuki messages search --query <text> [options]
 ```
 
 ### Options
@@ -35,7 +35,7 @@ Local search is transcript-backed full-text search. Prefer distinctive keywords,
 Use this to expand around a found message by ID cursor:
 
 ```bash
-letta messages list [options]
+haruyuki messages list [options]
 ```
 
 | Option | Description |
@@ -51,19 +51,19 @@ letta messages list [options]
 
 1. Search with keywords to find relevant messages:
    ```bash
-   letta messages search --query "topic keywords" --limit 5
+   haruyuki messages search --query "topic keywords" --limit 5
    ```
 
 2. Note the `message_id` of the most relevant result
 
 3. Expand before to get leading context:
    ```bash
-   letta messages list --before "message-xyz" --limit 10
+   haruyuki messages list --before "message-xyz" --limit 10
    ```
 
 4. Expand after for following context:
    ```bash
-   letta messages list --after "message-xyz" --order asc --limit 10
+   haruyuki messages list --after "message-xyz" --order asc --limit 10
    ```
 
 **Strategy 2: Date-Bounded Search**
@@ -71,7 +71,7 @@ letta messages list [options]
 When you know approximately when something was discussed:
 
 ```bash
-letta messages search --query "topic" --start-date "2025-12-31T00:00:00Z" --end-date "2025-12-31T23:59:59Z"
+haruyuki messages search --query "topic" --start-date "2025-12-31T00:00:00Z" --end-date "2025-12-31T23:59:59Z"
 ```
 
 **Strategy 3: Broaden Terms**
@@ -80,7 +80,7 @@ When exact keywords miss, try alternate terms, abbreviations, filenames, issue I
 
 ### Accessing the Underlying Files
 
-Prefer `letta messages search` first. If local full-text search misses or you need custom inspection, local backend transcripts are JSONL files on disk. The storage root is `$LETTA_LOCAL_BACKEND_DIR`, or `~/.haruyuki/lc-local-backend` by default. Conversation directories live under `conversations/` and contain `conversation.json`, `manifest.json`, and `messages.jsonl`.
+Prefer `haruyuki messages search` first. If local full-text search misses or you need custom inspection, local backend transcripts are JSONL files on disk. The storage root is `$LETTA_LOCAL_BACKEND_DIR`, or `~/.haruyuki/lc-local-backend` by default. Conversation directories live under `conversations/` and contain `conversation.json`, `manifest.json`, and `messages.jsonl`.
 
 Use read-only Bash tools such as `find`, `grep`, `rg` if installed, or small scripts for custom searches, for example:
 

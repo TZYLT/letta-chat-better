@@ -173,7 +173,7 @@ function validateRuntimeStartShape(parsed: RuntimeStartCommand): void {
 /**
  * Match the CLI's own created-agent defaults: when the client does not
  * specify server-side tools, attach the harness default set and disable the
- * Letta agent type's base tools/rules so server defaults never leak in.
+ * haruyuki agent type's base tools/rules so server defaults never leak in.
  */
 export function applyCreatedAgentServerToolDefaults(
   body: AgentCreateParams,

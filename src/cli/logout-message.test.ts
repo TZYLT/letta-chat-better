@@ -4,7 +4,7 @@ import { buildLogoutSuccessMessage } from "@/cli/helpers/logout-message";
 describe("buildLogoutSuccessMessage", () => {
   test("points at /connect instead of the removed /login flow", () => {
     expect(buildLogoutSuccessMessage(false)).toBe(
-      "✓ Logged out successfully. Run 'letta' and use /connect to configure a provider.",
+      "✓ Logged out successfully. Run 'haruyuki' and use /connect to configure a provider.",
     );
   });
 

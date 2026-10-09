@@ -78,7 +78,7 @@ export const SYSTEM_PROMPTS: SystemPromptOption[] = [
   {
     id: "default",
     label: "Default",
-    description: "Alias for letta",
+    description: "Alias for haruyuki",
     content: haruyukiNoMemfsPrompt,
     memfsContent: haruyukiMemfsPrompt,
     rootMemfsContent: haruyukiRootMemfsPrompt,

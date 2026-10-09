@@ -2534,7 +2534,7 @@ export async function executeTool(
 }
 
 /**
- * Gets all loaded tool names (for passing to Letta agent creation).
+ * Gets all loaded tool names (for passing to haruyuki agent creation).
  *
  * @returns Array of tool names
  */

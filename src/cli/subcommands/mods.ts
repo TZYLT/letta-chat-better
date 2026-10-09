@@ -64,12 +64,12 @@ function printUsage(): void {
   console.log(
     `
 Usage:
-  letta mods list [--agent <id>]
-  letta mods package <mod-file> --name <package-name> [--out <dir>]
-  letta mods update <npm-package-spec | git-package-spec>
-  letta mods enable <package-spec>
-  letta mods disable <package-spec>
-  letta mods remove <package-spec>
+  haruyuki mods list [--agent <id>]
+  haruyuki mods package <mod-file> --name <package-name> [--out <dir>]
+  haruyuki mods update <npm-package-spec | git-package-spec>
+  haruyuki mods enable <package-spec>
+  haruyuki mods disable <package-spec>
+  haruyuki mods remove <package-spec>
 
 Options:
   --agent <id>       Include agent mods from this agent's MemFS directory
@@ -266,7 +266,7 @@ async function runPackageMutation(
     return 0;
   }
   if (getExplicitAgentId(parsed.values)) {
-    console.error(`--agent is only supported for 'letta mods list'.`);
+    console.error(`--agent is only supported for 'haruyuki mods list'.`);
     printUsage();
     return 1;
   }
@@ -330,7 +330,7 @@ async function runPackageUpdate(
     return 0;
   }
   if (getExplicitAgentId(parsed.values)) {
-    console.error(`--agent is not supported for 'letta mods update'.`);
+    console.error(`--agent is not supported for 'haruyuki mods update'.`);
     printUsage();
     return 1;
   }
@@ -383,7 +383,7 @@ async function runPackageScaffold(argv: string[]): Promise<number> {
     return 0;
   }
   if (getExplicitAgentId(parsed.values)) {
-    console.error(`--agent is not supported for 'letta mods package'.`);
+    console.error(`--agent is not supported for 'haruyuki mods package'.`);
     printUsage();
     return 1;
   }

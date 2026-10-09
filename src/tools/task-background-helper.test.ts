@@ -627,7 +627,7 @@ describe("waitForBackgroundSubagentLink", () => {
     expect(elapsed).toBeGreaterThanOrEqual(50);
   });
 
-  test("returns the Letta agent id after the subagent publishes it", async () => {
+  test("returns the haruyuki agent id after the subagent publishes it", async () => {
     registerSubagent("subagent-link-3", "reflection", "Reflect", "tc-3", true);
 
     setTimeout(() => {
@@ -645,7 +645,7 @@ describe("waitForBackgroundSubagentLink", () => {
     expect(agentId).toBe("agent-123");
   });
 
-  test("returns null when the Letta agent id is unavailable", async () => {
+  test("returns null when the haruyuki agent id is unavailable", async () => {
     registerSubagent("subagent-link-4", "reflection", "Reflect", "tc-4", true);
 
     const agentId = await waitForBackgroundSubagentAgentId(

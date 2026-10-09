@@ -15,7 +15,7 @@
  *      reports them as "indeterminate" and skips them.
  *
  * CLI invocation:
- *   letta channels route reconcile --channel discord [--account-id ...] [--apply]
+ *   haruyuki channels route reconcile --channel discord [--account-id ...] [--apply]
  *
  *   --apply with removeStaleRoutes=false (the default): route removal is
  *   blocked and a clear diagnostic is emitted.

@@ -14,7 +14,7 @@ import { readJsonFile, writeJsonFile } from "@/utils/fs";
  * and liveness rules). The session-aware orchestration that resolves git dirs
  * and reads the runtime context lives with the worktree tool.
  */
-export const LOCK_FILENAME = "letta-enter.lock";
+export const LOCK_FILENAME = "haruyuki-enter.lock";
 
 const HOSTNAME = os.hostname();
 

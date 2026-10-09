@@ -18,11 +18,11 @@ import { ALL_SKILL_SOURCES, type SkillSource } from "./skill-sources";
 
 /**
  * Get the bundled skills directory path
- * This is where skills ship with the package (skills/ directory next to letta.js)
+ * This is where skills ship with the package (skills/ directory next to haruyuki.js)
  */
 function getBundledSkillsPath(): string {
   // In dev mode (running from src/), look in src/skills/builtin/
-  // In production (running from letta.js), look in skills/ next to letta.js
+  // In production (running from haruyuki.js), look in skills/ next to haruyuki.js
   const thisDir = dirname(fileURLToPath(import.meta.url));
 
   // Check if we're in dev mode (thisDir contains 'src/agent')
@@ -30,7 +30,7 @@ function getBundledSkillsPath(): string {
     return join(thisDir, "../skills/builtin");
   }
 
-  // Production mode - skills/ is next to the bundled letta.js
+  // Production mode - skills/ is next to the bundled haruyuki.js
   return join(thisDir, "skills");
 }
 

@@ -21,7 +21,7 @@ import { __testSetBackend } from "@/backend";
 import { settingsManager } from "@/settings-manager";
 
 const token = "reflection-test-session";
-const authorization = `Basic ${Buffer.from(`letta:${token}`).toString("base64")}`;
+const authorization = `Basic ${Buffer.from(`haruyuki:${token}`).toString("base64")}`;
 const canonicalOrigin = "https://api.letta.com/v1/git/agent-test/state.git";
 let root: string;
 let memoryDir: string;
