@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const { execFileSync } = require("node:child_process");
 const { readFileSync, readdirSync } = require("node:fs");
+const { availableParallelism } = require("node:os");
 const path = require("node:path");
 const { shardTestFiles } = require("./test-sharding.cjs");
 const {
@@ -70,14 +71,31 @@ function findRootTestFiles(dir) {
     .map((entry) => path.join(dir, entry.name).replace(/\\/g, "/"));
 }
 
+const rootTestFiles = findRootTestFiles("src");
 const allTestFiles = [
   ...dirs.flatMap((dir) => findTestFiles(dir)),
   ...findTestFiles("src/channels"),
-  ...findRootTestFiles("src"),
+  ...rootTestFiles,
   "scripts/unit-test-impact.test.cjs",
   "scripts/test-sharding.test.cjs",
 ].sort();
 const discoveredPaths = new Set(allTestFiles);
+
+/**
+ * The discovery set expressed as bun path filters.
+ *
+ * Bun's positional arguments are filters, so this selects the same files as
+ * `allTestFiles` without putting ~900 paths on the command line. That command
+ * line was the only reason this runner used to chunk the suite and run the
+ * chunks one after another.
+ */
+const wholeSuiteTargets = [
+  ...dirs,
+  "src/channels",
+  ...rootTestFiles,
+  "scripts/unit-test-impact.test.cjs",
+  "scripts/test-sharding.test.cjs",
+];
 
 for (const entry of isolatedTests) {
   if (!discoveredPaths.has(entry.path)) {
@@ -90,13 +108,50 @@ for (const entry of isolatedTests) {
   }
 }
 
-function runTests(files, timeoutMs, env = {}) {
-  execFileSync("bun", ["test", ...files, "--timeout", String(timeoutMs)], {
-    stdio: "inherit",
-    // Unit tests must never emit product telemetry or make test fixtures look
-    // like real users. Only isolated telemetry contract tests may opt back in.
-    env: { ...process.env, HARUYUKI_CODE_TELEM: "0", ...env },
-  });
+function runTests(files, timeoutMs, env = {}, extraArgs = []) {
+  execFileSync(
+    "bun",
+    ["test", ...files, "--timeout", String(timeoutMs), ...extraArgs],
+    {
+      stdio: "inherit",
+      // Unit tests must never emit product telemetry or make test fixtures look
+      // like real users. Only isolated telemetry contract tests may opt back in.
+      env: { ...process.env, HARUYUKI_CODE_TELEM: "0", ...env },
+    },
+  );
+}
+
+/**
+ * How many test files to run concurrently.
+ *
+ * `bun test --parallel=N` fans files out over N worker processes and implies
+ * `--isolate`, so each file gets a fresh global/module registry. That is exactly
+ * the guarantee the isolation manifest exists to provide, which is why only the
+ * entries that need a specific env var still get a process of their own.
+ *
+ * `HARUYUKI_TEST_PARALLEL=0` restores the old chunked, single-process-per-chunk
+ * behaviour; any positive integer overrides the worker count.
+ */
+const DEFAULT_PARALLEL_WORKERS = 8;
+
+function resolveParallelWorkers() {
+  const raw = process.env.HARUYUKI_TEST_PARALLEL;
+  if (raw === undefined || raw === "") {
+    return Math.min(DEFAULT_PARALLEL_WORKERS, availableParallelism() || 1);
+  }
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed < 0) {
+    throw new Error(
+      `HARUYUKI_TEST_PARALLEL must be a non-negative integer, got "${raw}"`,
+    );
+  }
+  return parsed;
+}
+
+// Turn a test path into a glob that matches it anywhere in the tree, e.g.
+// "src/channels/service.test.ts" -> a `**` glob ending in "channels/service.test.ts".
+function toIgnoreGlob(testPath) {
+  return `**/${testPath.replace(/^src\//, "")}`;
 }
 
 function chunkByCommandLength(files, maxChars = 20000) {
@@ -201,13 +256,15 @@ if (shard) {
   console.log(`unit-test shard ${shard}: ${selectedTestFiles.length} files`);
 }
 const selectedTestPaths = new Set(selectedTestFiles);
+const parallelWorkers = resolveParallelWorkers();
 
-// Bun module mocks and process-global state are shared within one test process.
-// Keep the explicitly stateful suites in fresh processes so they cannot poison
-// the ordinary unit batch or inherit another suite's cwd/env/module registry.
-for (const entry of isolatedTests.filter((entry) =>
-  selectedTestPaths.has(entry.path),
-)) {
+// `--parallel` isolates the module registry, not the environment. The few
+// manifest entries that need a specific env var therefore still run on their
+// own; everything else is covered by the parallel batch below.
+const envEntries = isolatedTests.filter(
+  (entry) => entry.env && selectedTestPaths.has(entry.path),
+);
+for (const entry of envEntries) {
   try {
     runTests([entry.path], entry.timeoutMs, entry.env);
   } catch (error) {
@@ -215,18 +272,59 @@ for (const entry of isolatedTests.filter((entry) =>
   }
 }
 
-const sharedProcessTests = selectedTestFiles.filter(
-  (file) => !isolatedPaths.has(file),
-);
+const envPaths = new Set(envEntries.map((entry) => entry.path));
+const batchFiles = selectedTestFiles.filter((file) => !envPaths.has(file));
 
-// Passing argv directly avoids cmd.exe's shorter shell command-line limit on
-// Windows. Bounded batches also stay below CreateProcess's 32k limit as the
-// suite grows.
-for (const batch of chunkByCommandLength(sharedProcessTests)) {
-  try {
-    runTests(batch, 15000);
-  } catch (error) {
-    exitCode = error.status ?? 1;
+if (parallelWorkers > 0) {
+  // Whole-suite runs use path filters, so the argument list stays far below
+  // CreateProcess's 32k limit and bun can balance the files across workers.
+  // A narrowed selection (impact analysis, or a shard) is small enough to pass
+  // explicitly, which keeps this runner's own shard semantics unchanged.
+  const wholeSuite =
+    batchFiles.length === allTestFiles.length - envEntries.length;
+  const targets = wholeSuite ? wholeSuiteTargets : batchFiles;
+  const extraArgs = [`--parallel=${parallelWorkers}`];
+  if (wholeSuite) {
+    for (const testPath of envPaths) {
+      extraArgs.push(`--path-ignore-patterns=${toIgnoreGlob(testPath)}`);
+    }
+  }
+  if (batchFiles.length > 0) {
+    try {
+      // The manifest's longest registered timeout, so the single batch is never
+      // stricter than the per-entry timeouts it replaces.
+      runTests(targets, 30000, {}, extraArgs);
+    } catch (error) {
+      exitCode = error.status ?? 1;
+    }
+  }
+} else {
+  // Escape hatch (HARUYUKI_TEST_PARALLEL=0): the original chunked, serial path.
+  // Bun module mocks and process-global state are shared within one test
+  // process, so the explicitly stateful suites keep their own processes here.
+  for (const entry of isolatedTests.filter((entry) =>
+    selectedTestPaths.has(entry.path),
+  )) {
+    try {
+      runTests([entry.path], entry.timeoutMs, entry.env);
+    } catch (error) {
+      exitCode = error.status ?? 1;
+    }
+  }
+
+  const sharedProcessTests = selectedTestFiles.filter(
+    (file) => !isolatedPaths.has(file),
+  );
+
+  // Passing argv directly avoids cmd.exe's shorter shell command-line limit on
+  // Windows. Bounded batches also stay below CreateProcess's 32k limit as the
+  // suite grows.
+  for (const batch of chunkByCommandLength(sharedProcessTests)) {
+    try {
+      runTests(batch, 15000);
+    } catch (error) {
+      exitCode = error.status ?? 1;
+    }
   }
 }
 
