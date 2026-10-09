@@ -32,6 +32,13 @@ if ! node scripts/check-layer-boundaries.js 2>/dev/null; then
   exit 1
 fi
 
+# Check that no production code imports the Letta Cloud egress modules.
+if ! node scripts/check-cloud-egress.js >/dev/null 2>&1; then
+  echo ""
+  echo "❌ Cloud egress import — run 'bun run check:cloud-egress' for details."
+  exit 1
+fi
+
 # Check exported function style (.ts only — .tsx components use memo() which is exempt)
 if ! node scripts/check-exported-functions.js 2>/dev/null; then
   echo ""
