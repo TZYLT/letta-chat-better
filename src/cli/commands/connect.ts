@@ -655,7 +655,12 @@ async function handleConnectApiKeyProvider(
     ctx.buffersRef,
     ctx.refreshDerived,
     msg,
-    `Validating ${provider.byokProvider.displayName} API key...`,
+    // The local provider store has no endpoint to validate against:
+    // `checkProviderApiKey` only asserts the provider type is supported locally
+    // and returns, so do not claim a validation that never happens.
+    ctx.target === "local"
+      ? `Saving ${provider.byokProvider.displayName} provider...`
+      : `Validating ${provider.byokProvider.displayName} API key...`,
     true,
     "running",
   );

@@ -510,8 +510,11 @@ export async function runConnectSubcommand(
     }
 
     try {
-      io.stdout(`Validating ${provider.byokProvider.displayName} API key...`);
+      // The local provider store has no endpoint to validate against:
+      // `checkProviderApiKey` only asserts the provider type is supported
+      // locally and returns, so do not print a validation that never runs.
       if (provider.target !== "local") {
+        io.stdout(`Validating ${provider.byokProvider.displayName} API key...`);
         await io.ensureSettingsReady();
       }
       if (hasConnectionOptions(connectionOptions)) {

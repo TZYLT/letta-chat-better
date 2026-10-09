@@ -244,7 +244,7 @@ describe("connect subcommand", () => {
   });
 
   test("connects API key provider in local target without initializing settings", async () => {
-    const { deps } = createIoDeps();
+    const { stdout, deps } = createIoDeps();
     setProviderTarget("local");
 
     const exitCode = await runConnectSubcommand(
@@ -254,6 +254,10 @@ describe("connect subcommand", () => {
 
     expect(exitCode).toBe(0);
     expect(deps.ensureSettingsReady).not.toHaveBeenCalled();
+    // The local store has no endpoint to check the key against, so the run must
+    // not announce a validation that never happens.
+    expect(stdout.join("\n")).not.toContain("Validating");
+    expect(stdout.join("\n")).toContain("Saving provider...");
     expect(deps.checkProviderApiKey).toHaveBeenCalledWith(
       "openai",
       "sk-local-123",
