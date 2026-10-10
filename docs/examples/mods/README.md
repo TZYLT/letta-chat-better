@@ -1,7 +1,7 @@
 # Mod examples
 
 These examples are trusted local Haruyuki mods. Copy a file into
-`~/.letta/mods/` and run `/reload`, or point a local test run at this
+`~/.haruyuki/mods/` and run `/reload`, or point a local test run at this
 directory with `HARUYUKI_MODS_DIR=/path/to/mods` (or legacy
 `HARUYUKI_EXTENSIONS_DIR` on pre-rename branches).
 
