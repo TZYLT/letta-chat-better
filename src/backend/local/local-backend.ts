@@ -41,6 +41,7 @@ import { initialMemoryFilesFromCreateBody } from "./initial-memory";
 import {
   compactionSettingsRecord,
   localCompactionSettingsForStorage,
+  mergeLocalCompactionSettings,
   type ResolvedLocalCompactionSettings,
   resolveLocalCompactionSettings,
   validateLocalCompactionSettingsRecord,
@@ -375,7 +376,10 @@ export class LocalBackend extends HeadlessBackend {
       if (compactionSettingsForStorage !== undefined) {
         agent = this.store.setAgentCompactionSettings(
           agentId,
-          compactionSettingsForStorage,
+          mergeLocalCompactionSettings(
+            compactionSettingsRecord(agent.compaction_settings),
+            compactionSettingsForStorage,
+          ),
         );
       }
     }

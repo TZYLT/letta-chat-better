@@ -676,3 +676,76 @@ describe("a trim ends the nudge stretch (M-4)", () => {
     ).toMatchObject({ due: true, reason: "due", turnsSinceLastMarker: 3 });
   });
 });
+
+/**
+ * The `/compaction` overlay writes through `updateAgent` with only the fields the
+ * user changed. Both halves of the setting therefore have to survive a patch that
+ * omits them — the picker's "pick a mode" and "edit the rate" paths rely on it.
+ */
+describe("the compaction settings write path", () => {
+  async function agentWithSettings(compactionSettings: {
+    mode: string;
+    sliding_window_percentage?: number;
+  }): Promise<{ backend: LocalBackend; agentId: string }> {
+    const backend = new LocalBackend({
+      storageDir: await createStorageDirectory(),
+      executor: oneTurnExecutor(),
+      complete: async () => assistantMessage("summary"),
+      memfsEnabled: false,
+    });
+    const agent = await backend.createAgent({
+      name: "Rate",
+      model: "openai/gpt-5.5",
+      compaction_settings: compactionSettings,
+    } as never);
+    return { backend, agentId: agent.id };
+  }
+
+  test("a rate-only patch keeps the mode and every other stored field", async () => {
+    const { backend, agentId } = await agentWithSettings({
+      mode: "sliding_window",
+      sliding_window_percentage: 0.3,
+    });
+    // A stored summarizer model and prompt are the fields a wholesale write
+    // would drop. They go in at create time because a patch that touches neither
+    // `mode` nor a local-setting key is not a compaction write at all.
+    await backend.updateAgent(agentId, {
+      compaction_settings: { prompt: "custom summary prompt" },
+    } as never);
+    await backend.updateAgent(agentId, {
+      compaction_settings: {
+        model: "custom/summarizer",
+        mode: "sliding_window",
+      },
+    } as never);
+
+    await backend.updateAgent(agentId, {
+      compaction_settings: { sliding_window_percentage: 0.42 },
+    } as never);
+
+    const reloaded = await backend.retrieveAgent(agentId);
+    expect(reloaded.compaction_settings).toMatchObject({
+      mode: "sliding_window",
+      model: "custom/summarizer",
+      prompt: "custom summary prompt",
+      sliding_window_percentage: 0.42,
+    });
+  });
+
+  test("a mode-only patch keeps the stored rate", async () => {
+    const { backend, agentId } = await agentWithSettings({
+      mode: "sliding_window",
+      sliding_window_percentage: 0.42,
+    });
+
+    await backend.updateAgent(agentId, {
+      compaction_settings: { mode: "sliding_window" },
+    } as never);
+
+    const reloaded = await backend.retrieveAgent(agentId);
+    expect(reloaded.compaction_settings).toMatchObject({
+      mode: "sliding_window",
+      sliding_window_percentage: 0.42,
+    });
+  });
+});

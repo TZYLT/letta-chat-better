@@ -75,6 +75,27 @@ export function localCompactionSettingsForStorage(
   return { ...settings };
 }
 
+/**
+ * Merge a compaction-settings patch into the record already stored on the agent.
+ *
+ * `updateAgent` is a PATCH: a writer may send only the field it changed (the
+ * `/compaction` overlay reports just what the user edited, and an agent editing
+ * settings through the self-configuration skill does the same). Writing the
+ * patch wholesale would silently drop the compaction model, the summary prompt
+ * and the compression rate — the same defect B-1 fixed for conversation-level
+ * `model_settings`.
+ *
+ * A `null` patch still means "clear the record": merging and clearing are two
+ * different requests, and only the caller knows which one it made.
+ */
+export function mergeLocalCompactionSettings(
+  current: LocalCompactionSettingsRecord | null | undefined,
+  patch: LocalCompactionSettingsRecord | null,
+): LocalCompactionSettingsRecord | null {
+  if (patch === null) return null;
+  return { ...(current ?? {}), ...patch };
+}
+
 /** The settings one compaction run uses, with request values winning. */
 export function resolveLocalCompactionSettings(
   agent: LocalAgentRecord,
