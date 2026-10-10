@@ -1,6 +1,9 @@
-# letta-code — Agent Guide
+# Haruyuki — Agent Guide
 
-This file explains how to work effectively in this repo. It covers the rules enforced by CI, **why each rule exists**, and the workflow conventions that keep the codebase healthy and agent-navigable.
+This file explains how to work effectively in this repo. It covers the rules enforced by the local check suite (`bun run check`) and the pre-commit hook, **why each rule exists**, and the workflow conventions that keep the codebase healthy and agent-navigable.
+
+**This fork has no CI.** `.github/` was removed when it split from upstream, so
+the pre-commit hook and `bun run check` are the only gates. Run both.
 
 ---
 
@@ -43,7 +46,7 @@ tests.
 
 ## Rules and Why They Exist
 
-These are the rules enforced by CI and the pre-commit hook, with the reasoning behind each. Understanding the *why* lets you make good decisions in ambiguous cases the rules don't explicitly cover.
+These are the rules enforced by `bun run check` and the pre-commit hook, with the reasoning behind each. Understanding the *why* lets you make good decisions in ambiguous cases the rules don't explicitly cover.
 
 ### No `../` parent imports — use `@/`
 
@@ -60,15 +63,15 @@ import { isDebugEnabled } from "@/utils/debug";
 import { getBackend } from "../../backend";
 ```
 
-**Four files are exempt** (they legitimately live above `src/`): `src/version.ts`, `src/index.ts`, `src/cli/cli.ts`, `src/cli/app/App.tsx`. Same-directory `./` imports are always fine.
+**The hook exempts `package.json` only.** That file legitimately lives above `src/` and is matched by grep for a file-name mention; every other file must use `@/`. No `src/` file is exempt, and no tracked `.ts`/`.tsx` file outside `src/` currently needs one (there are six, and none uses a parent-relative import). Same-directory `./` imports are always fine.
 
 ---
 
 ### Kebab-case `.ts` filenames, PascalCase `.tsx`
 
-**Rule:** `.ts` source files use kebab-case (`local-store.ts`). `.tsx` component files use PascalCase (`AgentSelector.tsx`). Enforced by `scripts/check-filename-casing.js` in pre-commit and CI.
+**Rule:** `.ts` source files use kebab-case (`local-store.ts`). `.tsx` component files use PascalCase (`AgentSelector.tsx`). Enforced by `scripts/check-filename-casing.js` in pre-commit and `bun run check`.
 
-**Why:** Agents evaluate code quality by how searchable a codebase is. Inconsistent casing (`localStore.ts`, `LocalStore.ts`, `local-store.ts`) means a grep pattern that works for one file fails for another. macOS's case-insensitive filesystem makes this worse — `existsSync("bash.ts")` returns `true` when `Bash.ts` exists, silently breaking rename scripts. Kebab-case `.ts` is also consistent with how Node/Bun resolves modules on Linux CI (case-sensitive).
+**Why:** Agents evaluate code quality by how searchable a codebase is. Inconsistent casing (`localStore.ts`, `LocalStore.ts`, `local-store.ts`) means a grep pattern that works for one file fails for another. macOS's case-insensitive filesystem makes this worse — `existsSync("bash.ts")` returns `true` when `Bash.ts` exists, silently breaking rename scripts. Kebab-case `.ts` is also consistent with how Node/Bun resolves modules on a case-sensitive filesystem.
 
 ---
 
@@ -98,7 +101,7 @@ export const computeThing = (x: string): number => { ... }
 
 ### No circular dependencies
 
-**Rule:** Zero circular imports. Enforced by madge (`check:cycles`) in pre-commit and CI. The current baseline is exactly 0.
+**Rule:** Zero circular imports. Enforced by madge (`check:cycles`) in pre-commit and `bun run check`. The current baseline is exactly 0.
 
 **Why:** Circular imports cause subtle initialization-order bugs (module A's top-level code runs before module B has finished initializing, even though A imports from B). They also make the dependency graph impossible to reason about — you can't understand a file in isolation if its transitive dependencies loop back to it. The layer map below only has meaning if the graph is acyclic.
 
@@ -131,7 +134,7 @@ package entrypoints may still re-export their intentional API surface.
 
 ### Layer boundaries — no upward imports
 
-**Rule:** Files may only import from the same layer or layers below them. Violations are caught by `scripts/check-layer-boundaries.js` in pre-commit and CI.
+**Rule:** Files may only import from the same layer or layers below them. Violations are caught by `scripts/check-layer-boundaries.js` in pre-commit and `bun run check`.
 
 **Why:** Coupling a lower layer to a higher layer collapses the abstraction. If `backend/` imports from `cli/`, you can no longer use the backend without the UI — tests become harder to write, and changes to the UI risk breaking storage logic. The boundary rules make each layer independently testable and make it safe to change or swap implementations.
 
@@ -269,7 +272,7 @@ review. The runner also refuses to report success when it selected nothing.
 |----------|--------|
 | `HARUYUKI_DEBUG=1` | Verbose debug output (default in `bun run dev`) |
 | `HARUYUKI_DEBUG=0` | Suppress debug output even in dev mode |
-| `HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL=1` | Enable local in-process backend |
+| `HARUYUKI_MEMFS_BACKEND=hosted` | Opt into the hosted MemFS backend path instead of the local one (default is local) |
 | `HARUYUKI_LOCAL_BACKEND_EXECUTOR=deterministic` | Use fake deterministic executor (for tests) |
 | `LETTA_LOCAL_BACKEND_DIR` | Local-backend storage root (defaults to `~/.haruyuki/lc-local-backend`) |
 | `HARUYUKI_HOME` | Overrides the harness root outright, in place of `~/.haruyuki` (every path that resolves through `src/utils/app-paths.ts`) |
@@ -290,8 +293,8 @@ is the same silent-divergence class the `.haruyuki` rename had to fix:
 `LETTA_BASE_URL` · `LETTA_LOG`
 
 Do not rename these to match the new prefix. The freeze is lifted in a
-follow-up once that dependency is removed (execution doc ⑬-B / Q8); the
-per-name read coordinates are recorded in the ⑫ replacement script.
+follow-up once that dependency is removed; the per-name read coordinates are
+recorded in `CONTRIBUTING.md` §C and `THIRD-PARTY-NOTICES.md` §5.
 
 When manually smoke-testing the local backend (`haruyuki --backend local` or
 `bun run dev --backend local`), set `LETTA_LOCAL_BACKEND_DIR` to a temporary
@@ -310,21 +313,20 @@ directory first. Otherwise the run reads and mutates your real
 - **Package subpath entrypoints use relative imports and dedicated entry files.** Library entries (`src/agent-presets.ts`, `src/channels-*.ts`, `src/app-server-client.ts`) are bundled separately and their emitted `.d.ts` files go through an alias rewrite in `build.js`; anything reachable from a browser-targeted entry must stay free of node builtins and backend/provider imports. Consumers on `moduleResolution: "node"` resolve subpath types through `typesVersions` in `package.json`, so new subpaths need entries there too.
 - **When changing a function from swallowing errors to throwing**, check every caller; each may need different handling.
 
-- **Headless duplicates App.tsx logic.** `headless.ts` has its own approval
-  handling loop (not shared with App.tsx). When making changes to
-  streaming/approval logic, check if headless.ts needs matching changes.
-- **`protocol_v2.ts` changes propagate to consumers.** Used by LCD (Letta Cloud
-  Desktop). Changes likely need to propagate upstream.
-- **Agent loop naming is confusing.** `letta_agent_v1` is the agent_type name
-  but runs on `letta_agent_v3.py`. `letta_agent_v2.py` is summarization retry
-  wrapper. Don't mix up naming in code review.
-- **Token counting differs by provider.** Anthropic: `input_tokens` excludes
-  cached (total = input + cache_creation + cache_read). Gemini:
-  `prompt_token_count` already includes cached. Getting this wrong breaks
-  summarizer triggering.
-- **OTID workaround.** Backend returns same OTID for reasoning and tool_call in
-  same step. Client suffixes OTID with message type to differentiate. Without
-  this, reasoning before tool calls gets swallowed.
+- **Headless does not reuse the TUI approval loop.** `src/headless.ts` has its
+  own approval handling (it imports `classifyApprovals` rather than routing
+  through the TUI's `ApprovalSwitch`). A change to streaming, approval or queue
+  behaviour in `AppCoordinator`/`AppView` usually needs a matching change here;
+  `src/cli/AGENTS.md` covers the TUI side of that contract.
+- **`protocol_v2.ts` is the contract other clients compile against.** Consumers
+  resolve its types through the `./app-server-protocol` and `./protocol` package
+  subpaths, so a change is breaking unless it is purely additive. Remember
+  `typesVersions` in `package.json` when adding a subpath.
+- **OTID workaround.** `src/agent/check-approval.ts` and
+  `src/agent/approval-recovery.ts` key approvals on `otid` when one is present,
+  because the backend can reuse a single OTID across variants in one step. Keep
+  the `otid:`-prefixed key shape; dropping it makes approval resync match the
+  wrong message.
 - **Agent-adapter mod import cache sharing.** Agent adapters share the default
   mod import cache. Two agents loading the same mod code share top-level module
   state. Per-agent isolation doesn't extend to mod-level mutable state.
@@ -335,18 +337,20 @@ directory first. Otherwise the run reads and mutates your real
   tests. Tests that use it must call `await settingsManager.reset()` and
   `await settingsManager.initialize()` before running. Redirect `HOME` to a
   temp dir before `initialize()` to avoid reading the user's actual settings.
-- **Prettier version mismatch.** Local `bunx prettier` may resolve to a newer
-  version than CI uses. Always format with the pinned version from
-  `package.json`.
+- **The Biome version is pinned in two places.** The `package.json` scripts and
+  the `lint-staged` config both spell `@biomejs/biome@2.2.5`. Bump them together,
+  or the pre-commit hook and `bun run check` can disagree about formatting.
 - **`bun.lock` churn.** Running `bun install` in a worktree may add
   `"configVersion": 0` due to a newer Bun version. Scrub with `git checkout
   main -- bun.lock` when the PR has no real package.json change.
-- **Desktop setup: never bare `npm install`.** Running bare `npm install` in the
-  letta-code workspace can prune `nx-electron` (installed `--no-save` at repo
-  root), breaking the electron IPC bridge. Always use canonical setup steps
-  (`just setup-code-desktop`).
-- **Remote log rotation.** `~/.haruyuki/logs/remote/` grows unbounded. Long
-  desktop sessions can produce 50GB+ in a single log file. Not yet fixed.
+- **No desktop app lives in this repo.** `.github/`, `apps/`, `nx-electron`, the
+  `justfile` and the remote-log-tree logic were removed at the split (commit
+  `4fe26381`). This repo ships the CLI and a local app-server protocol that
+  compatible clients consume; do not reintroduce desktop build steps here.
+- **`bin/letta.js` is dead upstream residue.** It spawns prebuilt
+  `letta-<platform>` binaries this fork neither builds nor ships, and nothing
+  references it — `package.json` `bin` points at `haruyuki.js`. Do not treat it
+  as an entrypoint.
 - **Harness paths come from `src/utils/app-paths.ts`.** Never spell `.haruyuki` (or
   a path under it) as a literal in new code. Use `appHomeRoot()` for the harness
   root, `appHomePath([APP_SUBDIRS.x, ...])` for a path inside it,
@@ -386,10 +390,16 @@ directory first. Otherwise the run reads and mutates your real
     `.cjs` child process that cannot import the TS module.
 
   Nothing enforces this list, so grep the literal before you commit.
-- **`*Rich.tsx` naming inversion.** The `*Rich.tsx` files are the ACTIVE
-  components, not the plain-named siblings. `App.tsx` imports Rich files and
-  renames them on import. The non-Rich files were dead stubs. When auditing a
-  `*Rich` file, check `App.tsx` imports first.
+- **`*Rich.tsx` naming inversion.** Inside `src/cli/components/` the
+  `*Rich.tsx` files are the ACTIVE message and input components, not the
+  plain-named siblings. `InputRich.tsx` is the real input component and the
+  source of `subagentLifecycleSnapshot`, so the product-status and subagent
+  panels described below live there. Confirm the import site before assuming a
+  `*Rich` file is unused.
+- **`src/cli/app/App.tsx` is a re-export shim.** It is one line:
+  `export { App } from "./AppCoordinator";`. TUI state lives in
+  `AppCoordinator.tsx` (~4.5k lines, ~49 `useEffect`s). Do not edit `App.tsx`
+  expecting behaviour there.
 - **CLI glyph registry.** `src/cli/helpers/glyphs.ts` is the central registry
   for display glyphs. All components import from there.
 - **Threading state through app subsystems.** When adding state that crosses
@@ -410,17 +420,19 @@ most common sources of bugs in this codebase.
 
 ### TUI Flicker (most common bug)
 
-App.tsx has ~54 `useEffect` calls and spread state. Adding any `useState` or
-`useReducer` that updates on keystroke, timer tick, or streaming chunk triggers
-re-renders across the entire component tree.
+`AppCoordinator.tsx` has ~49 `useEffect` calls and spread state (reached
+through the `App.tsx` re-export). Adding any `useState` or `useReducer` that
+updates on keystroke, timer tick, or streaming chunk triggers re-renders across
+the entire component tree.
 
 - **Do:** Use refs for values that don't need to trigger renders. Use
   `React.memo()` for static content. Keep state minimal.
 - **Don't:** Add `useState`/`useReducer` for UI features that update on every
   keystroke, timer tick, or streaming chunk.
 - **Debug:** `HARUYUKI_DEBUG_FLICKER=1` logs re-render triggers to file.
-- **Review signal:** any PR adding state to App.tsx, modifying `useEffect` deps,
-  or touching approval/rendering components.
+- **Review signal:** any PR adding state to `AppCoordinator.tsx` or
+  `AppView.tsx`, modifying `useEffect` deps, or touching approval/rendering
+  components.
 
 ### Ink `<Static>` and Double-Printing
 
@@ -502,8 +514,8 @@ layer is suspicious by default.** Before approving:
    typed producer emits those shapes, they pin fiction.
 
 This generalizes: for ANY dependency adopted to own a domain (pi-ai for
-providers, letta-client for API types, Ink for rendering), a PR re-implementing
-that domain inside letta-code needs explicit justification.
+providers, letta-client for API types, Ink for rendering), a PR that
+re-implements that domain inside this fork needs explicit justification.
 
 ### Leaked Module Mocks in Tests
 
@@ -696,18 +708,20 @@ protocol for Desktop/app-server. It replaces the v1 session/headless protocol.
 5. Update `src/websocket/listener/protocol-inbound.ts` for outbound parsing.
 6. Add an `AppServerClient` helper method + tests in the same PR. Don't ship
    protocol commands without their client ergonomic.
-7. Cloud relay forwarding (`FORWARDABLE_COMMAND_TYPES` in letta-cloud) is a
-   separate PR.
+7. Cloud relay forwarding is **not in this repo**: `FORWARDABLE_COMMAND_TYPES`
+   lives in the separate letta-cloud codebase. Reaching a hosted relay is a
+   change on the relay side, not here.
 
 **Naming:** No "codex" references in codebase/commits/identifiers. Use
 "app-server JSON-RPC shape" or "reference app-server shape" if needed.
 
 **AppServerClient ergonomic gap pattern:** When a protocol command family is
-added, three surfaces normally need updates: protocol types, inbound validation,
-listener handler, **AppServerClient helper** (often missing), **cloud relay
-forwarding** (often missing), **desktop response passthrough** (often
-missing). Don't eyeball, write a script to diff command types from
-`protocol_v2.ts` against `FORWARDABLE_COMMAND_TYPES`.
+added, these surfaces normally need updates: protocol types, inbound validation,
+listener handler, and the `AppServerClient` helper in `src/app-server-client.ts`
+(**often missing** — do not ship a command family without its client ergonomic).
+Relay forwarding and desktop passthrough are maintained outside this repo. Do
+not eyeball the gap: diff the command types in `protocol_v2.ts` against the
+helpers on `AppServerClient`.
 
 ### Protocol v1 vs v2
 
@@ -759,9 +773,14 @@ or writing each other's memory.
 
 ### Cross-Backend Policy
 
-Sandbox policy must deny BOTH memory trees:
-- API/cloud: `~/.haruyuki/agents`
-- Local backend: `$LETTA_LOCAL_BACKEND_DIR`/memfs
+Sandbox policy must deny BOTH memory trees, because two agents on one machine
+may be on different backends:
+- API/cloud-shaped agents: `~/.haruyuki/agents`
+- Local backend: `$LETTA_LOCAL_BACKEND_DIR`/memfs (default
+  `~/.haruyuki/lc-local-backend`)
+
+Keep both denials regardless of which backend this fork runs. The split is
+covered by `src/permissions/harness-path-whitelists.test.ts`.
 
 ### Environment Variables
 
@@ -774,22 +793,21 @@ Sandbox policy must deny BOTH memory trees:
 
 The model catalog is a dynamic runtime service, not a static `models.json` file.
 
-**API mode (Cloud):** hosted selector rows, labels, presets, and capabilities
-come only from `GET /v1/models/catalog`. `GET /v1/models` contributes only
-organization-specific BYOK rows in Cloud mode; never use its base/hosted rows to
-filter, supplement, delay, or provide a fallback for the hosted catalog. If the
-catalog fails and no cache exists, startup exits with an error. If a cache
-exists, startup uses degraded mode.
+**This fork is local-only.** There is no hosted catalog and no BYOK row
+merging. The local path projects the active pi-ai or server runtime inventory
+into `CatalogModel` shape via `toRuntimeCatalogModels()`; if pi-ai is
+unavailable the local catalog is empty and startup continues. Do not add a
+fallback that queries a hosted `GET /v1/models` — the cloud-egress guard rejects
+importing the modules that would, and `.skills/adding-models/SKILL.md` carries
+the same rule.
 
-**Local and custom App Server mode:** projects the active pi-ai or server
-runtime inventory into `CatalogModel` shape via `toRuntimeCatalogModels()`. If
-pi-ai is unavailable, the local catalog is empty and startup continues.
-
-Cloud BYOK handles may use an organization-specific provider name. Match them
-to catalog metadata through the provider metadata already returned with the
-BYOK row, while retaining the organization-specific handle for selection. Do
-not add provider-name rewrites to make hosted rows from `GET /v1/models` act
-like catalog rows.
+**If you ever port a cloud-mode change in:** hosted selector rows, labels,
+presets and capabilities would have to come only from `GET /v1/models/catalog`,
+with `GET /v1/models` contributing organization-specific BYOK rows and nothing
+else. Never let its base/hosted rows filter, supplement or stand in for a hosted
+catalog, and never rewrite provider names to make them look like catalog rows.
+This paragraph is upstream guidance kept only so a port does not repeat an old
+bug — it describes no code in this repo.
 
 Key files: `src/agent/model-catalog.ts`, `src/agent/remote-model-catalog.ts`,
 `src/agent/available-models.ts`, `src/backend/local/local-model-config.ts`.
@@ -920,14 +938,19 @@ to accept the default message without opening an editor.
 - `github_pat_` (fine-grained PAT): works for `git push` but only for
   user-owned repos, NOT org repos unless org approves.
 - `ghp_` (classic PAT): works for everything including `git push` to org repos.
-  This is the right type for pushing to `letta-ai/letta-code`.
+  This is the right type for pushing to the fork repository, which is
+  `TZYLT/letta-chat-better` (remote name `letta-chat-better`). The upstream
+  `letta-ai/letta-code` remote is read-only reference material here.
 - Push URL: `git push https://<user>:<token>@github.com/<org>/<repo>.git <branch> --force`
 
-### Letta API: `summary_search` not `summary`
+### Letta API notes apply only if you call the hosted API
 
-`GET /v1/conversations?agent_id=X&summary_search=owner/repo/pr-N` , the param
-is `summary_search`, NOT `summary`. The API silently ignores unknown query
-params; using `summary` returns ALL conversations for the agent.
+This fork is local-only and has no code path that queries
+`GET /v1/conversations`. If you port something from upstream that does, two
+upstream traps are worth keeping: the conversation-list query param is
+`summary_search`, not `summary` (the API silently ignores unknown params, so
+`summary` returns **all** conversations for the agent), and `@letta-ai/*` wire
+types must be extended rather than redeclared.
 
 ---
 
@@ -942,26 +965,18 @@ The harness only supports literal `$NAME` references for secret injection:
 
 ## Cloud & Teleport
 
-### Cloud Environment Bridge
+This fork removed cloud and teleport wholesale — see `CONTRIBUTING.md` §A for
+the itemised list (teleport, remote-computer and environment routing, hosted
+sandboxes, hosted schedules, shared memory, and the cross-repository release
+orchestration).
 
-Cloud API teleport uses a 409 `TELEPORT_SOURCE_NOT_ACTIVE` error when the source
-environment is not active. Rulesets (not branch protection) govern the cloud
-side.
+None of the upstream notes that used to live here are actionable in this tree,
+and the code they described is gone; grep confirms zero hits for each:
 
-### Desktop Device Selection
+- the teleport protocol and its `TELEPORT_SOURCE_NOT_ACTIVE` handling;
+- `pickDesktopLocalConnection` and desktop device routing;
+- the dual local/cloud listener and its heartbeat behaviour.
 
-`pickDesktopLocalConnection` selects the desktop local connection for device
-routing. Phantom "Interrupted" banners can appear from stale device selection
-state.
-
-### Dual-Listener Heartbeat Oscillation
-
-When desktop runs both a local and cloud listener, heartbeat oscillation can
-occur. Version compatibility between desktop and CLI must be maintained.
-
-### Release Cascade
-
-Automated cross-repository release orchestration publishes Agent SDK and ACP to
-follow every stable Haruyuki release. Not Dependabot, it needs multi-step
-package releases in lockstep. Currently blocked by token permissions
-(`amelia-letta` has read-only access to downstream repos).
+Do not reintroduce any of them without recording the decision in
+`CONTRIBUTING.md`. The `cloud-egress` check exists specifically to keep the
+egress modules out of production imports.
