@@ -84,7 +84,7 @@ function trySpawnWithLauncher(
   const {
     HARUYUKI_AGENT_ID: _haruyukiAgentId,
     AGENT_ID: _agentId,
-    HARUYUKI_CONVERSATION_ID: _lettaConversationId,
+    HARUYUKI_CONVERSATION_ID: _haruyukiConversationId,
     CONVERSATION_ID: _conversationId,
     LETTA_MEMORY_DIR: _haruyukiMemoryDir,
     MEMORY_DIR: _memoryDir,

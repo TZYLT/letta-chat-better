@@ -445,11 +445,19 @@ async function runModelConfigAction(
       throw new Error("Agent and conversation IDs must not be empty");
     await settingsManager.initialize();
     const backend = getBackend();
+    // Same precedence the other subcommands use (`cron`, `messages`, `memory`,
+    // `channels`): the harness-prefixed name wins, the bare name is the
+    // compatibility fallback. Reading only the bare name meant the command
+    // silently picked the default conversation when a caller exported just
+    // `HARUYUKI_CONVERSATION_ID` — the name the surrounding tooling sets.
+    const envAgentId = process.env.HARUYUKI_AGENT_ID || process.env.AGENT_ID;
+    const envConversationId =
+      process.env.HARUYUKI_CONVERSATION_ID || process.env.CONVERSATION_ID;
     const currentConversationId =
-      explicitAgentId || (values.default && process.env.AGENT_ID)
+      explicitAgentId || (values.default && envAgentId)
         ? undefined
-        : (conversationId ?? process.env.CONVERSATION_ID);
-    let agentId = explicitAgentId ?? process.env.AGENT_ID;
+        : (conversationId ?? envConversationId);
+    let agentId = explicitAgentId ?? envAgentId;
     let conversation = null;
     if (currentConversationId && currentConversationId !== "default") {
       conversation = await backend.retrieveConversation(currentConversationId);
