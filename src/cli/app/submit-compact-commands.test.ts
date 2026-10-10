@@ -329,7 +329,7 @@ describe("handleCompactCommand", () => {
     expect(h.commands[0]?.output).toContain("There is no topic block 9");
   });
 
-  test("picking the first block reports that nothing can be trimmed", async () => {
+  test("picking the first block compresses down to the rate instead of refusing", async () => {
     const local = await localConversation(8);
     local.markTopic("Alpha");
     const h = harness({
@@ -340,8 +340,10 @@ describe("handleCompactCommand", () => {
     await handleCompactCommand("/compact 1", h.ctx);
 
     expect(h.commands[0]?.succeeded).toBe(true);
-    expect(h.commands[0]?.output).toContain("Nothing to trim");
-    expect(h.descriptions()).toBe(0);
+    expect(h.commands[0]?.output).toContain("Context trimmed.");
+    expect(h.commands[0]?.output).toContain(
+      "the compression rate (the picked block kept more than the rate allows)",
+    );
   });
 
   test("a successful trim re-bases the pressure baseline (M-5)", async () => {
@@ -365,7 +367,9 @@ describe("handleCompactCommand", () => {
   });
 
   test("a refused trim leaves the pressure baseline alone (M-5)", async () => {
-    const local = await localConversation(8, { afterTurn: 4, title: "Alpha" });
+    // An empty context cannot be trimmed at all, so the baseline must stay where
+    // the last provider round trip left it.
+    const local = await localConversation(0);
     const h = harness({
       conversationId: local.conversationId,
       agentId: local.agentId,
@@ -373,8 +377,12 @@ describe("handleCompactCommand", () => {
       contextTokens: 1_900,
     });
 
-    await handleCompactCommand("/compact 1", h.ctx);
+    await handleCompactCommand("/compact", h.ctx);
 
+    expect(h.commands[0]?.failed).toBe(true);
+    expect(h.commands[0]?.output).toContain(
+      "nothing in this conversation's context to trim",
+    );
     expect(h.tracker.lastContextTokens).toBe(1_900);
   });
 
@@ -440,14 +448,14 @@ describe("handleCompactCommand", () => {
     await Bun.sleep(0);
 
     expect(h.commands.at(-1)?.output).toContain(
-      "cut point:  ratio_cap (the suggested block kept too much",
+      "cut point:  compression rate (the suggested block kept more",
     );
     expect(h.commands.at(-1)?.output).not.toContain(
       "the topic block you picked",
     );
   });
 
-  test("picking a row other than the suggestion stays an explicit topic pick", async () => {
+  test("picking block 1 is cut down to the compression rate, not refused", async () => {
     const local = await localConversation(8, { afterTurn: 4, title: "Alpha" });
     const h = harness({
       conversationId: local.conversationId,
@@ -455,14 +463,19 @@ describe("handleCompactCommand", () => {
     });
     await handleCompactCommand("/compact", h.ctx);
 
+    // Block 1 keeps the whole context, and the rate caps what any cut may keep,
+    // so the pick resolves to the rate's own cut instead of doing nothing.
     takeTopicTrimRequest()?.onPick(1);
     await Bun.sleep(0);
 
-    expect(h.commands.at(-1)?.output).toContain("Nothing to trim");
-    expect(h.commands.at(-1)?.output).not.toContain("ratio_suggestion");
+    expect(h.commands.at(-1)?.output).toContain("Context trimmed.");
+    expect(h.commands.at(-1)?.output).toContain(
+      "the compression rate (the picked block kept more than the rate allows)",
+    );
+    expect(h.commands.at(-1)?.output).not.toContain("Nothing to trim");
   });
 
-  test("a bare /compact with no markers trims by ratio and says so (D-119)", async () => {
+  test("a bare /compact with no markers compresses by the rate and says so (D-119)", async () => {
     const local = await localConversation(8);
     const h = harness({
       conversationId: local.conversationId,
@@ -477,16 +490,16 @@ describe("handleCompactCommand", () => {
     expect(h.commands).toHaveLength(1);
     expect(h.commands[0]?.output).toContain("Context trimmed.");
     expect(h.commands[0]?.output).toContain(
-      "cut point:  the retention ratio (no marker defines a boundary here",
+      "cut point:  the compression rate (no marker defines a boundary here",
     );
     expect(h.commands[0]?.output).toContain(
-      "retention ratio decided the cut point",
+      "compression rate decided the cut point",
     );
   });
 
-  test("one marker at the start of the context trims by ratio instead of a dead picker (H-2)", async () => {
+  test("one marker at the start of the context compresses by the rate instead of a one-row picker (H-2)", async () => {
     // The marker's effective boundary clamps onto the first message, so the
-    // context has a single block and the picker would have nothing selectable.
+    // context has a single block and there is no choice to offer.
     const local = await localConversation(8, { afterTurn: 1, title: "Alpha" });
     const h = harness({
       conversationId: local.conversationId,
@@ -500,7 +513,7 @@ describe("handleCompactCommand", () => {
     expect(h.commands).toHaveLength(1);
     expect(h.commands[0]?.output).toContain("Context trimmed.");
     expect(h.commands[0]?.output).toContain(
-      "cut point:  the retention ratio (no marker defines a boundary here",
+      "cut point:  the compression rate (no marker defines a boundary here",
     );
     // The note must not claim nothing was marked: the marker is right there.
     expect(h.commands[0]?.output).toContain(
@@ -509,7 +522,7 @@ describe("handleCompactCommand", () => {
     expect(h.commands[0]?.output).not.toContain("No topic markers yet");
   });
 
-  test("an out-of-range number points at the ratio path instead of a dead end (H-2)", async () => {
+  test("an out-of-range number points at the rate path instead of a dead end (H-2)", async () => {
     const local = await localConversation(8, { afterTurn: 4, title: "Alpha" });
     const h = harness({
       conversationId: local.conversationId,
@@ -520,7 +533,7 @@ describe("handleCompactCommand", () => {
 
     expect(h.commands[0]?.failed).toBe(true);
     expect(h.commands[0]?.output).toContain("There is no topic block 9");
-    expect(h.commands[0]?.output).toContain("trim by the retention ratio");
+    expect(h.commands[0]?.output).toContain("compress by the rate");
   });
 
   test("a mode argument is refused locally", async () => {
@@ -576,22 +589,10 @@ describe("offerTrimBeforeSend (D-112)", () => {
       contextTokens: 750,
     });
 
-    // Precondition for the copy below: the transcript is already inside its own
-    // retention budget, so `/compact` by ratio would write nothing. The tier still
-    // fires because the whole context (system prompt + tools + transcript) is past
-    // 70% — the two measures are deliberately different.
-    const list = local.backend.listTopics(local.conversationId, local.agentId);
-    expect(list.contextTokens).toBeLessThanOrEqual(list.retentionCapTokens);
-
     expect(await offerTrimBeforeSend(h.ctx, async () => {})).toBe(false);
     expect(h.commands).toHaveLength(1);
     expect(h.commands[0]?.output).toContain("about 75%");
-    // The advice must not send the user into "Nothing to trim".
-    expect(h.commands[0]?.output).not.toContain("/compact moves older topics");
-    expect(h.commands[0]?.output).toContain(
-      "the rest of the window is the system prompt",
-    );
-    expect(h.commands[0]?.output).toContain("/topic <title>");
+    expect(h.commands[0]?.output).toContain("/compact compresses older topics");
 
     // Same tier again: no second line.
     expect(await offerTrimBeforeSend(h.ctx, async () => {})).toBe(false);
@@ -605,8 +606,11 @@ describe("offerTrimBeforeSend (D-112)", () => {
     expect(h.commands).toHaveLength(2);
   });
 
-  test("a soft crossing still offers /compact while the ratio has work to do", async () => {
-    const local = await localConversation(20);
+  test("a soft crossing advises /compact even when the transcript is tiny", async () => {
+    // Two messages at 75% of the window: the prompt floor dominates the total.
+    // The compression rate is relative to the transcript, so `/compact` still has
+    // something to do — the advice is never impossible.
+    const local = await localConversation(2);
     const h = harness({
       conversationId: local.conversationId,
       agentId: local.agentId,
@@ -614,11 +618,9 @@ describe("offerTrimBeforeSend (D-112)", () => {
       contextTokens: 750,
     });
 
-    const list = local.backend.listTopics(local.conversationId, local.agentId);
-    expect(list.contextTokens).toBeGreaterThan(list.retentionCapTokens);
-
     expect(await offerTrimBeforeSend(h.ctx, async () => {})).toBe(false);
-    expect(h.commands[0]?.output).toContain("/compact moves older topics");
+    expect(h.commands[0]?.output).toContain("/compact compresses older topics");
+    expect(h.commands[0]?.output).not.toContain("would write nothing");
   });
 
   test("a hard crossing with blocks parks the picker, then sends after the trim", async () => {

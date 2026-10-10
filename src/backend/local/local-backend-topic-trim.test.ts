@@ -77,8 +77,8 @@ function oneTurnExecutor(): HeadlessTurnExecutor {
 }
 
 /**
- * ~100 tokens of user content per turn, so a 2,000-token window (600-token
- * retention cap) leaves a trim with something real to cut.
+ * ~100 tokens of user content per turn. The trim target is a share of that
+ * transcript, so the window no longer decides how much a cut keeps.
  */
 function turnContent(label: string): string {
   return `${label} ${"x".repeat(400)}`;
@@ -94,6 +94,7 @@ interface Fixture {
 async function fixture(input: {
   storageDir: string;
   contextWindow?: number;
+  percentage?: number;
   summarizerCalls?: { count: number };
 }): Promise<Fixture> {
   const backend = new LocalBackend({
@@ -112,6 +113,14 @@ async function fixture(input: {
       provider_type: "openai",
       context_window_limit: input.contextWindow ?? 2_000,
     },
+    ...(input.percentage === undefined
+      ? {}
+      : {
+          compaction_settings: {
+            mode: "sliding_window",
+            sliding_window_percentage: input.percentage,
+          },
+        }),
   } as never);
   const conversation = await backend.createConversation({
     agent_id: agent.id,
@@ -215,7 +224,11 @@ describe("LocalBackend.listTopics", () => {
     expect(unmarked.blocks).toHaveLength(1);
     expect(unmarked.blocks[0]?.title).toBeNull();
     expect(unmarked.blocks[0]?.messageCount).toBe(unmarked.contextMessageCount);
-    expect(unmarked.retentionCapTokens).toBe(600);
+    // The target is (1 - rate) of the transcript being compressed (default 0.3),
+    // not a share of the model's window.
+    expect(unmarked.retentionCapTokens).toBe(
+      Math.floor(unmarked.contextTokens * 0.7),
+    );
 
     // A marker at the end of turn 4 rewinds two turns, so the block ends on
     // turn 3's start and the trailing "current topic" block keeps turn 3 on.
@@ -357,7 +370,7 @@ describe("LocalBackend.trimConversationToTopic", () => {
     expect(trimRows[0]?.title).toBe("Alpha");
   });
 
-  test("picking the first block writes nothing", async () => {
+  test("picking the first block is cut down to the rate", async () => {
     const storageDir = await createStorageDirectory();
     const summarizerCalls = { count: 0 };
     const f = await fixture({ storageDir, summarizerCalls });
@@ -371,19 +384,25 @@ describe("LocalBackend.trimConversationToTopic", () => {
       pick: { kind: "topic", index: 1 },
     });
 
-    expect(outcome.executed).toBe(false);
-    expect(outcome.noopReason).toBe("nothing_before_boundary");
-    expect(summarizerCalls.count).toBe(0);
-    expect((await inContext(f.backend, f)).map((m) => m.id)).toEqual(
-      before.map((m) => m.id),
+    // Block 1 keeps everything; the rate caps every cut, so this is the rate's
+    // own boundary rather than a no-op.
+    expect(outcome.executed).toBe(true);
+    expect(outcome.source).toBe("ratio_cap");
+    expect(outcome.ratioCapApplied).toBe(true);
+    expect(outcome.requestedRetentionTokens).toBeGreaterThan(
+      outcome.retentionCapTokens ?? 0,
     );
-    // No application point ran, so the prefix is untouched.
-    expect(frozenReason(f.backend, f)).toBe("conversation_created");
+    expect(outcome.retainedTokens).toBeLessThanOrEqual(
+      outcome.retentionCapTokens ?? 0,
+    );
+    expect(summarizerCalls.count).toBe(1);
+    expect((await inContext(f.backend, f)).length).toBeLessThan(before.length);
+    expect(frozenReason(f.backend, f)).toBe("compaction");
     const raw = await readFile(
       transcriptPath(storageDir, f.conversationId, f.agentId),
       "utf8",
     );
-    expect(rowsWithType(raw, "compaction")).toEqual([]);
+    expect(rowsWithType(raw, "compaction")).toHaveLength(1);
   });
 
   test("an unmarked conversation can still be trimmed by ratio (D-119)", async () => {
@@ -408,7 +427,7 @@ describe("LocalBackend.trimConversationToTopic", () => {
     );
   });
 
-  test("a context below the retention cap has nothing worth trimming", async () => {
+  test("a short context is still compressed: the rate is relative, not a threshold", async () => {
     const storageDir = await createStorageDirectory();
     const summarizerCalls = { count: 0 };
     const f = await fixture({ storageDir, summarizerCalls });
@@ -421,14 +440,18 @@ describe("LocalBackend.trimConversationToTopic", () => {
       pick: { kind: "ratio_suggestion" },
     });
 
-    expect(outcome.executed).toBe(false);
-    expect(outcome.noopReason).toBe("nothing_before_boundary");
-    expect(summarizerCalls.count).toBe(0);
+    // Two turns are well inside the window: under the old "retention cap" rule
+    // this refused. The rate compresses a share of whatever is there, so the
+    // oldest messages are summarized even here.
+    expect(outcome.executed).toBe(true);
+    expect(outcome.summarizedMessageCount).toBeGreaterThan(0);
+    expect(outcome.summarizedTokens).toBeGreaterThan(0);
+    expect(summarizerCalls.count).toBe(1);
   });
 
-  test("a small window caps the kept region below the picked topic", async () => {
+  test("a high compression rate caps the kept region below the picked topic", async () => {
     const storageDir = await createStorageDirectory();
-    const f = await fixture({ storageDir, contextWindow: 1_000 });
+    const f = await fixture({ storageDir, percentage: 0.6 });
     for (const turn of ["one", "two", "three", "four"]) await f.sendTurn(turn);
     f.backend.markTopic({
       conversationId: f.conversationId,
@@ -439,7 +462,7 @@ describe("LocalBackend.trimConversationToTopic", () => {
     await f.sendTurn("five");
 
     // Rewind 2 from turn 4 puts block 1's boundary on turn 2, so the pick asks to
-    // keep turns 2-5 (~400 tokens).
+    // keep turns 2-5.
     const blocks = f.backend.listTopics(f.conversationId, f.agentId).blocks;
     expect(blocks.map((block) => block.title)).toEqual(["Alpha", null]);
 
@@ -449,14 +472,17 @@ describe("LocalBackend.trimConversationToTopic", () => {
       pick: { kind: "topic", index: 2 },
     });
 
-    // A 1,000-token window at 30% keeps at most 300 tokens, less than the picked
-    // topic asked for: the cap wins and the receipt says so.
+    // A 0.6 rate keeps at most 40% of the transcript, which is less than the
+    // picked topic asked for: the rate wins and the receipt says so.
     expect(outcome.executed).toBe(true);
     expect(outcome.source).toBe("ratio_cap");
     expect(outcome.ratioCapApplied).toBe(true);
-    expect(outcome.retentionCapTokens).toBe(300);
-    expect(outcome.retainedTokens).toBeLessThanOrEqual(300);
-    expect(outcome.requestedRetentionTokens).toBeGreaterThan(300);
+    expect(outcome.retainedTokens).toBeLessThanOrEqual(
+      outcome.retentionCapTokens ?? 0,
+    );
+    expect(outcome.requestedRetentionTokens).toBeGreaterThan(
+      outcome.retentionCapTokens ?? 0,
+    );
   });
 });
 

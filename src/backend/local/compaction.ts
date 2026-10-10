@@ -580,9 +580,19 @@ function hasPendingLocalToolCall(message: LocalMessage): boolean {
   );
 }
 
+/**
+ * Plan a sliding-window trim: summarize the oldest messages until what is kept
+ * fits `(1 - rate) x` the transcript's own length.
+ *
+ * The base is the transcript, not the model's window. `sliding_window_percentage`
+ * is a **compression rate**: it compresses a share of the conversation that is
+ * actually there, so the target is relative to that length and a trim is possible
+ * at any point. The window only bounds what may be *sent*
+ * (`backend/dev/provider-turn-executor.ts`), never how much a trim keeps.
+ */
 export function planLocalSlidingWindowCompaction(
   messages: LocalMessage[],
-  options: { slidingWindowPercentage?: number; contextWindow?: number } = {},
+  options: { slidingWindowPercentage?: number } = {},
 ): LocalSlidingWindowCompactionPlan {
   if (messages.length < 4) {
     throw new LocalSlidingWindowCompactionPlanningError(
@@ -598,21 +608,15 @@ export function planLocalSlidingWindowCompaction(
     lastMessage && hasPendingLocalToolCall(lastMessage)
       ? messages.length - 2
       : messages.length - 1;
-  const goalTokens =
-    typeof options.contextWindow === "number" &&
-    Number.isFinite(options.contextWindow)
-      ? (1 - percentage) * options.contextWindow
-      : undefined;
-  let approxTokenCount = options.contextWindow ?? Number.POSITIVE_INFINITY;
+  const goalTokens = (1 - percentage) * estimateLocalMessageTokens(messages);
   let cutoffIndex: number | undefined;
 
+  // Start at the configured rate, then evict one more tenth of the messages at a
+  // time until the kept region fits. The grain is a message, so a rate close to 1
+  // lands on the newest assistant message rather than failing: only having no
+  // assistant message at all is a planning error.
   let evictionPercentage = percentage;
-  while (
-    (goalTokens === undefined
-      ? cutoffIndex === undefined
-      : approxTokenCount >= goalTokens) &&
-    evictionPercentage < 1.0
-  ) {
+  while (evictionPercentage < 1.0) {
     evictionPercentage += 0.1;
     const messageCutoffIndex = Math.min(
       Math.round(evictionPercentage * messages.length),
@@ -624,12 +628,12 @@ export function planLocalSlidingWindowCompaction(
         isValidSlidingWindowCutoff(messages, index, maximumCutoffIndex),
       );
     if (cutoffIndex === undefined) continue;
-
-    const messagesToKeep = messages.slice(cutoffIndex);
-    approxTokenCount = estimateLocalMessageTokens(messagesToKeep);
+    if (estimateLocalMessageTokens(messages.slice(cutoffIndex)) < goalTokens) {
+      break;
+    }
   }
 
-  if (cutoffIndex === undefined || evictionPercentage >= 1.0) {
+  if (cutoffIndex === undefined) {
     throw new LocalSlidingWindowCompactionPlanningError(
       "No assistant message found for sliding window compaction.",
     );

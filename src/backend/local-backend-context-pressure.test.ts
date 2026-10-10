@@ -13,7 +13,7 @@ import type { PiStreamFunction } from "@/backend/dev/pi-stream-adapter";
 import { LocalBackend } from "@/backend/local/local-backend";
 import { emptyLocalUsage } from "@/backend/local/local-message";
 
-const CONTEXT_OVERFLOW_COPY = "Run /compact to choose a cut point";
+const CONTEXT_OVERFLOW_COPY = "Run /compact to compress the older part";
 
 function assistantMessage(text: string): AssistantMessage {
   return {

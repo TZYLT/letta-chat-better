@@ -160,12 +160,13 @@ function harness(input: {
 }
 
 describe("retentionCapTokensFor", () => {
-  test("caps at the ratio of a known window", () => {
-    expect(retentionCapTokensFor(100_000, 0.3)).toBe(30_000);
-    expect(retentionCapTokensFor(1_000, 0.3)).toBe(300);
+  test("keeps (1 - rate) of the length being compressed", () => {
+    // The base is the transcript being compressed, not the model's window.
+    expect(retentionCapTokensFor(100_000, 0.3)).toBe(70_000);
+    expect(retentionCapTokensFor(1_000, 0.3)).toBe(700);
   });
 
-  test("an unknown or useless window has no cap", () => {
+  test("an unmeasurable length has no target", () => {
     expect(retentionCapTokensFor(undefined, 0.3)).toBe(
       Number.POSITIVE_INFINITY,
     );
@@ -175,15 +176,14 @@ describe("retentionCapTokensFor", () => {
     );
   });
 
-  test("an unusable ratio is normalized the way the planner normalizes it (M-3)", () => {
+  test("an unusable rate is normalized the way the planner normalizes it (M-3)", () => {
     // The sliding-window planner reads the same setting: `NaN`/missing is the
-    // default 0.3, `<= 0` is its smallest step (0.1), and anything above 1 is the
-    // whole window. The cap must not disagree with it — a cap of 0 would let any
-    // pick be overridden down to the newest message.
-    expect(retentionCapTokensFor(1_000, Number.NaN)).toBe(300);
-    expect(retentionCapTokensFor(1_000, 0)).toBe(100);
-    expect(retentionCapTokensFor(1_000, -2)).toBe(100);
-    expect(retentionCapTokensFor(1_000, 1.5)).toBe(1_000);
+    // default 0.3, `<= 0` is its smallest step (0.1), and anything above 1
+    // compresses everything. The cap must not disagree with it.
+    expect(retentionCapTokensFor(1_000, Number.NaN)).toBe(700);
+    expect(retentionCapTokensFor(1_000, 0)).toBe(900);
+    expect(retentionCapTokensFor(1_000, -2)).toBe(900);
+    expect(retentionCapTokensFor(1_000, 1.5)).toBe(0);
   });
 });
 
@@ -242,10 +242,11 @@ describe("listLocalTopics", () => {
     expect(list.contextMessageCount).toBe(12);
     expect(list.contextTokens).toBe(1_200);
     expect(list.contextWindow).toBe(1_000);
-    expect(list.retentionCapTokens).toBe(300);
+    // 1,200 transcript tokens compressed at 0.3: the target keeps 840.
+    expect(list.retentionCapTokens).toBe(840);
   });
 
-  test("an unmarked context is one block with no cap when the window is unknown", () => {
+  test("an unmarked context is one block, with its target from the transcript (not the window)", () => {
     const list = listLocalTopics(
       harness({ messages: conversation(2), contextWindow: undefined }).ports,
       { conversationId: "default" },
@@ -254,7 +255,8 @@ describe("listLocalTopics", () => {
     expect(list.blocks).toHaveLength(1);
     expect(list.blocks[0]?.title).toBeNull();
     expect(list.markers).toEqual([]);
-    expect(list.retentionCapTokens).toBe(Number.POSITIVE_INFINITY);
+    // 4 messages x 100 tokens = 400; the window is unknown and irrelevant here.
+    expect(list.retentionCapTokens).toBe(280);
     expect(list.contextWindow).toBeUndefined();
   });
 });
@@ -299,19 +301,18 @@ describe("trimLocalConversationToTopic", () => {
       rewind_turns: 2,
       requested_retention_tokens: 600,
       retention_tokens: 600,
-      retention_cap_tokens: 30_000,
+      retention_cap_tokens: 840,
     });
     // The id list is what makes the kept region real; the summary is prepended.
     expect(typeof rewrite?.summary).toBe("string");
   });
 
-  test("the retention cap overrides a topic pick that keeps too much", async () => {
+  test("the rate overrides a topic pick that keeps more than it allows", async () => {
     const messages = conversation(6);
     const testHarness = harness({
       messages,
       markers: [marker("t1", "Topic A", "a6")],
-      contextWindow: 1_000,
-      percentage: 0.3,
+      percentage: 0.6,
     });
     const outcome = await trimLocalConversationToTopic(testHarness.ports, {
       conversationId: "default",
@@ -321,12 +322,12 @@ describe("trimLocalConversationToTopic", () => {
     expect(outcome.source).toBe("ratio_cap");
     expect(outcome.ratioCapApplied).toBe(true);
     expect(outcome.executed).toBe(true);
-    // 300-token cap over 100-token messages: the last three messages, which
-    // start on an assistant turn (that is the exact 300-token boundary).
-    expect(outcome.retainedTokens).toBe(300);
+    // 1,200 tokens at 0.6 keeps 480: the largest suffix inside that is four
+    // 100-token messages, which start on the user turn u5.
+    expect(outcome.retainedTokens).toBe(400);
     expect(outcome.requestedRetentionTokens).toBe(600);
-    expect(outcome.retentionCapTokens).toBe(300);
-    expect(outcome.firstKeptMessageId).toBe("a5");
+    expect(outcome.retentionCapTokens).toBe(480);
+    expect(outcome.firstKeptMessageId).toBe("u5");
   });
 
   test("a ratio suggestion needs no markers at all", async () => {
@@ -346,7 +347,7 @@ describe("trimLocalConversationToTopic", () => {
     expect(testHarness.rewrites).toHaveLength(1);
   });
 
-  test("picking the first block writes nothing", async () => {
+  test("picking the first block is cut down to the rate instead of writing nothing", async () => {
     const messages = conversation(6);
     const testHarness = harness({
       messages,
@@ -358,12 +359,16 @@ describe("trimLocalConversationToTopic", () => {
       pick: { kind: "topic", index: 1 },
     });
 
-    expect(outcome.executed).toBe(false);
-    expect(outcome.noopReason).toBe("nothing_before_boundary");
-    expect(outcome.numMessagesBefore).toBe(outcome.numMessagesAfter);
-    expect(testHarness.rewrites).toEqual([]);
-    expect(testHarness.refreshes).toBe(0);
-    expect(testHarness.events).toEqual([]);
+    // Block 1 keeps the whole context; the rate caps what any cut may keep, so
+    // the pick resolves to the rate's own boundary (1,200 x 0.7 = 840 tokens).
+    expect(outcome.executed).toBe(true);
+    expect(outcome.source).toBe("ratio_cap");
+    expect(outcome.ratioCapApplied).toBe(true);
+    expect(outcome.requestedRetentionTokens).toBe(1_200);
+    expect(outcome.retainedTokens).toBe(800);
+    expect(outcome.firstKeptMessageId).toBe("u3");
+    expect(testHarness.rewrites).toHaveLength(1);
+    expect(testHarness.refreshes).toBe(1);
   });
 
   test("an unknown block writes nothing", async () => {
@@ -408,11 +413,7 @@ describe("trimLocalConversationToTopic", () => {
   });
 
   test("a refused trim leaves the nudge streak alone (M-4)", async () => {
-    const testHarness = harness({
-      messages: conversation(6),
-      markers: [marker("t1", "Topic A", "a6")],
-      contextWindow: 100_000,
-    });
+    const testHarness = harness({ messages: [], contextWindow: 1_000 });
     const outcome = await trimLocalConversationToTopic(testHarness.ports, {
       conversationId: "conv-9",
       pick: { kind: "topic", index: 1 },
@@ -422,7 +423,7 @@ describe("trimLocalConversationToTopic", () => {
     expect(testHarness.streakClearedFor).toEqual([]);
   });
 
-  test("a window-less context reports no cap instead of a fake one", async () => {
+  test("a window-less context still compresses: the target comes from the transcript", async () => {
     const testHarness = harness({
       messages: conversation(6),
       contextWindow: undefined,
@@ -432,11 +433,9 @@ describe("trimLocalConversationToTopic", () => {
       pick: { kind: "ratio_suggestion" },
     });
 
-    // No window means no retention target: the ratio helper would otherwise
-    // suggest the very start of the context, which is a no-op dressed up as a cut.
-    expect(outcome.executed).toBe(false);
-    expect(outcome.noopReason).toBe("nothing_before_boundary");
-    expect(outcome.retentionCapTokens).toBeNull();
+    // 1,200 tokens at the default 0.3 rate: keep 840, compress the older 360.
+    expect(outcome.executed).toBe(true);
+    expect(outcome.retentionCapTokens).toBe(840);
     expect(outcome.contextWindow).toBeUndefined();
   });
 
@@ -506,6 +505,6 @@ describe("trim stats shape", () => {
     expect(stats.messages_count_before).toBe(12);
     expect(stats.messages_count_after).toBe(7);
     expect(stats.context_window).toBe(100_000);
-    expect(stats.trim?.retention_cap_tokens).toBe(30_000);
+    expect(stats.trim?.retention_cap_tokens).toBe(840);
   });
 });

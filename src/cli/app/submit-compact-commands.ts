@@ -4,7 +4,7 @@
  *
  * Local compaction asks the user where to cut: `/compact <n>` keeps block `n`,
  * and a bare `/compact` opens the topic picker — except when nothing has been
- * marked, in which case the retention ratio decides and the command runs
+ * marked, in which case the compression rate decides and the command runs
  * straight away (D-119). The cloud backend keeps its mode-based behaviour, so
  * the mode words still work there and are rejected here by name.
  *
@@ -23,10 +23,7 @@ import type {
   LocalTopicTrimOutcome,
   LocalTopicTrimPick,
 } from "@/backend/local/local-topic-trim";
-import {
-  hasSelectableTopicBlocks,
-  ratioHasTrimmableContent,
-} from "@/backend/local/local-topic-trim";
+import { hasSelectableTopicBlocks } from "@/backend/local/local-topic-trim";
 import type { ActiveOverlay, AppCommandRunner } from "@/cli/app/types";
 import type { CompactModeArgument } from "@/cli/helpers/compact-command";
 import {
@@ -99,8 +96,8 @@ export interface SendPressureContext extends CompactCommandContext {
  * - With no block to choose between — nothing marked yet, or every marker
  *   anchored at or before the start of the context — there is nothing to pick, so
  *   it only warns: trimming without the user choosing would be the automatic
- *   rewrite this feature exists to remove (I1). Bare `/compact` still trims by the
- *   ratio, because that is the user asking for it.
+ *   rewrite this feature exists to remove (I1). Bare `/compact` still compresses
+ *   by the rate, because that is the user asking for it.
  *
  * Returns `true` when the send was deferred to the picker (the caller must not
  * send); `false` means the caller sends as usual.
@@ -128,23 +125,17 @@ export async function offerTrimBeforeSend(
   }
 
   const list = backend.listTopics(conversationId, ctx.agentId);
-  // Block 1 keeps everything, so "markers exist" is not the question: markers
-  // whose boundary clamps onto the start of the context leave one block and the
-  // picker would have nothing selectable in it (H-2).
+  // Block 1 is a legal pick now that the compression rate caps every cut, so
+  // "markers exist" is the only question: markers whose boundary clamps onto the
+  // start of the context leave one block and the picker would have nothing to
+  // choose between (H-2).
   const hasBlocks = hasSelectableTopicBlocks(list);
-  // The tier compares the whole context against the window; the ratio compares the
-  // transcript against its budget. Without this, a large prompt floor makes the
-  // hint advise a `/compact` that immediately refuses (see formatContextPressureHint).
-  const ratioHasWork = ratioHasTrimmableContent(list);
   const hint = formatContextPressureHint({
     level,
     contextTokens,
     contextWindow: contextWindow ?? 0,
     hasBlocks,
     hasMarkers: list.markers.length > 0,
-    ratioHasWork,
-    transcriptTokens: list.contextTokens,
-    retentionCapTokens: list.retentionCapTokens,
   });
   if (level === "soft") {
     // One line per crossing, not one per message.
@@ -450,7 +441,7 @@ async function compactLocal(
       return fail(
         ctx,
         input,
-        `There is no topic block ${request.index}: this context has ${count}. Run /topics to list them, or /compact with no number to trim by the retention ratio.`,
+        `There is no topic block ${request.index}: this context has ${count}. Run /topics to list them, or /compact with no number to compress by the rate.`,
       );
     }
     return runTrim(

@@ -225,10 +225,10 @@ describe("listener compact command", () => {
     const output = await runCompact(fixture, "9");
 
     expect(output).toContain("There is no topic block 9");
-    expect(output).toContain("trim by the retention ratio");
+    expect(output).toContain("compress by the rate");
   });
 
-  test("with nothing to choose between, the ratio decides instead of refusing (H-2)", async () => {
+  test("with nothing to choose between, the rate decides instead of refusing (H-2)", async () => {
     // The marker sits right after the first turn, so its effective boundary
     // clamps onto the start of the context and no block is selectable: the same
     // state bare `/compact` finds on the TUI.

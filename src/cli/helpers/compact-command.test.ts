@@ -98,7 +98,7 @@ describe("formatTopicTrimReceipt", () => {
     expect(receipt).toContain("rewound 2 user turns from the marker");
     expect(receipt).toContain("before:     12 messages in context");
     expect(receipt).toContain("evicts the provider cache");
-    expect(receipt).not.toContain("cap:");
+    expect(receipt).not.toContain("rate:");
   });
 
   test("the summarized figure is the evicted region, not the requested retention (M-6)", () => {
@@ -118,7 +118,7 @@ describe("formatTopicTrimReceipt", () => {
     expect(receipt).not.toContain("turns from the marker");
   });
 
-  test("names the ratio when the cap decided, with both numbers", () => {
+  test("names the rate when the rate cut decided, with both numbers", () => {
     const receipt = formatTopicTrimReceipt(
       outcome({
         source: "ratio_cap",
@@ -129,21 +129,21 @@ describe("formatTopicTrimReceipt", () => {
     );
 
     expect(receipt).toContain(
-      "cut point:  the retention ratio (the picked block kept too much)",
+      "cut point:  the compression rate (the picked block kept more than the rate allows)",
     );
     expect(receipt).toContain(
-      "cap:        kept at most ~300 tokens (600 were requested)",
+      "rate:       kept at most ~300 tokens (the pick asked for 600)",
     );
-    // A ratio cap is not a rewound marker boundary.
+    // A rate cut is not a rewound marker boundary.
     expect(receipt).not.toContain("rewound");
   });
 
-  test("says so when the ratio decided because nothing was marked", () => {
+  test("says so when the rate decided because nothing was marked", () => {
     const receipt = formatTopicTrimReceipt(
       outcome({ source: "ratio_suggestion", summarizedTitles: [] }),
     );
     expect(receipt).toContain(
-      "cut point:  the retention ratio (no marker defines a boundary here",
+      "cut point:  the compression rate (no marker defines a boundary here",
     );
     expect(receipt).not.toContain("topics:");
   });
@@ -153,12 +153,12 @@ describe("formatTopicTrimReceipt", () => {
     expect(receipt).toContain("moved to avoid splitting a tool call");
   });
 
-  test("confirming the suggested row is reported as the ratio's suggestion (V9)", () => {
+  test("confirming the suggested row is reported as the rate's suggestion (V9)", () => {
     const suggested = formatTopicTrimReceipt(outcome(), {
       confirmedSuggestion: true,
     });
     expect(suggested).toContain(
-      "cut point:  ratio_suggestion (the block the retention ratio points at",
+      "cut point:  compression rate (the block it points at",
     );
     expect(suggested).not.toContain("the topic block you picked");
 
@@ -167,7 +167,7 @@ describe("formatTopicTrimReceipt", () => {
       { confirmedSuggestion: true },
     );
     expect(capped).toContain(
-      "cut point:  ratio_cap (the suggested block kept too much",
+      "cut point:  compression rate (the suggested block kept more",
     );
   });
 
@@ -180,15 +180,10 @@ describe("formatTopicTrimReceipt", () => {
     );
     expect(nothingToTrim).toContain("Nothing to trim");
     expect(nothingToTrim).not.toContain("kept:");
-    // A topic pick that lands on the start of the context is not "the context
-    // already fits": the ratio never ran (H-2).
-    expect(nothingToTrim).not.toContain(
-      "already fits inside the retention ratio",
-    );
     expect(nothingToTrim).toContain("Run /topics");
 
-    // The ratio path *is* the "already fits" case — but it is not a dead end:
-    // a topic pick is not bound by the ratio budget, so it can still cut.
+    // The rate only lands on the start of the context when there is nothing it
+    // can compress, so the copy is about length — not about a budget it fits in.
     const ratioNoop = formatTopicTrimReceipt(
       outcome({
         executed: false,
@@ -198,11 +193,9 @@ describe("formatTopicTrimReceipt", () => {
         retentionCapTokens: 300,
       }),
     );
-    expect(ratioNoop).toContain("already fits inside the retention ratio");
-    expect(ratioNoop).toContain("~250 tokens");
-    expect(ratioNoop).toContain("~300 tokens");
-    expect(ratioNoop).toContain("Run /topics and pick a block");
+    expect(ratioNoop).toContain("too short to compress");
     expect(ratioNoop).toContain("Nothing was written");
+    expect(ratioNoop).not.toContain("already fits inside the retention ratio");
 
     expect(
       formatTopicTrimReceipt(
@@ -220,7 +213,7 @@ describe("formatTopicTrimReceipt", () => {
 describe("formatNoMarkerCompactHint", () => {
   test("points at both marking channels while the agent can mark", () => {
     const hint = formatNoMarkerCompactHint(true);
-    expect(hint).toContain("retention ratio decided the cut point");
+    expect(hint).toContain("compression rate decided the cut point");
     expect(hint).toContain("TopicMark");
   });
 
@@ -238,7 +231,7 @@ describe("formatSingleBlockCompactHint", () => {
       liveMarkerAnchor: true,
     });
     expect(hint).toContain("sits at the very start of the current context");
-    expect(hint).toContain("retention ratio decided the cut point");
+    expect(hint).toContain("compression rate decided the cut point");
     expect(hint).toContain("/topic <title>");
     expect(hint).toContain("TopicMark");
     // Never claims there are no markers: that is the case this note exists for.
@@ -271,13 +264,10 @@ describe("formatContextPressureHint", () => {
       contextWindow: 1_000,
       hasBlocks: false,
       hasMarkers: false,
-      ratioHasWork: true,
-      transcriptTokens: 750,
-      retentionCapTokens: 300,
     });
     expect(hint).toContain("about 75%");
     expect(hint).toContain("750 of 1000 tokens");
-    expect(hint).toContain("/compact moves older topics");
+    expect(hint).toContain("/compact compresses older topics");
     expect(hint).not.toContain("past the point");
   });
 
@@ -288,9 +278,6 @@ describe("formatContextPressureHint", () => {
       contextWindow: 1_000,
       hasBlocks: true,
       hasMarkers: true,
-      ratioHasWork: true,
-      transcriptTokens: 900,
-      retentionCapTokens: 300,
     });
     expect(hint).toContain("Pick a topic block to keep before sending");
     expect(hint).toContain("Esc to send anyway");
@@ -303,14 +290,11 @@ describe("formatContextPressureHint", () => {
       contextWindow: 1_000,
       hasBlocks: false,
       hasMarkers: false,
-      ratioHasWork: true,
-      transcriptTokens: 950,
-      retentionCapTokens: 300,
     });
     expect(hint).toContain(
       "past the point where a turn this large can be sent",
     );
-    expect(hint).toContain("/compact to trim by the retention ratio");
+    expect(hint).toContain("/compact to compress the older part");
     expect(hint).toContain("/topic <title>");
   });
 
@@ -321,56 +305,27 @@ describe("formatContextPressureHint", () => {
       contextWindow: 1_000,
       hasBlocks: false,
       hasMarkers: true,
-      ratioHasWork: true,
-      transcriptTokens: 950,
-      retentionCapTokens: 300,
     });
     expect(hint).toContain("markers in this conversation define no boundary");
     expect(hint).not.toContain("nothing has marked a topic boundary yet");
     expect(hint).toContain("/topic <title>");
   });
 
-  test("a soft tier stops advising /compact once the ratio has nothing to cut", () => {
-    // A large prompt floor: the whole context is past the soft ratio, but the
-    // transcript is already inside its own budget, so `/compact` would refuse.
-    const hint = formatContextPressureHint({
-      level: "soft",
-      contextTokens: 720,
-      contextWindow: 1_000,
-      hasBlocks: false,
-      hasMarkers: true,
-      ratioHasWork: false,
-      transcriptTokens: 250,
-      retentionCapTokens: 300,
-    });
-
-    expect(hint).toContain("about 72%");
-    expect(hint).toContain("~250 tokens");
-    expect(hint).toContain("~300-token retention ratio");
-    expect(hint).toContain("the rest of the window is the system prompt");
-    expect(hint).toContain("/topic <title>");
-    // The advice that would land on "Nothing to trim" is gone.
-    expect(hint).not.toContain("/compact moves older topics");
-  });
-
-  test("a hard tier with nothing to cut explains the dead end instead of advising it", () => {
-    const hint = formatContextPressureHint({
-      level: "hard",
-      contextTokens: 950,
-      contextWindow: 1_000,
-      hasBlocks: false,
-      hasMarkers: false,
-      ratioHasWork: false,
-      transcriptTokens: 250,
-      retentionCapTokens: 300,
-    });
-
-    expect(hint).toContain(
-      "past the point where a turn this large can be sent",
-    );
-    expect(hint).toContain("a ratio trim would write nothing");
-    expect(hint).toContain("/topic <title>");
-    expect(hint).not.toContain("Run /compact to trim by the retention ratio");
+  test("never implies the rate has nothing to compress", () => {
+    // A large prompt floor makes the tier fire while the transcript is small. The
+    // hint must still advise `/compact`: the rate compresses a share of what is
+    // there, so a trim is always possible — the floor is not its business.
+    for (const level of ["soft", "hard"] as const) {
+      const hint = formatContextPressureHint({
+        level,
+        contextTokens: 950,
+        contextWindow: 1_000,
+        hasBlocks: false,
+        hasMarkers: true,
+      });
+      expect(hint).not.toContain("would write nothing");
+      expect(hint).not.toContain("Nothing to trim");
+    }
   });
 });
 
@@ -404,10 +359,13 @@ describe("formatCompactPlanningFailure", () => {
 });
 
 describe("command copy", () => {
-  test("the usage documents the picker, the number, and the no-op block", () => {
+  test("the usage documents the picker, the number, and the rate's block-1 rule", () => {
     expect(COMPACT_COMMAND_USAGE).toContain("/compact <n>");
     expect(COMPACT_COMMAND_USAGE).toContain("works without a terminal");
-    expect(COMPACT_COMMAND_USAGE).toContain("block 1 keeps everything");
+    expect(COMPACT_COMMAND_USAGE).toContain("compression rate");
+    expect(COMPACT_COMMAND_USAGE).toContain(
+      "block 1, which keeps the whole context",
+    );
     expect(COMPACT_COMMAND_USAGE).not.toContain("self_compact");
   });
 

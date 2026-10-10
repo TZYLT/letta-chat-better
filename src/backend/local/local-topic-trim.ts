@@ -3,10 +3,11 @@
  *
  * The planning itself is pure and lives in `topic-compaction.ts`; this module is
  * the I/O shell around it: it reads the in-context list and the transcript
- * markers, resolves the retention cap from the model's window, asks the existing
- * sliding-window summarizer for the summary, and writes the result through the
- * single in-context rewrite path (`local-context-rewrite.ts`) — then refreshes
- * the frozen prefix, because a trim *is* the "compaction" application point.
+ * markers, resolves the retained-token target from the compression rate and the
+ * length of that transcript, asks the existing sliding-window summarizer for the
+ * summary, and writes the result through the single in-context rewrite path
+ * (`local-context-rewrite.ts`) — then refreshes the frozen prefix, because a trim
+ * *is* the "compaction" application point.
  *
  * It runs against a port object rather than the backend so the ordering — and the
  * "nothing to trim must not write anything" rule — can be tested without a
@@ -46,7 +47,10 @@ export type LocalTopicTrimPick =
   | { kind: "ratio_suggestion" };
 
 export interface LocalTopicTrimSettings {
-  /** Retention ratio; the cap is `percentage x context window`. */
+  /**
+   * The compression rate: the share of the in-context transcript each trim
+   * compresses away. `0.3` means "compress about 30%, keep about 70%".
+   */
   slidingWindowPercentage: number;
   prompt?: string | null;
   clipChars?: number | null;
@@ -110,14 +114,15 @@ export interface LocalTopicList {
   contextTokens: number;
   contextWindow?: number;
   /**
-   * `Infinity` when the window is unknown: without a window there is no
-   * retention target, so the cap cannot override anything.
+   * The most a cut may keep: `(1 - compressionRate) x contextTokens`.
+   * `Infinity` when the transcript length cannot be measured, which keeps
+   * everything rather than compressing blindly.
    */
   retentionCapTokens: number;
   /**
-   * Block the retention ratio would keep, computed by the same planner that
+   * Block the compression rate would keep, computed by the same planner that
    * executes the trim so the picker's default and the actual cut agree. `1` (or
-   * `null` for an empty context) means the ratio keeps everything.
+   * `null` for an empty context) means the rate keeps everything.
    */
   suggestedBlockIndex: number | null;
 }
@@ -139,10 +144,10 @@ export interface LocalTopicTrimOutcome {
   summarizedMessageCount: number;
   /** Tokens in the region that was summarized away. */
   summarizedTokens: number;
-  /** Retention the request asked for, before the ratio cap. */
+  /** Retention the request asked for, before the compression-rate cut. */
   requestedRetentionTokens: number;
   retainedTokens: number;
-  /** `null` when the window — and therefore the cap — is unknown. */
+  /** `null` when the transcript length — and therefore the target — is unknown. */
   retentionCapTokens: number | null;
   contextWindow?: number;
   /** The kept region, so a receipt can name its first message. */
@@ -152,63 +157,47 @@ export interface LocalTopicTrimOutcome {
 }
 
 /**
- * The retention cap: `percentage x contextWindow`, in tokens.
+ * The retained-token target: `(1 - compressionRate) x contextTokens`.
  *
- * The ratio is normalized by the same helper the sliding-window planner uses, so
- * a `0`, negative, or `NaN` percentage cannot mean "keep almost nothing" here
- * while it means "keep the smallest slice" (or the default) there. A window that
- * is unknown or unusable has no cap: without a window there is no retention
- * target to enforce, and the cap must not override a topic pick.
+ * The base is the length being compressed — the in-context transcript — not the
+ * model's window. A trim compresses that transcript by the configured rate, and
+ * the rule the cap enforces is that a cut may never *keep* more than the rate
+ * allows, whether the cut point came from a topic pick or from the rate itself.
+ * The window only decides when a turn is refused
+ * (`backend/dev/provider-turn-executor.ts`), never how much a trim keeps.
+ *
+ * The rate is normalized by the same helper the sliding-window planner uses, so
+ * a `0`, negative, or `NaN` percentage cannot mean different things in the two
+ * places (`0` and below compress the smallest step, above `1` compresses
+ * everything). A length that cannot be measured has no target: `Infinity`
+ * keeps everything, so an unmeasurable transcript is never compressed blindly.
  */
 export function retentionCapTokensFor(
-  contextWindow: number | undefined,
+  contextTokens: number | undefined,
   percentage: number,
 ): number {
   if (
-    typeof contextWindow !== "number" ||
-    !Number.isFinite(contextWindow) ||
-    contextWindow <= 0
+    typeof contextTokens !== "number" ||
+    !Number.isFinite(contextTokens) ||
+    contextTokens <= 0
   ) {
     return Number.POSITIVE_INFINITY;
   }
-  return Math.floor(
-    contextWindow * normalizedSlidingWindowPercentage(percentage),
-  );
+  const keepRatio = 1 - normalizedSlidingWindowPercentage(percentage);
+  return Math.floor(contextTokens * keepRatio);
 }
 
 /**
  * Whether the picker has anything to choose between.
  *
- * Block 1 always keeps the whole context, so it is never selectable: a list with a
- * single block has no choice to offer and the retention ratio decides instead
- * (D-119). Markers alone are not the test — a marker whose effective boundary
- * clamps onto the start of the context produces no block of its own (a `/topic`
- * in the first turns, or every anchor trimmed away), and opening the picker then
- * would leave the user with one disabled row and no way to cut.
+ * A list with a single block has no choice to offer and the compression rate
+ * decides instead (D-119). Markers alone are not the test — a marker whose
+ * effective boundary clamps onto the start of the context produces no block of
+ * its own (a `/topic` in the first turns, or every anchor trimmed away), so
+ * opening the picker would leave the user with one row and no way to cut.
  */
 export function hasSelectableTopicBlocks(list: LocalTopicList): boolean {
   return list.blocks.length > 1;
-}
-
-/**
- * Whether trimming by the retention ratio has any region left to summarize away.
- *
- * This is the planner's own predicate, not an approximation of it:
- * `ratioSuggestionMessageId` walks back from the newest message until the budget
- * is spent and returns the *first* in-context message when the whole transcript
- * already fits, which `resolveTrimPlan` turns into a `nothing_before_boundary`
- * no-op. So `contextTokens <= retentionCapTokens` is exactly "the ratio path
- * writes nothing", and callers must not advise a ratio trim when it holds.
- *
- * A *topic pick* can still cut in that state: a pick only has to keep at most the
- * cap, not reach it, so a boundary past the first message is honored as long as
- * the kept region is smaller — which it is whenever this returns false.
- *
- * An unknown context window leaves the cap at `Infinity`, and then nothing is
- * trimmable by ratio: there is no retention target to trim down to.
- */
-export function ratioHasTrimmableContent(list: LocalTopicList): boolean {
-  return list.contextTokens > list.retentionCapTokens;
 }
 
 export function listLocalTopics(
@@ -226,8 +215,9 @@ export function listLocalTopics(
   const blocks = listTopicBlocks(messages, markers, {
     rewindTurns: input.rewindTurns ?? DEFAULT_TOPIC_BOUNDARY_REWIND_TURNS,
   });
+  const contextTokens = estimateLocalMessagesTokens(messages);
   const retentionCapTokens = retentionCapTokensFor(
-    contextWindow,
+    contextTokens,
     ports.compactionSettings(input.conversationId, agentId)
       .slidingWindowPercentage,
   );
@@ -241,7 +231,7 @@ export function listLocalTopics(
         inContext.has(marker.anchorMessageId),
     })),
     contextMessageCount: messages.length,
-    contextTokens: estimateLocalMessagesTokens(messages),
+    contextTokens,
     ...(contextWindow === undefined ? {} : { contextWindow }),
     retentionCapTokens,
     suggestedBlockIndex: suggestionBlockIndex(
@@ -361,8 +351,9 @@ export async function trimLocalConversationToTopic(
   const messages = ports.listMessages(conversationId, agentId);
   const contextWindow = ports.contextWindow(conversationId, agentId);
   const settings = ports.compactionSettings(conversationId, agentId);
+  const transcriptTokens = estimateLocalMessagesTokens(messages);
   const retentionCapTokens = retentionCapTokensFor(
-    contextWindow,
+    transcriptTokens,
     settings.slidingWindowPercentage,
   );
   const rewindTurns = input.rewindTurns ?? DEFAULT_TOPIC_BOUNDARY_REWIND_TURNS;
@@ -426,7 +417,7 @@ export async function trimLocalConversationToTopic(
 
   const stats: LocalCompactionStats = {
     trigger,
-    context_tokens_before: estimateLocalMessagesTokens(messages),
+    context_tokens_before: transcriptTokens,
     context_tokens_after: Math.ceil(summary.length / 4) + retainedTokens,
     messages_count_before: messages.length,
     messages_count_after: 1 + keep.length,

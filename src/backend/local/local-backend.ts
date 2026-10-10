@@ -892,7 +892,6 @@ export class LocalBackend extends HeadlessBackend {
     const contextWindow = this.effectiveContextWindow(conversationId, agentId);
     const plan = planLocalSlidingWindowCompaction(messages, {
       slidingWindowPercentage: settings.slidingWindowPercentage,
-      contextWindow,
     });
     const summary = await summarizeLocalMessagesSlidingWindow({
       conversationId,

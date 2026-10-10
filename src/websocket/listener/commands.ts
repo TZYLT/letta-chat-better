@@ -430,12 +430,12 @@ async function compactLocalFromListener(
   if (request.kind === "block" && request.index > list.blocks.length) {
     const count = `${list.blocks.length} block${list.blocks.length === 1 ? "" : "s"}`;
     throw new Error(
-      `There is no topic block ${request.index}: this context has ${count}. Run /topics to list them, or /compact with no number to trim by the retention ratio.`,
+      `There is no topic block ${request.index}: this context has ${count}. Run /topics to list them, or /compact with no number to compress by the rate.`,
     );
   }
   // There is no interactive channel here, so a *choice* needs a number from
   // /topics. When there is no choice to make — fewer than two blocks, exactly the
-  // state bare `/compact` finds on the TUI — the retention ratio decides, which is
+  // state bare `/compact` finds on the TUI — the compression rate decides, which is
   // the same decision the TUI would have made without asking (H-2).
   if (request.kind === "auto" && hasSelectableTopicBlocks(list)) {
     throw new Error(

@@ -64,14 +64,14 @@ const BLOCKS: TopicBlock[] = [
 ];
 
 describe("buildTopicPickRows", () => {
-  test("labels every block and never disables the trimmable ones", () => {
+  test("labels every block, and block 1 is selectable like any other", () => {
     const rows = buildTopicPickRows(BLOCKS);
 
     expect(rows.map((row) => row.key)).toEqual(["1", "2"]);
     expect(rows[0]?.label).toBe("1. Auth token refresh");
-    expect(rows[0]?.disabled).toBe(true);
+    expect(rows[0]?.disabled).toBeUndefined();
     expect(rows[1]?.label).toBe("2. Current topic (not marked finished)");
-    expect(rows[1]?.disabled).toBe(false);
+    expect(rows[1]?.disabled).toBeUndefined();
   });
 
   test("describes size, time, and how the boundary was derived", () => {
@@ -154,18 +154,20 @@ describe("buildTopicPickItems", () => {
 });
 
 describe("initialTopicPickIndex", () => {
-  test("lands on the suggested block", () => {
+  test("lands on the suggested block, including block 1", () => {
+    // Block 1 is a legal pick: the compression rate caps what it may keep, so the
+    // cursor can sit on it (D-119 + the rate-is-the-limit rule).
+    expect(initialTopicPickIndex(buildTopicPickItems(BLOCKS), 1)).toBe(0);
     expect(initialTopicPickIndex(buildTopicPickItems(BLOCKS), 2)).toBe(1);
   });
 
-  test("falls back to the oldest selectable block when the suggestion is block 1", () => {
-    // Block 1 keeps everything, so the cursor must not sit on it.
-    expect(initialTopicPickIndex(buildTopicPickItems(BLOCKS), 1)).toBe(1);
+  test("falls back to the oldest block when the suggestion is unknown", () => {
+    expect(initialTopicPickIndex(buildTopicPickItems(BLOCKS), 99)).toBe(0);
   });
 
-  test("lands on cancel when nothing can be trimmed at all", () => {
+  test("a single block still leaves Cancel reachable by one move down", () => {
     const items = buildTopicPickItems([block({ index: 1, title: "Only" })]);
-    expect(initialTopicPickIndex(items, 1)).toBe(1);
+    expect(items).toHaveLength(2);
     expect(items[1]?.key).toBe(TOPIC_TRIM_CANCEL_KEY);
   });
 });
@@ -243,8 +245,8 @@ describe("TopicSelector mount", () => {
     expect(output).toContain("Current topic (not marked");
     expect(output).toContain('marker "Auth');
     expect(output).toContain("Cancel · keep the context as it is");
-    // The footer carries the reason the first row is not selectable.
-    expect(output).toContain("block 1 keeps everything");
+    // The footer carries the rule that caps a greedy pick.
+    expect(output).toContain("compression rate");
   });
 
   test("shows the full row copy in a wide terminal", async () => {

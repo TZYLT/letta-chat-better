@@ -45,27 +45,28 @@ export interface CompactionModeItem {
 }
 
 /**
- * Build the picker rows. Pure so the mode gating and the retention copy are
+ * Build the picker rows. Pure so the mode gating and the compression copy are
  * testable without rendering Ink.
  */
 export function buildCompactionModeItems(input: {
   modes: readonly CompactionMode[];
   currentMode: CompactionMode;
-  retentionPercentage: number;
+  compressionPercentage: number;
 }): CompactionModeItem[] {
+  const compressed = Math.round(input.compressionPercentage * 100);
   return input.modes.map((mode) => ({
     key: mode,
     label: MODE_LABELS[mode],
     description:
       mode === "sliding_window"
-        ? `${MODE_DESCRIPTIONS[mode]} Retention: keeps about ${Math.round(input.retentionPercentage * 100)}% of the context window.`
+        ? `${MODE_DESCRIPTIONS[mode]} Compresses about ${compressed}% of the conversation each time (keeps about ${100 - compressed}%).`
         : MODE_DESCRIPTIONS[mode],
     isCurrent: mode === input.currentMode,
   }));
 }
 
-/** The retention ratio is the other half of `sliding_window`. */
-export function retentionPercentageFor(
+/** The compression rate is the other half of `sliding_window`. */
+export function compressionPercentageFor(
   settings: AgentState["compaction_settings"],
 ): number {
   return (
@@ -90,7 +91,7 @@ export const CompactionSelector = memo(function CompactionSelector({
       buildCompactionModeItems({
         modes,
         currentMode,
-        retentionPercentage: retentionPercentageFor(settings),
+        compressionPercentage: compressionPercentageFor(settings),
       }),
     [modes, currentMode, settings],
   );

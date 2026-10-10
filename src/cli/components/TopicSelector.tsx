@@ -4,8 +4,9 @@
  *
  * Rows are built by a pure function so the copy, the ordering, and the cursor
  * default are testable without rendering Ink. The trailing row is always
- * "Cancel", and the first block is shown disabled because keeping everything
- * means there is nothing to trim. The row copy itself comes from
+ * "Cancel". Every block is selectable, including the first one: the compression
+ * rate caps what any cut may keep, so "keep everything" resolves to the rate's
+ * own cut instead of being a dead row. The row copy itself comes from
  * `helpers/topic-list.ts` so the picker and `/topics` describe a boundary the
  * same way.
  */
@@ -23,11 +24,9 @@ import { type SelectableItem, SingleSelectPicker } from "./SingleSelectPicker";
 export const TOPIC_TRIM_CANCEL_KEY = "cancel";
 
 /**
- * The picker rows, oldest block first. Block 1 is visible but not selectable:
- * keeping the whole context is the no-op case, and `/compact 1` still reports it
- * explicitly for scripted channels. Its row copy stays exactly as long as the
- * trimmable rows' — the picker explains the disabled row in its footer instead,
- * because one more clause here wraps the label column in a 100-column terminal.
+ * The picker rows, oldest block first. Block 1 is selectable like any other: the
+ * compression rate decides how much a cut may keep, so choosing "keep
+ * everything" compresses to the same point the rate would have picked.
  */
 export function buildTopicPickRows(
   blocks: readonly TopicBlock[],
@@ -36,7 +35,6 @@ export function buildTopicPickRows(
     key: String(block.index),
     label: `${block.index}. ${block.title ?? CURRENT_TOPIC_LABEL}`,
     description: `${block.messageCount} messages · ~${block.tokens} tokens · from ${shortTimestamp(block.startsAt)} · ${topicBlockBoundaryNote(block, blocks[position - 1])}`,
-    disabled: block.index === 1,
   }));
 }
 
@@ -55,19 +53,18 @@ export function buildTopicPickItems(
 }
 
 /**
- * Cursor default: the suggested block, falling back to the oldest selectable
- * block when the suggestion is the un-selectable first one.
+ * Cursor default: the suggested block, falling back to the oldest block when the
+ * suggestion is unknown (an empty list still ends on Cancel).
  */
 export function initialTopicPickIndex(
   items: readonly SelectableItem[],
   suggestionIndex: number,
 ): number {
   const suggested = items.findIndex(
-    (item) => item.key === String(suggestionIndex) && !item.disabled,
+    (item) => item.key === String(suggestionIndex),
   );
   if (suggested >= 0) return suggested;
-  const firstSelectable = items.findIndex((item) => !item.disabled);
-  return firstSelectable >= 0 ? firstSelectable : items.length - 1;
+  return 0;
 }
 
 interface TopicSelectorProps {
@@ -115,7 +112,7 @@ export const TopicSelector = memo(function TopicSelector({
           settle(() => request.onPick(Number(key)));
         }}
         onCancel={dismiss}
-        footer=" Enter trim · ↑↓/jk navigate · Esc cancel · block 1 keeps everything, so it cannot be picked"
+        footer=" Enter trim · ↑↓/jk navigate · Esc cancel · a block that keeps more than the compression rate is cut down to it"
       />
     </OverlayShell>
   );

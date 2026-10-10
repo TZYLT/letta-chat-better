@@ -168,7 +168,7 @@ describe("PiStreamAdapter context pressure", () => {
 
     expect(providerCalls).toBe(0);
     expect(error).toBeInstanceOf(LocalContextOverflowError);
-    expect(String(error)).toContain("Run /compact to choose a cut point");
+    expect(String(error)).toContain("Run /compact to compress the older part");
   });
 
   test("sends a soft-pressure request unchanged", async () => {

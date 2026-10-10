@@ -10,8 +10,10 @@
  *   changing `topic_boundary_rewind_turns` immediately applies to every
  *   existing marker without rewriting the transcript.
  * - `ratioSuggestionMessageId` / `resolveTrimPlan` decide where a trim starts,
- *   with the retention ratio as a hard cap (the topic boundary is an
- *   optimization that may lose to it).
+ *   with the compression rate as a hard limit: a cut may never keep more than
+ *   `(1 - rate) x` the transcript it is compressing, so a topic boundary is an
+ *   optimization that may lose to the rate (and the first block, which keeps
+ *   everything, always loses to it).
  *
  * User-facing copy lives in the CLI, not here — `source`, `noopReason`, and the
  * adjustment flags are the structured facts a receipt is rendered from.
@@ -346,9 +348,13 @@ function summarizedTopicTitles(
 }
 
 /**
- * Smallest keep-region that fits `retentionCapTokens`, walking back from the
- * newest message. Returns the start of that region, or `null` for an empty
- * context. A single message over the cap is kept rather than summarized.
+ * Start of the largest keep-region that fits `retentionCapTokens`, walking back
+ * from the newest message. Returns the start of that region, or `null` for an
+ * empty context. A single message over the cap is kept rather than summarized.
+ *
+ * The cap is the compression rate's cut for the current transcript, computed by
+ * the caller (`(1 - rate) x transcript tokens`), so this function is both the
+ * rate's own cut point and the limit every topic pick is measured against.
  */
 export function ratioSuggestionMessageId(
   messages: readonly LocalMessage[],
@@ -426,8 +432,11 @@ function noopPlan(
  * Decide where a user-initiated trim starts.
  *
  * A topic pick is honored only while it keeps at most `retentionCapTokens`;
- * otherwise the ratio position wins and the plan reports `ratio_cap`, because
- * the ratio is a hard cap and the topic boundary is best-effort.
+ * otherwise the rate's own position wins and the plan reports `ratio_cap`,
+ * because the compression rate is a hard limit and the topic boundary is
+ * best-effort. This is what makes the first block a legal pick: "keep
+ * everything" never survives the rate, so it resolves to the same cut the rate
+ * would have made instead of refusing outright.
  */
 export function resolveTrimPlan(input: {
   messages: readonly LocalMessage[];
@@ -457,13 +466,12 @@ export function resolveTrimPlan(input: {
   }
 
   const aligned = alignTrimBoundary(messages, candidateId);
-  if (aligned.startIndex <= 0) {
-    return noopPlan(messages, source, "nothing_before_boundary", topicTitle);
-  }
-
   let startIndex = aligned.startIndex;
   const requestedStartIndex = aligned.startIndex;
   let ratioCapApplied = false;
+  // The rate clamps *before* the no-op test: "keep everything" (block 1, or a
+  // marker that clamped onto the start of the context) is a legal pick whose
+  // kept region the rate cuts down, not a request to do nothing.
   if (
     estimateLocalMessagesTokens(messages.slice(startIndex)) > retentionCapTokens
   ) {
@@ -474,6 +482,9 @@ export function resolveTrimPlan(input: {
       ratioCapApplied = true;
       source = "ratio_cap";
     }
+  }
+  if (startIndex <= 0) {
+    return noopPlan(messages, source, "nothing_before_boundary", topicTitle);
   }
 
   return {
