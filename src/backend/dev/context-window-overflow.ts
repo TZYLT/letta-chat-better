@@ -52,9 +52,18 @@ export class LocalContextOverflowError extends Error {
   }
 }
 
-/** What the operator can do about an overflow. Appended to every overflow report. */
+/**
+ * What the operator can do about an overflow. Appended to every overflow report.
+ *
+ * The second sentence is not padding: the first is a dead end whenever the
+ * conversation has no marker to cut at, or its markers define no block inside the
+ * current context. A bare `/compact` then falls back to the retention ratio,
+ * which writes nothing once the transcript already fits that budget — so the
+ * report would point at a command that cannot help. `/topic` is what turns that
+ * state back into one with something to choose.
+ */
 export const CONTEXT_OVERFLOW_GUIDANCE =
-  "Run /compact to choose a cut point. This product no longer splits context automatically.";
+  "Run /compact to choose a cut point. This product no longer splits context automatically. If there is nothing to choose between, mark a boundary with /topic <title> first, then keep the block after it.";
 
 /** Report for an overflow the provider reported, where the numbers are unknown. */
 export const CONTEXT_OVERFLOW_MESSAGE = `Context has exceeded the model window. ${CONTEXT_OVERFLOW_GUIDANCE}`;

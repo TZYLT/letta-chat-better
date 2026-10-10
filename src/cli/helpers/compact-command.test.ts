@@ -187,16 +187,22 @@ describe("formatTopicTrimReceipt", () => {
     );
     expect(nothingToTrim).toContain("Run /topics");
 
-    // The ratio path *is* the "already fits" case.
-    expect(
-      formatTopicTrimReceipt(
-        outcome({
-          executed: false,
-          source: "ratio_suggestion",
-          noopReason: "nothing_before_boundary",
-        }),
-      ),
-    ).toContain("already fits inside the retention ratio");
+    // The ratio path *is* the "already fits" case — but it is not a dead end:
+    // a topic pick is not bound by the ratio budget, so it can still cut.
+    const ratioNoop = formatTopicTrimReceipt(
+      outcome({
+        executed: false,
+        source: "ratio_suggestion",
+        noopReason: "nothing_before_boundary",
+        retainedTokens: 250,
+        retentionCapTokens: 300,
+      }),
+    );
+    expect(ratioNoop).toContain("already fits inside the retention ratio");
+    expect(ratioNoop).toContain("~250 tokens");
+    expect(ratioNoop).toContain("~300 tokens");
+    expect(ratioNoop).toContain("Run /topics and pick a block");
+    expect(ratioNoop).toContain("Nothing was written");
 
     expect(
       formatTopicTrimReceipt(
@@ -265,6 +271,9 @@ describe("formatContextPressureHint", () => {
       contextWindow: 1_000,
       hasBlocks: false,
       hasMarkers: false,
+      ratioHasWork: true,
+      transcriptTokens: 750,
+      retentionCapTokens: 300,
     });
     expect(hint).toContain("about 75%");
     expect(hint).toContain("750 of 1000 tokens");
@@ -279,6 +288,9 @@ describe("formatContextPressureHint", () => {
       contextWindow: 1_000,
       hasBlocks: true,
       hasMarkers: true,
+      ratioHasWork: true,
+      transcriptTokens: 900,
+      retentionCapTokens: 300,
     });
     expect(hint).toContain("Pick a topic block to keep before sending");
     expect(hint).toContain("Esc to send anyway");
@@ -291,6 +303,9 @@ describe("formatContextPressureHint", () => {
       contextWindow: 1_000,
       hasBlocks: false,
       hasMarkers: false,
+      ratioHasWork: true,
+      transcriptTokens: 950,
+      retentionCapTokens: 300,
     });
     expect(hint).toContain(
       "past the point where a turn this large can be sent",
@@ -306,10 +321,56 @@ describe("formatContextPressureHint", () => {
       contextWindow: 1_000,
       hasBlocks: false,
       hasMarkers: true,
+      ratioHasWork: true,
+      transcriptTokens: 950,
+      retentionCapTokens: 300,
     });
     expect(hint).toContain("markers in this conversation define no boundary");
     expect(hint).not.toContain("nothing has marked a topic boundary yet");
     expect(hint).toContain("/topic <title>");
+  });
+
+  test("a soft tier stops advising /compact once the ratio has nothing to cut", () => {
+    // A large prompt floor: the whole context is past the soft ratio, but the
+    // transcript is already inside its own budget, so `/compact` would refuse.
+    const hint = formatContextPressureHint({
+      level: "soft",
+      contextTokens: 720,
+      contextWindow: 1_000,
+      hasBlocks: false,
+      hasMarkers: true,
+      ratioHasWork: false,
+      transcriptTokens: 250,
+      retentionCapTokens: 300,
+    });
+
+    expect(hint).toContain("about 72%");
+    expect(hint).toContain("~250 tokens");
+    expect(hint).toContain("~300-token retention ratio");
+    expect(hint).toContain("the rest of the window is the system prompt");
+    expect(hint).toContain("/topic <title>");
+    // The advice that would land on "Nothing to trim" is gone.
+    expect(hint).not.toContain("/compact moves older topics");
+  });
+
+  test("a hard tier with nothing to cut explains the dead end instead of advising it", () => {
+    const hint = formatContextPressureHint({
+      level: "hard",
+      contextTokens: 950,
+      contextWindow: 1_000,
+      hasBlocks: false,
+      hasMarkers: false,
+      ratioHasWork: false,
+      transcriptTokens: 250,
+      retentionCapTokens: 300,
+    });
+
+    expect(hint).toContain(
+      "past the point where a turn this large can be sent",
+    );
+    expect(hint).toContain("a ratio trim would write nothing");
+    expect(hint).toContain("/topic <title>");
+    expect(hint).not.toContain("Run /compact to trim by the retention ratio");
   });
 });
 

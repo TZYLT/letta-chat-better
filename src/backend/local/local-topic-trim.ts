@@ -190,6 +190,27 @@ export function hasSelectableTopicBlocks(list: LocalTopicList): boolean {
   return list.blocks.length > 1;
 }
 
+/**
+ * Whether trimming by the retention ratio has any region left to summarize away.
+ *
+ * This is the planner's own predicate, not an approximation of it:
+ * `ratioSuggestionMessageId` walks back from the newest message until the budget
+ * is spent and returns the *first* in-context message when the whole transcript
+ * already fits, which `resolveTrimPlan` turns into a `nothing_before_boundary`
+ * no-op. So `contextTokens <= retentionCapTokens` is exactly "the ratio path
+ * writes nothing", and callers must not advise a ratio trim when it holds.
+ *
+ * A *topic pick* can still cut in that state: a pick only has to keep at most the
+ * cap, not reach it, so a boundary past the first message is honored as long as
+ * the kept region is smaller — which it is whenever this returns false.
+ *
+ * An unknown context window leaves the cap at `Infinity`, and then nothing is
+ * trimmable by ratio: there is no retention target to trim down to.
+ */
+export function ratioHasTrimmableContent(list: LocalTopicList): boolean {
+  return list.contextTokens > list.retentionCapTokens;
+}
+
 export function listLocalTopics(
   ports: LocalTopicTrimPorts,
   input: {

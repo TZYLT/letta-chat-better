@@ -576,10 +576,22 @@ describe("offerTrimBeforeSend (D-112)", () => {
       contextTokens: 750,
     });
 
+    // Precondition for the copy below: the transcript is already inside its own
+    // retention budget, so `/compact` by ratio would write nothing. The tier still
+    // fires because the whole context (system prompt + tools + transcript) is past
+    // 70% — the two measures are deliberately different.
+    const list = local.backend.listTopics(local.conversationId, local.agentId);
+    expect(list.contextTokens).toBeLessThanOrEqual(list.retentionCapTokens);
+
     expect(await offerTrimBeforeSend(h.ctx, async () => {})).toBe(false);
     expect(h.commands).toHaveLength(1);
     expect(h.commands[0]?.output).toContain("about 75%");
-    expect(h.commands[0]?.output).toContain("/compact moves older topics");
+    // The advice must not send the user into "Nothing to trim".
+    expect(h.commands[0]?.output).not.toContain("/compact moves older topics");
+    expect(h.commands[0]?.output).toContain(
+      "the rest of the window is the system prompt",
+    );
+    expect(h.commands[0]?.output).toContain("/topic <title>");
 
     // Same tier again: no second line.
     expect(await offerTrimBeforeSend(h.ctx, async () => {})).toBe(false);
@@ -591,6 +603,22 @@ describe("offerTrimBeforeSend (D-112)", () => {
     h.tracker.lastContextTokens = 750;
     await offerTrimBeforeSend(h.ctx, async () => {});
     expect(h.commands).toHaveLength(2);
+  });
+
+  test("a soft crossing still offers /compact while the ratio has work to do", async () => {
+    const local = await localConversation(20);
+    const h = harness({
+      conversationId: local.conversationId,
+      agentId: local.agentId,
+      contextWindow: 1_000,
+      contextTokens: 750,
+    });
+
+    const list = local.backend.listTopics(local.conversationId, local.agentId);
+    expect(list.contextTokens).toBeGreaterThan(list.retentionCapTokens);
+
+    expect(await offerTrimBeforeSend(h.ctx, async () => {})).toBe(false);
+    expect(h.commands[0]?.output).toContain("/compact moves older topics");
   });
 
   test("a hard crossing with blocks parks the picker, then sends after the trim", async () => {

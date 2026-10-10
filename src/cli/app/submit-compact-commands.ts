@@ -23,7 +23,10 @@ import type {
   LocalTopicTrimOutcome,
   LocalTopicTrimPick,
 } from "@/backend/local/local-topic-trim";
-import { hasSelectableTopicBlocks } from "@/backend/local/local-topic-trim";
+import {
+  hasSelectableTopicBlocks,
+  ratioHasTrimmableContent,
+} from "@/backend/local/local-topic-trim";
 import type { ActiveOverlay, AppCommandRunner } from "@/cli/app/types";
 import type { CompactModeArgument } from "@/cli/helpers/compact-command";
 import {
@@ -129,12 +132,19 @@ export async function offerTrimBeforeSend(
   // whose boundary clamps onto the start of the context leave one block and the
   // picker would have nothing selectable in it (H-2).
   const hasBlocks = hasSelectableTopicBlocks(list);
+  // The tier compares the whole context against the window; the ratio compares the
+  // transcript against its budget. Without this, a large prompt floor makes the
+  // hint advise a `/compact` that immediately refuses (see formatContextPressureHint).
+  const ratioHasWork = ratioHasTrimmableContent(list);
   const hint = formatContextPressureHint({
     level,
     contextTokens,
     contextWindow: contextWindow ?? 0,
     hasBlocks,
     hasMarkers: list.markers.length > 0,
+    ratioHasWork,
+    transcriptTokens: list.contextTokens,
+    retentionCapTokens: list.retentionCapTokens,
   });
   if (level === "soft") {
     // One line per crossing, not one per message.

@@ -113,9 +113,15 @@ function formatTopicTrimRefusal(outcome: LocalTopicTrimOutcome): string {
     default:
       // The cut point resolved to the start of the context. Which *reason* it did
       // decides the advice: only the ratio path means "the context already fits".
-      return outcome.source === "ratio_suggestion"
-        ? "Nothing to trim: the context already fits inside the retention ratio. Nothing was written."
-        : "Nothing to trim: that cut point is the start of the context, so everything in it is already kept. Run /topics to see the blocks you can cut at. Nothing was written.";
+      if (outcome.source === "ratio_suggestion") {
+        const cap = outcome.retentionCapTokens;
+        const target = cap === null ? "" : ` (~${cap} tokens)`;
+        // Not a dead end: the ratio has nothing to do only because everything the
+        // transcript holds already fits its budget. A topic pick is not bound by
+        // that — it just has to stay under the cap — so it can still cut.
+        return `Nothing to trim: the transcript (~${outcome.retainedTokens} tokens) already fits inside the retention ratio${target}, so trimming by the ratio would write nothing. Run /topics and pick a block to keep to reclaim room anyway — a topic pick cuts even when the ratio has nothing to do. Nothing was written.`;
+      }
+      return "Nothing to trim: that cut point is the start of the context, so everything in it is already kept. Run /topics to see the blocks you can cut at. Nothing was written.";
   }
 }
 
@@ -160,6 +166,14 @@ export function formatSingleBlockCompactHint(input: {
  * boundary in the current context (a `/topic` in the first turns, or anchors
  * trimmed away) leave one block — and must not be described as "nothing has
  * marked a boundary yet" (H-2).
+ *
+ * `ratioHasWork` closes the other half of that gap: the two tiers compare the
+ * **whole** context against the window (the provider's `context_tokens`, which
+ * includes the compiled system prompt, memory and tool definitions), while the
+ * trim planner compares the **transcript** against the retention ratio. With a
+ * large prompt floor the tier can fire while the ratio path would write nothing,
+ * so advising `/compact` there sends the user straight into
+ * "Nothing to trim: … already fits inside the retention ratio".
  */
 export function formatContextPressureHint(input: {
   level: "soft" | "hard";
@@ -167,19 +181,41 @@ export function formatContextPressureHint(input: {
   contextWindow: number;
   hasBlocks: boolean;
   hasMarkers: boolean;
+  /** `ratioHasTrimmableContent(list)`: whether a ratio trim would write anything. */
+  ratioHasWork: boolean;
+  /** Tokens the trim planner measures: the in-context transcript only. */
+  transcriptTokens: number;
+  /** The transcript budget the retention ratio allows. */
+  retentionCapTokens: number;
 }): string {
   const percent = Math.round((input.contextTokens / input.contextWindow) * 100);
   const usage = `The context is at about ${percent}% of this model's window (${input.contextTokens} of ${input.contextWindow} tokens).`;
+  const capText = Number.isFinite(input.retentionCapTokens)
+    ? `~${input.retentionCapTokens}-token retention ratio`
+    : "retention ratio";
+  // Why the ratio path is a dead end, and the move that still reclaims room.
+  const ratioDeadEnd = ` The transcript is ~${input.transcriptTokens} tokens, already inside the ${capText}, so a ratio trim would write nothing; the rest of the window is the system prompt, memory and tool definitions.`;
+  const topicWayOut =
+    " Mark a boundary with /topic <title> and keep the block after it to reclaim room anyway.";
   if (input.level === "soft") {
+    if (!input.ratioHasWork) {
+      return `${usage}${ratioDeadEnd}${topicWayOut}`;
+    }
     return `${usage} /compact moves older topics into a summary when you want more room.`;
   }
   if (input.hasBlocks) {
     return `${usage} Pick a topic block to keep before sending, or press Esc to send anyway.`;
   }
-  if (!input.hasMarkers) {
-    return `${usage} This is past the point where a turn this large can be sent, and nothing has marked a topic boundary yet. Run /compact to trim by the retention ratio, or /topic <title> to mark a boundary for a cleaner cut.`;
+  const why = input.hasMarkers
+    ? "the markers in this conversation define no boundary inside the current context"
+    : "nothing has marked a topic boundary yet";
+  if (!input.ratioHasWork) {
+    return `${usage} This is past the point where a turn this large can be sent, and ${why}.${ratioDeadEnd}${topicWayOut}`;
   }
-  return `${usage} This is past the point where a turn this large can be sent, and the markers in this conversation define no boundary inside the current context. Run /compact to trim by the retention ratio, or /topic <title> to mark a fresh boundary.`;
+  const wayOut = input.hasMarkers
+    ? "/topic <title> to mark a fresh boundary"
+    : "/topic <title> to mark a boundary for a cleaner cut";
+  return `${usage} This is past the point where a turn this large can be sent, and ${why}. Run /compact to trim by the retention ratio, or ${wayOut}.`;
 }
 
 /**
