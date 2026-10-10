@@ -12,7 +12,11 @@ import { existsSync } from "node:fs";
 import { readdir, readFile, realpath, stat } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { APP_SUBDIRS, appHomePath } from "@/utils/app-paths";
+import {
+  APP_SUBDIRS,
+  appHomePath,
+  LEGACY_SKILLS_DIR_NAME,
+} from "@/utils/app-paths";
 import { parseFrontmatter } from "@/utils/frontmatter";
 import { ALL_SKILL_SOURCES, type SkillSource } from "./skill-sources";
 
@@ -176,12 +180,18 @@ export const PROJECT_SKILLS_DIR = join(".agents", "skills");
 /**
  * Legacy directory name where project skills were stored.
  */
-export const SKILLS_DIR = ".skills";
+export const SKILLS_DIR = LEGACY_SKILLS_DIR_NAME;
 
 /**
- * Global skills directory (in user's home directory)
+ * Global skills directory (in user's home directory).
+ *
+ * Resolved per call rather than captured at import time: `HARUYUKI_HOME` and
+ * `HOME` are read when the path is asked for, so discovery can never use a root
+ * that was correct when `skills.ts` happened to be imported and wrong now.
  */
-export const GLOBAL_SKILLS_DIR = appHomePath(["skills"]);
+export function getGlobalSkillsDir(): string {
+  return appHomePath([APP_SUBDIRS.skills]);
+}
 
 /**
  * Get the agent-scoped skills directory for a specific agent.
@@ -270,7 +280,7 @@ export async function discoverSkills(
   // 2. Add global skills (override bundled)
   if (includeSource("global")) {
     const globalResult = await discoverSkillsFromDir(
-      GLOBAL_SKILLS_DIR,
+      getGlobalSkillsDir(),
       "global",
     );
     allErrors.push(...globalResult.errors);

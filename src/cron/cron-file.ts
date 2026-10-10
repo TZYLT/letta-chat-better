@@ -135,8 +135,9 @@ const GC_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 // ── Paths ───────────────────────────────────────────────────────────
 
 function getHaruyukiDir(): string {
-  if (process.env.HARUYUKI_HOME) return process.env.HARUYUKI_HOME;
-  return appHomeRoot(process.env.HOME ?? process.env.USERPROFILE ?? "~");
+  // Via the shared helper, so the scheduler cannot disagree with the rest of the
+  // harness about the root (it used to re-implement the override and home lookup).
+  return appHomeRoot();
 }
 
 export function getCronFilePath(): string {

@@ -58,6 +58,7 @@ export const APP_SUBDIRS = {
   modCache: "mod-cache",
   mods: "mods",
   plans: "plans",
+  skills: "skills",
   transcripts: "transcripts",
   viewers: "viewers",
   workflows: "workflows",

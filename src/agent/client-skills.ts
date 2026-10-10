@@ -15,8 +15,8 @@ import {
 import {
   compareSkills,
   discoverSkills,
-  GLOBAL_SKILLS_DIR,
   getAgentSkillsDir,
+  getGlobalSkillsDir,
   isModelInvocableSkill,
   isSkillAvailableForAgent,
   PROJECT_SKILLS_DIR,
@@ -157,7 +157,7 @@ function getSkillRoots(components: {
     roots.add(components.primaryProjectSkillsDirectory);
   }
   if (sourceSet.has("global")) {
-    roots.add(GLOBAL_SKILLS_DIR);
+    roots.add(getGlobalSkillsDir());
   }
   if (components.agentId && sourceSet.has("agent")) {
     roots.add(getAgentSkillsDir(components.agentId));

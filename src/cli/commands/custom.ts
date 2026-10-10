@@ -9,7 +9,17 @@ import { APP_SUBDIRS, appHomePath } from "@/utils/app-paths";
 import { getStringField, parseFrontmatter } from "@/utils/frontmatter.js";
 
 export const COMMANDS_DIR = ".commands";
-export const GLOBAL_COMMANDS_DIR = appHomePath([APP_SUBDIRS.commands]);
+
+/**
+ * User-level commands directory (`~/.haruyuki/commands`).
+ *
+ * Resolved per call, not captured at import time: `HARUYUKI_HOME` and `HOME` are
+ * read when the path is asked for, so a long-lived process cannot keep using the
+ * root that was current when this module was first imported.
+ */
+export function getGlobalCommandsDir(): string {
+  return appHomePath([APP_SUBDIRS.commands]);
+}
 
 export interface CustomCommand {
   id: string; // Command name without slash (e.g., "review")
@@ -55,7 +65,10 @@ export async function discoverCustomCommands(
   const commandsById = new Map<string, CustomCommand[]>(); // Group by id for collision handling
 
   // 1. Discover user commands first (lower priority)
-  const userCommands = await discoverFromDirectory(GLOBAL_COMMANDS_DIR, "user");
+  const userCommands = await discoverFromDirectory(
+    getGlobalCommandsDir(),
+    "user",
+  );
   for (const cmd of userCommands) {
     const existing = commandsById.get(cmd.id) || [];
     existing.push(cmd);

@@ -1,12 +1,12 @@
 import type WebSocket from "ws";
 import { resolveModel } from "@/agent/model";
+import { getGlobalSkillsDir } from "@/agent/skills";
 import { settingsManager } from "@/settings-manager";
 import type {
   CreateAgentCommand,
   SkillDisableCommand,
   SkillEnableCommand,
 } from "@/types/protocol_v2";
-import { appHomeRoot } from "@/utils/app-paths";
 import {
   isCreateAgentCommand,
   isSkillDisableCommand,
@@ -52,11 +52,12 @@ export async function handleSkillCommand(
   } = await import("node:fs");
   const { basename, join } = await import("node:path");
 
-  // Compute skills dir dynamically to respect HARUYUKI_HOME (important for tests)
-  const haruyukiHome =
-    process.env.HARUYUKI_HOME ||
-    appHomeRoot(process.env.HOME || process.env.USERPROFILE || "~");
-  const globalSkillsDir = join(haruyukiHome, "skills");
+  // Resolved on every call: this handler runs inside long-lived listeners whose
+  // harness root can move (`HARUYUKI_HOME`), and the skill symlinks must land in
+  // the root that is current when the command arrives. Going through the shared
+  // helper also means the listener and skill discovery cannot disagree about
+  // where `<root>/skills` is.
+  const globalSkillsDir = getGlobalSkillsDir();
 
   if (parsed.type === "skill_enable") {
     try {
