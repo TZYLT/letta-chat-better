@@ -7,7 +7,7 @@
   "src/cli/app/AppCoordinator.tsx": 4874,
   "src/cli/app/AppView.tsx": 1639,
   "src/cli/app/use-approval-flow.ts": 1063,
-  "src/cli/app/use-configuration-handlers.ts": 1332,
+  "src/cli/app/use-configuration-handlers.ts": 1330,
   "src/cli/app/use-conversation-loop.ts": 2783,
   "src/cli/app/use-submit-handler.ts": 3299,
   "src/cli/components/InputRich.tsx": 2088,

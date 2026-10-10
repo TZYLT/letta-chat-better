@@ -190,7 +190,7 @@ type AppViewProps = {
   handleBtwJump: (conversationId: string) => Promise<void>;
   handleCancelApprovals: () => void;
   handleCompactionModeSelect: (
-    mode: string,
+    selection: import("@/cli/components/CompactionSelector").CompactionSelection,
     commandId?: string | null,
   ) => Promise<void>;
   handleCreateNewAgent: (

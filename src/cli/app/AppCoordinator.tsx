@@ -4210,7 +4210,7 @@ export function App({
       } else if (action.type === "set_sleeptime") {
         handleSleeptimeModeSelect(action.settings, action.commandId);
       } else if (action.type === "set_compaction") {
-        handleCompactionModeSelect(action.mode, action.commandId);
+        handleCompactionModeSelect(action.selection, action.commandId);
       } else if (action.type === "switch_conversation") {
         const cmd = action.commandId
           ? commandRunner.getHandle(action.commandId, "/resume")

@@ -13,6 +13,7 @@ import type {
 import type { AgentProvenance } from "@/agent/create";
 import type { PersonalityId } from "@/agent/personality-presets";
 import type { CommandHandle, createCommandRunner } from "@/cli/commands/runner";
+import type { CompactionSelection } from "@/cli/components/CompactionSelector";
 import type { ModelSelectorSelection } from "@/cli/components/ModelSelector";
 import type { Line } from "@/cli/helpers/accumulator";
 import type { AdvancedDiffSuccess } from "@/cli/helpers/diff";
@@ -104,7 +105,7 @@ export type QueuedOverlayAction =
     }
   | {
       type: "set_compaction";
-      mode: string;
+      selection: CompactionSelection;
       commandId?: string;
     }
   | {

@@ -19,8 +19,8 @@ import {
   type PersonalityId,
 } from "@/agent/personality-presets";
 import { getBackend } from "@/backend";
+import type { CompactionSelection } from "@/cli/components/CompactionSelector";
 import type { ModelSelectorSelection } from "@/cli/components/ModelSelector";
-import { assertCompactionModeForBackend } from "@/cli/helpers/compaction-mode";
 import {
   type ContextTracker,
   resetContextHistory,
@@ -40,6 +40,10 @@ import type { ToolsetName, ToolsetPreference } from "@/tools/toolset";
 import { formatToolsetName } from "@/tools/toolset-labels";
 import { OPENAI_COMPATIBLE_PROXY_UPDATE_ARG } from "@/utils/openai-endpoint";
 
+import {
+  buildCompactionSettings,
+  formatCompactionUpdate,
+} from "./compaction-settings";
 import {
   deriveReasoningEffort,
   mapHandleToLlmConfigPatch,
@@ -988,7 +992,7 @@ export function useConfigurationHandlers(ctx: ConfigurationHandlersContext) {
   );
 
   const handleCompactionModeSelect = useCallback(
-    async (mode: string, commandId?: string | null) => {
+    async (selection: CompactionSelection, commandId?: string | null) => {
       const overlayCommand = commandId
         ? commandRunner.getHandle(commandId, "/compaction")
         : consumeOverlayCommand("compaction");
@@ -1008,7 +1012,7 @@ export function useConfigurationHandlers(ctx: ConfigurationHandlersContext) {
         });
         setQueuedOverlayAction({
           type: "set_compaction",
-          mode,
+          selection,
           commandId: cmd.id,
         });
         return;
@@ -1024,26 +1028,20 @@ export function useConfigurationHandlers(ctx: ConfigurationHandlersContext) {
         });
 
         try {
-          // Spread existing compaction_settings to preserve the model and any
-          // other fields; only override the mode.
-          const existing = agentState?.compaction_settings;
-          const nextCompactionSettings = {
-            ...existing,
-            // Rejects modes this backend cannot run (a queued overlay action can
-            // carry one chosen before the backend changed).
-            mode: assertCompactionModeForBackend(mode),
-          };
-
-          await getBackend().updateAgent(agentId, {
-            compaction_settings: nextCompactionSettings,
-          });
-          setAgentState((prev: AgentState | null | undefined) =>
-            prev
-              ? { ...prev, compaction_settings: nextCompactionSettings }
-              : prev,
+          // A mode pick keeps the rate; a rate edit keeps the mode.
+          const next = buildCompactionSettings(
+            agentState?.compaction_settings,
+            selection,
           );
 
-          cmd.finish(`Updated compaction mode to: ${mode}`, true);
+          await getBackend().updateAgent(agentId, {
+            compaction_settings: next,
+          });
+          setAgentState((prev: AgentState | null | undefined) =>
+            prev ? { ...prev, compaction_settings: next } : prev,
+          );
+
+          cmd.finish(formatCompactionUpdate(selection, next.mode), true);
         } catch (error) {
           const errorDetails = formatErrorDetails(error, agentId);
           cmd.fail(`Failed to save compaction settings: ${errorDetails}`);
