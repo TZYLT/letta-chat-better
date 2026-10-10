@@ -240,6 +240,12 @@ Test files live **next to their source** (`local-store.test.ts` next to `local-s
 architectural checks and TypeScript errors need manual fixes. The pre-commit hook
 also rejects staged parent-relative imports (`../`); use the `@/` alias.
 
+**When you touch `scripts/run-unit-tests.cjs`, smoke-test
+`HARUYUKI_TEST_PARALLEL=0` too.** The parallel batch and the serial escape hatch
+are separate code paths, and a bug in the escape hatch shows up as *fewer tests
+running with no failure* — exactly the shape that hid a skipped-suite bug until
+review. The runner also refuses to report success when it selected nothing.
+
 ### Check Suite (what each check does)
 
 1. **cycles** — `madge --circular src/`; must be exactly 0
@@ -357,6 +363,15 @@ directory first. Otherwise the run reads and mutates your real
   with no error. `HARUYUKI_HOME` is the one supported way tests and operators
   relocate user-level harness state. Regression coverage for the split lives in
   `src/permissions/harness-path-whitelists.test.ts`.
+  **Never capture one of these helpers in a module-level `const`.** `HOME` and
+  `HARUYUKI_HOME` are read when the path is asked for, so `export const X =
+  appHomePath([...])` freezes whatever root happened to be current at import
+  time — and then disagrees with every call-time resolver in the same process,
+  with no error. Export a `getXDir()` function instead; `getGlobalSkillsDir()`
+  and `getGlobalCommandsDir()` are the two that were converted.
+  Call-time resolution is also why `appHomePath` takes a plain `homeDir` string
+  rather than an `env`: pass `{ homeDir, env }` when a caller has its own
+  environment (the sandbox policy does), and omit both to read the ambient one.
   A few files still carry the name as a literal. They are the **rename
   checklist** — touch them whenever the directory is renamed, and do not add
   yourself to it casually:
