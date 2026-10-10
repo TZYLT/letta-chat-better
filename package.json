@@ -1,6 +1,6 @@
 {
   "name": "haruyuki",
-  "version": "0.36.2-better",
+  "version": "0.1.0",
   "lettaStartupLogProtocol": 1,
   "description": "Haruyuki is a terminal CLI for stateful Letta agents.",
   "type": "module",

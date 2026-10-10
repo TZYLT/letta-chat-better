@@ -4,13 +4,13 @@ __pycache__/
 *.pyc
 *.whl
 
-# Haruyuki local settings
+# Haruyuki local settings (the whole dir is ignored; the explicit local-settings
+# line is kept so `!.haruyuki/` style un-ignoring later cannot leak the file)
 .haruyuki/settings.local.json
 .haruyuki
 # Pre-rename harness dir. Transitional: the local data migration moves it, and
 # this entry goes away with it.
 .letta
-.letta/settings.local.json
 # User-defined skills
 .skills
 # Local notes (not for repo)

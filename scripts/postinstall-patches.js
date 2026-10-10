@@ -276,16 +276,16 @@ if (process.platform !== "win32") {
   try {
     const bunVersion = execSync("bun --version", { encoding: "utf-8" }).trim();
     if (isBunVersionSupported(bunVersion)) {
-      const lettaPath = join(pkgRoot, "haruyuki.js");
-      if (existsSync(lettaPath)) {
-        let content = readFileSync(lettaPath, "utf-8");
+      const bundlePath = join(pkgRoot, "haruyuki.js");
+      if (existsSync(bundlePath)) {
+        let content = readFileSync(bundlePath, "utf-8");
         if (content.startsWith("#!/usr/bin/env node")) {
           content = content.replace(
             "#!/usr/bin/env node",
             `#!/bin/sh
 ":" //#; exec /usr/bin/env sh -c 'command -v bun >/dev/null && exec bun "$0" "$@" || exec node "$0" "$@"' "$0" "$@"`,
           );
-          writeFileSync(lettaPath, content);
+          writeFileSync(bundlePath, content);
           console.log("[patch] Configured haruyuki to prefer Bun runtime");
         }
       }
