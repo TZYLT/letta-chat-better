@@ -2,7 +2,8 @@
 
 > 本文件由 `node scripts/generate-third-party-notices.cjs` 生成，**请勿手工编辑**。
 > 覆盖范围：`package.json` 的 `dependencies` ＋ `optionalDependencies` 的**传递闭包**
-> （当前 311 个包，其中 299 个读取到许可文件）＋ `vendor/` 内的补丁副本。
+> （当前 311 个包，其中 299 个读取到许可文件）＋ `vendor/` 内的补丁副本
+> ＋ **非 npm 来源**的第三方表达（见 §4，清单在 `scripts/non-npm-third-party-sources.json`）。
 > `devDependencies` 不随包分发，故未列入。
 > 法律声明与商标信息见同目录的 `NOTICE`；本包的整体许可为 Apache-2.0（见 `LICENSE`）。
 
@@ -13,6 +14,7 @@
 | `haruyuki.js` / `dist/**` 内联的 npm 依赖 | 是 | 单文件打包把生产依赖内联进产物，见 `build.js` 的 `external` 白名单 |
 | `vendor/ink`、`vendor/ink-text-input` | 是 | 本地打补丁的第三方源码，见 §2 |
 | `src/skills/builtin/self-configuration/LICENSE` | 是 | 上游随技能附带的 MIT 文本（Copyright (c) 2026 Letta, Inc.），原样保留 |
+| 非 npm 来源的第三方表达（`src/agent/prompts/source_*.md`） | 是 | 为基准对照收录的外部系统提示词，见 §4 |
 | `node_modules` 中的 `devDependencies` | 否 | 仅开发期使用，不进入发布产物 |
 
 许可证原文一律**逐字保留英文原文**，不作翻译或改写。
@@ -1012,7 +1014,77 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org>
 ```
 
-## 4. 依赖闭包中的上游包
+## 4. 非 npm 来源的第三方内容
+
+以下表达**随本包分发**，但既不在 npm 依赖闭包、也不在 `vendor/` 里，
+因此上面的依赖遍历**结构上扫不到**它们。清单维护在
+`scripts/non-npm-third-party-sources.json`（许可原文逐字保留）。
+
+这些提示词是**为基准对照（benchmarking）而收录的第三方原件**：本项目不是
+Anthropic / OpenAI / Google 的产品，也不代表它们，文件内容不构成本项目的声明。
+
+### src/agent/prompts/source_claude.md — MIT
+
+- **来源**：Anthropic Claude Code system prompt, as assembled by the Piebald mirror
+- **版本**：Claude Code ~v2.1.50 (Feb 2026); assembled from ~110 modular prompt files
+- **上游**：https://github.com/Piebald-AI/claude-code-system-prompts
+- **版权行**：Copyright (c) 2025 Piebald LLC
+- **本分支是否改动**：否，与上游逐字相同
+- **随包文件**：`src/agent/prompts/source_claude.md`（14250 字节，SHA-256 `5408b1828d294845f903de836fd279ba116fb376b2674369d1788216e46d7b64`）
+
+许可原文：
+
+```text
+MIT License
+
+Copyright (c) 2025 Piebald LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### src/agent/prompts/source_codex.md — Apache-2.0
+
+- **来源**：OpenAI Codex CLI system prompt (models-manager instructions template)
+- **版本**：extracted from openai/codex main (May 2026), rendered with personality_pragmatic
+- **上游**：https://github.com/openai/codex
+- **版权行**：Copyright 2025 OpenAI
+- **本分支是否改动**：否，与上游逐字相同
+- **随包文件**：`src/agent/prompts/source_codex.md`（21347 字节，SHA-256 `c2a980bc28af132eb89e0b4c68ae884043faae83a1afd3fd4889f7e8a1ada7b0`）
+
+许可原文：与仓库根的 `LICENSE` **逐字相同**的标准 Apache License 2.0 文本
+（openai/codex ships the standard Apache License 2.0 text, identical to the LICENSE file in this repository）
+，此处不再重复贴出。
+
+### src/agent/prompts/source_gemini.md — Apache-2.0
+
+- **来源**：Google Gemini CLI system prompt (snippets.ts, rendered)
+- **版本**：snippets.ts (Feb 2026), copyright 2026 Google LLC
+- **上游**：https://github.com/google-gemini/gemini-cli
+- **版权行**：Copyright 2026 Google LLC (as stated in the upstream snippets.ts header)
+- **本分支是否改动**：否，与上游逐字相同
+- **随包文件**：`src/agent/prompts/source_gemini.md`（18640 字节，SHA-256 `3e91857d4b9c4188ec44a18a06499d7fa34bd35791a884f5e7c6081b6bd18b03`）
+
+许可原文：与仓库根的 `LICENSE` **逐字相同**的标准 Apache License 2.0 文本
+（google-gemini/gemini-cli ships the standard Apache License 2.0 text, identical to the LICENSE file in this repository）
+，此处不再重复贴出。
+
+## 5. 依赖闭包中的上游包
 
 以下包由 Letta, Inc. 作为**独立 npm 包**发布，本项目的依赖闭包会安装它们（未内联进 `haruyuki.js`）：
 
@@ -1024,11 +1096,11 @@ For more information, please refer to <http://unlicense.org>
 它们的资产（包括上游自己的品牌图片与截图）由各自的发布者分发，**不属于本项目的分发物**；
 本项目不复制、不重新打包这些资产，`npm pack` 的清单里也不含它们。
 
-## 5. NOTICE 文件扫描（Apache-2.0 §4(d)）
+## 6. NOTICE 文件扫描（Apache-2.0 §4(d)）
 
 闭包内**没有任何包附带 `NOTICE` 文件**，因此本次分发没有需要向下传递的第三方 NOTICE 声明。
 
-## 6. 已知缺口
+## 7. 已知缺口
 
 无。闭包内所有包都已解析到 `node_modules` 中的实体。
 

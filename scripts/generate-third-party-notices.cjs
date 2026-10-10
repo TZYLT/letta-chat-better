@@ -17,6 +17,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { createHash } = require("node:crypto");
 
 const ROOT = path.resolve(__dirname, "..");
 const NODE_MODULES = path.join(ROOT, "node_modules");
@@ -304,6 +305,62 @@ function renderDependencies(packages) {
   return lines;
 }
 
+function renderNonNpmSources() {
+  const manifestPath = path.join(ROOT, "scripts", "non-npm-third-party-sources.json");
+  if (!fs.existsSync(manifestPath)) {
+    return ["## 4. 非 npm 来源的第三方内容", "", "（清单缺失）", ""];
+  }
+  const manifest = readJson(manifestPath);
+  const entries = manifest.sources ?? [];
+  const lines = [
+    "## 4. 非 npm 来源的第三方内容",
+    "",
+    "以下表达**随本包分发**，但既不在 npm 依赖闭包、也不在 `vendor/` 里，",
+    "因此上面的依赖遍历**结构上扫不到**它们。清单维护在",
+    "`scripts/non-npm-third-party-sources.json`（许可原文逐字保留）。",
+    "",
+    "这些提示词是**为基准对照（benchmarking）而收录的第三方原件**：本项目不是",
+    "Anthropic / OpenAI / Google 的产品，也不代表它们，文件内容不构成本项目的声明。",
+    "",
+  ];
+  for (const entry of entries) {
+    const abs = path.join(ROOT, entry.path);
+    const present = fs.existsSync(abs);
+    lines.push(`### ${entry.path} — ${entry.license}`, "");
+    lines.push(`- **来源**：${entry.origin}`);
+    lines.push(`- **版本**：${entry.version}`);
+    lines.push(`- **上游**：${entry.reference}`);
+    if (entry.licenseCopyright) {
+      lines.push(`- **版权行**：${entry.licenseCopyright}`);
+    }
+    lines.push(
+      `- **本分支是否改动**：${entry.modifiedFromUpstream ? "是（见下）" : "否，与上游逐字相同"}`,
+    );
+    if (present) {
+      const buf = fs.readFileSync(abs);
+      const sha = createHash("sha256").update(buf).digest("hex");
+      lines.push(
+        `- **随包文件**：\`${entry.path}\`（${buf.length} 字节，SHA-256 \`${sha}\`）`,
+      );
+    } else {
+      lines.push(`- **随包文件**：缺失（${entry.path} 不存在）`);
+    }
+    lines.push("");
+    const src = entry.licenseTextSource ?? {};
+    if (src.kind === "inline" && typeof src.text === "string") {
+      lines.push("许可原文：", "", "```text", src.text.trim(), "```", "");
+    } else {
+      lines.push(
+        "许可原文：与仓库根的 `LICENSE` **逐字相同**的标准 Apache License 2.0 文本",
+        src.why ? `（${src.why}）` : "",
+        "，此处不再重复贴出。",
+        "",
+      );
+    }
+  }
+  return lines;
+}
+
 function main() {
   const rootPkg = readJson(path.join(ROOT, "package.json"));
   const packages = collectClosure(rootPkg);
@@ -316,7 +373,8 @@ function main() {
     "",
     "> 本文件由 `node scripts/generate-third-party-notices.cjs` 生成，**请勿手工编辑**。",
     "> 覆盖范围：`package.json` 的 `dependencies` ＋ `optionalDependencies` 的**传递闭包**",
-    `> （当前 ${packages.length} 个包，其中 ${withText} 个读取到许可文件）＋ \`vendor/\` 内的补丁副本。`,
+    `> （当前 ${packages.length} 个包，其中 ${withText} 个读取到许可文件）＋ \`vendor/\` 内的补丁副本`,
+    "> ＋ **非 npm 来源**的第三方表达（见 §4，清单在 `scripts/non-npm-third-party-sources.json`）。",
     "> `devDependencies` 不随包分发，故未列入。",
     "> 法律声明与商标信息见同目录的 `NOTICE`；本包的整体许可为 Apache-2.0（见 `LICENSE`）。",
     "",
@@ -327,6 +385,7 @@ function main() {
     "| `haruyuki.js` / `dist/**` 内联的 npm 依赖 | 是 | 单文件打包把生产依赖内联进产物，见 `build.js` 的 `external` 白名单 |",
     "| `vendor/ink`、`vendor/ink-text-input` | 是 | 本地打补丁的第三方源码，见 §2 |",
     "| `src/skills/builtin/self-configuration/LICENSE` | 是 | 上游随技能附带的 MIT 文本（Copyright (c) 2026 Letta, Inc.），原样保留 |",
+    "| 非 npm 来源的第三方表达（`src/agent/prompts/source_*.md`） | 是 | 为基准对照收录的外部系统提示词，见 §4 |",
     "| `node_modules` 中的 `devDependencies` | 否 | 仅开发期使用，不进入发布产物 |",
     "",
     "许可证原文一律**逐字保留英文原文**，不作翻译或改写。",
@@ -341,7 +400,8 @@ function main() {
   const body = [
     ...renderVendored(vendored),
     ...renderDependencies(packages),
-    "## 4. 依赖闭包中的上游包",
+    ...renderNonNpmSources(),
+    "## 5. 依赖闭包中的上游包",
     "",
   ];
 
@@ -359,7 +419,7 @@ function main() {
     body.push("闭包内没有 `@letta-ai/*` 包。", "");
   }
 
-  body.push("## 5. NOTICE 文件扫描（Apache-2.0 §4(d)）", "");
+  body.push("## 6. NOTICE 文件扫描（Apache-2.0 §4(d)）", "");
   if (notices.length > 0) {
     body.push(
       "Apache-2.0 要求：若被分发的第三方包里带有 `NOTICE` 文件，其内容也必须随本包传递。本闭包中命中：",
@@ -383,7 +443,7 @@ function main() {
     );
   }
 
-  body.push("## 6. 已知缺口", "");
+  body.push("## 7. 已知缺口", "");
   if (missing.length > 0) {
     body.push(
       `以下包在本地 \`node_modules\` 中不存在，无法读取许可原文：${missing

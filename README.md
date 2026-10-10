@@ -211,8 +211,10 @@ AI 在本项目中是工具，**不构成放弃权利**；AIGC 声明是**标识
 ### 第三方组件
 
 `haruyuki.js` 是单文件 bundle，内联了大量生产依赖；`vendor/` 下还有两份打过补丁的第三方源码
-（Ink、ink-text-input）。它们的许可原文、每个包的版权行，以及闭包内 NOTICE 文件的扫描结果
-（当前为 0 命中）逐条列在 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) ——
+（Ink、ink-text-input）。它们的许可原文、每个包的版权行、闭包内 NOTICE 文件的扫描结果
+（当前为 0 命中），以及**非 npm 来源**的第三方内容（[`src/agent/prompts/`](src/agent/prompts/README.md)
+下为基准对照而收录的三份外部系统提示词 —— Claude Code / Codex CLI / Gemini CLI），
+逐条列在 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) ——
 该文件由 `node scripts/generate-third-party-notices.cjs` 生成，依赖变化后请重新生成。
 
 依赖闭包里的 `@letta-ai/*` 包由 Letta, Inc. 作为独立 npm 包发布，其自带资产不属于本项目的分发物。

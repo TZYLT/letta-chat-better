@@ -1,0 +1,51 @@
+{
+  "_comment": [
+    "Third-party expression that ships with this fork but does NOT come from the",
+    "npm dependency closure or from vendor/, so the dependency walk in",
+    "scripts/generate-third-party-notices.cjs cannot discover it. Consumed by that",
+    "script to emit the 'Non-npm third-party sources' section of",
+    "THIRD-PARTY-NOTICES.md. Keep every entry's licenseText byte-exact to the",
+    "upstream license file; do not paraphrase."
+  ],
+  "sources": [
+    {
+      "path": "src/agent/prompts/source_claude.md",
+      "origin": "Anthropic Claude Code system prompt, as assembled by the Piebald mirror",
+      "version": "Claude Code ~v2.1.50 (Feb 2026); assembled from ~110 modular prompt files",
+      "reference": "https://github.com/Piebald-AI/claude-code-system-prompts",
+      "license": "MIT",
+      "licenseCopyright": "Copyright (c) 2025 Piebald LLC",
+      "modifiedFromUpstream": false,
+      "licenseTextSource": {
+        "kind": "inline",
+        "text": "MIT License\n\nCopyright (c) 2025 Piebald LLC\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
+      }
+    },
+    {
+      "path": "src/agent/prompts/source_codex.md",
+      "origin": "OpenAI Codex CLI system prompt (models-manager instructions template)",
+      "version": "extracted from openai/codex main (May 2026), rendered with personality_pragmatic",
+      "reference": "https://github.com/openai/codex",
+      "license": "Apache-2.0",
+      "licenseCopyright": "Copyright 2025 OpenAI",
+      "modifiedFromUpstream": false,
+      "licenseTextSource": {
+        "kind": "root-license",
+        "why": "openai/codex ships the standard Apache License 2.0 text, identical to the LICENSE file in this repository"
+      }
+    },
+    {
+      "path": "src/agent/prompts/source_gemini.md",
+      "origin": "Google Gemini CLI system prompt (snippets.ts, rendered)",
+      "version": "snippets.ts (Feb 2026), copyright 2026 Google LLC",
+      "reference": "https://github.com/google-gemini/gemini-cli",
+      "license": "Apache-2.0",
+      "licenseCopyright": "Copyright 2026 Google LLC (as stated in the upstream snippets.ts header)",
+      "modifiedFromUpstream": false,
+      "licenseTextSource": {
+        "kind": "root-license",
+        "why": "google-gemini/gemini-cli ships the standard Apache License 2.0 text, identical to the LICENSE file in this repository"
+      }
+    }
+  ]
+}
