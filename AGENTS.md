@@ -273,6 +273,7 @@ review. The runner also refuses to report success when it selected nothing.
 | `HARUYUKI_DEBUG=1` | Verbose debug output (default in `bun run dev`) |
 | `HARUYUKI_DEBUG=0` | Suppress debug output even in dev mode |
 | `HARUYUKI_MEMFS_BACKEND=hosted` | Opt into the hosted MemFS backend path instead of the local one (default is local) |
+| `HARUYUKI_LOCAL_BACKEND_EXPERIMENTAL=1` | Namespace selector, not a backend toggle (there is only one backend): it picks the `local:<dir>` settings bucket and `<storageDir>/memfs/<agentId>/memory` as the agent memory root. `configureBackendMode("local")` sets it. Leaving it unset sends local pins, per-agent settings and memory files to the legacy `api.letta.com` namespace instead |
 | `HARUYUKI_LOCAL_BACKEND_EXECUTOR=deterministic` | Use fake deterministic executor (for tests) |
 | `LETTA_LOCAL_BACKEND_DIR` | Local-backend storage root (defaults to `~/.haruyuki/lc-local-backend`) |
 | `HARUYUKI_HOME` | Overrides the harness root outright, in place of `~/.haruyuki` (every path that resolves through `src/utils/app-paths.ts`) |
