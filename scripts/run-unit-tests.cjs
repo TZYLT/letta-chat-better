@@ -251,37 +251,46 @@ const shard = shardIndex === -1 ? undefined : (process.argv[shardIndex + 1] ?? "
 // Validate outside selection's full-suite fallback: an invalid shard must fail,
 // not make several jobs duplicate the entire suite or silently run nothing.
 shardTestFiles([], shard);
-const selectedTestFiles = shardTestFiles(selectTestFiles(), shard);
+// `selectTestFiles()` falls back to `allTestFiles` on every setup failure, so a
+// narrowed run is exactly "the selection is shorter than the full discovery set".
+// Comparing lengths here is what tells the two apart; deriving it from the batch
+// size instead made a single miscounted entry silently switch a whole-suite run
+// onto the explicit path list (and back).
+const selection = selectTestFiles();
+const fullSuite = selection.length === allTestFiles.length;
+const selectedTestFiles = shardTestFiles(selection, shard);
 if (shard) {
   console.log(`unit-test shard ${shard}: ${selectedTestFiles.length} files`);
 }
 const selectedTestPaths = new Set(selectedTestFiles);
 const parallelWorkers = resolveParallelWorkers();
 
-// `--parallel` isolates the module registry, not the environment. The few
-// manifest entries that need a specific env var therefore still run on their
-// own; everything else is covered by the parallel batch below.
+// Manifest entries that need a specific environment, restricted to this run's
+// selection. They never join the parallel batch below.
 const envEntries = isolatedTests.filter(
   (entry) => entry.env && selectedTestPaths.has(entry.path),
 );
-for (const entry of envEntries) {
-  try {
-    runTests([entry.path], entry.timeoutMs, entry.env);
-  } catch (error) {
-    exitCode = error.status ?? 1;
-  }
-}
 
 const envPaths = new Set(envEntries.map((entry) => entry.path));
 const batchFiles = selectedTestFiles.filter((file) => !envPaths.has(file));
 
 if (parallelWorkers > 0) {
+  // `--parallel` isolates the module registry, not the environment, so the
+  // manifest entries that need a specific env var still get a process of their
+  // own; everything else is covered by the parallel batch below.
+  for (const entry of envEntries) {
+    try {
+      runTests([entry.path], entry.timeoutMs, entry.env);
+    } catch (error) {
+      exitCode = error.status ?? 1;
+    }
+  }
+
   // Whole-suite runs use path filters, so the argument list stays far below
   // CreateProcess's 32k limit and bun can balance the files across workers.
   // A narrowed selection (impact analysis, or a shard) is small enough to pass
   // explicitly, which keeps this runner's own shard semantics unchanged.
-  const wholeSuite =
-    batchFiles.length === allTestFiles.length - envEntries.length;
+  const wholeSuite = fullSuite && shard === undefined;
   const targets = wholeSuite ? wholeSuiteTargets : batchFiles;
   const extraArgs = [`--parallel=${parallelWorkers}`];
   if (wholeSuite) {
@@ -290,18 +299,28 @@ if (parallelWorkers > 0) {
     }
   }
   if (batchFiles.length > 0) {
+    // The manifest's longest registered timeout (30s), so a batch is never
+    // stricter than the per-entry timeouts it replaces — matching the behaviour
+    // of the chunked serial path, which also ran every shared-process file with
+    // relaxed timeouts.
     try {
-      // The manifest's longest registered timeout, so the single batch is never
-      // stricter than the per-entry timeouts it replaces.
       runTests(targets, 30000, {}, extraArgs);
     } catch (error) {
       exitCode = error.status ?? 1;
     }
+  } else if (envPaths.size === 0) {
+    // Nothing was selected and nothing ran. Say so instead of exiting 0 on an
+    // empty run (`--shard` with an out-of-range index, or an empty impact plan).
+    console.error("unit-test: no test files selected; nothing ran");
+    exitCode = 1;
   }
 } else {
   // Escape hatch (HARUYUKI_TEST_PARALLEL=0): the original chunked, serial path.
   // Bun module mocks and process-global state are shared within one test
   // process, so the explicitly stateful suites keep their own processes here.
+  // This branch must run *every* isolated entry, not only the ones that carry an
+  // env block — the parallel branch above cannot cover them once
+  // `resolveParallelWorkers()` returns 0.
   for (const entry of isolatedTests.filter((entry) =>
     selectedTestPaths.has(entry.path),
   )) {
