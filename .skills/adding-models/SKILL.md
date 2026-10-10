@@ -23,32 +23,25 @@ First identify the agent source. These inputs are deliberately different:
 
 | Agent source | Rows shown | Labels, presets, and capabilities |
 |---|---|---|
-| Cloud hosted | `GET /v1/models/catalog` only | `GET /v1/models/catalog` |
-| Cloud organization BYOK | BYOK rows from `GET /v1/models` | Match to catalog metadata using provider metadata and model name; retain the BYOK handle for selection |
-| Local | pi-ai inventory | pi-ai metadata |
+| Local (this fork's only mode) | pi-ai inventory | pi-ai metadata |
 | Custom App Server | Server runtime inventory | Server runtime metadata |
 
-In Cloud mode, never use base/hosted rows from `GET /v1/models` to filter,
-supplement, delay, or provide a fallback for the hosted catalog. This once made
-GPT-4o appear in a selector even though the Cloud catalog deliberately omitted
-it. `GET /v1/models` remains necessary for organization-specific BYOK rows.
+This fork is local-only: there is no hosted catalog to query, and nothing in this
+build calls one. The hosted and BYOK row handling described in upstream notes does
+not apply here.
 
-Query the Cloud hosted catalog to see hosted preset IDs, handles, and
-capabilities:
-
-```bash
-curl -s https://api.letta.com/v1/models/catalog | jq '.models[] | [.id, .handle]'
-```
-
-To inspect organization BYOK rows from a Cloud backend, query its model
-inventory and filter by `provider_category`:
+List what the running build actually resolves instead of querying a remote
+service:
 
 ```bash
-curl -s https://api.letta.com/v1/models/ \
-  | jq '.[] | select(.provider_category == "byok") | [.handle, .provider_type]'
+haruyuki model list                # JSON rows: id / handle / capabilities
+haruyuki model get --agent <id>    # the model that agent actually resolves to now
 ```
 
-Do not use this response as a second hosted catalog.
+Use only handles that appear there. Do not hand-write a catalog from memory, and do
+not copy handles out of another product's documentation — a handle the local
+runtime cannot resolve fails at request time, and that failure looks like a
+provider error.
 
 Common provider prefixes:
 - `anthropic/` - Claude models
@@ -61,12 +54,11 @@ Common provider prefixes:
 
 Haruyuki does not bundle a model catalog:
 
-- Cloud hosted rows and presets come from the server's
-  `GET /v1/models/catalog` response.
-- Cloud `GET /v1/models` contributes only organization BYOK rows to selectors.
 - Local model inventory comes from pi-ai and the active provider runtimes.
+- This fork has no hosted catalog and no BYOK row merging; do not reintroduce
+  either.
 
-Add the model at the source that owns it. A hosted preset belongs in the server catalog. A local provider model belongs in pi-ai or that provider's discovery runtime.
+Add the model at the source that owns it. A provider model belongs in pi-ai or that provider's discovery runtime.
 
 Only change this repository when the model needs Haruyuki-specific compatibility behavior, such as preserving an established CLI alias or recognizing a new provider for toolset selection. Keep that logic narrow and derive the handle and metadata from the runtime catalog rather than copying model definitions here.
 
@@ -83,13 +75,16 @@ Example:
 bun run src/index.ts --new --model gemini-3-flash -p "hi, what model are you?"
 ```
 
-### Step 4: Add to CI Test Matrix (Optional)
+### Step 4: Add a Regression Test (Optional)
 
-To include the model in automated testing, add it to `.github/workflows/ci.yml`:
+This fork has no CI workflow (`.github/` does not exist here); the gate is the
+local check suite plus the unit tests. To keep a new model honest, extend the
+focused tests next to the code that owns the handle:
 
-```yaml
-# Find the headless job matrix around line 122
-model: [gpt-5-minimal, gpt-4.1, sonnet-4.5, gemini-pro, your-new-model, glm-4.6, haiku]
+```bash
+bun test src/agent/available-models.test.ts
+bun test src/agent/model-catalog.test.ts
+bun run check                                 # 14 repo guards
 ```
 
 ## Toolset Detection
@@ -103,6 +98,6 @@ This is handled by `isGeminiModel()` and `isOpenAIModel()` in `src/tools/manager
 
 ## Common Issues
 
-**"Handle not found" error**: The model handle is incorrect. Run the validation script to see valid handles.
+**"Handle not found" error**: The model handle is incorrect. Run `haruyuki model list` to see the handles this build resolves.
 
 **Model works but wrong toolset**: Check `src/tools/manager.ts` to ensure the provider prefix is recognized.
