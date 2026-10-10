@@ -202,9 +202,14 @@ export function serializeFrontmatter(
   frontmatter: Record<string, string>,
 ): string {
   const orderedKeys = [
+    // MemFS v2 core files lead with `name`; it is never sourced from a prompt
+    // asset, so it stays out of EDITABLE_FRONTMATTER_KEYS.
+    ...("name" in frontmatter ? ["name"] : []),
     ...EDITABLE_FRONTMATTER_KEYS,
     ...Object.keys(frontmatter).filter(
-      (key) => !(EDITABLE_FRONTMATTER_KEYS as readonly string[]).includes(key),
+      (key) =>
+        key !== "name" &&
+        !(EDITABLE_FRONTMATTER_KEYS as readonly string[]).includes(key),
     ),
   ];
   const lines: string[] = [];
@@ -224,6 +229,7 @@ export function buildDefaultMemoryFile(
   templatePromptAssetName: string,
   body: string,
   description?: string,
+  options?: { name?: string },
 ): string {
   const normalizedBody = ensureTrailingNewline(body.trim());
   if (!normalizedBody.trim()) {
@@ -233,6 +239,11 @@ export function buildDefaultMemoryFile(
   const frontmatter = getEditablePromptFrontmatter(templatePromptAssetName);
   if (description !== undefined) {
     frontmatter.description = description;
+  }
+  // MemFS v2 core files require `name` alongside `description`, so a caller
+  // creating a root-level file must supply it or the commit is rejected.
+  if (options?.name !== undefined) {
+    frontmatter.name = options.name;
   }
 
   if (Object.keys(frontmatter).length === 0) {

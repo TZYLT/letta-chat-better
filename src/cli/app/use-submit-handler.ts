@@ -31,7 +31,10 @@ import {
 } from "@/agent/memory-runtime";
 import { buildReflectionMemoryScope } from "@/agent/memory-worktree";
 import { sendMessageStreamWithBackend } from "@/agent/message";
-import { detectPersonalityFromPersonaFile } from "@/agent/personality";
+import {
+  detectPersonalityFromPersonaFile,
+  getPersonaFilePath,
+} from "@/agent/personality";
 import type { PersonalityId } from "@/agent/personality-presets";
 import { requestCloudReflectionRun } from "@/agent/reflection-runs";
 import { recordSessionEnd } from "@/agent/session-history";
@@ -1126,15 +1129,10 @@ export function useSubmitHandler(ctx: SubmitHandlerContext) {
           if (isActiveMemfsEnabled(agentId)) {
             try {
               const memoryRoot = getScopedMemoryFilesystemRoot(agentId);
-              const personaCandidates = [
-                join(memoryRoot, "system", "persona.md"),
-                join(memoryRoot, "memory", "system", "persona.md"),
-              ];
-              const personaPath = personaCandidates.find((candidate) =>
-                existsSync(candidate),
-              );
+              // v2 repos keep persona.md at the root, not under system/.
+              const personaPath = getPersonaFilePath(memoryRoot);
 
-              if (personaPath) {
+              if (existsSync(personaPath)) {
                 const personaContent = readFileSync(personaPath, "utf-8");
                 setCurrentPersonalityId(
                   detectPersonalityFromPersonaFile(personaContent),

@@ -19,6 +19,7 @@ import {
   getScopedMemoryFilesystemRoot,
   isLettaCloud,
 } from "./memory-filesystem";
+import { detectMemoryFormat, type LocalMemoryFormat } from "./memory-format";
 import { commitMemoryWrite, getMemoryRepoDir, pullMemory } from "./memory-git";
 import {
   buildDefaultMemoryFile,
@@ -39,6 +40,8 @@ import {
 
 const execFile = promisify(execFileCb);
 
+const ROOT_PERSONA_RELATIVE_PATH = "persona.md";
+const ROOT_HUMAN_RELATIVE_PATH = "human.md";
 const PRIMARY_PERSONA_RELATIVE_PATH = "system/persona.md";
 const LEGACY_PERSONA_RELATIVE_PATH = "memory/system/persona.md";
 const PRIMARY_HUMAN_RELATIVE_PATH = "system/human.md";
@@ -99,6 +102,56 @@ function getHumanRelativePathForRepo(repoDir: string): string {
     PRIMARY_HUMAN_RELATIVE_PATH,
     LEGACY_HUMAN_RELATIVE_PATH,
   );
+}
+
+export interface PersonalityMemoryTargets {
+  personaRelativePath: string;
+  humanRelativePath: string;
+  format: LocalMemoryFormat;
+}
+
+/**
+ * Where a personality switch may write persona/human in this memory repo.
+ *
+ * MemFS v2 (root-marker) keeps core memory at the repository root, and its
+ * pre-commit hook rejects Markdown below any directory without its own
+ * `MEMORY.md` index. Writing `system/persona.md` into such a repo therefore
+ * cannot be committed — the switch fails and leaves stray files behind — so the
+ * v2 targets are the root files. MemFS v1 keeps the `system/` layout, with
+ * `memory/system/` as the pre-rename fallback.
+ */
+export function resolvePersonalityMemoryTargets(
+  repoDir: string,
+): PersonalityMemoryTargets {
+  if (detectMemoryFormat(repoDir, false) === "memfs-v2") {
+    return {
+      personaRelativePath: ROOT_PERSONA_RELATIVE_PATH,
+      humanRelativePath: ROOT_HUMAN_RELATIVE_PATH,
+      format: "memfs-v2",
+    };
+  }
+
+  return {
+    personaRelativePath: getPersonaRelativePathForRepo(repoDir),
+    humanRelativePath: getHumanRelativePathForRepo(repoDir),
+    format: "memfs-v1",
+  };
+}
+
+/** Absolute path of the persona file this repo's layout uses. */
+export function getPersonaFilePath(repoDir: string): string {
+  const { personaRelativePath } = resolvePersonalityMemoryTargets(repoDir);
+  return join(repoDir, personaRelativePath);
+}
+
+/** Display name for a v2 core file, matching the create path's `name` field. */
+function memoryFileDisplayName(relativePath: string): string {
+  const stem = relativePath.replace(/\.md$/, "").split("/").at(-1) ?? "";
+  return stem
+    .split(/[-_]+/)
+    .filter(Boolean)
+    .map((word) => `${word[0]?.toUpperCase() ?? ""}${word.slice(1)}`)
+    .join(" ");
 }
 
 /**
@@ -265,6 +318,8 @@ function applyPersonalityFiles(
     templatePromptAssetName: string;
     content: string;
     description?: string;
+    /** v2 core files require `name`; omitted for the legacy layout. */
+    name?: string;
   }>,
 ): string[] {
   const changedPaths: string[] = [];
@@ -281,6 +336,7 @@ function applyPersonalityFiles(
           file.templatePromptAssetName,
           file.content,
           file.description,
+          { name: file.name },
         );
 
     if (
@@ -328,8 +384,13 @@ export async function applyPersonalityToMemory(
     await pullMemory(params.agentId);
   }
 
-  const personaRelativePath = getPersonaRelativePathForRepo(repoDir);
-  const humanRelativePath = getHumanRelativePathForRepo(repoDir);
+  const targets = resolvePersonalityMemoryTargets(repoDir);
+  const personaRelativePath = targets.personaRelativePath;
+  const humanRelativePath = targets.humanRelativePath;
+  const v2Name = (relativePath: string) =>
+    targets.format === "memfs-v2"
+      ? memoryFileDisplayName(relativePath)
+      : undefined;
   const personaPath = join(repoDir, personaRelativePath);
   const humanPath = join(repoDir, humanRelativePath);
 
@@ -340,6 +401,7 @@ export async function applyPersonalityToMemory(
       templatePromptAssetName: blockDefinitions.persona.templatePromptAssetName,
       content: blockDefinitions.persona.value,
       description: blockDefinitions.persona.description,
+      name: v2Name(personaRelativePath),
     },
     {
       relativePath: humanRelativePath,
@@ -347,6 +409,7 @@ export async function applyPersonalityToMemory(
       templatePromptAssetName: blockDefinitions.human.templatePromptAssetName,
       content: blockDefinitions.human.value,
       description: blockDefinitions.human.description,
+      name: v2Name(humanRelativePath),
     },
   ];
 
