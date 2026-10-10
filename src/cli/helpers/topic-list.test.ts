@@ -185,6 +185,24 @@ describe("formatTopicBlockList", () => {
     );
     expect(rows[1]?.boundary).toContain("no rewind");
   });
+
+  test("names the agent when the boundary came from its own marker", () => {
+    const rows = buildTopicBlockRows(
+      list({
+        blocks: [
+          block({ index: 1, title: "Alpha", createdBy: "agent" }),
+          block({
+            index: 2,
+            rewindTurns: 0,
+            startMarkerAnchorMessageId: "anchor",
+          }),
+        ],
+      }),
+    );
+    expect(rows[1]?.boundary).toBe(
+      'marker "Alpha" marked by the agent at anchor, no rewind',
+    );
+  });
 });
 
 describe("formatTopicMarkerHistory", () => {

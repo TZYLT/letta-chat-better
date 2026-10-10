@@ -77,6 +77,11 @@ function pad(value: string, width: number): string {
 /**
  * How a block's first message was chosen, in one wording for both readers (the
  * `/topics` table and the picker's row description).
+ *
+ * The boundary's author comes from the previous block's marker, which is the
+ * marker that ends it. It matters because the agent marks topics on its own
+ * (`TopicMark`) — without the author a user who never ran `/topic` sees
+ * boundaries they do not remember making.
  */
 export function topicBlockBoundaryNote(
   block: TopicBlock,
@@ -84,12 +89,15 @@ export function topicBlockBoundaryNote(
 ): string {
   if (block.index === 1) return "the start of the context";
   const previousTitle = previous?.title ?? CURRENT_TOPIC_LABEL;
+  const markedBy = previous?.createdBy
+    ? ` marked by the ${previous.createdBy}`
+    : "";
   const anchor = block.startMarkerAnchorMessageId ?? "an unknown message";
   const rewound =
     block.rewindTurns === 0
       ? "no rewind"
       : `rewound ${block.rewindTurns} user turn${block.rewindTurns === 1 ? "" : "s"}`;
-  return `marker "${previousTitle}" at ${anchor}, ${rewound}`;
+  return `marker "${previousTitle}"${markedBy} at ${anchor}, ${rewound}`;
 }
 
 export function buildTopicBlockRows(list: LocalTopicList): TopicBlockRow[] {

@@ -25,7 +25,9 @@ export const TOPIC_TRIM_CANCEL_KEY = "cancel";
 /**
  * The picker rows, oldest block first. Block 1 is visible but not selectable:
  * keeping the whole context is the no-op case, and `/compact 1` still reports it
- * explicitly for scripted channels.
+ * explicitly for scripted channels. Its row copy stays exactly as long as the
+ * trimmable rows' — the picker explains the disabled row in its footer instead,
+ * because one more clause here wraps the label column in a 100-column terminal.
  */
 export function buildTopicPickRows(
   blocks: readonly TopicBlock[],
@@ -113,7 +115,7 @@ export const TopicSelector = memo(function TopicSelector({
           settle(() => request.onPick(Number(key)));
         }}
         onCancel={dismiss}
-        footer=" Enter trim · ↑↓/jk navigate · Esc cancel"
+        footer=" Enter trim · ↑↓/jk navigate · Esc cancel · block 1 keeps everything, so it cannot be picked"
       />
     </OverlayShell>
   );

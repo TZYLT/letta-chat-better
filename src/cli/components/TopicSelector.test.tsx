@@ -86,6 +86,29 @@ describe("buildTopicPickRows", () => {
     );
   });
 
+  test("names the boundary's author when a marker created it", () => {
+    const rows = buildTopicPickRows([
+      block({ index: 1, title: "Alpha", createdBy: "agent" }),
+      block({
+        index: 2,
+        startIndex: 2,
+        endIndex: 4,
+        startMarkerAnchorMessageId: "a",
+      }),
+      block({ index: 3, title: "Gamma", createdBy: "user" }),
+      block({
+        index: 4,
+        startIndex: 6,
+        endIndex: 8,
+        startMarkerAnchorMessageId: "b",
+      }),
+    ]);
+
+    // Row 2's boundary is the marker that ends block 1, so it is the agent's.
+    expect(rows[1]?.description).toContain("marked by the agent at a");
+    expect(rows[3]?.description).toContain("marked by the user at b");
+  });
+
   test("a one-turn rewind is not pluralised, and zero says no rewind", () => {
     const single = buildTopicPickRows([
       block({ index: 1, title: "Alpha" }),
@@ -220,6 +243,8 @@ describe("TopicSelector mount", () => {
     expect(output).toContain("Current topic (not marked");
     expect(output).toContain('marker "Auth');
     expect(output).toContain("Cancel · keep the context as it is");
+    // The footer carries the reason the first row is not selectable.
+    expect(output).toContain("block 1 keeps everything");
   });
 
   test("shows the full row copy in a wide terminal", async () => {
