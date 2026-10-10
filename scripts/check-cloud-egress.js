@@ -85,6 +85,12 @@ const EXEMPT_PREFIXES = ["src/backend/api/"];
 /**
  * Active Cloud-egress call sites that predate this guard and are scheduled for
  * their own batch. Reported, never silently ignored.
+ *
+ * The last three entries were invisible until the specifier match stopped
+ * assuming the `@/` alias: they reach the same modules through a relative
+ * `./backend/api/...` path. Two of them are files the parent-import ban exempts
+ * on purpose (`src/index.ts`, `src/headless.ts`), which is why the alias-only
+ * match was wrong rather than merely incomplete.
  */
 const TRANSITIONAL = [
   "src/headless-environment-response.ts",
@@ -112,18 +118,39 @@ const TRANSITIONAL = [
   "src/channels/lifecycle-error-report.ts",
   "src/cli/app/use-feedback-handler.ts",
   "src/telemetry/reflection-threshold-feedback.ts",
+  // `./backend/api/...` spellings, exposed by the specifier fix above.
+  "src/headless.ts", // headless CLI entry: cloud sandbox/environment resolution
+  "src/index.ts", // startup billing-tier read (`getBillingTier`)
+  "src/startup-docker-check.ts", // self-hosted server health probe (skips Cloud URLs)
 ];
 
 const QUOTE = "[\"'`]";
 const name = `(?:${FORBIDDEN.join("|")})`;
-const STATIC_RE = new RegExp(`from\\s+${QUOTE}@/backend/api/${name}${QUOTE}`);
+// Match the module *file name*, not the whole specifier. Two spellings reach the
+// same module — the `@/` alias and a relative `./backend/api/...` — and the
+// four files the repo exempts from the parent-import ban (`src/index.ts`,
+// `src/headless.ts`, `src/cli/cli.ts`, `src/cli/app/App.tsx`) plus every
+// sibling file under `src/backend/api/` are exactly the ones that use the
+// relative form. Matching only `@/` left `./backend/api/health` and friends
+// invisible, so a new relative import could have grown the exemption silently.
+const SPECIFIER_RE = new RegExp(
+  `${QUOTE}(?:@/|\\.{1,2}/)*backend/api/(${name})${QUOTE}`,
+);
+const STATIC_RE = new RegExp(`from\\s+${SPECIFIER_RE.source}`);
 const DYNAMIC_RE = new RegExp(
-  `import\\(\\s*${QUOTE}@/backend/api/${name}${QUOTE}`,
+  `(?:import\\(|require\\()\\s*${SPECIFIER_RE.source}`,
 );
 
 const files = (
-  await glob("src/**/*.{ts,tsx}", {
-    ignore: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts"],
+  await glob("src/**/*.{ts,tsx,js,mjs,cjs}", {
+    ignore: [
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/*.spec.ts",
+      "**/*.test.js",
+      "**/*.test.mjs",
+      "**/*.test.cjs",
+    ],
   })
 ).sort();
 

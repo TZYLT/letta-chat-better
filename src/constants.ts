@@ -13,6 +13,14 @@ export const DEFAULT_TITLE_SUMMARIZATION_MODEL = "openai/gpt-6-luna";
 export const DEFAULT_AGENT_NAME = "Haruyuki";
 
 /**
+ * Published executable name (`package.json#bin`). Fallback command for
+ * subsystems that cannot re-invoke the running entry script directly (bundled
+ * hosts): the subagent launcher, the channel gateway supervisor, the `mods`
+ * runner. A stale value spawns a command that does not exist.
+ */
+export const APP_BINARY_NAME = "haruyuki";
+
+/**
  * Message displayed when user interrupts tool execution
  */
 export const INTERRUPTED_BY_USER = "Interrupted by user";
