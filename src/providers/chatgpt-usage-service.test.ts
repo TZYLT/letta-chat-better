@@ -354,7 +354,7 @@ describe("ChatGPT usage service", () => {
     if (result.success) throw new Error("Expected cloud usage read to fail");
     expect(result.error).toEqual({
       code: "network_error",
-      message: "Letta Cloud ChatGPT usage endpoint is unavailable.",
+      message: "The usage endpoint is unavailable.",
     });
   });
 
@@ -397,7 +397,7 @@ describe("ChatGPT usage service", () => {
       success: false,
       error: {
         code: "network_error",
-        message: "Letta Cloud ChatGPT usage request timed out.",
+        message: "The usage request timed out.",
       },
     });
   });

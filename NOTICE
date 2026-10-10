@@ -1,0 +1,179 @@
+Haruyuki — NOTICE
+=================
+
+This repository, and the artifacts built from it ("Haruyuki"), are a modified
+version of the letta-code project.
+
+  Upstream project : https://github.com/letta-ai/letta-code
+  Upstream license : Apache License, Version 2.0 (see LICENSE)
+  Upstream notice  : Copyright 2025, Letta authors
+
+  This fork        : the modifications and additions only —
+                     Copyright 2026 TZYLT <TZY143@126.com>
+  Fork license     : Apache License, Version 2.0 (see LICENSE)
+
+
+1. Statement of modification (Apache License 2.0, Section 4(b))
+---------------------------------------------------------------
+
+Haruyuki is a derivative work of letta-code. It is not the original project,
+and it is neither affiliated with nor sponsored or endorsed by Letta, Inc.
+
+Scope of the copyright claim
+----------------------------
+
+The copyright line above covers **the fork's own modifications and additions
+only**. It does not, and is not intended to, claim the upstream portions of this
+repository: those remain Copyright 2025, Letta authors and are used under the
+Apache License 2.0.
+
+"Modifications and additions" means the expression contributed on this side: code
+and documents written or changed for this fork, the selection, arrangement and
+combination of those changes, and the design, review and editorial decisions
+behind them — that is, the maintainer's own intellectual contribution to how this
+fork is expressed.
+
+A large part of this fork was produced with AI assistance (see the AIGC
+disclosure at the top of README.md and README.en.md). That does not make the
+result public domain,
+and nothing here waives any right: in this project AI is a tool, and the claim
+rests on the human contribution described above. This aligns with the approach
+Chinese courts have taken since 2023, where AI-assisted output that a human
+directed, selected and iterated on has been held protectable so long as the
+human's contribution to the final expression is original.
+
+A copyright notice is not what creates the right — copyright arises when the work
+is created — and copyright never covers ideas, functionality, interfaces or data
+formats; only the particular expression is protected. The AIGC disclosure in
+README.md and README.en.md is a labelling statement, not a disclaimer of rights,
+and the repository's commit history records how the human contribution was made.
+
+Files in this repository have been changed from the upstream source. The
+material changes include, without limitation:
+
+  * removal of cloud-hosted ("Letta Cloud") code paths, commands, and
+    integrations, including teleport, remote-computer and environment routing,
+    hosted sandbox execution, hosted schedules, shared memory, and usage
+    reporting;
+  * removal of outbound telemetry and third-party error/feedback reporting;
+    such diagnostics are written to local log files instead;
+  * renaming of the package, the executable, the environment-variable prefix,
+    and the configuration directory;
+  * replacement of product branding, the colour palette, the bundled default
+    image asset, and the ASCII-art logo served by the OAuth callback page;
+  * removal of the bundled skills and assets that existed only to drive the
+    removed cloud features;
+  * additions and changes to memory, context management, prefix freezing,
+    topic-based trimming, scheduling, and the local backend.
+
+Every file that differs from the upstream source was created or changed by the
+copyright holder named above (or by upstream authors, for the portions this fork
+did not touch). This NOTICE, together with the "许可与法律声明"
+(License and legal notices) section of README.md, constitutes the
+repository-level notice required by Section 4(b). It is deliberately not
+repeated inside every individual file.
+
+So that this Section 4(b) notice is verifiable rather than merely asserted, the
+complete set of changed files is mechanically enumerable from this repository's
+history. This fork starts at the upstream commit `09bf790d`, therefore
+
+    git diff --name-only 09bf790d..HEAD
+
+lists every added, modified, and deleted file relative to that commit. A per-file
+header would state less: it cannot describe deleted files, and it is not
+machine-checkable.
+
+The changes described here were produced with AI assistance under human review
+and direction. The AIGC disclosure and usage warning at the top of README.md
+applies to this NOTICE and to the rest of the fork's own text as well.
+
+
+2. Notices retained from the upstream work (Section 4(c))
+---------------------------------------------------------
+
+  * LICENSE — the Apache License 2.0 text as distributed upstream, including
+    the upstream "Copyright 2025, Letta authors" line and the
+    "Brand Assets Exclusion" paragraph. Both are retained verbatim and must not
+    be removed or edited.
+    This file is distributed **byte-for-byte identical** to the LICENSE file of
+    the upstream npm package `@letta-ai/letta-code` (SHA-256
+    `036e78b9d7dd33ae5b378fdda973b4aad7901c8d8371a0ae40fae1f6659a89d0`,
+    11,092 bytes); this fork has never modified it, and neither should you.
+  * src/skills/builtin/self-configuration/LICENSE — an MIT license text
+    (Copyright (c) 2026 Letta, Inc.) that ships inside a bundled skill. It is
+    retained as distributed.
+  * The upstream project ships no NOTICE file. This NOTICE is added by this
+    fork, and downstream recipients of this fork must keep it.
+
+
+3. Third-party components
+-------------------------
+
+Third-party code redistributed in these artifacts — the patched, vendored
+copies of Ink and ink-text-input, and every package inlined into the built
+single-file bundle — is listed with its license terms, copyright lines, and
+permission notices in THIRD-PARTY-NOTICES.md.
+
+That file is generated by scripts/generate-third-party-notices.cjs and must be
+regenerated whenever dependencies change.
+
+
+4. Trademarks and brand assets
+------------------------------
+
+"Letta", "Letta Code", and the Letta logo are trademarks and/or brand assets of
+Letta, Inc. The names are used in this project only where the origin of the code
+is being described — attribution text, dependency names, and prose that explains
+what was forked. Apache License 2.0 §6 permits exactly that ("reasonable and
+customary use in describing the origin of the Work"), and the upstream copyright
+line is reproduced for the same attribution reason. The names are never used as
+the name of this project or of anything it provides. Nothing here grants any
+right to the Letta marks, and no affiliation or endorsement is implied.
+
+The upstream LICENSE carries a "Brand Assets Exclusion": the Letta name, Letta
+Code name, logo, wordmark, images, and ASCII art included in the upstream
+repository are not licensed under the Apache License, Version 2.0 and may not be
+used in derivative works without written permission from Letta, Inc.
+
+Where that clause and §6 overlap on the *names*, this fork resolves it the
+conservative way: the names appear only in origin-describing contexts as set out
+above, never as branding. For the remaining asset classes the fork does not use
+them at all — no Letta logo, wordmark, brand image, or brand ASCII art is present
+in this repository or in the artifacts built from it. The only image shipped with
+this fork is an original work generated by `scripts/generate-tutor-avatar.cjs`
+(the upstream avatar has been replaced), and the ASCII art that used to be
+rendered on the OAuth callback page has been removed in favour of this fork's own
+mark.
+
+(Verified for the current tree: `git ls-files` contains exactly one image file,
+assets/tutor-profile.png — the original work named above — and no block-character
+LETTA artwork survives in any tracked text file.)
+
+(Names such as "Letta" and "Letta Code" also appear inside third-party license
+texts and dependency manifests that are retained verbatim — for example in the
+LICENSE file of an npm package published by Letta, Inc. That is attribution of a
+dependency, not branding of this project.)
+
+Third-party npm packages that this project depends on are published and
+distributed by their own publishers under their own licenses; assets inside
+those packages are not part of this project's distribution. See
+THIRD-PARTY-NOTICES.md, section 4.
+
+
+5. License and warranty
+-----------------------
+
+Licensed under the Apache License, Version 2.0. You may obtain a copy of the
+License in the LICENSE file or at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+
+No support, warranty, or indemnity is offered by this fork, nor on behalf of
+upstream or any other contributor. Under Section 9 of the License, anyone who
+chooses to offer support, warranty, or indemnity does so on their own behalf and
+on their own responsibility only.

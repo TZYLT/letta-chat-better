@@ -45,13 +45,10 @@ function renderOAuthPage(options: {
 }): string {
   const { title, message, autoClose } = options;
 
-  // ASCII art logo (escaped for HTML)
-  const asciiLogo = `  ██████     ██╗     ███████╗████████╗████████╗ █████╗ 
-██      ██   ██║     ██╔════╝╚══██╔══╝╚══██╔══╝██╔══██╗
-██  ▇▇  ██   ██║     █████╗     ██║      ██║   ███████║
-██      ██   ██║     ██╔══╝     ██║      ██║   ██╔══██║
-  ██████     ███████╗███████╗   ██║      ██║   ██║  ██║
-  ╚═════╝    ╚══════╝╚══════╝   ╚═╝      ╚═╝   ╚═╝  ╚═╝`;
+  // Brand mark. The upstream ASCII-art logo is a Letta brand asset and is
+  // excluded from the Apache-2.0 grant (see LICENSE, "Brand Assets
+  // Exclusion"), so a derivative work must not reproduce it.
+  const brandMark = "\u2744 haruyuki";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -76,11 +73,12 @@ function renderOAuthPage(options: {
       align-items: center;
       text-align: center;
     }
-    .ascii-art {
+    .brand-mark {
       font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', monospace;
-      font-size: 12px;
+      font-size: 22px;
       line-height: 1.2;
-      color: #404040;
+      color: #2f2f33;
+      letter-spacing: 3px;
       white-space: pre;
       user-select: none;
       margin-bottom: 48px;
@@ -106,7 +104,7 @@ function renderOAuthPage(options: {
 </head>
 <body>
   <div class="container">
-    <div class="ascii-art">${asciiLogo}</div>
+    <div class="brand-mark">${brandMark}</div>
     <h1 class="title">${title}</h1>
     <p class="message">${message}</p>
   </div>

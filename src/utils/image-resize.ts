@@ -38,7 +38,7 @@ export class ImageWorkerMissingError extends Error {
     super(
       `the image processing worker is missing from this installation (expected at ${workerPath}). ` +
         "Your Haruyuki installation appears to be incomplete. " +
-        "Reinstall it (e.g. npm install -g @letta-ai/letta-code@latest) and try again.",
+        "Reinstall it (e.g. npm install -g haruyuki@latest) and try again.",
     );
     this.name = "ImageWorkerMissingError";
     this.workerPath = workerPath;

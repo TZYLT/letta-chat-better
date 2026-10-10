@@ -59,7 +59,7 @@ describe("task() computer guard", () => {
       new URL("./impl/task.ts", import.meta.url),
     ).text();
     const guardIndex = source.indexOf(
-      "The computer option requires a Letta Cloud backend",
+      "The computer option requires a connected-computer backend",
     );
     const launchStart = source.indexOf("export async function launchSubagent(");
     const spawnIndex = source.indexOf(

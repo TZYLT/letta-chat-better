@@ -1,0 +1,1036 @@
+# 第三方组件声明（THIRD-PARTY NOTICES）
+
+> 本文件由 `node scripts/generate-third-party-notices.cjs` 生成，**请勿手工编辑**。
+> 覆盖范围：`package.json` 的 `dependencies` ＋ `optionalDependencies` 的**传递闭包**
+> （当前 311 个包，其中 299 个读取到许可文件）＋ `vendor/` 内的补丁副本。
+> `devDependencies` 不随包分发，故未列入。
+> 法律声明与商标信息见同目录的 `NOTICE`；本包的整体许可为 Apache-2.0（见 `LICENSE`）。
+
+## 1. 范围与来源
+
+| 类别 | 是否随本包分发 | 说明 |
+|---|---|---|
+| `haruyuki.js` / `dist/**` 内联的 npm 依赖 | 是 | 单文件打包把生产依赖内联进产物，见 `build.js` 的 `external` 白名单 |
+| `vendor/ink`、`vendor/ink-text-input` | 是 | 本地打补丁的第三方源码，见 §2 |
+| `src/skills/builtin/self-configuration/LICENSE` | 是 | 上游随技能附带的 MIT 文本（Copyright (c) 2026 Letta, Inc.），原样保留 |
+| `node_modules` 中的 `devDependencies` | 否 | 仅开发期使用，不进入发布产物 |
+
+许可证原文一律**逐字保留英文原文**，不作翻译或改写。
+
+## 2. `vendor/` 内的第三方代码（含本地补丁）
+
+以下目录是从上游发行版复制进来、并由 `scripts/postinstall-patches.js` 打补丁的第三方源码。
+它们**随本包发布**（`package.json` 的 `files` 含 `vendor`），因此各自的许可证原文随目录一并保留。
+
+### ink 5.2.1 — MIT
+
+- Copyright (c) Vadym Demedes <vadimdemedes@hey.com> (github.com/vadimdemedes)
+
+本地修改：仅由 `scripts/postinstall-patches.js` 按精确字符串匹配施加的小补丁。
+
+```text
+MIT License
+
+Copyright (c) Vadym Demedes <vadimdemedes@hey.com> (github.com/vadimdemedes)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
+
+### ink-text-input 5.0.1 — MIT
+
+- Copyright (c) Vadym Demedes <vadimdemedes@hey.com> (github.com/vadimdemedes)
+
+本地修改：仅由 `scripts/postinstall-patches.js` 按精确字符串匹配施加的小补丁。
+
+```text
+MIT License
+
+Copyright (c) Vadym Demedes <vadimdemedes@hey.com> (github.com/vadimdemedes)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
+
+## 3. 打包内联的 npm 依赖
+
+下表按各包 `package.json` 声明的许可证分组。每组的「许可原文」是组内使用最多的一份**逐字**文本；
+**每个包的版权行都单独列出** —— 这正是 MIT / BSD / ISC 要求随分发保留的部分。
+若某个包自带的文本与组内原文不同，会在「备注」里标出，请以该包目录内的 `LICENSE` 为准。
+
+### (MIT OR CC0-1.0) — 1 个包
+
+| 包 | 版本 | 版权行 | 备注 |
+|---|---|---|---|
+| `type-fest` | 3.13.1 | — | 无许可文件 |
+
+> ⚠️ 这些包未附许可文件，仅按 `package.json` 的 `license` 字段登记：`type-fest`
+
+### 0BSD — 1 个包
+
+| 包 | 版本 | 版权行 | 备注 |
+|---|---|---|---|
+| `tslib` | 2.8.1 | Copyright (c) Microsoft Corporation. |  |
+
+**0BSD 许可原文**（组内 1 个包使用此文本）
+
+```text
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+```
+
+### apache-2.0 — 1 个包
+
+| 包 | 版本 | 版权行 | 备注 |
+|---|---|---|---|
+| `@pierre/diffs` | 1.2.2 | Copyright 2025 Pierre Computer Company |  |
+
+**apache-2.0 许可原文**（组内 1 个包使用此文本）
+
+```text
+Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+1.  Definitions.
+
+    "License" shall mean the terms and conditions for use, reproduction, and
+    distribution as defined by Sections 1 through 9 of this document.
+
+    "Licensor" shall mean the copyright owner or entity authorized by the
+    copyright owner that is granting the License.
+
+    "Legal Entity" shall mean the union of the acting entity and all other
+    entities that control, are controlled by, or are under common control with
+    that entity. For the purposes of this definition, "control" means (i) the
+    power, direct or indirect, to cause the direction or management of such
+    entity, whether by contract or otherwise, or (ii) ownership of fifty percent
+    (50%) or more of the outstanding shares, or (iii) beneficial ownership of
+    such entity.
+
+    "You" (or "Your") shall mean an individual or Legal Entity exercising
+    permissions granted by this License.
+
+    "Source" form shall mean the preferred form for making modifications,
+    including but not limited to software source code, documentation source, and
+    configuration files.
+
+    "Object" form shall mean any form resulting from mechanical transformation
+    or translation of a Source form, including but not limited to compiled
+    object code, generated documentation, and conversions to other media types.
+
+    "Work" shall mean the work of authorship, whether in Source or Object form,
+    made available under the License, as indicated by a copyright notice that is
+    included in or attached to the work (an example is provided in the Appendix
+    below).
+
+    "Derivative Works" shall mean any work, whether in Source or Object form,
+    that is based on (or derived from) the Work and for which the editorial
+    revisions, annotations, elaborations, or other modifications represent, as a
+    whole, an original work of authorship. For the purposes of this License,
+    Derivative Works shall not include works that remain separable from, or
+    merely link (or bind by name) to the interfaces of, the Work and Derivative
+    Works thereof.
+
+    "Contribution" shall mean any work of authorship, including the original
+    version of the Work and any modifications or additions to that Work or
+    Derivative Works thereof, that is intentionally submitted to Licensor for
+    inclusion in the Work by the copyright owner or by an individual or Legal
+    Entity authorized to submit on behalf of the copyright owner. For the
+    purposes of this definition, "submitted" means any form of electronic,
+    verbal, or written communication sent to the Licensor or its
+    representatives, including but not limited to communication on electronic
+    mailing lists, source code control systems, and issue tracking systems that
+    are managed by, or on behalf of, the Licensor for the purpose of discussing
+    and improving the Work, but excluding communication that is conspicuously
+    marked or otherwise designated in writing by the copyright owner as "Not a
+    Contribution."
+
+    "Contributor" shall mean Licensor and any individual or Legal Entity on
+    behalf of whom a Contribution has been received by Licensor and subsequently
+    incorporated within the Work.
+
+2.  Grant of Copyright License. Subject to the terms and conditions of this
+    License, each Contributor hereby grants to You a perpetual, worldwide,
+    non-exclusive, no-charge, royalty-free, irrevocable copyright license to
+    reproduce, prepare Derivative Works of, publicly display, publicly perform,
+    sublicense, and distribute the Work and such Derivative Works in Source or
+    Object form.
+
+3.  Grant of Patent License. Subject to the terms and conditions of this
+    License, each Contributor hereby grants to You a perpetual, worldwide,
+    non-exclusive, no-charge, royalty-free, irrevocable (except as stated in
+    this section) patent license to make, have made, use, offer to sell, sell,
+    import, and otherwise transfer the Work, where such license applies only to
+    those patent claims licensable by such Contributor that are necessarily
+    infringed by their Contribution(s) alone or by combination of their
+    Contribution(s) with the Work to which such Contribution(s) was submitted.
+    If You institute patent litigation against any entity (including a
+    cross-claim or counterclaim in a lawsuit) alleging that the Work or a
+    Contribution incorporated within the Work constitutes direct or contributory
+    patent infringement, then any patent licenses granted to You under this
+    License for that Work shall terminate as of the date such litigation is
+    filed.
+
+4.  Redistribution. You may reproduce and distribute copies of the Work or
+    Derivative Works thereof in any medium, with or without modifications, and
+    in Source or Object form, provided that You meet the following conditions:
+
+    (a) You must give any other recipients of the Work or Derivative Works a
+    copy of this License; and
+
+    (b) You must cause any modified files to carry prominent notices stating
+    that You changed the files; and
+
+    (c) You must retain, in the Source form of any Derivative Works that You
+    distribute, all copyright, patent, trademark, and attribution notices from
+    the Source form of the Work, excluding those notices that do not pertain to
+    any part of the Derivative Works; and
+
+    (d) If the Work includes a "NOTICE" text file as part of its distribution,
+    then any Derivative Works that You distribute must include a readable copy
+    of the attribution notices contained within such NOTICE file, excluding
+    those notices that do not pertain to any part of the Derivative Works, in at
+    least one of the following places: within a NOTICE text file distributed as
+    part of the Derivative Works; within the Source form or documentation, if
+    provided along with the Derivative Works; or, within a display generated by
+    the Derivative Works, if and wherever such third-party notices normally
+    appear. The contents of the NOTICE file are for informational purposes only
+    and do not modify the License. You may add Your own attribution notices
+    within Derivative Works that You distribute, alongside or as an addendum to
+    the NOTICE text from the Work, provided that such additional attribution
+    notices cannot be construed as modifying the License.
+
+    You may add Your own copyright statement to Your modifications and may
+    provide additional or different license terms and conditions for use,
+    reproduction, or distribution of Your modifications, or for any such
+    Derivative Works as a whole, provided Your use, reproduction, and
+    distribution of the Work otherwise complies with the conditions stated in
+    this License.
+
+5.  Submission of Contributions. Unless You explicitly state otherwise, any
+    Contribution intentionally submitted for inclusion in the Work by You to the
+    Licensor shall be under the terms and conditions of this License, without
+    any additional terms or conditions. Notwithstanding the above, nothing
+    herein shall supersede or modify the terms of any separate license agreement
+    you may have executed with Licensor regarding such Contributions.
+
+6.  Trademarks. This License does not grant permission to use the trade names,
+    trademarks, service marks, or product names of the Licensor, except as
+    required for reasonable and customary use in describing the origin of the
+    Work and reproducing the content of the NOTICE file.
+
+7.  Disclaimer of Warranty. Unless required by applicable law or agreed to in
+    writing, Licensor provides the Work (and each Contributor provides its
+    Contributions) on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied, including, without limitation, any
+    warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or
+    FITNESS FOR A PARTICULAR PURPOSE. You are solely responsible for determining
+    the appropriateness of using or redistributing the Work and assume any risks
+    associated with Your exercise of permissions under this License.
+
+8.  Limitation of Liability. In no event and under no legal theory, whether in
+    tort (including negligence), contract, or otherwise, unless required by
+    applicable law (such as deliberate and grossly negligent acts) or agreed to
+    in writing, shall any Contributor be liable to You for damages, including
+    any direct, indirect, special, incidental, or consequential damages of any
+    character arising as a result of this License or out of the use or inability
+    to use the Work (including but not limited to damages for loss of goodwill,
+    work stoppage, computer failure or malfunction, or any and all other
+    commercial damages or losses), even if such Contributor has been advised of
+    the possibility of such damages.
+
+9.  Accepting Warranty or Additional Liability. While redistributing the Work or
+    Derivative Works thereof, You may choose to offer, and charge a fee for,
+    acceptance of support, warranty, indemnity, or other liability obligations
+    and/or rights consistent with this License. However, in accepting such
+    obligations, You may act only on Your own behalf and on Your sole
+    responsibility, not on behalf of any other Contributor, and only if You
+    agree to indemnify, defend, and hold each Contributor harmless for any
+    liability incurred by, or claims asserted against, such Contributor by
+    reason of your accepting any such warranty or additional liability.
+
+END OF TERMS AND CONDITIONS
+
+APPENDIX: How to apply the Apache License to your work.
+
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "[]"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the
+License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+```
+
+### Apache-2.0 — 50 个包
+
+| 包 | 版本 | 版权行 | 备注 |
+|---|---|---|---|
+| `@aws-crypto/crc32` | 5.2.0 | Copyright {yyyy} {name of copyright owner} |  |
+| `@aws-crypto/sha256-browser` | 5.2.0 | — | 文本有变体 |
+| `@aws-crypto/sha256-js` | 5.2.0 | Copyright {yyyy} {name of copyright owner} |  |
+| `@aws-crypto/supports-web-crypto` | 5.2.0 | — | 文本有变体 |
+| `@aws-crypto/util` | 5.2.0 | Copyright {yyyy} {name of copyright owner} |  |
+| `@aws-sdk/client-bedrock-runtime` | 3.1127.0 | Copyright 2018-2023 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@aws-sdk/core` | 3.978.0 | Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. | 文本有变体 |
+| `@aws-sdk/credential-provider-env` | 3.972.39 | Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@aws-sdk/credential-provider-http` | 3.972.41 | — | 无许可文件 |
+| `@aws-sdk/credential-provider-ini` | 3.972.43 | Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@aws-sdk/credential-provider-login` | 3.972.43 | — | 无许可文件 |
+| `@aws-sdk/credential-provider-node` | 3.972.44 | Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@aws-sdk/credential-provider-process` | 3.972.39 | Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@aws-sdk/credential-provider-sso` | 3.972.43 | Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@aws-sdk/credential-provider-web-identity` | 3.972.43 | Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@aws-sdk/eventstream-handler-node` | 3.972.34 | Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@aws-sdk/middleware-eventstream` | 3.972.29 | Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@aws-sdk/middleware-websocket` | 3.972.53 | Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@aws-sdk/nested-clients` | 3.997.11 | — | 无许可文件 |
+| `@aws-sdk/signature-v4-multi-region` | 3.996.28 | Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@aws-sdk/token-providers` | 3.1127.0 | Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@aws-sdk/types` | 3.973.9 | Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@aws-sdk/util-locate-window` | 3.965.5 | Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@aws-sdk/xml-builder` | 3.972.40 | Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@aws/lambda-invoke-store` | 0.3.0 | — | 文本有变体 |
+| `@google/genai` | 2.21.0 | — | 文本有变体 |
+| `@janhapke/sharp-electron` | 0.35.3-electron.1 | Jan Hapke <sharp-electron@janhapke.com> | 文本有变体 |
+| `@letta-ai/letta-agent-sdk` | 0.8.24 | Copyright 2025, Letta authors | 文本有变体 |
+| `@letta-ai/letta-client` | 1.10.2 | Copyright 2026 Letta | 文本有变体 |
+| `@letta-ai/letta-code` | 0.33.7 | Copyright 2025, Letta authors | 文本有变体 |
+| `@letta-ai/trajectory` | 0.2.0 | Copyright 2025, Letta authors | 文本有变体 |
+| `@scarf/scarf` | 1.4.0 | Copyright 2020 Scarf Systems, Inc. | 文本有变体 |
+| `@smithy/core` | 3.24.4 | Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@smithy/credential-provider-imds` | 4.3.2 | Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@smithy/fetch-http-handler` | 5.8.0 | Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@smithy/is-array-buffer` | 2.2.0 | Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@smithy/node-http-handler` | 4.12.1 | Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@smithy/signature-v4` | 5.4.2 | Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@smithy/types` | 4.14.2 | Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@smithy/util-buffer-from` | 2.2.0 | Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `@smithy/util-utf8` | 2.3.0 | Copyright 2018-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved. |  |
+| `detect-libc` | 2.1.2 | Copyright {yyyy} {name of copyright owner} |  |
+| `ecdsa-sig-formatter` | 1.0.11 | Copyright 2015 D2L Corporation |  |
+| `gaxios` | 7.1.4 | Google, LLC | 文本有变体 |
+| `gcp-metadata` | 8.1.2 | Google LLC | 文本有变体 |
+| `google-auth-library` | 10.6.2 | Google Inc. | 文本有变体 |
+| `google-logging-utils` | 1.1.3 | Google API Authors | 文本有变体 |
+| `long` | 5.3.2 | Daniel Wirtz <dcode@dcode.io> | 文本有变体 |
+| `openai` | 6.48.0 | Copyright 2026 OpenAI | 文本有变体 |
+| `sharp` | 0.34.5 | Lovell Fuller <npm@lovell.info> | 文本有变体 |
+
+**Apache-2.0 许可原文**（组内 29 个包使用此文本）
+
+```text
+Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
+
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+   APPENDIX: How to apply the Apache License to your work.
+
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "{}"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+```
+
+> 另有 5 种文本变体（共 18 个包，见上表「文本有变体」），以各包目录内的 `LICENSE` 为准。
+
+> ⚠️ 这些包未附许可文件，仅按 `package.json` 的 `license` 字段登记：`@aws-sdk/credential-provider-http`、`@aws-sdk/credential-provider-login`、`@aws-sdk/nested-clients`
+
+### BlueOak-1.0.0 — 2 个包
+
+| 包 | 版本 | 版权行 | 备注 |
+|---|---|---|---|
+| `glob` | 13.0.0 | ## Copyright | 文本有变体 |
+| `path-scurry` | 2.0.1 | ## Copyright |  |
+
+**BlueOak-1.0.0 许可原文**（组内 1 个包使用此文本）
+
+```text
+# Blue Oak Model License
+
+Version 1.0.0
+
+## Purpose
+
+This license gives everyone as much permission to work with
+this software as possible, while protecting contributors
+from liability.
+
+## Acceptance
+
+In order to receive this license, you must agree to its
+rules.  The rules of this license are both obligations
+under that agreement and conditions to your license.
+You must not do anything with this software that triggers
+a rule that you cannot or will not follow.
+
+Each contributor licenses you to do everything with this
+software that would otherwise infringe that contributor's
+copyright in it.
+
+## Notices
+
+You must ensure that everyone who gets a copy of
+any part of this software from you, with or without
+changes, also gets the text of this license or a link to
+<https://blueoakcouncil.org/license/1.0.0>.
+
+## Excuse
+
+If anyone notifies you in writing that you have not
+complied with [Notices](#notices), you can keep your
+license by taking all practical steps to comply within 30
+days after the notice.  If you do not do so, your license
+ends immediately.
+
+## Patent
+
+Each contributor licenses you to do everything with this
+software that would otherwise infringe any patent claims
+they can license or become able to license.
+
+## Reliability
+
+No contributor can revoke this license.
+
+## No Liability
+
+***As far as the law allows, this software comes as is,
+without any warranty or condition, and no contributor
+will be liable to anyone for any damages related to this
+software or this license, under any kind of legal claim.***
+```
+
+> 另有 1 种文本变体（共 1 个包，见上表「文本有变体」），以各包目录内的 `LICENSE` 为准。
+
+### BSD-2-Clause — 2 个包
+
+| 包 | 版本 | 版权行 | 备注 |
+|---|---|---|---|
+| `json-schema-typed` | 8.0.2 | — | 文本有变体 |
+| `webidl-conversions` | 3.0.1 | Copyright (c) 2014, Domenic Denicola |  |
+
+**BSD-2-Clause 许可原文**（组内 1 个包使用此文本）
+
+```text
+# The BSD 2-Clause License
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
+
+> 另有 1 种文本变体（共 1 个包，见上表「文本有变体」），以各包目录内的 `LICENSE` 为准。
+
+### BSD-3-Clause — 15 个包
+
+| 包 | 版本 | 版权行 | 备注 |
+|---|---|---|---|
+| `@protobufjs/aspromise` | 1.1.2 | Copyright (c) 2016, Daniel Wirtz  All rights reserved. |  |
+| `@protobufjs/base64` | 1.1.2 | Copyright (c) 2016, Daniel Wirtz  All rights reserved. |  |
+| `@protobufjs/codegen` | 2.0.5 | Copyright (c) 2016, Daniel Wirtz  All rights reserved. |  |
+| `@protobufjs/eventemitter` | 1.1.0 | Copyright (c) 2016, Daniel Wirtz  All rights reserved. |  |
+| `@protobufjs/fetch` | 1.1.0 | Copyright (c) 2016, Daniel Wirtz  All rights reserved. |  |
+| `@protobufjs/float` | 1.0.2 | Copyright (c) 2016, Daniel Wirtz  All rights reserved. |  |
+| `@protobufjs/inquire` | 1.1.1 | Copyright (c) 2016, Daniel Wirtz  All rights reserved. |  |
+| `@protobufjs/path` | 1.1.2 | Copyright (c) 2016, Daniel Wirtz  All rights reserved. |  |
+| `@protobufjs/pool` | 1.1.0 | Copyright (c) 2016, Daniel Wirtz  All rights reserved. |  |
+| `@protobufjs/utf8` | 1.1.1 | Copyright (c) 2016, Daniel Wirtz  All rights reserved. |  |
+| `buffer-equal-constant-time` | 1.0.1 | Copyright (c) 2013, GoInstant Inc., a salesforce.com company | 文本有变体 |
+| `diff` | 8.0.2 | Copyright (c) 2009-2015, Kevin Decker <kpdecker@gmail.com> | 文本有变体 |
+| `fast-uri` | 3.1.4 | Copyright (c) 2011-2021, Gary Court until https://github.com/garycourt/uri-js/commit/a1acf730b4bba3f1097c9f52e7d9d3aba8cdcaae / Copyright (c) 2021-present The Fastify team <https://github.com/fastify/fastify#team> | 文本有变体 |
+| `protobufjs` | 7.5.8 | Copyright (c) 2016, Daniel Wirtz  All rights reserved. | 文本有变体 |
+| `qs` | 6.15.1 | Copyright (c) 2014, Nathan LaFreniere and other [contributors](https://github.com/ljharb/qs/graphs/contributors) | 文本有变体 |
+
+**BSD-3-Clause 许可原文**（组内 10 个包使用此文本）
+
+```text
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+* Redistributions of source code must retain the above copyright
+  notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright
+  notice, this list of conditions and the following disclaimer in the
+  documentation and/or other materials provided with the distribution.
+* Neither the name of its author, nor the names of its contributors
+  may be used to endorse or promote products derived from this software
+  without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
+
+> 另有 4 种文本变体（共 5 个包，见上表「文本有变体」），以各包目录内的 `LICENSE` 为准。
+
+### ISC — 13 个包
+
+| 包 | 版本 | 版权行 | 备注 |
+|---|---|---|---|
+| `@ungap/structured-clone` | 1.3.1 | Copyright (c) 2021, Andrea Giammarchi, @WebReflection |  |
+| `inherits` | 2.0.4 | Copyright (c) Isaac Z. Schlueter |  |
+| `isexe` | 2.0.0 | Copyright (c) Isaac Z. Schlueter and Contributors |  |
+| `lru-cache` | 11.2.2 | Copyright (c) 2010-2023 Isaac Z. Schlueter and Contributors |  |
+| `minimatch` | 10.0.3 | Copyright (c) 2011-2023 Isaac Z. Schlueter and Contributors |  |
+| `minipass` | 7.1.2 | Copyright (c) 2017-2023 npm, Inc., Isaac Z. Schlueter, and Contributors |  |
+| `once` | 1.4.0 | Copyright (c) Isaac Z. Schlueter and Contributors |  |
+| `semver` | 7.8.5 | Copyright (c) Isaac Z. Schlueter and Contributors |  |
+| `setprototypeof` | 1.2.0 | Copyright (c) 2015, Wes Todd |  |
+| `signal-exit` | 3.0.7 | Copyright (c) 2015, Contributors |  |
+| `which` | 2.0.2 | Copyright (c) Isaac Z. Schlueter and Contributors |  |
+| `wrappy` | 1.0.2 | Copyright (c) Isaac Z. Schlueter and Contributors |  |
+| `zod-to-json-schema` | 3.25.2 | Copyright (c) 2020, Stefan Terdell |  |
+
+**ISC 许可原文**（组内 13 个包使用此文本）
+
+```text
+ISC License
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+```
+
+### MIT — 225 个包
+
+| 包 | 版本 | 版权行 | 备注 |
+|---|---|---|---|
+| `@alcalzone/ansi-tokenize` | 0.1.3 | — | 无许可文件 |
+| `@anthropic-ai/sdk` | 0.124.0 | Copyright 2023 Anthropic, PBC. |  |
+| `@babel/runtime` | 7.29.2 | Copyright (c) 2014-present Sebastian McKenzie and other contributors |  |
+| `@earendil-works/pi-ai` | 0.99.1 | Mario Zechner | 无许可文件 |
+| `@earendil-works/pi-telemetry` | 0.99.1 | Mario Zechner | 无许可文件 |
+| `@hono/node-server` | 2.0.12 | Copyright (c) 2022 - present, Yusuke Wada and Hono contributors |  |
+| `@img/colour` | 1.1.0 | Copyright (c) 2012 Heather Arthur / Copyright (c) 2011-2016 Heather Arthur <fayearthur@gmail.com>. / Copyright (c) 2016-2021 Josh Junon <josh@junon.me>. | 文本有变体 |
+| `@isaacs/balanced-match` | 4.0.1 | — | 文本有变体 |
+| `@isaacs/brace-expansion` | 5.0.0 | Copyright Julian Gruber <julian@juliangruber.com> | 文本有变体 |
+| `@modelcontextprotocol/sdk` | 1.30.0 | Copyright (c) 2024 Anthropic, PBC |  |
+| `@pierre/theme` | 1.0.3 | Copyright (c) 2026 The Pierre Computer Company |  |
+| `@shikijs/core` | 4.0.2 | Copyright (c) 2021 Pine Wu / Copyright (c) 2023 Anthony Fu <https://github.com/antfu> |  |
+| `@shikijs/engine-javascript` | 4.0.2 | Copyright (c) 2021 Pine Wu / Copyright (c) 2023 Anthony Fu <https://github.com/antfu> |  |
+| `@shikijs/engine-oniguruma` | 4.0.2 | Copyright (c) 2021 Pine Wu / Copyright (c) 2023 Anthony Fu <https://github.com/antfu> |  |
+| `@shikijs/langs` | 4.0.2 | Copyright (c) 2021 Pine Wu / Copyright (c) 2023 Anthony Fu <https://github.com/antfu> |  |
+| `@shikijs/primitive` | 4.0.2 | Copyright (c) 2021 Pine Wu / Copyright (c) 2023 Anthony Fu <https://github.com/antfu> |  |
+| `@shikijs/themes` | 4.0.2 | Copyright (c) 2021 Pine Wu / Copyright (c) 2023 Anthony Fu <https://github.com/antfu> |  |
+| `@shikijs/transformers` | 3.23.0 | Copyright (c) 2021 Pine Wu / Copyright (c) 2023 Anthony Fu <https://github.com/antfu> |  |
+| `@shikijs/types` | 4.0.2 | Copyright (c) 2021 Pine Wu / Copyright (c) 2023 Anthony Fu <https://github.com/antfu> |  |
+| `@shikijs/vscode-textmate` | 10.0.2 | Copyright (c) Microsoft Corporation |  |
+| `@stablelib/base64` | 1.0.1 | Copyright (C) 2016 Dmitry Chestnykh | 文本有变体 |
+| `@types/hast` | 3.0.4 | Copyright (c) Microsoft Corporation. | 文本有变体 |
+| `@types/mdast` | 4.0.4 | Copyright (c) Microsoft Corporation. | 文本有变体 |
+| `@types/node` | 24.9.1 | Copyright (c) Microsoft Corporation. | 文本有变体 |
+| `@types/retry` | 0.12.0 | Copyright (c) Microsoft Corporation. All rights reserved. | 文本有变体 |
+| `@types/unist` | 3.0.3 | Copyright (c) Microsoft Corporation. | 文本有变体 |
+| `@vscode/ripgrep` | 1.17.0 | Copyright (c) Microsoft Corporation | 文本有变体 |
+| `accepts` | 2.0.0 | Copyright (c) 2014 Jonathan Ong <me@jongleberry.com> / Copyright (c) 2015 Douglas Christopher Wilson <doug@somethingdoug.com> | 文本有变体 |
+| `agent-base` | 7.1.4 | Copyright (c) 2013 Nathan Rajlich <nathan@tootallnate.net> | 文本有变体 |
+| `ajv` | 8.20.0 | Copyright (c) 2015-2021 Evgeny Poberezkin |  |
+| `ajv-formats` | 3.0.1 | Copyright (c) 2020 Evgeny Poberezkin |  |
+| `ansi-escapes` | 7.1.1 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `ansi-regex` | 6.2.2 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `ansi-styles` | 6.2.3 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `auto-bind` | 5.0.1 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `base64-js` | 1.5.1 | Copyright (c) 2014 Jameson Little |  |
+| `bignumber.js` | 9.3.1 | Copyright © `<2025>` `Michael Mclaughlin` | 文本有变体 |
+| `body-parser` | 2.2.2 | Copyright (c) 2014 Jonathan Ong <me@jongleberry.com> / Copyright (c) 2014-2015 Douglas Christopher Wilson <doug@somethingdoug.com> | 文本有变体 |
+| `bowser` | 2.14.1 | Copyright 2015, Dustin Diaz (the "Original Author") | 文本有变体 |
+| `buffer-crc32` | 0.2.13 | Copyright (c) 2013 Brian J. Brennan |  |
+| `bundle-name` | 4.1.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `bytes` | 3.1.2 | Copyright (c) 2012-2014 TJ Holowaychuk <tj@vision-media.ca> / Copyright (c) 2015 Jed Watson <jed.watson@me.com> | 文本有变体 |
+| `call-bind-apply-helpers` | 1.0.2 | Copyright (c) 2024 Jordan Harband |  |
+| `call-bound` | 1.0.4 | Copyright (c) 2024 Jordan Harband |  |
+| `ccount` | 2.0.1 | Copyright (c) 2015 Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `chalk` | 5.6.2 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `character-entities-html4` | 2.1.0 | Copyright (c) 2015 Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `character-entities-legacy` | 3.0.0 | Copyright (c) 2015 Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `cli-boxes` | 3.0.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `cli-cursor` | 4.0.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `cli-truncate` | 4.0.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `code-excerpt` | 4.0.0 | Copyright (c) Vadim Demedes <vdemedes@gmail.com> (github.com/vadimdemedes) |  |
+| `comma-separated-tokens` | 2.0.3 | Copyright (c) 2016 Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `content-disposition` | 1.1.0 | Copyright (c) 2014-2017 Douglas Christopher Wilson | 文本有变体 |
+| `content-type` | 1.0.5 | Copyright (c) 2015 Douglas Christopher Wilson | 文本有变体 |
+| `convert-to-spaces` | 2.0.1 | Copyright (c) Vadim Demedes <vdemedes@gmail.com> (https://vadimdemedes.com) |  |
+| `cookie` | 0.7.2 | Copyright (c) 2012-2014 Roman Shtylman <shtylman@gmail.com> / Copyright (c) 2015 Douglas Christopher Wilson <doug@somethingdoug.com> | 文本有变体 |
+| `cookie-signature` | 1.2.2 | Copyright (c) 2012–2024 LearnBoost <tj@learnboost.com> and other contributors; | 文本有变体 |
+| `cors` | 2.8.6 | Copyright (c) 2013 Troy Goode <troygoode@gmail.com> | 文本有变体 |
+| `cron-parser` | 5.6.1 | Copyright (c) 2014-2023 Harri Siirak |  |
+| `cross-spawn` | 7.0.6 | Copyright (c) 2018 Made With MOXY Lda <hello@moxy.studio> |  |
+| `debug` | 4.4.3 | Copyright (c) 2014-2017 TJ Holowaychuk <tj@vision-media.ca> / Copyright (c) 2018-2021 Josh Junon | 文本有变体 |
+| `default-browser` | 5.2.1 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `default-browser-id` | 5.0.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `define-lazy-prop` | 3.0.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `depd` | 2.0.0 | Copyright (c) 2014-2018 Douglas Christopher Wilson | 文本有变体 |
+| `dequal` | 2.0.3 | Copyright (c) Luke Edwards <luke.edwards05@gmail.com> (lukeed.com) |  |
+| `devlop` | 1.1.0 | Copyright (c) 2023 Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `dunder-proto` | 1.0.1 | Copyright (c) 2024 ECMAScript Shims |  |
+| `ee-first` | 1.1.1 | Copyright (c) 2014 Jonathan Ong me@jongleberry.com |  |
+| `emoji-regex` | 10.6.0 | Copyright Mathias Bynens <https://mathiasbynens.be/> |  |
+| `encodeurl` | 2.0.0 | Copyright (c) 2016 Douglas Christopher Wilson | 文本有变体 |
+| `environment` | 1.1.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `es-define-property` | 1.0.1 | Copyright (c) 2024 Jordan Harband |  |
+| `es-errors` | 1.3.0 | Copyright (c) 2024 Jordan Harband |  |
+| `es-object-atoms` | 1.1.1 | Copyright (c) 2024 Jordan Harband |  |
+| `es-toolkit` | 1.41.0 | Copyright (c) 2024 Viva Republica, Inc / Copyright OpenJS Foundation and other contributors | 文本有变体 |
+| `escape-html` | 1.0.3 | Copyright (c) 2012-2013 TJ Holowaychuk / Copyright (c) 2015 Andreas Lubbe / Copyright (c) 2015 Tiancheng "Timothy" Gu | 文本有变体 |
+| `escape-string-regexp` | 2.0.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com) |  |
+| `etag` | 1.8.1 | Copyright (c) 2014-2016 Douglas Christopher Wilson | 文本有变体 |
+| `eventsource` | 3.0.7 | Copyright (c) EventSource GitHub organisation |  |
+| `eventsource-parser` | 3.1.0 | Copyright (c) 2026 Espen Hovlandsdal <espen@hovlandsdal.com> |  |
+| `express` | 5.2.1 | Copyright (c) 2009-2014 TJ Holowaychuk <tj@vision-media.ca> / Copyright (c) 2013-2014 Roman Shtylman <shtylman+expressjs@gmail.com> / Copyright (c) 2014-2015 Douglas Christopher Wilson <doug@somethingdoug.com> | 文本有变体 |
+| `express-rate-limit` | 8.6.1 | Copyright 2023 Nathan Friedly, Vedant K | 文本有变体 |
+| `extend` | 3.0.2 | Copyright (c) 2014 Stefan Thomas |  |
+| `fast-deep-equal` | 3.1.3 | Copyright (c) 2017 Evgeny Poberezkin |  |
+| `fd-slicer` | 1.1.0 | Copyright (c) 2014 Andrew Kelley |  |
+| `finalhandler` | 2.1.1 | Copyright (c) 2014-2022 Douglas Christopher Wilson <doug@somethingdoug.com> | 文本有变体 |
+| `forwarded` | 0.2.0 | Copyright (c) 2014-2017 Douglas Christopher Wilson | 文本有变体 |
+| `fresh` | 2.0.0 | Copyright (c) 2012 TJ Holowaychuk <tj@vision-media.ca> / Copyright (c) 2016-2017 Douglas Christopher Wilson <doug@somethingdoug.com> | 文本有变体 |
+| `function-bind` | 1.1.2 | Copyright (c) 2013 Raynos. |  |
+| `get-east-asian-width` | 1.4.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `get-intrinsic` | 1.3.0 | Copyright (c) 2020 Jordan Harband |  |
+| `get-proto` | 1.0.1 | Copyright (c) 2025 Jordan Harband |  |
+| `gopd` | 1.2.0 | Copyright (c) 2022 Jordan Harband |  |
+| `has-flag` | 4.0.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com) |  |
+| `has-symbols` | 1.1.0 | Copyright (c) 2016 Jordan Harband |  |
+| `hasown` | 2.0.2 | Copyright (c) Jordan Harband and contributors |  |
+| `hast-util-to-html` | 9.0.5 | Copyright (c) Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `hast-util-whitespace` | 3.0.0 | Copyright (c) 2016 Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `hono` | 4.12.32 | Copyright (c) 2021 - present, Yusuke Wada and Hono contributors |  |
+| `html-void-elements` | 3.0.0 | Copyright (c) 2016 Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `http-errors` | 2.0.1 | Copyright (c) 2014 Jonathan Ong me@jongleberry.com / Copyright (c) 2016 Douglas Christopher Wilson doug@somethingdoug.com |  |
+| `http-proxy-agent` | 9.1.0 | Copyright (c) 2013 Nathan Rajlich <nathan@tootallnate.net> | 文本有变体 |
+| `https-proxy-agent` | 7.0.6 | Copyright (c) 2013 Nathan Rajlich <nathan@tootallnate.net> | 文本有变体 |
+| `iconv-lite` | 0.7.2 | Copyright (c) 2011 Alexander Shtuchkin |  |
+| `indent-string` | 5.0.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `ink` | 5.2.1 | Copyright (c) Vadym Demedes <vadimdemedes@hey.com> (github.com/vadimdemedes) |  |
+| `ink-link` | 4.1.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `ip-address` | 10.3.1 | Copyright (C) 2011 by Beau Gunderson |  |
+| `ipaddr.js` | 1.9.1 | Copyright (C) 2011-2017 whitequark <whitequark@whitequark.org> |  |
+| `is-docker` | 3.0.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `is-fullwidth-code-point` | 4.0.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `is-in-ci` | 1.0.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `is-inside-container` | 1.0.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `is-promise` | 4.0.0 | Copyright (c) 2014 Forbes Lindesay |  |
+| `is-wsl` | 3.1.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `jose` | 6.2.4 | Copyright (c) 2018 Filip Skokan |  |
+| `js-tokens` | 4.0.0 | Copyright (c) 2014, 2015, 2016, 2017, 2018 Simon Lydell |  |
+| `json-bigint` | 1.0.0 | Copyright (c) 2013 Andrey Sidorov |  |
+| `json-schema-to-ts` | 3.1.1 | Copyright (c) 2020 Thomas Aribart |  |
+| `json-schema-traverse` | 1.0.0 | Copyright (c) 2017 Evgeny Poberezkin |  |
+| `jwa` | 2.0.1 | Copyright (c) 2013 Brian J. Brennan |  |
+| `jws` | 4.0.1 | Copyright (c) 2013 Brian J. Brennan |  |
+| `loose-envify` | 1.4.0 | Copyright (c) 2015 Andres Suarez <zertosh@gmail.com> |  |
+| `lru_map` | 0.4.1 | Rasmus Andersson <me@rsms.me> | 无许可文件 |
+| `luxon` | 3.7.2 | Copyright 2019 JS Foundation and other contributors |  |
+| `math-intrinsics` | 1.1.0 | Copyright (c) 2024 ECMAScript Shims |  |
+| `mdast-util-to-hast` | 13.2.1 | Copyright (c) 2016 Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `media-typer` | 1.1.0 | Copyright (c) 2014-2017 Douglas Christopher Wilson | 文本有变体 |
+| `merge-descriptors` | 2.0.0 | Copyright (c) Jonathan Ong <me@jongleberry.com> / Copyright (c) Douglas Christopher Wilson <doug@somethingdoug.com> / Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `micromark-util-character` | 2.1.1 | Copyright (c) Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `micromark-util-encode` | 2.0.1 | Copyright (c) Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `micromark-util-sanitize-uri` | 2.0.1 | Copyright (c) Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `micromark-util-symbol` | 2.0.1 | Copyright (c) Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `micromark-util-types` | 2.0.2 | Copyright (c) Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `mime-db` | 1.54.0 | Copyright (c) 2014 Jonathan Ong <me@jongleberry.com> / Copyright (c) 2015-2022 Douglas Christopher Wilson <doug@somethingdoug.com> | 文本有变体 |
+| `mime-types` | 3.0.2 | Copyright (c) 2014 Jonathan Ong <me@jongleberry.com> / Copyright (c) 2015 Douglas Christopher Wilson <doug@somethingdoug.com> | 文本有变体 |
+| `mimic-fn` | 2.1.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com) |  |
+| `ms` | 2.1.3 | Copyright (c) 2020 Vercel, Inc. |  |
+| `negotiator` | 1.0.0 | Copyright (c) 2012-2014 Federico Romero / Copyright (c) 2012-2014 Isaac Z. Schlueter / Copyright (c) 2014-2015 Douglas Christopher Wilson | 文本有变体 |
+| `node-addon-api` | 7.1.1 | Copyright (c) 2017 [Node.js API collaborators](https://github.com/nodejs/node-addon-api#collaborators) |  |
+| `node-fetch` | 2.7.0 | Copyright (c) 2016 David Frank |  |
+| `node-pty` | 1.1.0 | Copyright (c) 2012-2015, Christopher Jeffrey (https://github.com/chjj/) / Copyright (c) 2016, Daniel Imms (http://www.growingwiththeweb.com) / Copyright (c) 2018 - present Microsoft Corporation | 文本有变体 |
+| `object-assign` | 4.1.1 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com) |  |
+| `object-inspect` | 1.13.4 | Copyright (c) 2013 James Halliday |  |
+| `on-finished` | 2.4.1 | Copyright (c) 2013 Jonathan Ong <me@jongleberry.com> / Copyright (c) 2014 Douglas Christopher Wilson <doug@somethingdoug.com> | 文本有变体 |
+| `onetime` | 5.1.2 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `oniguruma-parser` | 0.12.2 | Copyright (c) 2025-2026 Steven Levithan |  |
+| `oniguruma-to-es` | 4.3.6 | Copyright (c) 2024-2026 Steven Levithan |  |
+| `open` | 10.2.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `p-retry` | 4.6.2 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com) |  |
+| `parseurl` | 1.3.3 | Copyright (c) 2014 Jonathan Ong <me@jongleberry.com> / Copyright (c) 2014-2017 Douglas Christopher Wilson <doug@somethingdoug.com> | 文本有变体 |
+| `partial-json` | 0.1.7 | Copyright (c) 2023 Promplate Dev Team |  |
+| `patch-console` | 2.0.0 | Copyright (c) Vadim Demedes <vadimdemedes@hey.com> (https://vadimdemedes.com) |  |
+| `path-key` | 3.1.1 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com) |  |
+| `path-to-regexp` | 8.4.2 | Copyright (c) 2014 Blake Embrey (hello@blakeembrey.com) |  |
+| `pend` | 1.2.0 | Copyright (c) 2014 Andrew Kelley |  |
+| `pkce-challenge` | 5.0.1 | Copyright (c) 2019 |  |
+| `prop-types` | 15.8.1 | Copyright (c) 2013-present, Facebook, Inc. |  |
+| `property-information` | 7.1.0 | Copyright (c) Titus Wormer <mailto:tituswormer@gmail.com> | 文本有变体 |
+| `proxy-addr` | 2.0.7 | Copyright (c) 2014-2016 Douglas Christopher Wilson | 文本有变体 |
+| `proxy-agent-negotiate` | 1.1.0 | Nathan Rajlich <nathan@tootallnate.net> (http://n8.io/) | 无许可文件 |
+| `proxy-from-env` | 1.1.0 | Copyright (C) 2016-2018 Rob Wu <rob@robwu.nl> |  |
+| `range-parser` | 1.2.1 | Copyright (c) 2012-2014 TJ Holowaychuk <tj@vision-media.ca> / Copyright (c) 2015-2016 Douglas Christopher Wilson <doug@somethingdoug.com | 文本有变体 |
+| `raw-body` | 3.0.2 | Copyright (c) 2013-2014 Jonathan Ong <me@jongleberry.com> / Copyright (c) 2014-2022 Douglas Christopher Wilson <doug@somethingdoug.com> |  |
+| `react` | 18.2.0 | Copyright (c) Facebook, Inc. and its affiliates. |  |
+| `react-is` | 16.13.1 | Copyright (c) Facebook, Inc. and its affiliates. |  |
+| `react-reconciler` | 0.29.2 | Copyright (c) Facebook, Inc. and its affiliates. |  |
+| `regex` | 6.1.0 | Copyright (c) 2025 Steven Levithan |  |
+| `regex-recursion` | 6.0.2 | Copyright (c) 2025 Steven Levithan |  |
+| `regex-utilities` | 2.3.0 | Copyright (c) 2024 Steven Levithan |  |
+| `require-from-string` | 2.0.2 | Copyright (c) Vsevolod Strukchinsky <floatdrop@gmail.com> (github.com/floatdrop) |  |
+| `restore-cursor` | 4.0.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `retry` | 0.13.1 | Copyright (c) 2011: | 文本有变体 |
+| `router` | 2.2.0 | Copyright (c) 2013 Roman Shtylman / Copyright (c) 2014-2022 Douglas Christopher Wilson | 文本有变体 |
+| `run-applescript` | 7.1.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `safe-buffer` | 5.1.2 | Copyright (c) Feross Aboukhadijeh |  |
+| `safer-buffer` | 2.1.2 | Copyright (c) 2018 Nikita Skovoroda <chalkerx@gmail.com> |  |
+| `scheduler` | 0.23.2 | Copyright (c) Facebook, Inc. and its affiliates. |  |
+| `send` | 1.2.1 | Copyright (c) 2012 TJ Holowaychuk / Copyright (c) 2014-2022 Douglas Christopher Wilson | 文本有变体 |
+| `serve-static` | 2.2.1 | Copyright (c) 2010 Sencha Inc. / Copyright (c) 2011 LearnBoost / Copyright (c) 2011 TJ Holowaychuk | 文本有变体 |
+| `shebang-command` | 2.0.0 | Copyright (c) Kevin Mårtensson <kevinmartensson@gmail.com> (github.com/kevva) |  |
+| `shebang-regex` | 3.0.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com) |  |
+| `shiki` | 4.0.2 | Copyright (c) 2021 Pine Wu / Copyright (c) 2023 Anthony Fu <https://github.com/antfu> |  |
+| `side-channel` | 1.1.0 | Copyright (c) 2019 Jordan Harband |  |
+| `side-channel-list` | 1.0.1 | Copyright (c) 2024 Jordan Harband |  |
+| `side-channel-map` | 1.0.1 | Copyright (c) 2024 Jordan Harband |  |
+| `side-channel-weakmap` | 1.0.2 | Copyright (c) 2019 Jordan Harband |  |
+| `slice-ansi` | 7.1.2 | Copyright (c) DC <threedeecee@gmail.com> / Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `space-separated-tokens` | 2.0.2 | Copyright (c) 2016 Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `stack-utils` | 2.0.6 | Copyright (c) 2016-2022 Isaac Z. Schlueter <i@izs.me>, James Talmage <james@talmage.io> (github.com/jamestalmage), and Contributors |  |
+| `standardwebhooks` | 1.1.1 | Standard Webhooks | 无许可文件 |
+| `statuses` | 2.0.2 | Copyright (c) 2014 Jonathan Ong <me@jongleberry.com> / Copyright (c) 2016 Douglas Christopher Wilson <doug@somethingdoug.com> |  |
+| `string-width` | 7.2.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `stringify-entities` | 4.0.4 | Copyright (c) 2015 Titus Wormer <mailto:tituswormer@gmail.com> | 文本有变体 |
+| `strip-ansi` | 7.2.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `supports-color` | 7.2.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com) |  |
+| `supports-hyperlinks` | 2.3.0 | Copyright (c) James Talmage <james@talmage.io> (github.com/jamestalmage) |  |
+| `terminal-link` | 3.0.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `toidentifier` | 1.0.1 | Copyright (c) 2016 Douglas Christopher Wilson <doug@somethingdoug.com> |  |
+| `tr46` | 0.0.3 | Sebastian Mayr <npm@smayr.name> | 无许可文件 |
+| `trim-lines` | 3.0.1 | Copyright (c) 2015 Titus Wormer <mailto:tituswormer@gmail.com> | 文本有变体 |
+| `ts-algebra` | 2.0.0 | Copyright (c) 2020 Thomas Aribart |  |
+| `type-is` | 2.0.1 | Copyright (c) 2014 Jonathan Ong <me@jongleberry.com> / Copyright (c) 2014-2015 Douglas Christopher Wilson <doug@somethingdoug.com> | 文本有变体 |
+| `typebox` | 1.3.27 | Copyright (c) 2017-2026 Haydn Paterson | 文本有变体 |
+| `undici-types` | 7.16.0 | Copyright (c) Matteo Collina and Undici contributors |  |
+| `unist-util-is` | 6.0.1 | Copyright (c) 2015 Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `unist-util-position` | 5.0.0 | Copyright (c) 2015 Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `unist-util-stringify-position` | 4.0.0 | Copyright (c) 2016 Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `unist-util-visit` | 5.1.0 | Copyright (c) 2015 Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `unist-util-visit-parents` | 6.0.2 | Copyright (c) 2016 Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `unpipe` | 1.0.0 | Copyright (c) 2015 Douglas Christopher Wilson <doug@somethingdoug.com> | 文本有变体 |
+| `vary` | 1.1.2 | Copyright (c) 2014-2017 Douglas Christopher Wilson | 文本有变体 |
+| `vfile` | 6.0.3 | Copyright (c) 2015 Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `vfile-message` | 4.0.3 | Copyright (c) Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+| `whatwg-url` | 5.0.0 | Copyright (c) 2015–2016 Sebastian Mayr |  |
+| `widest-line` | 5.0.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `wrap-ansi` | 9.0.2 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `ws` | 8.19.0 | Copyright (c) 2011 Einar Otto Stangvik <einaros@gmail.com> / Copyright (c) 2013 Arnout Kazemier and contributors / Copyright (c) 2016 Luigi Pinca and contributors |  |
+| `wsl-utils` | 0.1.0 | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |  |
+| `yauzl` | 2.10.0 | Copyright (c) 2014 Josh Wolfe |  |
+| `yoga-layout` | 3.2.1 | Meta Open Source | 无许可文件 |
+| `zod` | 4.4.3 | Copyright (c) 2025 Colin McDonnell |  |
+| `zwitch` | 2.0.4 | Copyright (c) 2016 Titus Wormer <tituswormer@gmail.com> | 文本有变体 |
+
+**MIT 许可原文**（组内 140 个包使用此文本）
+
+```text
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
+
+> 另有 15 种文本变体（共 77 个包，见上表「文本有变体」），以各包目录内的 `LICENSE` 为准。
+
+> ⚠️ 这些包未附许可文件，仅按 `package.json` 的 `license` 字段登记：`@alcalzone/ansi-tokenize`、`@earendil-works/pi-ai`、`@earendil-works/pi-telemetry`、`lru_map`、`proxy-agent-negotiate`、`standardwebhooks`、`tr46`、`yoga-layout`
+
+### Unlicense — 1 个包
+
+| 包 | 版本 | 版权行 | 备注 |
+|---|---|---|---|
+| `fast-sha256` | 1.3.0 | Dmitry Chestnykh |  |
+
+**Unlicense 许可原文**（组内 1 个包使用此文本）
+
+```text
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org>
+```
+
+## 4. 依赖闭包中的上游包
+
+以下包由 Letta, Inc. 作为**独立 npm 包**发布，本项目的依赖闭包会安装它们（未内联进 `haruyuki.js`）：
+
+- `@letta-ai/letta-agent-sdk@0.8.24` — Apache-2.0
+- `@letta-ai/letta-client@1.10.2` — Apache-2.0
+- `@letta-ai/letta-code@0.33.7` — Apache-2.0
+- `@letta-ai/trajectory@0.2.0` — Apache-2.0
+
+它们的资产（包括上游自己的品牌图片与截图）由各自的发布者分发，**不属于本项目的分发物**；
+本项目不复制、不重新打包这些资产，`npm pack` 的清单里也不含它们。
+
+## 5. NOTICE 文件扫描（Apache-2.0 §4(d)）
+
+闭包内**没有任何包附带 `NOTICE` 文件**，因此本次分发没有需要向下传递的第三方 NOTICE 声明。
+
+## 6. 已知缺口
+
+无。闭包内所有包都已解析到 `node_modules` 中的实体。
+
+部分包只在自己的 `package.json` 里声明 `license`、不附带许可文件。上表已按声明登记；
+如需更完整的信息，请查阅对应包的发布页。若你发现遗漏或错误，请以该包自身附带的许可文本为准。

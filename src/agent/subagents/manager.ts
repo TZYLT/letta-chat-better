@@ -731,7 +731,7 @@ function buildDeploySystemReminder(
   senderAgentId: string,
 ): string {
   return `${SYSTEM_REMINDER_OPEN}
-This task is from "${senderAgentName}" (agent ID: ${senderAgentId}), which deployed you as a subagent inside the Haruyuki CLI (docs.letta.com/letta-code).
+This task is from "${senderAgentName}" (agent ID: ${senderAgentId}), which deployed you as a subagent inside the Haruyuki CLI.
 You have access to local tools (Bash, Read, Write, Edit, etc.) in their codebase.
 Your final message will be returned to the caller.
 ${SYSTEM_REMINDER_CLOSE}

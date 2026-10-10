@@ -8,91 +8,34 @@ const LOGO_WIDTH = 10;
 // Logo frames use abstract cell tokens instead of block/shade glyphs.
 // Rendering via backgroundColor makes each logo pixel a terminal cell, avoiding
 // font/terminal-specific rendering differences for Unicode block elements.
+//
+// EMPTY BY DESIGN. The upstream frames drew the Letta logo, which the LICENSE
+// "Brand Assets Exclusion" excludes from the Apache-2.0 grant, so a derivative
+// work must not reproduce it. This fork has not drawn its own mark yet, so every
+// frame is blank space: the layout, the fixed LOGO_WIDTH grid and the exported
+// staticLogoLines() API keep working, and no third-party brand asset ships.
+// Replace these frames with this fork's own mark when it exists.
+const LOGO_FRAME = `          
+          
+          
+          
+          `;
+
 const logoFrames = [
-  // 1. Front view (fully facing)
-  `  FFFFFF
-FF      FF
-FF  FF  FF
-FF      FF
-  FFFFFF  `,
-  // 2. Just starting to turn right
-  `  DFFFFF
-DF      DF
-DF  DF  DF
-DF      DF
-  DFFFFF  `,
-  // 3. Slight right turn
-  `  DDFFFF
-DD      DD
-DD  DD  DD
-DD      DD
-  DDFFFF  `,
-  // 4. More right (gradient deepening)
-  `  SDDFFF
-SDD    SDD
-SDD SD SDD
-SDD    SDD
-  SDDFFF  `,
-  // 5. Even more right
-  `  SSDDFF
- SDD  SDD
- SDDSDSDD
- SDD  SDD
-  SSDDFF  `,
-  // 6. Approaching side
-  `   SDDF
-  SSDSSD
-  SSDDSD
-  SSDSSD
-   SDDF   `,
-  // 7. Almost side
-  `   SDDD
-   SDSD
-   SDDD
-   SDSD
-   SDDD   `,
-  // 8. Side view
-  `   DDDD
-   DDDD
-   DDDD
-   DDDD
-   DDDD   `,
-  // 9. Leaving side (mirror of 7)
-  `   DDDS
-   DSDS
-   DDDS
-   DSDS
-   DDDS   `,
-  // 10. Past side (mirror of 6)
-  `   FDDS
-  DSSDSS
-  DSDDSS
-  DSSDSS
-   FDDS   `,
-  // 11. More past side (mirror of 5)
-  `  FFDDSS
- DDS  DDS
- DDSDSDDS
- DDS  DDS
-  FFDDSS  `,
-  // 12. Returning (mirror of 4)
-  `  FFFDDS
-DDS    DDS
-DDS DS DDS
-DDS    DDS
-  FFFDDS  `,
-  // 13. Almost front (mirror of 3)
-  `  FFFFDD
-DD      DD
-DD  DD  DD
-DD      DD
-  FFFFDD  `,
-  // 14. Nearly front (mirror of 2)
-  `  FFFFFD
-FD      FD
-FD  FD  FD
-FD      FD
-  FFFFFD  `,
+  LOGO_FRAME, // 1
+  LOGO_FRAME, // 2
+  LOGO_FRAME, // 3
+  LOGO_FRAME, // 4
+  LOGO_FRAME, // 5
+  LOGO_FRAME, // 6
+  LOGO_FRAME, // 7
+  LOGO_FRAME, // 8
+  LOGO_FRAME, // 9
+  LOGO_FRAME, // 10
+  LOGO_FRAME, // 11
+  LOGO_FRAME, // 12
+  LOGO_FRAME, // 13
+  LOGO_FRAME, // 14
 ];
 
 function padFrameToFixedWidth(frame: string, width: number): string {

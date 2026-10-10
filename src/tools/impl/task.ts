@@ -759,7 +759,7 @@ export async function launchSubagent(
     return {
       success: false,
       error:
-        "The computer option requires a Letta Cloud backend. This backend has no connected computers; omit the computer field to run the subagent on the current machine.",
+        "The computer option requires a connected-computer backend. This backend has no connected computers; omit the computer field to run the subagent on the current machine.",
     };
   }
 

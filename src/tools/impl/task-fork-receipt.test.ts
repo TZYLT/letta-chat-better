@@ -247,7 +247,7 @@ describe("prepared conversation launch", () => {
       expect(result.success).toBe(false);
       if (result.success) throw new Error("expected the launch to be rejected");
       expect(result.error).toContain(
-        "The computer option requires a Letta Cloud backend.",
+        "The computer option requires a connected-computer backend.",
       );
     },
   );

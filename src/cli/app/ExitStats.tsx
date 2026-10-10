@@ -21,28 +21,32 @@ export function ExitStats({
 
   return (
     <Box flexDirection="column" marginTop={1}>
-      {/* Alien + Stats (3 lines) */}
+      {/* Stats (3 lines). The upstream art slot is intentionally blank: the
+          glyphs that used to sit here are upstream brand artwork, which the
+          LICENSE "Brand Assets Exclusion" excludes from the Apache-2.0 grant.
+          The reserved column is kept so the layout and the labels stay aligned
+          when this fork draws its own mark. */}
       <Box>
-        <Text color={colors.footer.agentName}>{" ▗▖▗▖   "}</Text>
+        <Text color={colors.footer.agentName}>{"        "}</Text>
         <Text dimColor>
           Total duration (API): {formatDuration(stats.totalApiMs)}
         </Text>
       </Box>
       <Box>
-        <Text color={colors.footer.agentName}>{"▙█▜▛█▟  "}</Text>
+        <Text color={colors.footer.agentName}>{"        "}</Text>
         <Text dimColor>
           Total duration (wall): {formatDuration(stats.totalWallMs)}
         </Text>
       </Box>
       <Box>
-        <Text color={colors.footer.agentName}>{"▝▜▛▜▛▘  "}</Text>
+        <Text color={colors.footer.agentName}>{"        "}</Text>
         <Text dimColor>
           Session usage: {stats.usage.stepCount} steps,{" "}
           {formatCompact(stats.usage.promptTokens)} input,{" "}
           {formatCompact(stats.usage.completionTokens)} output
         </Text>
       </Box>
-      {/* Resume commands (no alien) */}
+      {/* Resume commands (no art slot) */}
       <Box height={1} />
       <Text dimColor>Resume this agent with:</Text>
       <Text color={colors.link.url}>

@@ -132,7 +132,7 @@ describe("task computer routing", () => {
       });
 
       expect(result).toContain(
-        "Error: The computer option requires a Letta Cloud backend.",
+        "Error: The computer option requires a connected-computer backend.",
       );
       expect(result).toContain("omit the computer field");
       expect(spawn).not.toHaveBeenCalled();

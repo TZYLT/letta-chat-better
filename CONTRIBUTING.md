@@ -1,10 +1,19 @@
-# 开发说明（自用）
+# 开发说明
 
-> 定位：本项目自 letta-code **v0.34.2** 起与原项目**彻底分家**——不合并上游、不做 cherry-pick、新功能自研；**整洁清晰与最小改动同等重要**。安全修复与模型兼容完全自持。
+> **本文件既是内部开发纪律，也是对外公开的改动清单。** 本仓库已移除 `.github/`（无 CI），
+> 「纪律」一节是维护者自己的约束；下游读者关心的是 §相对上游的改动清单 —— 那里逐项记录了本分支与上游的差异。
+>
+> 定位：本项目自 letta-code **v0.34.2** 起与原项目**彻底分家**——不合并上游、不做 cherry-pick、新功能自研；
+> **整洁清晰与最小改动同等重要**。安全修复与模型兼容完全自持。
+>
+> 本文件同时是**相对上游的改动清单**的唯一权威位置（README 只给概要，见 §相对上游的改动清单）。
+>
+> **AI 辅助披露**：本项目的代码与文档大量由 AI 辅助生成，由人类维护者审阅、裁决与验证。
+> 对外声明与使用警告见 [README.md](README.md) 开头的 AIGC 段；每条改动仍须留下可核查的来源与验证记录（纪律 2）。
 
 ## 环境要求
 
-- bun **1.3.14**（`engines` 要求 >= 1.3.2；CI 与 lockfile 以 1.3.14 为基线）
+- bun **1.3.14**（`engines` 要求 >= 1.3.2；**lockfile** 以 1.3.14 为基线）
 - Node **>= 22.19.0**
 - 本机现状：bun 1.3.14（npm 渠道安装）、Node v22.19.0（`D:\nodejs`）
 
@@ -15,26 +24,154 @@ bun install --frozen-lockfile    # 安装依赖（会执行 vendor 补丁 postin
 bun run dev                      # 从 TypeScript 源码直接运行（改完即生效）
 bun run dev -- -p "Hello"        # 带参数运行
 
-bun run check                    # 本地护栏（13 项）：循环依赖 / 分层边界 / 导出风格 /
-                                 # 文件命名 / 文件体积 / 模块归属 / 前缀冻结应用点 /
-                                 # 测试隔离 / 测试覆盖 / skill frontmatter / 内置 skill
-                                 # 脚本 / biome / tsc
+bun run check                    # 本地护栏（14 项）：循环依赖 / 分层边界 / 云外联 /
+                                 # 导出风格 / 文件命名 / 文件体积 / 模块归属 /
+                                 # 前缀冻结应用点 / 测试隔离 / 测试覆盖 /
+                                 # skill frontmatter / 内置 skill 脚本 / biome / tsc
 bun run build                    # 构建：根目录 haruyuki.js（已 gitignore）+ dist/app-server-client.*
 
 bun test <file>                  # 单文件单测
-node scripts/run-unit-tests.cjs  # 全量单测
+node scripts/run-unit-tests.cjs  # 全量单测（并行；HARUYUKI_TEST_PARALLEL=0 走串行）
+
+# 生成物（改了就要重跑，勿手改产物）
+node scripts/generate-third-party-notices.cjs   # → THIRD-PARTY-NOTICES.md
+node scripts/generate-tutor-avatar.cjs          # → assets/tutor-profile.png
 ```
 
 ## 纪律
 
 1. **AI 不推送**：所有 `git push` 由本人手动执行（AI 只做本地提交）。
-2. **变更登记**：每条改动/删除记录「文件 + 原因 + 对应需求编号 + 替代方案」。
+2. **变更登记**：每条改动/删除记录「文件 + 原因 + 对应需求编号 + 替代方案」，
+   **并追加到本文件的 §相对上游的改动清单**。
 3. **护栏保留**：`bun run check` 必须全绿；如自研代码触及 `file-size` 上限，允许在
    `scripts/source-file-size-baseline.json` 中按需上调（不删护栏本身）。
 4. **依赖策略**：依赖钉死精确版本；需要改供应商适配行为时，用 `vendor/` +
    `scripts/postinstall-patches.js` 的既有补丁机制，而不是跟随上游升级。
 5. **不接收上游补丁**：上游 release / 安全公告仅作参考，不做 cherry-pick。
+6. **法务要件不可删**：`LICENSE`（含上游版权行与 Brand Assets Exclusion）与 `NOTICE` **原样保留**；
+   `THIRD-PARTY-NOTICES.md` 是生成物，**改依赖后必须重跑**生成器。
+   不得重新引入 Letta 的名称 / logo / wordmark / **图片** / **ASCII art**（品牌排除条款明文列举，
+   注意**图案不在文字 grep 的扫描面内**），也不得把上游文档正文抄进本仓库。
+7. **README 只放概要**：改动清单写在本文件，不写进 README。
+8. **贡献许可**：向本仓提交的内容默认按 **Apache-2.0** 授权（与 `LICENSE` §5 同构）；**贡献者保留自己贡献的版权**；
+   不接受与本许可冲突的附加条款。自有版权的声明范围见 `NOTICE` §1「Scope of the copyright claim」。
+9. **`LICENSE` 不动**：它是上游分发文本，与上游 npm 包**逐字节相同**（哈希见 `NOTICE` §2）。
+   想主张自有部分的版权 → 给你**从零新写**的文件加 SPDX 头或另附文件，**不要**改 `LICENSE`。
+10. **AI 使用的溯源（也是版权举证）**：借助 AI 生成 / 大改时，在提交信息里记下**模型 + 关键提示要点 + 人工改动要点**。
+    这是 `NOTICE` §1 版权主张的**证据基础**（证明"人类智力贡献"真实存在），同时也是"未逐字复制他人表达"的抗辩材料。
+    与本仓已定的品牌/文档纪律（不得抄上游文档正文）配套使用。
+11. **发布到 npm**：包名 `haruyuki`、`publishConfig.access: public`、`prepublishOnly` 会跑 `bun run build`。
+    发布顺序：`npm publish --tag beta` → 验证 → `npm dist-tag add haruyuki@<ver> latest`；**先 beta 后 latest**。
+    每次发布前确认 `LICENSE`/`NOTICE`/`THIRD-PARTY-NOTICES.md`/`README*`/`CONTRIBUTING.md` 都在 `files` 里，
+    且 `npm pack --dry-run` 中仍有 **0** 份内部规划文档。
 
 ## 架构与分层
 
-详细的架构约束、模块归属与护栏说明见 [AGENTS.md](AGENTS.md)。
+详细的架构约束、模块归属与护栏说明见仓库根的 `AGENTS.md`（开发者指南，**不随 npm 包发布**）。
+
+---
+
+## 相对上游的改动清单
+
+> **怎么用**：想知道"本分支到底和上游差在哪、为什么"，读这一节。
+> 每一项都尽量给出**改了什么**与**为什么**；数字来自实测（详见仓库内的规划/施工文档，那些文档不入库）。
+> 新增改动请**追加**，不要改写已登记的条目（历史取舍值得保留）。
+
+### A. 移除的能力（云）
+
+| 能力 | 处置 | 为什么 |
+|---|---|---|
+| Letta Cloud 后端、登录与云 agent | 整链移除 | 本 fork 只保留本地后端；留着云后端，"本地自持"就不成立 |
+| `haruyuki setup`、`haruyuki backend cloud\|local` | 移除 | 无云可切，命令失去意义（L2 验收时还发现帮助文案仍在指向这些已删命令） |
+| teleport（含入站协议与恢复路径） | 整链移除（41 文件 / +73 −3755，含 `teleport.ts` 538 行） | 云端功能，也是最大的入站面 |
+| 远程电脑 / 环境路由（`computers`、`environments`、云 `--computer`） | 移除 | 依赖云端注册；删掉云中继后本机已无设备能注册成云环境 |
+| 托管沙箱执行 | 移除 | 同上 |
+| 云计划任务 | 移除 | `haruyuki cron` 是唯一调度器，且是本地实现 |
+| 共享记忆（shared memory） | 命令与技能移除 | 云端共享机制 |
+| `usage` **CLI 子命令**与配额自动切换（含设置项 `autoSwapOnQuotaLimit`） | 整链删净 | 配额属于云概念。交互式 `/usage`（本会话用量统计）**保留** |
+| AgentFile（`.af`）导入导出 | 移除 | 依赖 agent registry；记忆与 transcript 的导入导出不受影响 |
+| 桌面端 / 浏览器端入口 | 本分支不提供 | 保留**本地 app-server 协议**给兼容客户端（上游 LCD 是第三方产品，属刻意保留的指称对象） |
+| 依赖云的内置技能：`managing-shared-memory`、`working-across-computers`、`submitting-feedback`、`image-generation` | 整技能删除 | 前两者本就在上游"本地 agent 不需要"的排除清单里；后者包装的是托管图像端点 |
+
+### B. 出站链路
+
+| 项 | 处置 | 为什么 |
+|---|---|---|
+| 遥测 | 4 个导出签名保留、内部改为写本地日志；无第三方上报 | 调用点改动 = 0，避免把遥测删除扩散成全仓改造 |
+| `submitFeedbackMetadata` 上报（4 条上报面） | 改写入 `~/.haruyuki/logs/feedback.jsonl`，零出站 | 它对"非 Desktop-loopback"的**一切**运行都发用户内容 |
+| 云外联护栏 | 新增检查项 `scripts/check-cloud-egress.js`（第 3 项） | 禁止非白名单模块 import 会发起云外联的模块；**过渡闭集 28 处按用户裁决冻结并单独立项** |
+
+### C. 改名（对象 → 新值）
+
+| 对象 | 旧 | 新 | 规模 |
+|---|---|---|---|
+| 包名 | `@letta-ai/letta-code` | `haruyuki` | 1 处 |
+| 可执行文件 / bin | `letta` / `letta.js` | `haruyuki` / `haruyuki.js` | `build.js` ＋ `package.json` |
+| 配置目录 | `~/.letta` | `~/.haruyuki` | 688 行 / 176 文件 |
+| 环境变量前缀 | `LETTA_*` | `HARUYUKI_*` | 335 文件 / 2,013 处 |
+| 品牌（自有源码里的 `Letta Code`） | `Letta Code` | `Haruyuki` | 327 文件 / +1537 −1346 → 自有源码命中 **0** |
+| 命令名散文 | `letta <子命令>` | `haruyuki <子命令>` | 约 450 行（帮助全文 / 26 个 bundled `SKILL.md` / agent prompts / 渠道向导 / 测试断言） |
+| 默认头像 | `assets/tutor-profile.png`（上游图） | 本分支自产的雪花标记（[生成器](scripts/generate-tutor-avatar.cjs)） | 512×512 |
+| OAuth 回调页标记 | 上游 `LETTA` ASCII art | `❄ haruyuki` | `src/auth/openai-oauth.ts` |
+
+**刻意保留旧前缀的 8 个环境变量**（`LETTA_CLI_PATH`、`LETTA_LOCAL_BACKEND_DIR`、`LETTA_MEMORY_DIR`、
+`LETTA_TRANSCRIPT_ROOT`、`LETTA_SANDBOX`、`LETTA_API_KEY`、`LETTA_BASE_URL`、`LETTA_LOG`）：
+运行时依赖的 `@letta-ai/letta-agent-sdk` **自己读这些名字**，只改我们这一侧会让它静默回落到自带副本，
+并让记忆围栏从错误的名字计算可写根。**不要"顺手统一"**，细节见 `AGENTS.md`。
+
+**三类刻意不改**（⑦/⑬ 的边界）：① 第三方指称（如 Letta Cloud Desktop / LCD）；② 线格式与落盘契约
+（`ToolsetPreference` 的 `letta` id、`local:` 分桶键、`letta.memoryRepository.url` 等）；
+③ 与上游共享的协议面。
+
+### D. 机制改动与新增（自研）
+
+| 机制 | 内容 |
+|---|---|
+| **前缀冻结** | 提示/工具/记忆/模型的改动不立即写入上下文前缀；`/context-pending` 查看待应用项，`/recompile` 显式应用；施加点契约由检查项 `check-recompile-callsites` 守住 |
+| **话题裁切** | `/topic`、`/topics`、`/compact`：按话题边界裁上下文（含 `topicBoundaryRewindTurns` 等设置） |
+| **后台反思** | 反思 agent 独立运行并整理记忆；`/reflect`、`/dream`、`/sleeptime` 控制触发；Windows 默认关闭自动反思 |
+| **本地后端** | 单一后端模式（`--backend local`）：agent / 会话 / 记忆 / transcript 全在本机；MemFS 由 git 版本化 |
+| **工具与配置面** | `haruyuki model` 同时识别 `HARUYUKI_*` 与裸环境名（与 `cron`/`messages`/`memory` 对齐）；`app-paths` 的路径**调用期解析**（禁止模块级 `const` 快照） |
+| **测试工具** | 单测并行化：**~11–12 min → 162–180 s**（`HARUYUKI_TEST_PARALLEL` 可调，`=0` 走串行逃生舱） |
+
+### E. 文档、品牌素材与法务（⑮ 批次）
+
+| 项 | 处置 | 为什么 |
+|---|---|---|
+| `README.md` / `README.en.md` | 按**真实命令面**重写（中文主 ＋ 英文版），只放"特色/目标 ＋ 改动概要" | 原 README 是上游的，把已删除的云功能当卖点，并有 20 多条 `docs.letta.com` 外链 |
+| `NOTICE` | 新增 | Apache-2.0 §4(b) 要求"已修改"声明；上游**没有** NOTICE |
+| `THIRD-PARTY-NOTICES.md` | 新增（**生成物**） | `haruyuki.js` 内联了几乎全部生产依赖；MIT/BSD/ISC 要求随分发保留版权行与许可通知 |
+| `vendor/ink{,-text-input}/LICENSE` | 补回**并入库** | **真缺口**：这两份被改过的 MIT 源码随包发布，却没有任何许可文本；两份 LICENSE 也曾漏 `git add`（只存在于工作区 → 进得了 tarball，进不了源码 clone），现已跟踪 |
+| 上游文档正文 | **不镜像、不引用** | `docs.letta.com` 无任何授权声明；法务推理见仓库内的版权规避规划文档（该文档不入库） |
+| `CONTRIBUTING.md` | 13 → **14** 项护栏 ＋ 纪律 6/7 | 原写"13 项"漏了 `cloud-egress` |
+| `docs/examples/mods/README.md` | `~/.letta` → `~/.haruyuki` | ⑪-B 改名漏网；该文件**已跟踪且随包发布** |
+| `.skills/adding-models/SKILL.md` | 云目录 `curl` → `haruyuki model list`；CI 步骤改为跑定向测试 | 本分支本地优先；且本仓**没有** `.github/` |
+| 反馈渠道（4 份 agent prompts / `AgentInfoBar` / `/feedback` 说明 / tutorial 资源位） | 指向 `discord.gg/letta` 与 `letta-ai/letta-code/issues` → 本项目 issue tracker `github.com/TZYLT/haruyuki/issues` | 让用户去**上游**渠道反馈本分支的问题，既有运营成本，也把第三方指称用成了事实上的引流 |
+| `package.json` `description` / `postinstall` echo、`image-resize.ts` 重装提示 | 去掉残留的 `Letta agents` / `letta:` / `@letta-ai/letta-code@latest` | 这几处是 npm 列表页与用户可见报错文案，属"自有源码命中 0"的表面（§C） |
+| **代码形态**的上游品牌资产（⑯ 批次） | `AnimatedLogo.tsx` 的 14 帧 Letta logo → **空字符占位**（保留 `LOGO_WIDTH` 网格、`FRAME_SEQUENCE` 与 `staticLogoLines()` API）；`ExitStats.tsx` 三处字形 → 空占位（保留预留列）；`openai-oauth.ts` 回调页的拼字 `LETTA` → `❄ haruyuki`；`assets/tutor-profile.png` 换成自有生成图 | 品牌排除条款列举的是 `logo, wordmark, images, ASCII art`——**图案不在文字 grep 的扫描面内**（纪律 6 已警告）。①那一栏是"图片清干净了，代码形态的没清"：logo 图形按逐字节相同随启动界面渲染并打进 bundle |
+| `scripts/generate-tutor-avatar.cjs` ＋ 替换头像 | **改为入库** | 生成器与替换图此前只在工作区 → `git clone` 拿到的是**上游 Letta 头像**，只有 `npm publish` 拿得到替换图；`NOTICE` 却已声明"已替换" |
+| 三份外部系统提示词（`source_{claude,codex,gemini}.md`） | 来源与许可**登记到 `THIRD-PARTY-NOTICES.md`**（`src/agent/prompts/README.md` 原有溯源信息） | 它们是 near-verbatim 收录、随每个构建分发（bundle 内可验），却是**非 npm 来源**：生成器只遍历依赖闭包 ＋ `vendor/`，结构上扫不到 |
+| 内联的 `marked` v15.0.4（`src/web/memory-viewer-template.txt`） | 补上 **MIT 许可正文** | 上游压缩构建只带版权行与 URL；MIT 要求版权行**与**许可正文一并随分发保留。它既不在 `node_modules` 也不在 `vendor/`，生成器同样扫不到 |
+| 用户可见的 `Letta Cloud` / `Sign in with Letta` 文案 | 改为实际实现措辞（`the server` / `the connected server` / `the access token`） | `chatgpt-usage-service.ts` 16 处、`reflection-launcher.ts`、`connect-xai-oauth.ts`、`task.ts`；文案点名一个本分支不存在的产品，既有误导也暴露未声明的来源。**刻意不改**：8 个 `LETTA_*`、`api.letta.com`/`chat.letta.com` 落盘与存储键、线格式头（`X-Letta-*`）、`Symbol.for("@letta/...")`、`letta_code_*` 遥测标签（本地 sink、无出站出口） |
+| `subagents/manager.ts` 系统提示词里的 `docs.letta.com/letta-code` 链接 | 删链接 | 同时违反"品牌"与"不引用上游文档"两条 |
+| `persona_tutorial.mdx` 宣称的 bundled reference | 改为"该技能指向的本地参考材料"，并明确**材料缺失时要说出来而不是编内容** | guide 技能指向的 `docs/` 正文在本仓不存在（只有 `docs/examples/`），承诺落空 |
+
+### F. 刻意**不**做的事
+
+| 不做 | 原因 |
+|---|---|
+| 不改 `LICENSE` 一个字节 | §4(c) 要求保留上游版权行与归属声明；品牌排除条款必须原样在 |
+| 不给源码文件逐个加"已修改"头 | §4(b) 只要求"醒目声明"，仓库级 `NOTICE` ＋ README 专节即通行做法（若逐个改头，2000+ 文件全是噪声 diff） |
+| 不重命名那 8 个 `LETTA_*` 名 | 见 §C（会静默破坏 SDK 与记忆围栏） |
+| 不合并上游 / 不 cherry-pick | 已分家；上游 release 仅供参考 |
+
+---
+
+## 竣工前的自检清单
+
+1. `bun run check` = **14/14 PASS**；
+2. 受影响的**行为测试**真跑过（`bun test <file>`；改 runner 时另跑一次 `HARUYUKI_TEST_PARALLEL=0`）；
+3. `bun run build` 成功，且 `node .\haruyuki.js --version` 打印当前版本；
+4. 改了**依赖** → 重跑 `scripts/generate-third-party-notices.cjs`；
+5. 改了**素材/品牌面** → 确认没有引入 Letta 的名称/图片/ASCII art（**图案要人眼看**）；
+6. 本清单已追加本轮的改动。

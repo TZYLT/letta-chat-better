@@ -728,7 +728,7 @@ async function cloudApiKey(input: {
           message:
             error instanceof Error
               ? error.message
-              : "Failed to refresh the Letta Cloud access token.",
+              : "Failed to refresh the access token.",
         },
       };
     }
@@ -739,7 +739,7 @@ async function cloudApiKey(input: {
       apiKey: null,
       error: {
         code: "unauthorized",
-        message: "Sign in with Letta to read ChatGPT usage.",
+        message: "Sign in to the server to read usage.",
       },
     };
   }
@@ -794,7 +794,7 @@ async function readCloudChatGPTUsage(
       "unauthorized",
       error instanceof Error
         ? error.message
-        : "Failed to read Letta Cloud credentials.",
+        : "Failed to read server credentials.",
     );
   }
 
@@ -815,7 +815,7 @@ async function readCloudChatGPTUsage(
       success: false,
       error: auth.error ?? {
         code: "unauthorized",
-        message: "Sign in with Letta to read ChatGPT usage.",
+        message: "Sign in to the server to read usage.",
       },
     };
   }
@@ -845,10 +845,10 @@ async function readCloudChatGPTUsage(
     return chatGPTUsageError(
       "network_error",
       didTimeOut
-        ? "Letta Cloud ChatGPT usage request timed out."
+        ? "The usage request timed out."
         : error instanceof Error
           ? error.message
-          : "Failed to fetch ChatGPT usage from Letta Cloud.",
+          : "Failed to fetch usage from the server.",
     );
   }
 
@@ -858,11 +858,8 @@ async function readCloudChatGPTUsage(
       return chatGPTUsageError(
         didTimeOut ? "network_error" : "bad_request",
         didTimeOut
-          ? "Letta Cloud ChatGPT usage request timed out."
-          : responseMessage(
-              raw,
-              "Letta Cloud rejected the ChatGPT usage request.",
-            ),
+          ? "The usage request timed out."
+          : responseMessage(raw, "The server rejected the usage request."),
       );
     }
     if (response.status === 401) {
@@ -870,8 +867,8 @@ async function readCloudChatGPTUsage(
       return chatGPTUsageError(
         didTimeOut ? "network_error" : "unauthorized",
         didTimeOut
-          ? "Letta Cloud ChatGPT usage request timed out."
-          : responseMessage(raw, "Sign in with Letta to read ChatGPT usage."),
+          ? "The usage request timed out."
+          : responseMessage(raw, "Sign in to the server to read usage."),
       );
     }
     if (response.status === 403) {
@@ -879,7 +876,7 @@ async function readCloudChatGPTUsage(
       return chatGPTUsageError(
         didTimeOut ? "network_error" : "forbidden",
         didTimeOut
-          ? "Letta Cloud ChatGPT usage request timed out."
+          ? "The usage request timed out."
           : responseMessage(
               raw,
               "ChatGPT usage is not available for this account.",
@@ -891,13 +888,13 @@ async function readCloudChatGPTUsage(
       if (didTimeOut) {
         return chatGPTUsageError(
           "network_error",
-          "Letta Cloud ChatGPT usage request timed out.",
+          "The usage request timed out.",
         );
       }
       if (!raw) {
         return chatGPTUsageError(
           "network_error",
-          "Letta Cloud ChatGPT usage endpoint is unavailable.",
+          "The usage endpoint is unavailable.",
         );
       }
       return chatGPTUsageError(
@@ -910,7 +907,7 @@ async function readCloudChatGPTUsage(
       return chatGPTUsageError(
         "rate_limited",
         didTimeOut
-          ? "Letta Cloud ChatGPT usage request timed out."
+          ? "The usage request timed out."
           : responseMessage(
               raw,
               "ChatGPT usage is rate limited. Try again later.",
@@ -923,10 +920,10 @@ async function readCloudChatGPTUsage(
       return chatGPTUsageError(
         "network_error",
         didTimeOut
-          ? "Letta Cloud ChatGPT usage request timed out."
+          ? "The usage request timed out."
           : responseMessage(
               raw,
-              `Letta Cloud ChatGPT usage request failed with HTTP ${response.status}.`,
+              `The usage request failed with HTTP ${response.status}.`,
             ),
       );
     }
@@ -936,8 +933,8 @@ async function readCloudChatGPTUsage(
       return chatGPTUsageError(
         didTimeOut ? "network_error" : "bad_response",
         didTimeOut
-          ? "Letta Cloud ChatGPT usage request timed out."
-          : "Letta Cloud ChatGPT usage returned invalid JSON.",
+          ? "The usage request timed out."
+          : "The usage endpoint returned invalid JSON.",
       );
     }
 
@@ -949,7 +946,7 @@ async function readCloudChatGPTUsage(
     if (!usage) {
       return chatGPTUsageError(
         "bad_response",
-        "Letta Cloud ChatGPT usage returned an invalid payload.",
+        "The usage endpoint returned an invalid payload.",
       );
     }
 

@@ -61,7 +61,7 @@ export function mapCloudXaiOAuthCheckError(error: unknown): Error {
     return error instanceof Error ? error : new Error(message);
   }
   return new Error(
-    `${message}\nLetta Cloud may be treating the Grok OAuth JSON bundle as a bearer token. This client requires Cloud xAI OAuth JSON support. Upgrade Cloud and reconnect.`,
+    `${message}\nThe server may be treating the Grok OAuth JSON bundle as a bearer token. This client requires xAI OAuth JSON support on the server. Upgrade the server and reconnect.`,
   );
 }
 

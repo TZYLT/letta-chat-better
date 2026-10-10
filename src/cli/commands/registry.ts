@@ -420,7 +420,7 @@ export const commands: Record<string, Command> = {
     },
   },
   "/feedback": {
-    desc: "Save a feedback report to the local log",
+    desc: "Save a feedback report to the local log (file bugs at github.com/TZYLT/haruyuki/issues)",
     order: 34,
     handler: () => {
       // Handled specially in App.tsx to send feedback request

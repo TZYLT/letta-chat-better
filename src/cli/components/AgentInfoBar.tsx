@@ -215,14 +215,15 @@ export const AgentInfoBar = memo(function AgentInfoBar({
         </>
       )}
 
-      {/* Version and Discord/feedback info */}
+      {/* Version and feedback info */}
       <Box>
         <Box width={2} flexShrink={0}>
           <Text>{"  "}</Text>
         </Box>
         <Box width={contentWidth} flexShrink={1}>
           <Text dimColor wrap="wrap">
-            Haruyuki v{getVersion()} · /feedback · discord.gg/letta
+            Haruyuki v{getVersion()} · /feedback · bugs:
+            github.com/TZYLT/haruyuki/issues
           </Text>
         </Box>
       </Box>

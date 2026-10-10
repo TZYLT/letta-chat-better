@@ -9,6 +9,6 @@ describe("ImageWorkerMissingError", () => {
     expect(error.name).toBe("ImageWorkerMissingError");
     expect(error.workerPath).toBe(workerPath);
     expect(error.message).toContain(workerPath);
-    expect(error.message).toContain("npm install -g @letta-ai/letta-code");
+    expect(error.message).toContain("npm install -g haruyuki");
   });
 });

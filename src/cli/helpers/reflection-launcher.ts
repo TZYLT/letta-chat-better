@@ -99,7 +99,7 @@ export function getReflectionLaunchSkippedMessage(
 ): string | undefined {
   switch (reason) {
     case "cutover":
-      return "Reflection is managed by Letta Cloud for this agent.";
+      return "Reflection is managed by the server for this agent.";
     case "already_active":
       return surface === "listener"
         ? "A reflection agent is already running for this conversation."

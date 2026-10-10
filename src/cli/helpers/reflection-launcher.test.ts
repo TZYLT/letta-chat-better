@@ -249,7 +249,7 @@ describe("reflection configuration failure suppression", () => {
 describe("getReflectionLaunchSkippedMessage", () => {
   test("formats parent-dirty and listener-specific skipped reasons", () => {
     expect(getReflectionLaunchSkippedMessage("cutover")).toContain(
-      "managed by Letta Cloud",
+      "managed by the server",
     );
     expect(getReflectionLaunchSkippedMessage("parent_dirty")).toContain(
       "uncommitted changes",
