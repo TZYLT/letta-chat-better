@@ -4,6 +4,7 @@ import type { AppCommandRunner } from "@/cli/app/types";
 import type { CommandHandle } from "@/cli/commands/runner";
 import { BRAILLE_ANIMATIONS } from "@/cli/components/spinners/animations";
 import { parseModCommandArgv } from "@/cli/mods/command-runtime";
+import { APP_BINARY_NAME } from "@/constants";
 import type {
   CommandRunner,
   ModLearningProgress,
@@ -730,7 +731,7 @@ export function resolveCurrentLettaLauncher(): LettaLauncher {
     return { command: resolvedCurrentScript, args: [] };
   }
 
-  return { command: "letta", args: [] };
+  return { command: APP_BINARY_NAME, args: [] };
 }
 
 async function resolveEnv(

@@ -166,7 +166,7 @@ const CHANNEL_SLASH_COMMANDS: ChannelSlashCommandDefinition[] = [
   {
     name: "chat",
     kind: "direct",
-    summary: "Show the Letta web chat link for this channel route.",
+    summary: "Show the hosted Letta web chat link for this channel route.",
   },
   {
     name: "feedback",
@@ -430,7 +430,7 @@ export function buildChannelHelpMessage(
       "@agent /status - show route and listener status",
       "@agent /cancel - cancel the current turn",
       "@agent /chat - show the web chat link",
-      "@agent /feedback <message> - send feedback to the Letta team from this routed thread",
+      "@agent /feedback <message> - save a feedback report for this routed thread to the local log",
       "@agent /reflection - start a memory reflection pass",
       "@agent /detach - stop replying in this thread until mentioned again",
       "@agent /new - start a fresh conversation for this thread",

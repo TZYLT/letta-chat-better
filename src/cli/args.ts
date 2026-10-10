@@ -1,4 +1,5 @@
 import { parseArgs } from "node:util";
+import { PERSONALITY_ID_LIST } from "@/agent/personality-presets";
 import { TOOLSET_OPTIONS } from "@/tools/toolset-catalog";
 
 export type CliFlagMode = "interactive" | "headless" | "both";
@@ -101,8 +102,7 @@ export const CLI_FLAG_CATALOG = {
     mode: "both",
     help: {
       argLabel: "<name>",
-      description:
-        'Personality preset for --new-agent: "letta-code", "tutorial", "blank", "linus", "kawaii", "claude", or "codex"',
+      description: `Personality preset for --new-agent: ${PERSONALITY_ID_LIST}`,
     },
   },
   toolset: {

@@ -384,8 +384,8 @@ describe("listener protocol ergonomics", () => {
     expect(status.available_toolsets).toEqual([...TOOLSET_OPTIONS]);
     expect(status.available_toolsets).toContainEqual({
       id: "letta",
-      display_name: "Letta",
-      label: "Letta toolset",
+      display_name: "Haruyuki",
+      label: "Haruyuki toolset",
       description: "Experimental unified toolset for every model",
       is_featured: true,
     });

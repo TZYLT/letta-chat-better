@@ -60,7 +60,7 @@ export const PERSONALITY_OPTIONS: PersonalityOption[] = [
   },
   {
     id: "kawaii",
-    label: "Letta-Chan",
+    label: "Haruyuki-Chan",
     description: "sugoi~ (◕‿◕)✨",
   },
   {
@@ -121,10 +121,17 @@ export type DefaultCreateAgentPersonalityId =
   (typeof DEFAULT_CREATE_AGENT_PERSONALITIES)[number];
 
 const PERSONALITY_ALIASES: Record<string, PersonalityId> = {
+  // Legacy preset id. It is written into existing agents' `personality:` tags,
+  // so the alias has to keep resolving; the help text below stops advertising it.
   "letta-code": "memo",
   lettacode: "memo",
   memo: "memo",
 };
+
+/** Preset ids, in `PERSONALITY_OPTIONS` order — the list help text should print. */
+export const PERSONALITY_ID_LIST = PERSONALITY_OPTIONS.map(
+  (option) => option.id,
+).join(", ");
 
 export interface PersonalityBlockDefinition {
   value: string;

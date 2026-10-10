@@ -3,6 +3,7 @@ import "@/utils/startup-log-boundary";
 import { APIError } from "@letta-ai/letta-client/core/error";
 import type { AgentState } from "@letta-ai/letta-client/resources/agents/agents";
 import type { Message } from "@letta-ai/letta-client/resources/agents/messages";
+import { APP_BINARY_NAME } from "@/constants";
 import { getTerminalTelemetrySurface, telemetry } from "@/telemetry";
 import { trackBoundaryError } from "@/telemetry/error-reporting";
 import {
@@ -89,7 +90,6 @@ import { markMilestone } from "./utils/timing";
 // Stable fallbacks avoid creating new arrays that retrigger effects on every render.
 const EMPTY_APPROVAL_ARRAY: ApprovalRequest[] = [];
 const EMPTY_MESSAGE_ARRAY: Message[] = [];
-
 function trackCliBoundaryError(
   errorType: string,
   error: unknown,
@@ -105,7 +105,7 @@ function trackCliBoundaryError(
 function printHelp() {
   // Keep this plaintext (no colors) so output pipes cleanly
   const usage = `
-Haruyuki is a general purpose CLI for interacting with haruyuki agents
+Haruyuki is a general purpose CLI for interacting with Letta agents
 
 USAGE
   # interactive TUI
@@ -576,7 +576,7 @@ async function main(): Promise<void> {
   // Preprocess args to support legacy aliases before strict parsing.
   const processedArgs = preprocessCliArgs([
     process.argv[0] ?? "node",
-    process.argv[1] ?? "letta",
+    process.argv[1] ?? APP_BINARY_NAME,
     ...subcommandArgs,
   ]);
 
@@ -785,7 +785,7 @@ async function main(): Promise<void> {
     : null;
   if (personalityInput && !personality) {
     console.error(
-      `Error: Unknown personality "${personalityInput}". Valid: letta-code, tutorial, blank, linus, kawaii, claude, codex`,
+      `Error: Unknown personality "${personalityInput}". Valid: memo, tutorial, blank, linus, kawaii, claude, codex`,
     );
     process.exit(1);
   }

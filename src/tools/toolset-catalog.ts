@@ -27,8 +27,13 @@ export const WORKTREE_TOOL_NAMES = new Set<ToolName>([
 export const TOOLSET_CATALOG: Readonly<Record<ToolsetName, ToolsetDefinition>> =
   {
     letta: {
-      display_name: "Letta",
-      label: "Letta toolset",
+      // The `letta` key is a persistence contract: `ToolsetPreference` stores it
+      // in settings, so the id cannot move without a migration. Only the
+      // user-facing strings are ours to name — and they must not say "Letta",
+      // because this preset is Haruyuki's own unified toolset for every model,
+      // not an upstream surface.
+      display_name: "Haruyuki",
+      label: "Haruyuki toolset",
       description: "Experimental unified toolset for every model",
       is_featured: true,
       tools: [

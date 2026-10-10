@@ -16,6 +16,7 @@ import {
   resolveSubagentWorkingDirectory,
 } from "@/agent/subagents/subagent-launcher";
 import { getModelHandleFromAgent } from "@/agent/subagents/subagent-model";
+import { APP_BINARY_NAME } from "@/constants";
 
 describe("recallPromptForBackend", () => {
   test("uses separate API and local recall prompts", () => {
@@ -170,7 +171,7 @@ describe("resolveSubagentLauncher", () => {
     });
 
     expect(launcher).toEqual({
-      command: "letta",
+      command: APP_BINARY_NAME,
       args: ["-p", "prompt"],
     });
   });

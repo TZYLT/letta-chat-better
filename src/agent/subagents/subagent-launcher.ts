@@ -10,6 +10,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { type BackendMode, getLocalBackendStorageDir } from "@/backend";
 import { getLocalBackendMemoryFilesystemRoot } from "@/backend/local/paths";
+import { APP_BINARY_NAME } from "@/constants";
 import {
   HARUYUKI_MOD_CAPABILITY_PROFILE_ENV,
   PROVIDERS_ONLY_MOD_CAPABILITY_PROFILE,
@@ -126,7 +127,7 @@ export function resolveSubagentLauncher(
   }
 
   return {
-    command: "letta",
+    command: APP_BINARY_NAME,
     args: cliArgs,
   };
 }

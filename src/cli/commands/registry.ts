@@ -420,7 +420,7 @@ export const commands: Record<string, Command> = {
     },
   },
   "/feedback": {
-    desc: "Send feedback to the Letta team",
+    desc: "Save a feedback report to the local log",
     order: 34,
     handler: () => {
       // Handled specially in App.tsx to send feedback request

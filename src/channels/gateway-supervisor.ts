@@ -1,4 +1,5 @@
 import { type ChildProcess, spawn } from "node:child_process";
+import { APP_BINARY_NAME } from "@/constants";
 import {
   resolveEntryScriptPath,
   resolveHaruyukiInvocation,
@@ -93,7 +94,7 @@ function resolveLauncher(cwd: string): { command: string; args: string[] } {
   if (currentScript.endsWith(".js")) {
     return { command: entrypoint, args: [] };
   }
-  return { command: "letta", args: [] };
+  return { command: APP_BINARY_NAME, args: [] };
 }
 
 export async function startChannelGatewaySupervisor(
