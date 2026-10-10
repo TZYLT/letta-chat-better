@@ -223,7 +223,7 @@ describe("ChatGPT usage service", () => {
     });
   });
 
-  test("reads api-target usage from the Letta Cloud provider endpoint", async () => {
+  test("reads api-target usage from the provider endpoint", async () => {
     const calls: Array<{ url: string; init?: RequestInit }> = [];
     const fetchMock = mock(
       async (url: Parameters<typeof fetch>[0], init?: RequestInit) => {
